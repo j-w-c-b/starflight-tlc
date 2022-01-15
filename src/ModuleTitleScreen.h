@@ -8,7 +8,6 @@
 #ifndef MODULETITLESCREEN_H
 #define MODULETITLESCREEN_H
 
-#include "env.h"
 #include "Module.h"
 
 class Button;
@@ -19,22 +18,18 @@ public:
 	ModuleTitleScreen();
 	virtual ~ModuleTitleScreen();
 
-	bool Init();
-	void Update();
-	void Draw();
-	void OnKeyPress(int keyCode);
-	void OnKeyPressed(int keyCode);
-	void OnKeyReleased(int keyCode);
-	void OnMouseMove(int x, int y);
-	void OnMouseClick(int button, int x, int y);	
-	void OnMousePressed(int button, int x, int y);
-	void OnMouseReleased(int button, int x, int y);
-	void OnEvent(Event *event);
-	void Close();
+	bool Init() override;
+	void Update() override;
+	void Draw() override;
+	void OnKeyReleased(int keyCode) override;
+	void OnMouseMove(int x, int y) override;
+	void OnMouseReleased(int button, int x, int y) override;
+	void OnEvent(Event *event) override;
+	void Close() override;
 
 private:
 	float m_rotationAngle;
-	BITMAP *m_background;
+	ALLEGRO_BITMAP *m_background;
 	Button *btnTitle;
 	Button *btnNewGame;
 	Button *btnLoadGame;

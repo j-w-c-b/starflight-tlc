@@ -5,8 +5,7 @@
 	Date: 
 */
 
-#include "env.h"
-#include <allegro.h>
+#include <allegro5/allegro.h>
 #include "Util.h"
 #include "GameState.h"
 #include "Game.h"
@@ -15,32 +14,28 @@
 #include "ModuleMessageGUI.h"
 #include "DataMgr.h"
 #include "ModeMgr.h"
+#include "messagegui_resources.h"
 
 using namespace std;
 
 int gmx,gmy,gmw,gmh,gsx,gsy;
 
-#define GUI_MESSAGEWINDOW_BMP            0        /* BMP  */
-#define GUI_SOCKET_BMP                   1        /* BMP  */
+ALLEGRO_DEBUG_CHANNEL("ModuleMessageGUI")
 
-
-
-ModuleMessageGUI::ModuleMessageGUI() {}
+ModuleMessageGUI::ModuleMessageGUI() : resources(MESSAGEGUI_IMAGES) {}
 ModuleMessageGUI::~ModuleMessageGUI(){}
 
 bool ModuleMessageGUI::Init()
 {
 	//load the datafile
-	data = load_datafile("data/messagegui/messagegui.dat");
-	if (!data) {
-		g_game->message("MessageGUI: Error loading datafile");
+	if (!resources.load()) {
+		g_game->message("MessageGUI: Error loading resources");
 		return false;
 	}
 
 	//load the gauges gui
-	img_message = (BITMAP*)data[GUI_MESSAGEWINDOW_BMP].dat;
-	img_socket = (BITMAP*)data[GUI_SOCKET_BMP].dat;
-
+	img_message = resources[GUI_MESSAGEWINDOW];
+	img_socket = resources[GUI_SOCKET];
 
 	gmx = (int)g_game->getGlobalNumber("GUI_MESSAGE_POS_X");
 	gmy = (int)g_game->getGlobalNumber("GUI_MESSAGE_POS_Y");
@@ -55,14 +50,13 @@ bool ModuleMessageGUI::Init()
 void ModuleMessageGUI::Close()
 {
 	try {
-		unload_datafile(data);
-		data = NULL;
+		resources.unload();
 	}
 	catch(std::exception e) {
-		TRACE(e.what());
+		ALLEGRO_DEBUG("%s\n", e.what());
 	}
 	catch(...) {
-		TRACE("Unhandled exception in ModuleMessageGUI::Close\n");
+		ALLEGRO_DEBUG("Unhandled exception in ModuleMessageGUI::Close\n");
 	}
 }
 	
@@ -73,10 +67,10 @@ void ModuleMessageGUI::Update()
 void ModuleMessageGUI::Draw()
 {
 	//draw message gui
-	masked_blit(img_message, g_game->GetBackBuffer(), 0, 0, gmx, gmy, img_message->w, img_message->h);
+	al_draw_bitmap(img_message, gmx, gmy, 0);
 
 	//draw socket gui
-	masked_blit(img_socket, g_game->GetBackBuffer(), 0, 0, gsx, gsy, img_socket->w, img_socket->h);
+	al_draw_bitmap(img_socket, gsx, gsy, 0);
 
 	//print stardate
 	Stardate date = g_game->gameState->stardate;
@@ -90,14 +84,3 @@ void ModuleMessageGUI::Draw()
 	g_game->Print22(g_game->GetBackBuffer(), gsx+140, gsy+24, datestr, STEEL);
 
 }
-
-void ModuleMessageGUI::OnKeyPressed(int keyCode){}
-void ModuleMessageGUI::OnKeyPress( int keyCode ){}
-void ModuleMessageGUI::OnKeyReleased(int keyCode){}
-void ModuleMessageGUI::OnMouseMove(int x, int y){}
-void ModuleMessageGUI::OnMouseClick(int button, int x, int y){}
-void ModuleMessageGUI::OnMousePressed(int button, int x, int y){}
-void ModuleMessageGUI::OnMouseReleased(int button, int x, int y){}
-void ModuleMessageGUI::OnMouseWheelUp(int x, int y){}
-void ModuleMessageGUI::OnMouseWheelDown(int x, int y){}
-void ModuleMessageGUI::OnEvent(Event *event){}

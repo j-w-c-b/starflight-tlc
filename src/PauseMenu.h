@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include <allegro.h>
+#include <allegro5/allegro.h>
 
 class Button;
 
@@ -27,7 +27,7 @@ public:
 	static Button	*button2;
 	static Button	*button3;
 	static Button	*button4;
-	static BITMAP	*bg;
+	static ALLEGRO_BITMAP	*bg;
 
 private:
 	bool display;

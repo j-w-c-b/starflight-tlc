@@ -5,11 +5,13 @@
 
 #pragma region HEADER
 
-#include "env.h"
-#include <allegro.h>
-#include <alleggl.h> //this is now only used to retrieve modes
-#include <alfont.h>
-#include <fmod.hpp>
+#include <allegro5/allegro.h>
+#include <allegro5/allegro_font.h>
+#include <allegro5/allegro_ttf.h>
+#include <allegro5/allegro_native_dialog.h>
+#include <allegro5/allegro_image.h>
+#include <allegro5/allegro_primitives.h>
+
 #include <memory.h>
 #include <cstdio>
 #include <sstream>
@@ -54,6 +56,8 @@
 #include "ModuleEngineer.h"
 #include "ModuleSettings.h"
 
+using namespace std;
+
 //define global objects for project-wide visibility, not dependent on Game class for access
 GameState	*Game::gameState = NULL;
 ModeMgr		*Game::modeMgr = NULL;
@@ -62,6 +66,7 @@ AudioSystem *Game::audioSystem = NULL;
 QuestMgr	*Game::questMgr = NULL;
 
 #pragma endregion
+ALLEGRO_DEBUG_CHANNEL("Game")
 
 Game::Game()
 {
@@ -74,9 +79,9 @@ Game::Game()
     m_pause = false;
     m_keepRunning = true;
     m_backbuffer = NULL;
+    m_display = NULL;
     desktop_width = 0;
     desktop_height = 0;
-    desktop_colordepth = 0;
 	frameCount = 0;
     startTime = 0;
     frameRate = 0;
@@ -105,6 +110,8 @@ Game::Game()
     font22 = NULL;
     font24 = NULL;
     font32 = NULL;
+    font48 = NULL;
+    font60 = NULL;
 
 	MsgColors[MSG_INFO   ] = GREEN;
 	MsgColors[MSG_ALERT  ] = RED;
@@ -120,8 +127,8 @@ Game::Game()
 Game::~Game()
 {
 	//delete messagebox globals
-	destroy_bitmap(MessageBoxWindow::bg);
-	destroy_bitmap(MessageBoxWindow::bar);
+	al_destroy_bitmap(MessageBoxWindow::bg);
+	al_destroy_bitmap(MessageBoxWindow::bar);
 	if (MessageBoxWindow::button1 != NULL)
 		delete MessageBoxWindow::button1;
 	if (MessageBoxWindow::button2 != NULL)
@@ -138,42 +145,37 @@ Game::~Game()
 		delete pauseMenu;
 
 	//destroy fonts
-	alfont_destroy_font(font10);
-	alfont_destroy_font(font12);
-	alfont_destroy_font(font18);
-	alfont_destroy_font(font20);
-	alfont_destroy_font(font22);
-	alfont_destroy_font(font24);
-	alfont_destroy_font(font32);
+	al_destroy_font(font10);
+	al_destroy_font(font12);
+	al_destroy_font(font18);
+	al_destroy_font(font20);
+	al_destroy_font(font22);
+	al_destroy_font(font24);
+	al_destroy_font(font32);
+	al_destroy_font(font48);
+	al_destroy_font(font60);
 
 }
 
 #pragma region UTILITY_FUNCS
 
-void Game::message(std::string msg)
+void Game::message(const std::string &msg)
 {
-//	text_mode(-1);
-	allegro_message(msg.c_str());
+	cout << msg << endl;
 }
 
-void Game::fatalerror(std::string error)
+void Game::fatalerror(const std::string &error)
 {
-	try {
-		TRACE(error.c_str());
-		message(error);
-		g_game->modeMgr->CloseCurrentModule();
-		this->Stop();
-	}
-	catch(...){
-		//throw an error up to main.cpp
-		//throw "serious problem in fatalerror";
-	}
+    ALLEGRO_DEBUG("%s\n", error.c_str());
+    message(error);
+    g_game->modeMgr->CloseCurrentModule();
+    this->Stop();
 }
 
 void Game::shutdown()
 {
 	try {
-		TRACE("[shutting down]");
+		ALLEGRO_DEBUG("[shutting down]");
 		g_game->modeMgr->CloseCurrentModule();
 		this->Stop();
 	}
@@ -184,17 +186,17 @@ void Game::shutdown()
 }
 
 void Game::ShowMessageBoxWindow(
-    std::string initHeading,
-	std::string initText,
+        const std::string &initHeading,
+	const std::string &initText,
 	int initWidth,
 	int initHeight,
-	int initTextColor,
+	ALLEGRO_COLOR initTextColor,
 	int initX,
 	int initY,
 	bool initCentered,
-	bool pauseGame )
+	bool /*pauseGame*/ )
 {
-	m_pause = true; // pauseGame;
+	m_pause = true;
 
 	//if we have a msg box window, delete it
 	KillMessageBoxWindow();
@@ -218,19 +220,6 @@ void Game::KillMessageBoxWindow()
 		delete messageBox;
 		messageBox = NULL;
 	}
-}
-
-//In the current scheme for storing/displaying stardates, time is set using gameTimeSecs from a
-//default date. The baseGameTimeSeconds are added to the current timer seconds to get gameTimeSecs;
-//This number is then divided by the timeRateDivisor to get the final stardate. So when we change
-//the divisor, we must simultaneously change the baseGameTimeSeconds (following the method used
-//in SetTimePaused by dumping everything into baseGameTimeSeconds & resetting the timer makes
-//things easier).
-void Game::SetTimeRateDivisor(int v) {
-	double ratio= v/timeRateDivisor;
-	gameState->setBaseGameTimeSecs(gameState->getGameTimeSecs()*ratio);
-	globalTimer.reset();	//reset timer.
-	timeRateDivisor= v;
 }
 
 void Game::SetTimePaused(bool val) {
@@ -266,36 +255,32 @@ void Game::TogglePauseMenu()
 #pragma region "Lua script validation and globals"
 
 //these three are identical to Script class methods but are more convenient within g_game
-void Game::runGlobalFunction(std::string name)
-{
-	globals->runFunction(name);
-}
-std::string Game::getGlobalString(std::string name)
+std::string Game::getGlobalString(const std::string &name)
 {
 	return globals->getGlobalString(name);
 }
-void Game::setGlobalString(std::string name, std::string value)
+void Game::setGlobalString(const std::string &name, const std::string &value)
 {
     globals->setGlobalString(name, value);
 }
 
-double Game::getGlobalNumber(std::string name)
+double Game::getGlobalNumber(const std::string &name)
 {
 	return globals->getGlobalNumber(name);
 }
-void Game::setGlobalNumber(std::string name, double value)
+void Game::setGlobalNumber(const std::string &name, double value)
 {
 	globals->setGlobalNumber(name, value);
 }
-bool Game::getGlobalBoolean(std::string name)
+bool Game::getGlobalBoolean(const std::string &name)
 {
 	return globals->getGlobalBoolean(name);
 }
 
 //this bogus callback is used for script verification
-int voidfunc(lua_State* L) { return 0; }
+int voidfunc(lua_State* /*L*/) { return 0; }
 
-bool ValidateScripts()
+bool ValidateScripts(const string &p_title)
 {
 	const int PLANETFUNCS = 103;
 	string planet_funcnames[PLANETFUNCS] = {
@@ -467,8 +452,8 @@ bool ValidateScripts()
 			linenum = error.substr(0,pos);
 			message = error.substr(pos+1);
 			error = "Filename: " + encounterScripts[n] + "\n\nLine #: " + linenum + "\n\nError: " + filename + "\n" + message;
-			TRACE( error.c_str() );
-			MessageBox(0, error.c_str(), "SCRIPT ERROR", 0);
+			ALLEGRO_DEBUG("%s\n", error.c_str());
+                        al_show_native_message_box(nullptr, p_title.c_str(), "Script Error", error.c_str(), nullptr, ALLEGRO_MESSAGEBOX_ERROR);
 			delete scr;
 			return false;
 		}
@@ -504,8 +489,8 @@ bool ValidateScripts()
 			linenum = error.substr(0,pos);
 			message = error.substr(pos+1);
 			error = "Filename: " + planetScripts[n] + "\n\nLine #: " + linenum + "\n\nError: " + filename + "\n" + message;
-			TRACE( error.c_str() );
-			MessageBox(0, error.c_str(), "SCRIPT ERROR", 0);
+			ALLEGRO_DEBUG("%s\n", error.c_str());
+                        al_show_native_message_box(nullptr, p_title.c_str(), "Script Error", error.c_str(), nullptr, ALLEGRO_MESSAGEBOX_ERROR);
 			delete planetScript;
 			return false;
 		}
@@ -526,22 +511,6 @@ bool ValidatePortraits()
 //TODO: right now ValidatePortraits() skip lifeforms portraits too, since it
 // proved itself to be much more work than expected. we need to handle the
 // various data/planetsurface/Pop${planetType}Planet.lua for it to work.
-// See the commented code below to get an idea of what i envisioned. It would
-// require rework of the lua scripts to make them work as i want. Either that
-// or let them think we are ModulePlanetSurface.cpp by implementing the lua
-// stuff and CreatePSObyItemID() here; and we definitely don't want to do that.
-/*
-	//the portraits for the lifeForms are scattered in the various planetsurface/Pop${planetType}Planet.lua
-	Script script;
-	std::string PopScripts[6]={
-		"data/planetsurface/PopAcidicPlanet.lua",
-		"data/planetsurface/PopAsteriod.lua",
-		"data/planetsurface/PopFrozenPlanet.lua",
-		"data/planetsurface/PopMoltenPlanet.lua",
-		"data/planetsurface/PopOceanicPlanet.lua",
-		"data/planetsurface/PopRockyPlanet.lua" };
-	for (int n=0; n<6; n++) script.load(PopScripts[n]);
-*/
 	for (int n=0; n<g_game->dataMgr->GetNumItems(); n++){
 		Item *item = g_game->dataMgr->GetItem(n);
 		std::string filepath;
@@ -549,8 +518,8 @@ bool ValidatePortraits()
 		switch(item->itemType){
 			case IT_INVALID:{
 				//this one is not supposed to ever happen
-				TRACE("[ERROR]: item #%d is of invalid type\n", item->id);
-				ASSERT(0);
+				ALLEGRO_DEBUG("[ERROR]: item #%d is of invalid type\n", item->id);
+				ALLEGRO_ASSERT(0);
 			}
 			case IT_ARTIFACT:{
 				doCheck = true;
@@ -568,10 +537,7 @@ bool ValidatePortraits()
 				break;
 			case IT_LIFEFORM:
 			{
-				//TODO: we skip that too since it doesn't work yet; see top of function for details
 				doCheck = false;
-				//item->portrait comes from the various Pop${planetType}Planet.lua; those already prepend "data/planetsurface"
-				//filepath = item->portrait;
 				break;
 			}
 			case IT_TRADEITEM:
@@ -582,15 +548,19 @@ bool ValidatePortraits()
 			}
 			default:{
 				//not supposed to happen either
-				TRACE("[ERROR]: item #%d is of unknown type\n", item->id);
-				ASSERT(0);
+				ALLEGRO_DEBUG("[ERROR]: item #%d is of unknown type\n", item->id);
+				ALLEGRO_ASSERT(0);
 				break;
 			}
 		}
 
-		if ( doCheck && !file_exists(filepath.c_str(),FA_ALL,NULL) ){
-			TRACE("[WARNING]: portrait %s for item #%d does not exist\n", filepath.c_str(), item->id);
-			retval=false;
+		if ( doCheck ) {
+			ALLEGRO_FS_ENTRY *fs_entry = al_create_fs_entry(filepath.c_str());
+			if (! al_fs_entry_exists(fs_entry)) {
+				ALLEGRO_DEBUG("[WARNING]: portrait %s for item #%d does not exist\n", filepath.c_str(), item->id);
+				retval=false;
+			}
+			al_destroy_fs_entry(fs_entry);
 		}
 	}
 
@@ -603,30 +573,30 @@ bool ValidatePortraits()
 void Game::Run()
 {
 	//validate scripts
-	TRACE("Validating Lua scripts...\n");
-	if (!ValidateScripts()) {
+	ALLEGRO_DEBUG("Validating Lua scripts...\n");
+	if (!ValidateScripts(p_title)) {
 		return;
 	}
 
 
 	//initialize scripting and load globals.lua
-	TRACE("Loading startup script...\n");
+	ALLEGRO_DEBUG("Loading startup script...\n");
 	globals = new Script();
 	globals->load("data/globals.lua");
 
-	TRACE("Initializing game...\n");
+	ALLEGRO_DEBUG("Initializing game...\n");
 	if (!InitGame()) {
 		fatalerror("Error during game initialization\n");
 		return;
 	}
 
-	TRACE("Firing up game state...\n");
+	ALLEGRO_DEBUG("Firing up game state...\n");
 	gameState = new GameState();
 
-	TRACE("Firing up mode manager...\n");
+	ALLEGRO_DEBUG("Firing up mode manager...\n");
 	modeMgr = new ModeMgr(this);
 
-	TRACE("Firing up data manager...\n");
+	ALLEGRO_DEBUG("Firing up data manager...\n");
 	dataMgr = new DataMgr();
 	if (!dataMgr->Initialize()) {
 		fatalerror("Error initializing data manager");
@@ -638,13 +608,13 @@ void Game::Run()
 	//initialize gamestate
 	gameState->Reset();
 
-	TRACE("Firing up quest manager...\n");
+	ALLEGRO_DEBUG("Firing up quest manager...\n");
 	questMgr = new QuestMgr();
 	if (!questMgr->Initialize()) {
 		fatalerror("Error initializing quest manager");
 	}
 
-	TRACE("Initializing modules...\n");
+	ALLEGRO_DEBUG("Initializing modules...\n");
 	InitializeModules();
 	gameState->m_captainSelected = false;
 
@@ -655,16 +625,16 @@ void Game::Run()
 	std::string startupmodule;
 	startupmodule = globals->getGlobalString("STARTUPMODULE");
 	if (startupmodule.length() == 0) startupmodule = MODULE_STARTUP;
-	TRACE("\nLaunching Startup Module: %s\n", startupmodule.c_str());
+	ALLEGRO_DEBUG("\nLaunching Startup Module: %s\n", startupmodule.c_str());
 	modeMgr->LoadModule(startupmodule);
 
 	//set window caption with title, version
 	std::ostringstream s;
 	s << p_title << " (V" << p_version << ")";
-	set_window_title(s.str().c_str());
+	al_set_window_title(m_display, s.str().c_str());
 
 
-	TRACE("\nLaunching game loop...\n");
+	ALLEGRO_DEBUG("\nLaunching game loop...\n");
 	while (m_keepRunning)
 	{
 		try {
@@ -672,11 +642,11 @@ void Game::Run()
 		}
 		catch(std::exception e)
 		{
-			TRACE(e.what());
+			ALLEGRO_DEBUG("%s\n", e.what());
 		}
 	}
 
-	TRACE("\nBailing...\n");
+	ALLEGRO_DEBUG("\nBailing...\n");
 	DestroyGame();
 }
 
@@ -692,25 +662,24 @@ void Game::Stop()
  */
 bool Game::Initialize_Graphics()
 {
-    int gfxmode=0;
-
     //since this func can be called repeatedly, let's skip redundancies
     if (desktop_width == 0)
     {
-        get_desktop_resolution(&desktop_width, &desktop_height);
-        TRACE("Desktop resolution: %d x %d\n", desktop_width, desktop_height);
-
-        //this will probably be used regardless of resolution settings
-        desktop_colordepth = desktop_color_depth();
-	    set_color_depth(desktop_colordepth);
-	    set_alpha_blender();
-        TRACE("Desktop color depth: %d\n", desktop_colordepth);
+        ALLEGRO_MONITOR_INFO info;
+        int num_adapters = al_get_num_video_adapters();
+        for (int i = 0; i < num_adapters; i++) {
+            if (al_get_monitor_info(i, &info)) {
+                if (info.x1 == 0 && info.y1 == 0) {
+                    desktop_width = info.x2;
+                    desktop_height = info.y2;
+                }
+            }
+        }
     }
     else
-        TRACE("Attempting to reset graphics mode...\n");
+        ALLEGRO_DEBUG("Attempting to reset graphics mode...\n");
 
     //try to get user-selected resolution chosen in the settings screen
-    //format will be: resolution = "1024x768" or "1024 x 768";
     string resolution = g_game->getGlobalString("RESOLUTION");
     if (resolution == "") {
         actual_width = desktop_width;
@@ -732,85 +701,88 @@ bool Game::Initialize_Graphics()
             actual_height = desktop_height;
         }
     }
-    TRACE("Settings resolution: %d,%d\n", actual_width, actual_height);
+    ALLEGRO_DEBUG("Settings resolution: %d,%d\n", actual_width, actual_height);
 
     //try to get user-selected fullscreen toggle from settings screen
     bool fullscreen = g_game->getGlobalBoolean("FULLSCREEN");
-    if (fullscreen) {
-        gfxmode = GFX_DIRECTX_ACCEL; 
-    }
-    else {
-        gfxmode = GFX_DIRECTX_WIN; 
-        //width=SCREEN_WIDTH; height=SCREEN_HEIGHT;
-    }
-    
-    //set text mode to reset graphics
-    set_gfx_mode(GFX_TEXT,0,0,0,0);
+    int flags = fullscreen ? (ALLEGRO_FULLSCREEN) : ALLEGRO_WINDOWED;
 
-    //try to set graphics mode
-	if (set_gfx_mode(gfxmode, actual_width, actual_height, 0, 0) != 0)
-	{
-        TRACE("Video mode failed (%s), attempting default mode...\n", resolution);
-        actual_width = SCREEN_WIDTH;
-        actual_height = SCREEN_HEIGHT;
-        if (set_gfx_mode(gfxmode, actual_width, actual_height, 0, 0) != 0)
+    if (!m_display)
+    {
+        al_set_new_display_flags(flags);
+        m_display = al_create_display(actual_width, actual_height);
+        if (!m_display)
         {
-            TRACE("Fatal Error: Unable to set graphics mode\n");
-            return false;
+            ALLEGRO_DEBUG("Video mode failed (%s), attempting default mode...\n", resolution.c_str());
+            actual_width = SCREEN_WIDTH;
+            actual_height = SCREEN_HEIGHT;
+
+            if ((m_display = al_create_display(actual_width, actual_height)) == nullptr)
+            {
+                ALLEGRO_DEBUG("Fatal Error: Unable to set graphics mode\n");
+                return false;
+            }
         }
-	}
-    TRACE("Refresh rate: %d\n", get_refresh_rate());
+    }
+    else
+    {
+        al_resize_display(m_display, actual_width, actual_height);
+    }
+    ALLEGRO_DEBUG("Refresh rate: %d\n", al_get_display_refresh_rate(m_display));
 
-
-    //
-	//Create the backbuffer surface based on internal fixed resolution.
+    //Create the backbuffer surface based on internal fixed resolution.
     //The frame buffer is SCALED to the output of the desired resolution!
     //Since this func can be called repeatedly from Settings, we need to destroy and 
     //recreate the back buffer each time.
-    //
     if (m_backbuffer) 
     {
-        TRACE("Destroying old backbuffer (%d,%d)...\n", m_backbuffer->w, m_backbuffer->h);
-        destroy_bitmap(m_backbuffer);
+        ALLEGRO_DEBUG("Destroying old backbuffer (%d,%d)...\n", al_get_bitmap_width(m_backbuffer), al_get_bitmap_height(m_backbuffer));
+        al_destroy_bitmap(m_backbuffer);
         m_backbuffer = NULL;
     }
-    TRACE("Creating back buffer (%d,%d)...\n", SCREEN_WIDTH, SCREEN_HEIGHT);
-	m_backbuffer = create_bitmap(SCREEN_WIDTH,SCREEN_HEIGHT);
-	if (!m_backbuffer) {
-        TRACE("Error creating back buffer\n");
+
+    ALLEGRO_DEBUG("Creating back buffer (%d,%d)...\n", SCREEN_WIDTH, SCREEN_HEIGHT);
+	m_backbuffer = al_create_bitmap(SCREEN_WIDTH,SCREEN_HEIGHT);
+    if (!m_backbuffer) {
+        ALLEGRO_DEBUG("Error creating back buffer\n");
         return false;
     }
     
-
    /*
-     * Retrieve complete list of resolutions supported by DirectX driver and
+     * Retrieve complete list of resolutions supported by the display driver and
      * populate the global Game::VideoModes list for use in the Settings screen.
      * Minimum is 1024x768 since downscaling does not work properly--most UI
      * code is based on SCREEN_WIDTH/SCREEN_HEIGHT assumptions, such as the mouse.
      */
-    if (videomodes.size() == 0)
+    if (videomodes.empty())
     {
-        GFX_MODE_LIST *list = NULL;
-        list = get_gfx_mode_list(GFX_DIRECTX_ACCEL);
-        for (int i = list->num_modes; i >= 0; i--)
+        ALLEGRO_DISPLAY_MODE mode;
+        int num_modes = al_get_num_display_modes();
+
+        for (int i = 0; i < num_modes; i++)
         {
-            //add to list only if bpp matches detected desktop color depth
-            if (list->mode[i].bpp == desktop_colordepth)
+            if (al_get_display_mode(i, &mode))
             {
-                VideoMode mode;
-                mode.bpp = list->mode[i].bpp;
-                mode.width = list->mode[i].width;
-                mode.height = list->mode[i].height;
-                if (mode.width>=1024 && mode.height>=768)
-                    videomodes.push_back(mode);
+                VideoMode vmode;
+                vmode.width = mode.width;
+                vmode.height = mode.height;
+                if (vmode.width >= SCREEN_WIDTH && vmode.height >= SCREEN_HEIGHT)
+                {
+                    videomodes.push_back(vmode);
+                }
             }
         }
-        destroy_gfx_mode_list(list);
+        videomodes.sort(
+            [] (const VideoMode& first, const VideoMode &second)
+            {
+              return (first.width < second.width && first.height < second.height);
+            }
+        );
 
-        TRACE("Detected video modes:\n");
-        for (VideoModeIterator mode = videomodes.begin(); mode != videomodes.end(); ++mode)
+        ALLEGRO_DEBUG("Detected video modes:\n");
+        for (auto mode = videomodes.begin(); mode != videomodes.end(); ++mode)
 	    {
-            TRACE("%d,%d,%d\n", mode->bpp, mode->width, mode->height);
+            ALLEGRO_DEBUG("%d,%d\n", mode->width, mode->height);
         }
     }
 
@@ -827,32 +799,49 @@ bool Game::InitGame()
 	//get title and version from script
 	p_title = getGlobalString("GAME_TITLE");
 	p_version = getGlobalString("GAME_VERSION");
-	TRACE("%s v%s\n", p_title.c_str(), p_version.c_str());
+	ALLEGRO_DEBUG("%s v%s\n", p_title.c_str(), p_version.c_str());
 
-	TRACE("Firing up Allegro...\n");
-	if (allegro_init() != 0) {
+	ALLEGRO_DEBUG("Firing up Allegro...\n");
+	if (!al_init()) {
+		g_game->message("Error initializing allegro runtime");
 		return false;
 	}
 
-	TRACE("Firing up Alfont...\n");
-	if (alfont_init() != ALFONT_OK) {
+	ALLEGRO_DEBUG("Firing up Alfont...\n");
+	if (!al_init_font_addon()) {
 		g_game->message("Error initializing font system");
 		return false;
 	}
-
-	TRACE("Firing up graphics system...\n");
-    if (!Initialize_Graphics()) {
-        g_game->fatalerror("Error initializing graphics\n");
-        return false;
-    }
-
-	TRACE("Firing up keyboard and mouse handlers...\n");
-	if (install_keyboard() != 0) {
+	ALLEGRO_DEBUG("Firing up Alttf...\n");
+	if (!al_init_ttf_addon()) {
+		g_game->message("Error initializing ttf loader");
+		return false;
+	}
+	ALLEGRO_DEBUG("Firing up primitives...\n");
+	if (!al_init_primitives_addon()) {
+		g_game->message("Error initializing primitives");
+		return false;
+	}
+	ALLEGRO_DEBUG("Firing up graphics system...\n");
+ 	if (!Initialize_Graphics()) {
+ 		g_game->fatalerror("Error initializing graphics\n");
+		return false;
+	}
+ 	if (!al_init_image_addon()) {
+ 		g_game->fatalerror("Error initializing image_addon\n");
+		return false;
+        }
+	ALLEGRO_DEBUG("Firing up keyboard and mouse handlers...\n");
+	if (!al_install_keyboard()) {
 		g_game->message("Error initializing keyboard\n");
 		return false;
 	}
-	memset(m_prevKeyState,0,256);
-	m_numMouseButtons = install_mouse();
+        al_get_keyboard_state(&m_prevKeyState);
+	if (!al_install_mouse()) {
+		g_game->message("Error initializing mouse\n");
+		return false;
+	}
+	m_numMouseButtons = al_get_mouse_num_buttons();
 	if (m_numMouseButtons < 0) {
 		g_game->message("Error initializing mouse\n");
 		return false;
@@ -868,13 +857,7 @@ bool Game::InitGame()
 		m_mousePressedLocs[button].y = -1;
 	}
 
-	TRACE("Firing up timers...\n");
-	if (install_timer() != 0) {
-		g_game->message("Error initializing timer system\n");
-		return false;
-	}
-
-	TRACE("Firing up sound system...\n");
+	ALLEGRO_DEBUG("Firing up sound system...\n");
 	audioSystem = new AudioSystem();
 	if (!audioSystem->Init()) {
 		g_game->message("Error initializing the sound system\n");
@@ -882,40 +865,35 @@ bool Game::InitGame()
 	}
 
 	//load up default fonts
-    //string fontfile = "data/ORBITBN.TTF";
     string fontfile = "data/gui/Xolonium-Regular.ttf";
-	TRACE("Creating default fonts...\n");
-	font10 = alfont_load_font(fontfile.c_str());
+	ALLEGRO_DEBUG("Creating default fonts...\n");
+	font10 = al_load_font(fontfile.c_str(), 10, 0);
 	if (font10 == NULL) {
 		g_game->message("Error locating font file\n");
 		return false;
 	}
-	font12 = alfont_load_font(fontfile.c_str());
-	alfont_set_font_size(font12, 12);
-	font18 = alfont_load_font(fontfile.c_str());
-	alfont_set_font_size(font18, 18);
-	font20 = alfont_load_font(fontfile.c_str());
-	alfont_set_font_size(font20, 20);
-	font22 = alfont_load_font(fontfile.c_str());
-	alfont_set_font_size(font22, 22);
-	font24 = alfont_load_font(fontfile.c_str());
-	alfont_set_font_size(font24, 24);
-	font32 = alfont_load_font(fontfile.c_str());
-	alfont_set_font_size(font32, 32);
+	font12 = al_load_font(fontfile.c_str(), 12, 0);
+	font18 = al_load_font(fontfile.c_str(), 18, 0);
+	font20 = al_load_font(fontfile.c_str(), 20, 0);
+	font22 = al_load_font(fontfile.c_str(), 22, 0);
+	font24 = al_load_font(fontfile.c_str(), 24, 0);
+	font32 = al_load_font(fontfile.c_str(), 32, 0);
+	font48 = al_load_font(fontfile.c_str(), 48, 0);
+	font60 = al_load_font(fontfile.c_str(), 60, 0);
 
 	//create the PauseMenu
 	pauseMenu = new PauseMenu();
 
 	//hide the default mouse cursor
-	show_mouse(NULL);
+	al_hide_mouse_cursor(m_display);
 
-	TRACE("Initialization succeeded\n");
+	ALLEGRO_DEBUG("Initialization succeeded\n");
 	return true;
 }
 
 void Game::DestroyGame()
 {
-	TRACE("*** DestroyGame\n");
+	ALLEGRO_DEBUG("*** DestroyGame\n");
 
 	if (cursor != NULL)
 	{
@@ -959,8 +937,8 @@ void Game::DestroyGame()
 
 	if (m_backbuffer != NULL)
 	{
-		show_mouse(NULL);
-		destroy_bitmap(m_backbuffer);
+		al_show_mouse_cursor(m_display);
+		al_destroy_bitmap(m_backbuffer);
 		m_backbuffer = NULL;
 	}
 
@@ -982,11 +960,14 @@ void Game::DestroyGame()
 		m_mousePressedLocs = NULL;
 	}
 
-	TRACE("\nShutdown completed.\n");
+	ALLEGRO_DEBUG("\nShutdown completed.\n");
 
-	allegro_exit();
-	alfont_exit();
-
+        /* Don't uninstall system until the modules using the ResourceManager
+         * are destroyed
+         */
+        /*
+	al_uninstall_system();
+        */
 }
 
 
@@ -1017,18 +998,16 @@ OpenGL has been REMOVED from the project.
 */
 void Game::RunGame()
 {
-	static std::ostringstream os;
 	static int timeStart = globalTimer.getTimer();
 	static int v;
 	static int fps_delay = 1000 / 60;
 	static int coreStartTime = 0;
 	static int coreCounter = 0;
-	//static double update_interval = 2.0;	//now in structure (private).
 
 	if (globalTimer.getTimer() < timeStart + fps_delay)
 	{
 		//slow down core loop
-		rest(1);
+		al_rest(0.001);
 		return;
 	}
 	else
@@ -1044,6 +1023,8 @@ void Game::RunGame()
 		gameState->setGameTimeSecs(newTime);
 		gameState->stardate.Update(newTime, timeRateDivisor);
 	}
+        al_set_target_bitmap(m_backbuffer);
+        al_clear_to_color(BLACK);
 
 	if (!m_pause)
 	{
@@ -1059,10 +1040,7 @@ void Game::RunGame()
 		//call update on all modules
 		modeMgr->Update();
 
-		//update FMOD
-		audioSystem->Update();
-        
-        //global abort flag to end game
+		//global abort flag to end game
 		if (!m_keepRunning) return;
 
 		//tell active module to draw
@@ -1107,8 +1085,10 @@ void Game::RunGame()
 	{
 		if (cursor != NULL)
 		{
-			cursor->setX(mouse_x);
-			cursor->setY(mouse_y);
+			ALLEGRO_MOUSE_STATE state;
+			al_get_mouse_state(&state);
+			cursor->setX(state.x);
+			cursor->setY(state.y);
 			cursor->draw(m_backbuffer);
 		}
 		else {
@@ -1127,7 +1107,7 @@ void Game::RunGame()
         //display debug info on the upper-left corner of screen
         if (g_game->getGlobalBoolean("DEBUG_OUTPUT") == true)
         {
-            int GRAY = makecol(160,160,160);
+            ALLEGRO_COLOR GRAY = al_map_rgb(160,160,160);
 		    int y = 3;  int x = 3;
 		// x == 0 doesn't quite work on the Trade Depot Screen - made it a 3 - jjh
 		    g_game->PrintDefault(m_backbuffer,x,y,"Core: " + Util::ToString( frameRate ), GRAY);
@@ -1139,7 +1119,6 @@ void Game::RunGame()
 		    y+=10; g_game->PrintDefault(m_backbuffer,x,y,"Fuel: " + Util::ToString( g_game->gameState->getShip().getFuel() ) , GRAY);
 		    y+=10; g_game->PrintDefault(m_backbuffer,x,y,"Cred: " + Util::ToString(g_game->gameState->getCredits()) , GRAY);
 		    y+=10; g_game->PrintDefault(m_backbuffer,x,y,"Cargo: " + Util::ToString(g_game->gameState->m_ship.getOccupiedSpace()) + "/" + Util::ToString(g_game->gameState->m_ship.getTotalSpace()), GRAY);
-		    y+= 10;
 		    //Print out the aliens' attitude toward us:
 		 /*   PrintDefault(m_backbuffer,0,y,"Attitudes");
 		    for (int n=1; n<NUM_ALIEN_RACES; n++)
@@ -1156,21 +1135,18 @@ void Game::RunGame()
 	//vibrate the screen if needed (occurs near a star or flux)
 	if (vibration) v = Util::Random(0, vibration); else v = 0;
 
-    //
-	//Copy back buffer to the screen 
-    //Takes into account screen scaling.
     //***restore vibration effect after testing resolution independence***
-    //blit( m_backbuffer, screen, 0, 0, v, v, m_backbuffer->w-v, m_backbuffer->h-v ); 
-    //
-    screen_scaling = (double)screen->h / (double)SCREEN_HEIGHT;
-    scale_height = (int)( (double)m_backbuffer->h * screen_scaling );
-    scale_width = (int)( (double)m_backbuffer->w * screen_scaling );
+    ALLEGRO_BITMAP * screen = al_get_backbuffer(m_display);
+    screen_scaling = (double)al_get_bitmap_height(screen) / (double)SCREEN_HEIGHT;
+    scale_height = (int)( (double)al_get_bitmap_height(m_backbuffer) * screen_scaling );
+    scale_width = (int)( (double)al_get_bitmap_width(m_backbuffer) * screen_scaling );
     int cx=0;
     cx = (actual_width-scale_width)/2;
-    stretch_blit( m_backbuffer, screen, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, cx, 0, scale_width, scale_height );
+    al_set_target_bitmap(screen);
+    al_clear_to_color(BLACK);
+    al_draw_scaled_bitmap(m_backbuffer, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, cx, 0, scale_width, scale_height, 0);
 
-	//slow down!
-	//rest(1);
+    al_flip_display();
 }
 
 
@@ -1178,21 +1154,22 @@ void Game::RunGame()
 
 void Game::UpdateKeyboard()
 {
-	poll_keyboard();
+    ALLEGRO_KEYBOARD_STATE state;
+    al_get_keyboard_state(&state);
 	for (int k = 0; k < 256; k++)
 	{
-        if (key[k])
+        if (al_key_down(&state, k))
         {
 	        OnKeyPress(k);
 
-            if (!m_prevKeyState[k])
+            if (!al_key_down(&m_prevKeyState, k))
 	        {
 	            OnKeyPressed(k);
 	        }
         }
-        else if (!key[k])
+        else if (!al_key_down(&state, k))
         {
-	        if (m_prevKeyState[k])
+	        if (al_key_down(&m_prevKeyState, k))
 	        {
 		        OnKeyReleased(k);
 	        }
@@ -1200,17 +1177,18 @@ void Game::UpdateKeyboard()
 	}
 
 	//save key states for release detection
-	memcpy(m_prevKeyState,(char*)key,256);
+	memcpy(&m_prevKeyState, &state, sizeof(ALLEGRO_KEYBOARD_STATE));
 }
 
 void Game::UpdateMouse()
 {
-	poll_mouse();
+    ALLEGRO_MOUSE_STATE state;
+    al_get_mouse_state(&state);
 
 	for (int button = 0; button < (m_numMouseButtons); button++)
 	{
-		if ((mouse_b & (1 << button)) != 0)
-		{
+      if (al_mouse_button_down(&state, button+1))
+      {
 			m_mouseButtons[button] = true;
 		}
 		else
@@ -1220,19 +1198,19 @@ void Game::UpdateMouse()
 
 		if (m_mouseButtons[button] && (!m_prevMouseButtons[button]))
 		{
-			OnMousePressed(button, mouse_x, mouse_y);
+			OnMousePressed(button, state.x, state.y);
 
-			m_mousePressedLocs[button].x = mouse_x;
-			m_mousePressedLocs[button].y = mouse_y;
+			m_mousePressedLocs[button].x = state.x;
+			m_mousePressedLocs[button].y = state.y;
 		}
 		else if ((!m_mouseButtons[button]) && m_prevMouseButtons[button])
 		{
-			OnMouseReleased(button, mouse_x, mouse_y);
+			OnMouseReleased(button, state.x, state.y);
 
-			if ((m_mousePressedLocs[button].x == mouse_x) &&
-				 (m_mousePressedLocs[button].y == mouse_y))
+			if ((m_mousePressedLocs[button].x == state.x) &&
+				 (m_mousePressedLocs[button].y == state.y))
 			{
-				OnMouseClick(button,mouse_x,mouse_y);
+				OnMouseClick(button,state.x,state.y);
 			}
 		}
 	}
@@ -1240,25 +1218,25 @@ void Game::UpdateMouse()
 	//save mouse button states for release detection
 	memcpy(m_prevMouseButtons,m_mouseButtons,sizeof(bool)*(m_numMouseButtons+1));
 
-	if ((mouse_x != m_prevMouseX) || (mouse_y != m_prevMouseY))
+	if ((state.x != m_prevMouseX) || (state.y != m_prevMouseY))
 	{
-		OnMouseMove(mouse_x,mouse_y);
+		OnMouseMove(state.x,state.y);
 
-		m_prevMouseX = mouse_x;
-		m_prevMouseY = mouse_y;
+		m_prevMouseX = state.x;
+		m_prevMouseY = state.y;
 	}
 
 	// mouse wheel
-	if (mouse_z > m_prevMouseZ)
+	if (state.z > m_prevMouseZ)
 	{
-		OnMouseWheelUp( mouse_x, mouse_y );
-		m_prevMouseZ = mouse_z;
+		OnMouseWheelUp( state.x, state.y );
+		m_prevMouseZ = state.z;
 	}
 	else
-	if (mouse_z < m_prevMouseZ)
+	if (state.z < m_prevMouseZ)
 	{
-		OnMouseWheelDown( mouse_x, mouse_y );
-		m_prevMouseZ = mouse_z;
+		OnMouseWheelDown( state.x, state.y );
+		m_prevMouseZ = state.z;
 	}
 
 }
@@ -1287,7 +1265,7 @@ void Game::OnKeyPressed(int keyCode)
 
 void Game::OnKeyReleased(int keyCode)
 {
-	if (keyCode == KEY_ESC) TogglePauseMenu();
+	if (keyCode == ALLEGRO_KEY_ESCAPE) TogglePauseMenu();
 
 	if (!m_pause)
     {
@@ -1469,7 +1447,6 @@ bool Game::InitializeModules()
 	mode_orbit->AddChildModule(new ModulePlanetOrbit);
 	mode_orbit->AddChildModule(new ModuleAuxiliaryDisplay);
 	mode_orbit->AddChildModule(new ModuleControlPanel);
-	//mode_orbit->AddChildModule(new ModuleTopGUI);
 	mode_orbit->AddChildModule(new ModuleMessageGUI);
 	modeMgr->AddMode(MODULE_ORBIT, mode_orbit, "data/spacetravel/spacetravel.ogg");
 
@@ -1531,41 +1508,38 @@ bool Game::InitializeModules()
 
 #pragma region "Text output"
 
-void Game::PrintDefault(BITMAP *dest,int x,int y, std::string text,int color)
+void Game::PrintDefault(ALLEGRO_BITMAP *dest,int x,int y, const std::string &text,ALLEGRO_COLOR color)
 {
-	textprintf_ex(dest,font,x,y,color,-1, text.c_str());
+	al_set_target_bitmap(dest);
+	al_draw_text(font12,color,x,y,0, text.c_str());
 }
 
-void Game::Print(BITMAP *dest, ALFONT_FONT *_font, int x,int y,std::string text, int color, bool shadow)
+void Game::Print(ALLEGRO_BITMAP *dest, ALLEGRO_FONT *_font, int x,int y,const std::string &text, ALLEGRO_COLOR color, bool shadow)
 {
+	al_set_target_bitmap(dest);
 	if (shadow) {
-		alfont_textprintf_ex(dest, _font, x+2, y+2, BLACK, -1, text.c_str());
+		al_draw_text(_font, BLACK, x+2, y+2, 0, text.c_str());
 	}
-	alfont_textprintf_ex(dest, _font, x, y, color, -1, text.c_str());
+	al_draw_text(_font, color, x, y, 0, text.c_str());
 }
 
-void Game::Print12(BITMAP *dest, int x,int y,std::string text, int color, bool shadow)
-{
-	Print(dest, font12, x, y, text, color, shadow);
-}
-
-void Game::Print18(BITMAP *dest, int x,int y,std::string text, int color, bool shadow)
+void Game::Print18(ALLEGRO_BITMAP *dest, int x,int y,const std::string &text, ALLEGRO_COLOR color, bool shadow)
 {
 	Print(dest, font18, x, y, text, color, shadow);
 }
-void Game::Print20(BITMAP *dest, int x,int y,std::string text, int color, bool shadow)
+void Game::Print20(ALLEGRO_BITMAP *dest, int x,int y,const std::string &text, ALLEGRO_COLOR color, bool shadow)
 {
 	Print(dest, font20, x, y, text, color, shadow);
 }
-void Game::Print22(BITMAP *dest, int x,int y,std::string text, int color, bool shadow)
+void Game::Print22(ALLEGRO_BITMAP *dest, int x,int y,const std::string &text, ALLEGRO_COLOR color, bool shadow)
 {
 	Print(dest, font22, x, y, text, color, shadow);
 }
-void Game::Print24(BITMAP *dest, int x,int y,std::string text, int color, bool shadow)
+void Game::Print24(ALLEGRO_BITMAP *dest, int x,int y,const std::string &text, ALLEGRO_COLOR color, bool shadow)
 {
 	Print(dest, font24, x, y, text, color, shadow);
 }
-void Game::Print32(BITMAP *dest, int x,int y,std::string text, int color, bool shadow)
+void Game::Print32(ALLEGRO_BITMAP *dest, int x,int y,const std::string &text, ALLEGRO_COLOR color, bool shadow)
 {
 	Print(dest, font32, x, y, text, color, shadow);
 }
@@ -1576,7 +1550,7 @@ printing out repeatedly, which occurs frequently in state-based timed sections o
 called repeatedly, where we don't want messages printing repeatedly. Delay of -1 causes
 message to print only once (until ScrollBox is cleared). Default delay of 0 forces printout.
  **/
-void Game::printout(ScrollBox::ScrollBox *scroll, string str, int color, long delay)
+void Game::printout(ScrollBox::ScrollBox *scroll, const string &str, ALLEGRO_COLOR color, long delay)
 {
 	bool found = false;
 
@@ -1620,45 +1594,6 @@ void Game::printout(ScrollBox::ScrollBox *scroll, string str, int color, long de
 		messages.push_back(message);
 		scroll->Write(message.text, message.color);
 	}
-}
-
-//will print a message taking into account that a dead officer is replaced by the captain
-//and following a color convention for each msgtype.
-void Game::PrintMsg(MsgType msgtype, OfficerType officertype, std::string msg, int delay)
-{
-	std::string buf(msg), s;
-	int color = MsgColors[msgtype];
-	Officer *tempOfficer = gameState->getCurrentOfficerByType(officertype);
-
-	s = tempOfficer->getLastName() + "-> ";
-
-	if (tempOfficer != gameState->officerCap){
-		switch(msgtype){
-			case MSG_INFO    : s += "Sir, ";                     break;
-			case MSG_ALERT   : s += "Captain! ";                 break;
-			case MSG_ERROR   : s += "But Sir, ";                 break;
-			case MSG_ACK     : s += "Aye, Sir, ";                break;
-			case MSG_FAILURE : s += "I'm sorry, captain, ";      break;
-
-			case MSG_SUCCESS :
-			case MSG_TASK_COMPLETED:
-			case MSG_SKILLUP :                                   break;
-
-			default: ASSERT(0);
-		}
-	}
-
-	char c = s[s.size()-2];
-
-	if ( c == '.' || c == '!' || c == '?' || c == '>' ){
-		if (islower(buf[0])) buf[0] = toupper(buf[0]);
-	}else{
-		if (isupper(buf[0])) buf[0] = tolower(buf[0]);
-	}
-
-	s += buf;
-
-	printout(g_scrollbox, s, color, delay);
 }
 #pragma endregion
 

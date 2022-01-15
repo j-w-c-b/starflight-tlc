@@ -10,8 +10,7 @@
 #define GAMESTATE_H
 
 #include "debug.h"		//prefs for debug modes, keys, etc.
-#include "env.h"
-#include <allegro.h>
+#include <allegro5/allegro.h>
 #include <string>
 #include <vector>
 #include <map>
@@ -103,17 +102,6 @@ public:
 	int getMedical() const;
 	float getVitality() const;
 
-	//mutators
-	void setDurability(int initDurability);
-	void setLearnRate(int initLearnRate);
-	void setScience(int initScience);
-	void setNavigation(int initNavigation);
-	void setTactics(int initTactics);
-	void setEngineering(int initEngineering);
-	void setCommunication(int initCommunication);
-	void setMedical(int initMedical);
-
-	void setVitality(float initVital);
 	void augVitality(float value);
 	void capVitality();
 
@@ -148,7 +136,7 @@ class Officer
 {
 public:
 	Officer();
-	Officer(OfficerType officerType);
+	explicit Officer(OfficerType officerType);
 	virtual ~Officer();
 
 	Officer & operator =(const Officer &rhs);
@@ -163,7 +151,7 @@ public:
 	void Reset();
 	bool Serialize(Archive &ar);
 
-    bool SkillUp(std::string skill, int amount = 1);
+    bool SkillUp(const std::string &skill, int amount = 1);
     bool SkillUp(Skill skill, int amount = 1);
 	bool SkillCheck();
 	bool CanSkillCheck();
@@ -255,7 +243,6 @@ public:
 	bool getHasTV()						const	{ return hasTV; }
 	float getMaxArmorIntegrity();
 	float getMaxShieldCapacity();
-	float getMaxShieldCapacityAtFullIntegrity();
 
 	void damageRandomSystemOrCrew(int odds = 33, int mindamage = 10, int maxdamage = 30);
 
@@ -278,7 +265,7 @@ public:
 	int getAvailableSpace();
 
 	//mutators
-	void setName(std::string initName);
+	void setName(const std::string &initName);
 	void setCargoPodCount(int initCargoPodCount);
 	void cargoPodPlusPlus();
 	void cargoPodMinusMinus();
@@ -290,11 +277,9 @@ public:
 	void setHullIntegrity(float initHullIntegrity);
 	void augHullIntegrity(float amount);
 	void setArmorIntegrity(float initArmorIntegrity);
-	void augArmorIntegrity(float amount);
 	void setShieldIntegrity(float initShieldIntegrity);
 	void augShieldIntegrity(float amount);
 	void setShieldCapacity(float initShieldCapacity);
-	void augShieldCapacity(float amount);
 	void setEngineIntegrity(float initEngineIntegrity);
 	void augEngineIntegrity(float amount);
 	void setMissileLauncherIntegrity(float initMissileLauncherIntegrity);
@@ -316,7 +301,6 @@ public:
 
 	//fuel consumption
 	float getFuel();
-	void setFuel(float percentage);
 	void augFuel(float percentage);
     void injectEndurium();
    	void ConsumeFuel(int iterations=1);
@@ -329,10 +313,6 @@ public:
 	ShipPart partInRepair;
 
     void SendDistressSignal();
-
-	//this function verifies that components are valid
-	void RunDiagnostic();
-
 
 private:
 
@@ -450,16 +430,12 @@ struct QuestScript
 	std::string script;
 	Quest *parentQuest;
 
-	QuestScript()
+	QuestScript() : script(), parentQuest(nullptr)
 	{
-		script = "";
-		parentQuest = NULL;
 	}
 
-	QuestScript(std::string script, Quest *parentQuest)
+	QuestScript(const std::string &script, Quest *parentQuest) : script(script), parentQuest(parentQuest)
 	{
-		this->script = script;
-		this->parentQuest = parentQuest;
 	}
 };
 
@@ -467,6 +443,18 @@ struct QuestScript
 class GameState
 {
 public:
+	enum GameSaveSlot
+        {
+		GAME_SAVE_SLOT_UNKNOWN = -2,
+		GAME_SAVE_SLOT_NEW = -1,
+		GAME_SAVE_SLOT0 = 0,
+		GAME_SAVE_SLOT1,
+		GAME_SAVE_SLOT2,
+		GAME_SAVE_SLOT3,
+		GAME_SAVE_SLOT4,
+		GAME_SAVE_SLOT5,
+		GAME_SAVE_SLOT_MAX = GAME_SAVE_SLOT5
+        };
 
 	GameState();
 	virtual ~GameState();
@@ -476,16 +464,17 @@ public:
 	void Reset();
 	bool Serialize(Archive& ar);
 
-	bool SaveGame(std::string fileName);
-	static GameState * ReadGame(std::string fileName);
-	static GameState * LoadGame(std::string fileName);
+	bool SaveGame(GameSaveSlot slot);
+	static GameState * ReadGame(GameSaveSlot slot);
+	static GameState * LoadGame(GameSaveSlot slot);
+	static void DeleteGame(GameSaveSlot slot);
 	static void DumpStats(GameState *);					//debug tool.
 
 	void AutoSave();
 	void AutoLoad();
 
 	Officer *getOfficer(int officerType);
-	Officer *getOfficer(std::string officerName);
+	Officer *getOfficer(const std::string &officerName);
 
 	//return the officer who currently fill the given role
 	Officer* getCurrentSci();
@@ -495,7 +484,6 @@ public:
 	Officer* getCurrentCom();
 	Officer* getCurrentDoc();
 
-	Officer* getCurrentOfficerByType(OfficerType officertype);
 
 	//calculate effective skill level taking into account vitality and captain modifier
 	int CalcEffectiveSkill(Skill skill);
@@ -512,16 +500,14 @@ public:
 	Quest *RunningScriptsParentQuest;
 
 
-	bool			isCaptainSelected()		const;
 	ProfessionType	getProfession()			const;
 	int				getCredits()			const;
 	int				get_fluxSeed()			const	{return fluxSeed;}
 
 	//mutators
-	//void setStardate(const Stardate &initStardate);
 	void setCaptainSelected(bool initCaptainSelected);
 	void setProfession(const ProfessionType &initProfession);
-	void setProfession(std::string prof);
+	void setProfession(const std::string &prof);
 	void setCredits(int initCredits);
 	void augCredits(int amount);
 	void setShip(const Ship &initShip);
@@ -583,7 +569,7 @@ public:
 	//as defined in the alien script files
 	int plotStage;
 	int getPlotStage() { return plotStage; }
-	void setPlotStage(int value) { ASSERT(plotStage>=1 && plotStage<=4); plotStage = value; }
+	void setPlotStage(int value) { ALLEGRO_ASSERT(plotStage>=1 && plotStage<=4); plotStage = value; }
 	bool dirty;				//Does the game state need saving (for Captain's Lounge code)?
 
 	ProfessionType getProfession() { return m_profession; }
@@ -600,7 +586,7 @@ public:
 	std::string currentModule;
 	std::string getCurrentModule() { return currentModule; }
 	std::string getSavedModule() { return currentModeWhenGameSaved; }
-	void setCurrentModule(std::string value) { currentModule = value; }
+	void setCurrentModule(const std::string &value) { currentModule = value; }
 
 	//the currently active quest ID
 	int getActiveQuest() { return activeQuest; }
@@ -618,12 +604,15 @@ private:
 	int storedValue;			//stored value of quest requirement is a game state variable, just like others.
 	bool questCompleted;
 
-	static std::string currentSaveGameFile;
+	static GameSaveSlot currentSaveGameSlot;
 	std::string currentModeWhenGameSaved;
 
 	//The following are not used anywhere anymore. we preserve them only for savegame compatibility
 	int TotalCargoStacks;
 	int defaultShipCargoSize;
+	static ALLEGRO_PATH *save_dir_path;
+	static ALLEGRO_PATH *get_save_file_path(GameSaveSlot slot);
+	static bool ensure_save_dir();
 };
 
 #endif

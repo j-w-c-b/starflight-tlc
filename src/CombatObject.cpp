@@ -39,9 +39,6 @@ CombatObject::~CombatObject()
 void CombatObject::Update()
 {
 	//check velocity
-	//if (velX > maxVelocity) velX = maxVelocity;
-	//if (velY > maxVelocity) velY = maxVelocity;
-	
 
 	//update expiration timer
 	if (expireDuration > 0)
@@ -76,14 +73,7 @@ bool CombatObject::CheckCollision(CombatObject *other)
 	  sprite is larger than the second one. need a more  generic Rect-based collision routine.
 	  for combat let's just stick with distance-based collision.
     */
-
-	//if bounding rectangle is true, then compare distance
-	//if ( this->collided( other ) )
-	//{
-		return (this->collidedD( other ));
-	//}
-
-	//return false;
+	return (this->collidedD( other ));
 }
 
 void CombatObject::ApplyImpact(CombatObject *incoming)
@@ -158,8 +148,8 @@ double CombatObject::getRelativeSpeed()
 
 void CombatObject::ApplyBraking()
 {
-	static int stop_threshold = 0.1;
-	static int brake_value = 0.025;
+	static double stop_threshold = 0.1;
+	static double brake_value = 0.025;
 
 	//get current velocity
 	double vx = this->getVelX();

@@ -8,15 +8,14 @@
 #ifndef MODULECREWHIRE_H
 #define MODULECREWHIRE_H
 
-#include "env.h"
-#include <allegro.h>
-#include <fmod.hpp>
+#include <allegro5/allegro.h>
 #include "tinyxml/tinyxml.h"
 #include "Module.h"
 #include "GameState.h"
 #include "Button.h"
 #include "ScrollBox.h"
 #include "EventMgr.h"
+#include "ResourceManager.h"
 
 
 class Label;
@@ -27,20 +26,17 @@ class ModuleCrewHire : public Module
 public:
 	ModuleCrewHire();
 	virtual ~ModuleCrewHire();
-	virtual bool Init();
-	void Update();
-	virtual void Draw();
-	virtual void OnKeyPress(int keyCode);
-	virtual void OnKeyPressed(int keyCode);
-	virtual void OnKeyReleased(int keyCode);
-	virtual void OnMouseMove(int x, int y);
-	virtual void OnMouseClick(int button, int x, int y);
-	virtual void OnMousePressed(int button, int x, int y);
-	virtual void OnMouseReleased(int button, int x, int y);
-	void OnMouseWheelUp(int x, int y);
-	void OnMouseWheelDown(int x, int y);
-	virtual void OnEvent(Event *event);
-	virtual void Close();
+	virtual bool Init() override;
+	virtual void Update() override;
+	virtual void Draw() override;
+	virtual void OnMouseMove(int x, int y) override;
+	virtual void OnMouseClick(int button, int x, int y) override;
+	virtual void OnMousePressed(int button, int x, int y) override;
+	virtual void OnMouseReleased(int button, int x, int y) override;
+	virtual void OnMouseWheelUp(int x, int y) override;
+	virtual void OnMouseWheelDown(int x, int y) override;
+	virtual void OnEvent(Event *event) override;
+	virtual void Close() override;
 
 	Officer * FindOfficerType(OfficerType type);
 
@@ -63,9 +59,8 @@ private:
 	Label					*hiremoreDirections;
 	Label					*stats;
 
-	BITMAP 					*m_background;
-	BITMAP 					*m_miniSkills;
-	//BITMAP					*m_skillBars[8];
+	ALLEGRO_BITMAP 					*m_background;
+	ALLEGRO_BITMAP 					*m_miniSkills;
 
 	Button 					*m_exitBtn;
 	Button					*m_hireBtn;
@@ -75,9 +70,9 @@ private:
 	Button					*m_backBtn;
 
 	Button					*m_PositionBtns[8];
-	BITMAP					*posNormImages[8];
-	BITMAP					*posOverImages[8];
-	BITMAP					*posDisImages[8];
+	ALLEGRO_BITMAP					*posNormImages[8];
+	ALLEGRO_BITMAP					*posOverImages[8];
+	ALLEGRO_BITMAP					*posDisImages[8];
 
 	std::vector<Officer*>	tOfficers;
 	
@@ -87,9 +82,8 @@ private:
 	ScrollBox::ScrollBox	*unemployeed;
 	ScrollBox::ScrollBox	*unemployeedType;
 
-
 	ScrollBox::ColoredString coloredString;
-
+	ResourceManager<ALLEGRO_BITMAP>	resources;
 };
 
 #endif

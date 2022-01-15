@@ -1,9 +1,8 @@
 #ifndef _SCROLLBOX_H
 #define _SCROLLBOX_H
 
-#include "env.h"
-#include <allegro.h>
-#include <alfont.h>
+#include <allegro5/allegro.h>
+#include <allegro5/allegro_font.h>
 #include <string>
 #include <list>
 
@@ -16,7 +15,7 @@ enum ScrollBoxType {
 
 struct ColoredString {
 	std::string String;
-	int Color;
+	ALLEGRO_COLOR Color;
 };
 
 class ScrollBox
@@ -28,7 +27,7 @@ private:
 		AREA(int X, int Y, int W, int H) : left(X), top(Y), right(W), bottom(H) {}
 	};
 	struct ListBoxItem {
-		BITMAP *bNormal, *bHover, *bSelected;
+		ALLEGRO_BITMAP *bNormal, *bHover, *bSelected;
 		bool selected, hover;
 		ColoredString text;
 	};
@@ -40,16 +39,13 @@ private:
 	int 						sbWidth;
 	int 						sbHeight;
 	int 						sbSelectedItem;
-	int 						sbScrollSpeed;
 	int							sbScrollBarPos;
 	int 						sbScrollBarMin;
 	int 						sbScrollBarMax;
 	int 						sbLines;
 	int 						sbTextAreaWidth;
 	int							sbFontHeight;
-	int 						sbCurrentLine;
 	int 						sbScrollStart;
-	int 						sbScrollBarYPos;
 	int							sbScrollBarHeight;
 	int 						sbWindowClipY;
 	int 						sbLeftPad;
@@ -57,7 +53,6 @@ private:
 	int							eventID;
 	float						sbScrollIncrement;
 	ScrollBoxType				sbScrollBoxType;
-	bool 						sbStickToBottom;
 	bool 						sbDragging;
 	bool 						sbDrawBar;
 	bool 						sbIsOverUp;
@@ -66,11 +61,11 @@ private:
 	bool 						sbListItemSelected;
 	bool 						sbRedraw;
 	bool 						sbHighlight;
-	BITMAP 						*sbNormal;
-	BITMAP 						*sbHover;
-	BITMAP 						*sbSelected;
-	BITMAP 						*sbScrollBar;
-	BITMAP 						*sbBuffer;
+	ALLEGRO_BITMAP 						*sbNormal;
+	ALLEGRO_BITMAP 						*sbHover;
+	ALLEGRO_BITMAP 						*sbSelected;
+	ALLEGRO_BITMAP 						*sbScrollBar;
+	ALLEGRO_BITMAP 						*sbBuffer;
 	AREA 						sbUpRect;
 	AREA 						sbDownRect;
 	AREA 						sbScrollRect;
@@ -79,7 +74,7 @@ private:
 	AREA 						sbTextAreaRect;
 	std::list<ColoredString>	sbTextLines;
 	std::list<ListBoxItem>		sbListBoxItems;
-	ALFONT_FONT					*sbFont;
+	ALLEGRO_FONT					*sbFont;
 	ScrollBox					*sbLinkedBox;
 	ScrollBox					*sbParent;
 
@@ -88,12 +83,11 @@ private:
 
 private:
 
-	bool isInside(int x, int y, AREA area);
 	bool isInsideOffset(int x, int y, AREA area);
-	void drawUpArrow(BITMAP *buffer);
-	void drawDownArrow(BITMAP *buffer);
-	void drawTrack(BITMAP *buffer);
-	void drawScrollBar(BITMAP *buffer);
+	void drawUpArrow(ALLEGRO_BITMAP *buffer);
+	void drawDownArrow(ALLEGRO_BITMAP *buffer);
+	void drawTrack(ALLEGRO_BITMAP *buffer);
+	void drawScrollBar(ALLEGRO_BITMAP *buffer);
 	void setHover(int index, bool TrueOrFalse);
 	int getLinkedWidth() { return (sbLinkedBox)?sbLinkedBox->getLinkedWidth():sbWidth; }
 	int getLinkedHeight() { return (sbLinkedBox)?sbLinkedBox->getLinkedHeight():sbHeight; }
@@ -101,18 +95,18 @@ private:
 	int getLinkedY() { return (sbLinkedBox)?sbLinkedBox->getLinkedY():sbY; }
 
 public:
-	ScrollBox(ALFONT_FONT *Font, ScrollBoxType initScrollBoxType = SB_TEXT, int X = 0, int Y = 0,
+	ScrollBox(ALLEGRO_FONT *Font, ScrollBoxType initScrollBoxType = SB_TEXT, int X = 0, int Y = 0,
 		int Width = 200, int Height = 200, int EventID = 66);
 	~ScrollBox();
 	void Clear();
-	void Draw(BITMAP *buffer);
+	void Draw(ALLEGRO_BITMAP *buffer);
 	void OnMousePressed(int button, int x, int y);
 	void OnMouseReleased(int button, int x, int y);
 	void OnMouseMove(int x, int y);
 	void OnMouseWheelDown(int x, int y);
 	void OnMouseWheelUp(int x, int y);
 	void OnMouseClick(int button, int x, int y);
-	void Write(std::string text, int  color = makecol(255,255,255));
+	void Write(std::string text, ALLEGRO_COLOR color = al_map_rgb(255,255,255));
 	void Write(ColoredString String);
 	void ScrollToBottom();
 	void ScrollToTop();
@@ -123,27 +117,27 @@ public:
 	void setLines(int lines);
 	int getLines() { return sbLines; }
 	int GetSelectedIndex() { return sbSelectedItem; }
-    std::string GetSelectedItem();
+	std::string GetSelectedItem();
 	void SetSelectedIndex(int index);
 	void SetParent(ScrollBox *parent);
 
-	int ColorControls;
-	int ColorBackground;
-    int ColorItemBorder;
-	int ColorHover;
-	int ColorSelectedBackground;
-	int ColorSelectedHighlight;
-    int ColorSelectedText;
-    void SetColorBackground(int color) { ColorBackground = color; };
-    void SetColorControls(int color) { ColorControls = color; };
-    void SetColorHover(int color) { ColorHover = color; };
-    void SetColorSelectedBackground(int color) { ColorSelectedBackground = color; };
-    void SetColorSelectedHighlight(int color) { ColorSelectedHighlight = color; };
-    void SetColorItemBorder(int color) { ColorItemBorder = color; };
-    void SetColorSelectedText(int color) { ColorSelectedText = color; };
-    void PaintNormalImage();
-    void PaintHoverImage();
-    void PaintSelectedImage();
+	ALLEGRO_COLOR ColorControls;
+	ALLEGRO_COLOR ColorBackground;
+	ALLEGRO_COLOR ColorItemBorder;
+	ALLEGRO_COLOR ColorHover;
+	ALLEGRO_COLOR ColorSelectedBackground;
+	ALLEGRO_COLOR ColorSelectedHighlight;
+	ALLEGRO_COLOR ColorSelectedText;
+	void SetColorBackground(ALLEGRO_COLOR color) { ColorBackground = color; };
+	void SetColorControls(ALLEGRO_COLOR color) { ColorControls = color; };
+	void SetColorHover(ALLEGRO_COLOR color) { ColorHover = color; };
+	void SetColorSelectedBackground(ALLEGRO_COLOR color) { ColorSelectedBackground = color; };
+	void SetColorSelectedHighlight(ALLEGRO_COLOR color) { ColorSelectedHighlight = color; };
+	void SetColorItemBorder(ALLEGRO_COLOR color) { ColorItemBorder = color; };
+	void SetColorSelectedText(ALLEGRO_COLOR color) { ColorSelectedText = color; };
+	void PaintNormalImage();
+	void PaintHoverImage();
+	void PaintSelectedImage();
 
 	int GetX();
 	void SetX(int x);

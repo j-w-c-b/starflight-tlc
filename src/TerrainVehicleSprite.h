@@ -8,14 +8,13 @@
 #ifndef TERRAINVEHICLESPRITE_H
 #define TERRAINVEHICLESPRITE_H
 
-#include "env.h"
-#include <allegro.h>
+#include <allegro5/allegro.h>
 #include <string>
 #include "Sprite.h"
 
 class TerrainVehicleSprite {
 private:
-	Sprite	*vehicle;
+	Sprite	vehicle;
 	float	forward_thrust;
 	float	reverse_thrust;
 	float	turnrate;
@@ -23,9 +22,7 @@ private:
 public:
 	~TerrainVehicleSprite();
 	TerrainVehicleSprite();
-	void destroy();
 	void applythrust();
-	void reversethrust();
 	void limitvelocity();
 	void cruise();
 	void allstop();
@@ -33,7 +30,7 @@ public:
 	void turnright();
 	void applybraking();
 
-	void draw(BITMAP *dest);
+	void draw(ALLEGRO_BITMAP *dest);
 	float getVelocityX();
 	float getVelocityY();
 	float getRotationAngle();

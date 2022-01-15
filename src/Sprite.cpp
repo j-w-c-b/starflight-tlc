@@ -8,9 +8,11 @@
  *
  */
 
-#include "env.h"
-#include <allegro.h>
 #include <sstream>
+
+#include <allegro5/allegro.h>
+#include <allegro5/allegro_primitives.h>
+
 #include "Game.h"
 #include "Sprite.h"
 
@@ -58,22 +60,22 @@ Sprite::Sprite()
 
 Sprite::~Sprite()  
 {
-	//prevent destroying bitmap if it was passed as a pointer rather than loaded
+	//prevent destroying ALLEGRO_BITMAP if it was passed as a pointer rather than loaded
 	if (bLoaded) {
 		if (this->image != NULL) {
-			destroy_bitmap(this->image);
+			al_destroy_bitmap(this->image);
 			this->image = NULL;
 		}
 	}
 			
 	if (this->frame != NULL) {
-        destroy_bitmap(this->frame);
+        al_destroy_bitmap(this->frame);
         this->frame = NULL;
     }
 }
 
 bool Sprite::load(const char *filename) {
-	this->image = load_bitmap(filename, NULL);
+	this->image = al_load_bitmap(filename);
 	if (!this->image) 
 	{
 		std::ostringstream s;
@@ -81,15 +83,14 @@ bool Sprite::load(const char *filename) {
 		g_game->message(s.str().c_str());
 		return false;
 	}
-	this->width = image->w;
-	this->height = image->h;
+	this->width = al_get_bitmap_width(image);
+	this->height = al_get_bitmap_height(image);
 	this->bLoaded = true;
+        al_convert_mask_to_alpha(image, MASK_COLOR);
 	
 	//default frame size equals whole image size unless manually changed
 	this->frameWidth = this->width;
 	this->frameHeight = this->height;
-	
-	set_alpha_blender();
     return true;
 }
 
@@ -97,101 +98,84 @@ bool Sprite::load(std::string filename) {
     return load(filename.c_str());
 }
 
-BITMAP *Sprite::getImage()
+ALLEGRO_BITMAP *Sprite::getImage()
 {
 	if (this->image)
 		return this->image;
 	else
 		return NULL;
 }
-bool Sprite::setImage(BITMAP *source)
+bool Sprite::setImage(ALLEGRO_BITMAP *source)
 {
 	//if new source image is null, then abort
 	if (!source) return false;
 	
 	//if old image exists, it must be freed first
 	if (this->image && bLoaded) {
-		destroy_bitmap(this->image);
+		al_destroy_bitmap(this->image);
 		this->image = NULL;
 	}
 	
 	this->image = source;
-	this->width = source->w;
-	this->height = source->h;
-	this->frameWidth = source->w;
-	this->frameHeight = source->h;
+	this->width = al_get_bitmap_width(source);
+	this->height = al_get_bitmap_height(source);
+	this->frameWidth = al_get_bitmap_width(source);
+	this->frameHeight = al_get_bitmap_height(source);
 	this->bLoaded = false;
-	
-	set_alpha_blender();
 
 	return true;
 }
 
 
-void Sprite::draw(BITMAP *dest) {
+void Sprite::draw(ALLEGRO_BITMAP *dest) {
+    al_set_target_bitmap(dest);
     if (this->image)
-	    draw_trans_sprite(dest, this->image, (int)this->x, (int)this->y);
+	    al_draw_bitmap(this->image, (int)this->x, (int)this->y, 0);
 }
 
 //draw normally with optional alpha channel support
-void Sprite::drawframe(BITMAP *dest, bool UseAlpha)  {
+void Sprite::drawframe(ALLEGRO_BITMAP *dest)  {
     if (!image) return;
 
 	int fx = animStartX + (currFrame % animColumns) * frameWidth;
 	int fy = animStartY + (currFrame / animColumns) * frameHeight;
 
-	if (!UseAlpha) {
-		//draw normally
-		masked_blit(this->image, dest, fx, fy, (int)x, (int)y, frameWidth, frameHeight);
-	} 
-	else {
-		//paste frame onto scratch image using alpha channel
-		BITMAP *temp = create_bitmap(frameWidth, frameHeight);
-		masked_blit(image, temp, fx, fy, 0, 0, frameWidth, frameHeight);
-		draw_trans_sprite(dest, temp, (int)x, (int)y);
-		destroy_bitmap(temp);
-	}
-	
+            al_set_target_bitmap(dest);
+
+		al_draw_bitmap_region(this->image, fx, fy, frameWidth, frameHeight, (int)x, (int)y, 0);
+
 	if (DebugMode) {
-		rect(dest, (int)x, (int)y, (int)x + frameWidth, (int)y + frameHeight, BLUE);
+		al_draw_rectangle((int)x, (int)y, (int)x + frameWidth, (int)y + frameHeight, BLUE, 1);
 	}
 }
 
-
-//draw with scaling
-void Sprite::drawframe_scale(BITMAP *dest, int dest_w, int dest_h)  {
-    if (!image) return;
-
-    int fx = animStartX + (currFrame % animColumns) * frameWidth;
-    int fy = animStartY + (currFrame / animColumns) * frameHeight;
-    masked_stretch_blit(image, dest, fx, fy, frameWidth, frameHeight, (int)x, (int)y, dest_w, dest_h);
-
-	if (DebugMode) {
-		rect(dest, (int)x, (int)y, (int)x + dest_w, (int)y + dest_h, BLUE);
-	}
-}
 
 
 //draw with rotation
-void Sprite::drawframe_rotate(BITMAP *dest, int angle)  {
+void Sprite::drawframe_rotate(ALLEGRO_BITMAP *dest, int angle)  {
     if (!image) return;
 
     //create scratch frame if necessary
     if (!frame) {
-        frame = create_bitmap(frameWidth, frameHeight);
+        frame = al_create_bitmap(frameWidth, frameHeight);
     }
 
     //first, draw frame normally but send it to the scratch frame image
     int fx = animStartX + (currFrame % animColumns) * frameWidth;
     int fy = animStartY + (currFrame / animColumns) * frameHeight;
-    blit(image, frame, fx, fy, 0, 0, frameWidth, frameHeight);
+    al_set_target_bitmap(frame);
+    al_clear_to_color(al_map_rgba(0, 0, 0, 0));
+    al_draw_bitmap_region(image, fx, fy, frameWidth, frameHeight, 0, 0, 0);
 
-    //draw rotated image in scratch frame onto dest 
-    //adjust for Allegro's 16.16 fixed trig (256 / 360 = 0.7) then divide by 2 radians
-    rotate_sprite(dest, frame, (int)x, (int)y, itofix((int)(angle / 0.7f / 2.0f)));
+    al_set_target_bitmap(dest);
+    al_draw_rotated_bitmap(
+        frame,
+        al_get_bitmap_width(frame) / 2, al_get_bitmap_height(frame) / 2,
+        x + al_get_bitmap_width(frame) / 2, y + al_get_bitmap_height(frame) / 2,
+        angle * PI_div_180, 0);
 
 	if (DebugMode) {
-		rect(dest, (int)x, (int)y, (int)x + frameWidth, (int)y + frameHeight, BLUE);
+		al_draw_rectangle((int)x, (int)y, (int)x + frameWidth, (int)y + frameHeight, BLUE, 1);
 	}
 }
 
@@ -229,39 +213,6 @@ void Sprite::animate(int low, int high)
             currFrame = low;
         }
     }
-}
-
-int Sprite::inside(int x,int y,int left,int top,int right,int bottom)
-{
-    if (x > left && x < right && y > top && y < bottom)
-        return 1;
-    else
-        return 0;
-}
-
-int Sprite::pointInside(int px,int py)
-{
-	return inside(px, py, (int)x, (int)y, (int)x+width, (int)y+height);
-}
-
-/*
- * Bounding rectangle collision detection 
- */
-bool Sprite::collided(Sprite *other)
-{
-	if (other == NULL) return false;
-
-    int wa = (int)x + width;
-    int ha = (int)y + height;
-    int wb = (int)other->x + other->width;
-    int hb = (int)other->y + other->height;
-
-    if (inside((int)x, (int)y, (int)other->x, (int)other->y, wb, hb))	return true;
-    if (inside((int)x, ha, (int)other->x, (int)other->y, wb, hb))		return true;
-    if (inside(wa, (int)y, (int)other->x, (int)other->y, wb, hb))		return true;
-    if (inside(wa, ha, (int)other->x, (int)other->y, wb, hb))			return true;
-        
-    return false;
 }
 
 /*

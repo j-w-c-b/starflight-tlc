@@ -1,12 +1,11 @@
 #ifndef ADVANCEDTILESCROLLER_H
 #define ADVANCEDTILESCROLLER_H
 
-#include "env.h"
 #include <map>
-#include <math.h>
+#include <vector>
 
 class Point2D;
-struct BITMAP;
+struct ALLEGRO_BITMAP;
 
 #define pdIndex(col, row) ( ((row) * (tilesAcross + 1)) + (col) )
 #define tdIndex(col, row) ( ((row) * tilesAcross) + (col) )
@@ -17,26 +16,21 @@ public:
 	bool groundNavigation;
 	bool airNavigation;
 	int variations;
-	BITMAP *tiles;
+	ALLEGRO_BITMAP *tiles;
 
-	TileSet(BITMAP *Tiles, int Variations, bool GroundNavigation = true, bool AirNavigation = true): 
-		tiles(Tiles), 
+	TileSet(ALLEGRO_BITMAP *Tiles, int Variations, bool GroundNavigation = true, bool AirNavigation = true): 
+		groundNavigation(GroundNavigation),
+		airNavigation(AirNavigation),
 		variations(Variations),
-		groundNavigation(GroundNavigation), 
-		airNavigation(AirNavigation)
+		tiles(Tiles)
 	{
 	}
 
-	~TileSet()
-	{
-		//memory is freed by AdvancedTileScroller
-		//destroy_bitmap(tiles);
-		//tiles = NULL;
-	}
+	~TileSet() {}
 
 	bool IsGroundNavigatable()	{ return groundNavigation; }
 	bool IsAirNavigatable()		{ return airNavigation; }
-	BITMAP *getTiles()			{ return tiles; }
+	ALLEGRO_BITMAP *getTiles()			{ return tiles; }
 	int getVariations()			{ return variations; }
 };
 
@@ -44,24 +38,24 @@ public:
 class AdvancedTileScroller 
 {
 private:
-   BITMAP *scrollbuffer;
+   ALLEGRO_BITMAP *scrollbuffer;
    std::vector<TileSet *> tiles;
 
-   std::map<int, BITMAP *> tileImageCache;
-   std::map<int, BITMAP *>::iterator cacheIt;
+   std::map<int, ALLEGRO_BITMAP *> tileImageCache;
+   std::map<int, ALLEGRO_BITMAP *>::iterator cacheIt;
 
-   BITMAP **tileData;
+   ALLEGRO_BITMAP **tileData;
    short *pointData;
 
-   int tileWidth, tileHeight, numofTypes, baseVariations;
+   int tileWidth, tileHeight;
    int tilesAcross, tilesDown;
    float scrollX, scrollY;
    int windowWidth,windowHeight;
 	bool loadedFromDataFile;
 
-   BITMAP *GenerateTile(int BaseTileSet, int TileX, int TileY);
+   ALLEGRO_BITMAP *GenerateTile(int BaseTileSet, int TileX, int TileY);
    short CalcTileBaseType(int TileX, int TileY);
-   BITMAP *FindTile(int key);
+   ALLEGRO_BITMAP *FindTile(int key);
 
 public:
    AdvancedTileScroller(int TilesAcross, int TilesDown, int TileWidth, int TileHeight);
@@ -70,15 +64,14 @@ public:
    void Destroy();
    int CreateScrollBuffer(int Width,int Height);
    bool LoadTileSet(char *FileName, int Variations, bool GroundNavigation = true, bool AirNavigation = true);
-   bool LoadTileSet(BITMAP *tileImage, int Variations, bool GroundNavigation = true, bool AirNavigation = true);
+   bool LoadTileSet(ALLEGRO_BITMAP *tileImage, int Variations, bool GroundNavigation = true, bool AirNavigation = true);
    bool GenerateTiles();
 
    void ResetTiles();
    void ResetPointData();
    void ClearTileImageCache();
-   void PurgePrimaryImages();
    void UpdateScrollBuffer();
-   void DrawScrollWindow(BITMAP *Dest, int X, int Y, int Width, int Height);
+   void DrawScrollWindow(ALLEGRO_BITMAP *Dest, int X, int Y, int Width, int Height);
    bool CheckCollisionbyCoords(int X, int Y, bool Flying = false);
    void ConvertCoordstoNearestPoint(int &X, int &Y); 
 
@@ -103,12 +96,14 @@ public:
    void setTileHeight(int Height)						{ tileHeight = Height; }
    void setWindowSize(int Width, int Height)			{ windowWidth = Width; windowHeight = Height; }
    void setScrollPosition(float X, float Y)				{ scrollX = X; scrollY = Y; }
-   void setTileImage(BITMAP *image, int Column, int Row){ tileData[tdIndex(Column, Row)] = image; }
+   void setTileImage(ALLEGRO_BITMAP *image, int Column, int Row){ tileData[tdIndex(Column, Row)] = image; }
    void setPointData(int Column, int Row, short Value)	{ pointData[pdIndex(Column, Row)] = Value; }
    void setScrollX(int X)								{ scrollX = X; }
    void setScrollY(int Y)								{ scrollY = Y; }
-   void setRegionSize(int Width, int Height)			{ (Width >= 0 && Width <= 2500) ? (tilesAcross = Width) : tilesAcross = tilesAcross; 
-														  (Height >= 0 && Height <= 2500) ? (tilesDown = Height) : tilesDown = tilesDown; }
+   void setRegionSize(int Width, int Height) {
+        if (Width >= 0 && Width <= 2500) tilesAcross = Width;
+        if (Height >= 0 && Height <= 2500) tilesDown = Height;
+   }
 
 };
 

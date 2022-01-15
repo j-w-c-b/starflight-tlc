@@ -2,6 +2,7 @@
 #define ARCHIVE_H
 #pragma once
 
+#include <allegro5/allegro.h>
 #include <string>
 #include <stdio.h>
 
@@ -18,7 +19,7 @@ public:
       AM_LOAD
    } ArchiveMode;
 
-   bool Open(std::string fileName, ArchiveMode mode);
+   bool Open(ALLEGRO_PATH *fileName, ArchiveMode mode);
    void Close();
 
    bool IsOpen();
@@ -39,7 +40,7 @@ public:
    bool IsStoring();
 
 private:
-   FILE *file;
+   ALLEGRO_FILE *file;
    ArchiveMode arMode;
 
    bool VerifyTypeCode(char typeCode);

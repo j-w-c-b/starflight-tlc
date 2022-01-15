@@ -9,12 +9,7 @@
     class Math {
     public:
         static double toDegrees(double radian);
-        static double toRadians(double degree);
         static double wrapAngleDegs(double degs);
-        static double wrapAngleRads(double rads);
-        static double LinearVelocityX(double angle);
-        static double LinearVelocityY(double angle);
-        static Vector3 LinearVelocity(double angle);
         static double AngleToTarget(double x1,double y1,double x2,double y2);
         static double AngleToTarget(Vector3& source,Vector3& target);
         static double Distance( double x1,double y1,double x2,double y2 );

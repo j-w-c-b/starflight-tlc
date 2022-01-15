@@ -9,7 +9,6 @@
 	go to the bank, trade goods and receive orders.
 */
 
-#include "env.h"
 #include "ModuleShipConfig.h"
 #include "AudioSystem.h"
 #include "Game.h"
@@ -18,53 +17,36 @@
 #include "DataMgr.h"
 #include "QuestMgr.h"
 #include "Util.h"
+#include "shipconfig_resources.h"
+
 using namespace std;
 
-#define FREELANCE_TGA                    0        /* BMP  */
-#define MILITARY_TGA                     1        /* BMP  */
-#define SCIENCE_TGA                      2        /* BMP  */
-#define SHIPCONFIG_BMP                   3        /* BMP  */
-#define SHIPCONFIG_BTN_DEACTIVE_BMP      4        /* BMP  */
-#define SHIPCONFIG_BTN_NORM_BMP          5        /* BMP  */
-#define SHIPCONFIG_BTN_OVER_BMP          6        /* BMP  */
-#define SHIPCONFIG_CURSOR0_BMP           7        /* BMP  */
-
-
-DATAFILE *scdata;
-
+ALLEGRO_DEBUG_CHANNEL("ModuleShipConfig")
 
 #define SHIPNAME_MAXLEN 20
 
-ModuleShipConfig::ModuleShipConfig(void)
+ModuleShipConfig::ModuleShipConfig(void) : m_resources(SHIPCONFIG_IMAGES)
 {
-	//fontPtr = NULL;
-	//shipImage = NULL;
-	//shipConfig = NULL;
 }
 
 //Init is a good place to load resources
 bool ModuleShipConfig::Init()
 {
-	TRACE("  ShipConfig Initialize\n");
+	ALLEGRO_DEBUG("  ShipConfig Initialize\n");
 	
 	//load the datafile
-	scdata = load_datafile("data/shipconfig/shipconfig.dat");
-	if (!scdata) {
-		g_game->message("ShipConfig: Error loading datafile");
+	if (!m_resources.load()) {
+		g_game->message("ShipConfig: Error loading resources");
 		return false;
 	}
 
 	inputName = false;
 
 	//create button images
-	BITMAP *btnNorm, *btnOver, *btnDeact;
-	btnNorm = (BITMAP*)scdata[SHIPCONFIG_BTN_NORM_BMP].dat;
-	btnOver = (BITMAP*)scdata[SHIPCONFIG_BTN_OVER_BMP].dat;
-	btnDeact = (BITMAP*)scdata[SHIPCONFIG_BTN_DEACTIVE_BMP].dat;
-	if (!btnNorm || !btnOver || !btnDeact) {
-		g_game->message("Error loading ship config images");
-		return false;
-	}
+	ALLEGRO_BITMAP *btnNorm, *btnOver, *btnDeact;
+	btnNorm = m_resources[SHIPCONFIG_BTN_NORM];
+	btnOver = m_resources[SHIPCONFIG_BTN_OVER];
+	btnDeact = m_resources[SHIPCONFIG_BTN_DEACTIVE];
 
 	//initialize array of button ptrs
 	for(int i=0; i<NUMBER_OF_BUTTONS; ++i)
@@ -72,7 +54,7 @@ bool ModuleShipConfig::Init()
 		if(i < NUMBER_OF_BUTTONS)
 		{
 			buttons[i] = new Button(btnNorm, btnOver, btnDeact, 
-				BUTTON_X_START, BUTTON_Y_START+i*(BUTTON_HEIGHT+PIXEL_BUFFER), 0, 0, g_game->font32, "def", makecol(0,255,0));
+				BUTTON_X_START, BUTTON_Y_START+i*(BUTTON_HEIGHT+PIXEL_BUFFER), 0, 0, g_game->font32, "def", al_map_rgb(0,255,0));
 		}
 		if(buttons[i])
 		{
@@ -89,19 +71,15 @@ bool ModuleShipConfig::Init()
 	g_game->modeMgr->BroadcastEvent(&e);
 
 	//load background image
-	shipConfig = (BITMAP*)scdata[SHIPCONFIG_BMP].dat;
-	if (!shipConfig) {
-		g_game->message("ShipConfig: Error loading background");
-		return false;
-	}
+	shipConfig = m_resources[SHIPCONFIG];
 
 	//load ship image
 	switch(g_game->gameState->getProfession()) {
-		case PROFESSION_FREELANCE:	shipImage = (BITMAP*)scdata[FREELANCE_TGA].dat;	break;
-		case PROFESSION_MILITARY:	shipImage = (BITMAP*)scdata[MILITARY_TGA].dat; break;
-		case PROFESSION_SCIENTIFIC:	shipImage = (BITMAP*)scdata[SCIENCE_TGA].dat; break;
+		case PROFESSION_FREELANCE:	shipImage = m_resources[FREELANCE];
+		case PROFESSION_MILITARY:	shipImage = m_resources[MILITARY];
+		case PROFESSION_SCIENTIFIC:	shipImage = m_resources[SCIENCE];
 		default:
-			TRACE("***ERROR: ShipConfig: Player's profession is invalid.");
+			ALLEGRO_ERROR("***ERROR: ShipConfig: Player's profession is invalid.");
 	}
 
 
@@ -116,13 +94,7 @@ bool ModuleShipConfig::Init()
 		g_game->message("ShipConfig: Error loading error.ogg");
 		return false;
 	}
-	m_cursor = (BITMAP*)scdata[SHIPCONFIG_CURSOR0_BMP].dat;
-	if (m_cursor == NULL) {
-		g_game->message("Error loading cursor");
-		return false;
-	}
-
-
+	m_cursor = m_resources[SHIPCONFIG_CURSOR0];
 
 	//tell questmgr that this module has been entered
 	g_game->questMgr->raiseEvent(22);
@@ -130,24 +102,39 @@ bool ModuleShipConfig::Init()
 	return true;
 }
 
-ModuleShipConfig::~ModuleShipConfig(void) {}
-void ModuleShipConfig::OnKeyPress(int keyCode)		{ }
 void ModuleShipConfig::OnKeyPressed(int keyCode)
 {
+	ALLEGRO_KEYBOARD_STATE keyboard_state;
+
 	if (inputName)
 	{
 		bool playKeySnd = false;
 		bool playErrSnd = false;
 
-		if (((keyCode >= KEY_A) && (keyCode <= KEY_9_PAD)) || (keyCode == KEY_SPACE))
+		al_get_keyboard_state(&keyboard_state);
+		bool shifted = al_key_down(&keyboard_state, ALLEGRO_KEY_LSHIFT)
+			|| al_key_down(&keyboard_state, ALLEGRO_KEY_RSHIFT);
+
+		if (((keyCode >= ALLEGRO_KEY_A) && (keyCode <= ALLEGRO_KEY_PAD_9)) || (keyCode == ALLEGRO_KEY_SPACE))
 		{
 		if (shipName.size() < SHIPNAME_MAXLEN)
 		{
-			char c = (char)scancode_to_ascii(keyCode);
-
-			if ((key[KEY_LSHIFT] || key[KEY_RSHIFT]) && (keyCode < KEY_0) && (keyCode != KEY_SPACE))
+			char c;
+			if (keyCode >= ALLEGRO_KEY_A && keyCode <= ALLEGRO_KEY_Z)
 			{
-				c -= 32;
+				c = (keyCode - ALLEGRO_KEY_A) + (shifted ?'A': 'a');
+			}
+			else if (keyCode >= ALLEGRO_KEY_0 && keyCode <= ALLEGRO_KEY_9)
+			{
+				c = (keyCode - ALLEGRO_KEY_0) + '0';
+			}
+			else if (keyCode >= ALLEGRO_KEY_PAD_0 && keyCode <= ALLEGRO_KEY_PAD_9)
+			{
+				c = (keyCode - ALLEGRO_KEY_PAD_0) + '0';
+			}
+			else
+			{
+				c = ' ';
 			}
 
 			shipName.push_back(c);
@@ -157,7 +144,7 @@ void ModuleShipConfig::OnKeyPressed(int keyCode)
 		else
 			playErrSnd = true;
 		}
-		else if (keyCode == KEY_BACKSPACE)
+		else if (keyCode == ALLEGRO_KEY_BACKSPACE)
 		{
 		if (shipName.size() > 0)
 		{
@@ -181,22 +168,19 @@ void ModuleShipConfig::OnKeyPressed(int keyCode)
 
 	}
 }
-void ModuleShipConfig::OnKeyReleased(int keyCode){}
+
 void ModuleShipConfig::OnMouseMove(int x, int y)
 { 
 	for(int i=0; i<buttonsActive; ++i)
 		buttons[i]->OnMouseMove(x, y);
 }
-void ModuleShipConfig::OnMouseClick(int button, int x, int y)		{ }
-void ModuleShipConfig::OnMousePressed(int button, int x, int y)		{ }
 void ModuleShipConfig::OnMouseReleased(int button, int x, int y)	
 { 
 	for(int i=0; i<buttonsActive; ++i)
 		if(buttons[i]->OnMouseReleased(button, x, y) )
 			return;
 }
-void ModuleShipConfig::OnMouseWheelUp(int x, int y)					{ }
-void ModuleShipConfig::OnMouseWheelDown(int x, int y)				{ }
+
 void ModuleShipConfig::OnEvent(Event *event)
 {
 	int evnum, maxclass = -1;
@@ -324,7 +308,6 @@ void ModuleShipConfig::OnEvent(Event *event)
 			break;
 
 		case CargoPods:
-			//menuPath.push_back(CargoPods);
 			if (menuPath[2] == Buy 
                 && g_game->gameState->m_ship.getCargoPodCount() < MAX_CARGOPODS 
                 && g_game->gameState->m_credits >= CARGOPODS )
@@ -382,7 +365,7 @@ void ModuleShipConfig::OnEvent(Event *event)
 						maxclass = g_game->gameState->m_ship.getMaxLaserClass();
 						break;
 					default:
-						ASSERT(0);
+						ALLEGRO_ASSERT(0);
 				}
 
 				for (int n=6; n>maxclass; n--) {
@@ -516,32 +499,27 @@ void ModuleShipConfig::OnEvent(Event *event)
 
 void ModuleShipConfig::Close()
 {
-	TRACE("ShipConfig Destroy\n");
+	ALLEGRO_DEBUG("ShipConfig Destroy\n");
 
 	try {
 		menuPath.clear();
-		//if(*buttons) delete [] *buttons;
 		for(int a = 0; a < NUMBER_OF_BUTTONS; ++a)
 		{
 			buttons[a]->Destroy();
 			buttons[a] = NULL;
 		}
-		//fontPtr = NULL;
 
-		if(m_sndClick != NULL) delete m_sndClick;
-		if(m_sndErr != NULL) delete m_sndErr;
-		//if(m_cursor != NULL) destroy_bitmap(m_cursor);
-
+		m_sndClick.reset();
+		m_sndErr.reset();
 		
-		//unload the data file (thus freeing all resources at once)
-		unload_datafile(scdata);
-		scdata = NULL;
+		//unload the data file
+		m_resources.unload();
 	}
 	catch(std::exception e) {
-		TRACE(e.what());
+		ALLEGRO_DEBUG("%s\n", e.what());
 	}
 	catch(...) {
-		TRACE("Unhandled exception in ShipConfig::Close\n");
+		ALLEGRO_DEBUG("Unhandled exception in ShipConfig::Close\n");
 	}	
 	
 }
@@ -558,7 +536,7 @@ std::string ModuleShipConfig::convertButtonTypeToString(ButtonType btnType) cons
 {
 	switch(btnType)
 	{
-	case UndefButtonType:   return "";  		break;
+	case UndefButtonType: case ModuleEntry:  return "";
 	case ShipConfig:	return "Ship Systems";	break;
 	case Launch:		return "Launch";		break;
 	case Buy:		    return "Buy";		    break;
@@ -646,6 +624,7 @@ bool ModuleShipConfig::checkComponent() const
                 return g_game->gameState->m_ship.getMissileLauncherClass() == menuPath[3] - CLASS_ENUM_DIF;
 			case Lasers: 
                 return g_game->gameState->m_ship.getLaserClass() == menuPath[4] - CLASS_ENUM_DIF;
+                        default: break;
 			}
 		}
 		break;
@@ -657,6 +636,7 @@ bool ModuleShipConfig::checkComponent() const
 		case Armor:    return g_game->gameState->m_ship.getArmorClass() != NotInstalledType;
 		case Missiles: return g_game->gameState->m_ship.getMissileLauncherClass() != NotInstalledType;
 		case Lasers:   return g_game->gameState->m_ship.getLaserClass() != NotInstalledType;
+                default: break;
 		}
 		break;
 
@@ -669,8 +649,11 @@ bool ModuleShipConfig::checkComponent() const
 		case Missiles: return g_game->gameState->m_ship.getMissileLauncherClass() != NotInstalledType;
 		case Lasers:   return g_game->gameState->m_ship.getLaserClass() != NotInstalledType;
         case Hull:     return true; 
+        default: break;
         }
 
+    default:
+        break;
 	}
 	return false;
 }
@@ -775,9 +758,6 @@ int ModuleShipConfig::getArmorValue()
         case 5: value = ARMOR_CLASS5; break;
         case 6: value = ARMOR_CLASS6; break;
     }
-//    float health = ship.getArmorIntegrity() * 0.01f;		//take 1% of whatever armor integrity is at this moment jjh
-//    health *= 0.75f;										//then take 75% of that
-//    value = (int)((float)value * health );				//purchase price times THAT. 
 
 	float health = (ship.getArmorIntegrity() / (armor * 120.0f));
 	value = (int)((float)value * health * 0.75f );
@@ -818,9 +798,6 @@ int ModuleShipConfig::getLaserRepair()
         case 4: value = LASER_CLASS4; break;
         case 5: value = LASER_CLASS5; break;
         case 6: value = LASER_CLASS6; break;
-//		case 7: value = LASER_CLASS7; break;	//jjh
-//		case 8: value = LASER_CLASS8; break;	//jjh
-//		case 9: value = LASER_CLASS9; break;	//jjh
     }
     float damage = (100 - ship.getLaserIntegrity()) * 0.01f;
     value = (int)((float)value * damage);
@@ -841,10 +818,6 @@ int ModuleShipConfig::getMissileRepair()
         case 4: value = MISSILELAUNCHER_CLASS4; break;
         case 5: value = MISSILELAUNCHER_CLASS5; break;
         case 6: value = MISSILELAUNCHER_CLASS6; break;
-//		case 7: value = MISSILELAUNCHER_CLASS7; break;		//jjh
-//		case 8: value = MISSILELAUNCHER_CLASS8; break;
-//		case 9: value = MISSILELAUNCHER_CLASS9; break;
-
     }
     float damage = (100 - ship.getMissileLauncherIntegrity()) * 0.01f;
     value = (int)((float)value * damage);
@@ -991,7 +964,7 @@ void ModuleShipConfig::repairComponent()
             }
             break;
 	    default:    
-		    ASSERT(0);
+		    ALLEGRO_ASSERT(0);
 	}
 
 	
@@ -1037,15 +1010,13 @@ void ModuleShipConfig::sellComponent()
 		ship.setLaserClass(NotInstalledType); 
 		break;
 	default:
-		ASSERT(0);
+		ALLEGRO_ASSERT(0);
 	}
 
     //save ship changes
 	g_game->gameState->setShip(ship);
 
     //add credits to player's account
-    //int cost = ITEM_PRICES[itemIndex][classIndex];
-	//g_game->gameState->m_credits += (int)(cost * SELLBACK_RATE);
     g_game->gameState->augCredits( salePrice );
 
     saleText = "You received " + Util::ToString(salePrice) + " credits for the " + saleItem + ".";
@@ -1116,102 +1087,103 @@ void ModuleShipConfig::buyComponent()
                 g_game->ShowMessageBoxWindow("", "Your ship already has a laser!",450,200);
 			break;
 		default:
-			ASSERT(0);
+			ALLEGRO_ASSERT(0);
 	}
 	g_game->gameState->setShip(ship);
 }
 
 void ModuleShipConfig::display() const
 {
+	al_set_target_bitmap(g_game->GetBackBuffer());
 	//show menu path
 	if (menuPath.back() == Repair)
 	{
 		std::string temp = "Total Repair Cost: " + Util::ToString(repairCost) + " MU";
-		alfont_textout_ex(g_game->GetBackBuffer(), g_game->font32, temp.c_str(), MENU_PATH_X, MENU_PATH_Y, WHITE, -1);
+		al_draw_text(g_game->font32, WHITE, MENU_PATH_X, MENU_PATH_Y, 0, temp.c_str());
 	}
 	else if (menuPath.back() == Name)		
 	{
 		//print "MSS"
-		alfont_textout_ex(g_game->GetBackBuffer(), g_game->font32, "MSS", MENU_PATH_X, MENU_PATH_Y, WHITE, -1);
+		al_draw_text(g_game->font32, WHITE, MENU_PATH_X, MENU_PATH_Y, 0, "MSS");
 
 		//print ship name
-		alfont_textout_ex(g_game->GetBackBuffer(), g_game->font32, shipName.c_str(), MENU_PATH_X+80, MENU_PATH_Y, WHITE, -1);
+		al_draw_text(g_game->font32, WHITE, MENU_PATH_X+80, MENU_PATH_Y, 0, shipName.c_str());
 
-		int nlen = alfont_text_length(g_game->font32, shipName.c_str());
-		blit(m_cursor,g_game->GetBackBuffer(),0,0,MENU_PATH_X+80+nlen+2,MENU_PATH_Y,m_cursor->w,m_cursor->h);
+		int nlen = al_get_text_width(g_game->font32, shipName.c_str());
+		al_draw_bitmap(m_cursor,MENU_PATH_X+80+nlen+2,MENU_PATH_Y,0);
 		
 	}
 	else
 	{
 		if(menuPath.size() > 1)
-			alfont_textout_ex(g_game->GetBackBuffer(), g_game->font32, convertMenuPathToString().c_str(), MENU_PATH_X, MENU_PATH_Y, WHITE, -1);
+			al_draw_text(g_game->font32, WHITE, MENU_PATH_X, MENU_PATH_Y, 0, convertMenuPathToString().c_str());
 	}
 
 	//draw ship schematic
-	draw_trans_sprite(g_game->GetBackBuffer(), shipImage, 586, 548);
+	al_draw_bitmap(shipImage, 586, 548, 0);
 
 	//static
 	int i=0;
-	alfont_textout_ex(g_game->GetBackBuffer(), g_game->font32, "Ship Name: MSS",	STATIC_SHIPNAME_X-10, SHIPNAME_Y, WHITE, -1);	
-	alfont_textout_ex(g_game->GetBackBuffer(), g_game->font32, "Cargo Pods",		STATIC_READOUT_X, READOUT_Y+(i++)*READOUT_SPACING, WHITE, -1);
-	alfont_textout_ex(g_game->GetBackBuffer(), g_game->font32, "Engine",			STATIC_READOUT_X, READOUT_Y+(i++)*READOUT_SPACING, WHITE, -1);
-	alfont_textout_ex(g_game->GetBackBuffer(), g_game->font32, "Shield",			STATIC_READOUT_X, READOUT_Y+(i++)*READOUT_SPACING, WHITE, -1);
-	alfont_textout_ex(g_game->GetBackBuffer(), g_game->font32, "Armor",			STATIC_READOUT_X, READOUT_Y+(i++)*READOUT_SPACING, WHITE, -1);
-	alfont_textout_ex(g_game->GetBackBuffer(), g_game->font32, "Missile",		STATIC_READOUT_X, READOUT_Y+(i++)*READOUT_SPACING, WHITE, -1);
-	alfont_textout_ex(g_game->GetBackBuffer(), g_game->font32, "Laser",			STATIC_READOUT_X, READOUT_Y+(i++)*READOUT_SPACING, WHITE, -1);
-	alfont_textout_ex(g_game->GetBackBuffer(), g_game->font32, "Hull Integrity",	STATIC_READOUT_X, READOUT_Y+(i++)*READOUT_SPACING, WHITE, -1);
-	alfont_textout_ex(g_game->GetBackBuffer(), g_game->font32, "Credits",		STATIC_CREDITS_X, CREDITS_Y, WHITE, -1);
+	al_draw_text(g_game->font32, WHITE, STATIC_SHIPNAME_X-10, SHIPNAME_Y, 0, "Ship Name: MSS");	
+	al_draw_text(g_game->font32, WHITE, STATIC_READOUT_X, READOUT_Y+(i++)*READOUT_SPACING, 0, "Cargo Pods");
+	al_draw_text(g_game->font32, WHITE, STATIC_READOUT_X, READOUT_Y+(i++)*READOUT_SPACING, 0, "Engine");
+	al_draw_text(g_game->font32, WHITE, STATIC_READOUT_X, READOUT_Y+(i++)*READOUT_SPACING, 0, "Shield");
+	al_draw_text(g_game->font32, WHITE, STATIC_READOUT_X, READOUT_Y+(i++)*READOUT_SPACING, 0, "Armor");
+	al_draw_text(g_game->font32, WHITE, STATIC_READOUT_X, READOUT_Y+(i++)*READOUT_SPACING, 0, "Missile");
+	al_draw_text(g_game->font32, WHITE, STATIC_READOUT_X, READOUT_Y+(i++)*READOUT_SPACING, 0, "Laser");
+	al_draw_text(g_game->font32, WHITE, STATIC_READOUT_X, READOUT_Y+(i++)*READOUT_SPACING, 0, "Hull Integrity");
+	al_draw_text(g_game->font32, WHITE, STATIC_CREDITS_X, CREDITS_Y, 0, "Credits");
 
 	//dynamic
 	int j=0;
-	alfont_textout_ex(g_game->GetBackBuffer(), g_game->font32, g_game->gameState->m_ship.getName().c_str(), DYNAMIC_SHIPNAME_X+90, SHIPNAME_Y, WHITE, -1); 
-	alfont_textprintf_right_ex(g_game->GetBackBuffer(), g_game->font32, DYNAMIC_READOUT_X, READOUT_Y+(j++)*READOUT_SPACING, WHITE, -1, "%d", g_game->gameState->m_ship.getCargoPodCount() );
+	al_draw_text(g_game->font32, WHITE, DYNAMIC_SHIPNAME_X+90, SHIPNAME_Y, 0, g_game->gameState->m_ship.getName().c_str()); 
+	al_draw_textf(g_game->font32, WHITE, DYNAMIC_READOUT_X, READOUT_Y+(j++)*READOUT_SPACING, ALLEGRO_ALIGN_RIGHT, "%d", g_game->gameState->m_ship.getCargoPodCount());
 
     //display class level of engine
-    int color = WHITE;
+    ALLEGRO_COLOR color = WHITE;
     int health = g_game->gameState->m_ship.getEngineIntegrity();
     if (health < 50) color = RED;
     else if (health < 100) color = YELLOW;
     else color = WHITE;
-    alfont_textout_right_ex(g_game->GetBackBuffer(), g_game->font32, 
-        g_game->gameState->m_ship.getEngineClassString().c_str(), 
-        DYNAMIC_READOUT_X, READOUT_Y+(j++)*READOUT_SPACING, color, -1);
+    al_draw_text(g_game->font32, color,
+        DYNAMIC_READOUT_X, READOUT_Y+(j++)*READOUT_SPACING, ALLEGRO_ALIGN_RIGHT,
+        g_game->gameState->m_ship.getEngineClassString().c_str());
 
     //display class level of shield
     health = g_game->gameState->m_ship.getShieldIntegrity();
     if (health < 50) color = RED;
     else if (health < 100) color = YELLOW;
     else color = WHITE;
-	alfont_textout_right_ex(g_game->GetBackBuffer(), g_game->font32, 
-        g_game->gameState->m_ship.getShieldClassString().c_str(), 
-        DYNAMIC_READOUT_X, READOUT_Y+(j++)*READOUT_SPACING, color, -1);
+	al_draw_text(g_game->font32, color, 
+        DYNAMIC_READOUT_X, READOUT_Y+(j++)*READOUT_SPACING, ALLEGRO_ALIGN_RIGHT,
+        g_game->gameState->m_ship.getShieldClassString().c_str());
 
     //display class level of armor
     health = g_game->gameState->m_ship.getArmorIntegrity();
     if (health < 50) color = RED;
     else if (health < 100) color = YELLOW;
     else color = WHITE;
-	alfont_textout_right_ex(g_game->GetBackBuffer(), g_game->font32, 
-        g_game->gameState->m_ship.getArmorClassString().c_str(), 
-        DYNAMIC_READOUT_X, READOUT_Y+(j++)*READOUT_SPACING, color, -1);
+	al_draw_text(g_game->font32, color, 
+        DYNAMIC_READOUT_X, READOUT_Y+(j++)*READOUT_SPACING, ALLEGRO_ALIGN_RIGHT,
+        g_game->gameState->m_ship.getArmorClassString().c_str());
 
     //display class level of missile
     health = g_game->gameState->m_ship.getMissileLauncherIntegrity();
     if (health < 50) color = RED;
     else if (health < 100) color = YELLOW;
     else color = WHITE;
-    alfont_textout_right_ex(g_game->GetBackBuffer(), g_game->font32, 
-        g_game->gameState->m_ship.getMissileLauncherClassString().c_str(), 
-        DYNAMIC_READOUT_X, READOUT_Y+(j++)*READOUT_SPACING, color, -1);
+    al_draw_text(g_game->font32, color, 
+        DYNAMIC_READOUT_X, READOUT_Y+(j++)*READOUT_SPACING, ALLEGRO_ALIGN_RIGHT,
+        g_game->gameState->m_ship.getMissileLauncherClassString().c_str());
 
     //display class level of laser
     health = g_game->gameState->m_ship.getLaserIntegrity();
     if (health < 50) color = RED;
     else if (health < 100) color = YELLOW;
     else color = WHITE;
-	alfont_textout_right_ex(g_game->GetBackBuffer(), g_game->font32, 
-        g_game->gameState->m_ship.getLaserClassString().c_str(), 
-        DYNAMIC_READOUT_X, READOUT_Y+(j++)*READOUT_SPACING, color, -1);
+	al_draw_text(g_game->font32, color,
+        DYNAMIC_READOUT_X, READOUT_Y+(j++)*READOUT_SPACING, ALLEGRO_ALIGN_RIGHT,
+        g_game->gameState->m_ship.getLaserClassString().c_str());
 
 	//this should clear up any hull init problem
     health = g_game->gameState->m_ship.getHullIntegrity();
@@ -1223,14 +1195,15 @@ void ModuleShipConfig::display() const
 		g_game->gameState->m_ship.setHullIntegrity(100.0f);
 
     //print hull integrity
-	alfont_textprintf_right_ex(g_game->GetBackBuffer(), g_game->font32, 
-        DYNAMIC_READOUT_X, READOUT_Y+(j++)*READOUT_SPACING, WHITE, -1, "%.0f", 
-        g_game->gameState->m_ship.getHullIntegrity() );
+	al_draw_textf(g_game->font32, WHITE, 
+        DYNAMIC_READOUT_X, READOUT_Y+(j++)*READOUT_SPACING, ALLEGRO_ALIGN_RIGHT,
+	"%.0f", 
+        g_game->gameState->m_ship.getHullIntegrity());
 
     //print credits
-	alfont_textprintf_right_ex(g_game->GetBackBuffer(), g_game->font32, 
-        DYNAMIC_CREDITS_X, CREDITS_Y, WHITE, -1, "%d", 
-        g_game->gameState->m_credits );
+	al_draw_textf(g_game->font32, WHITE, 
+        DYNAMIC_CREDITS_X, CREDITS_Y, ALLEGRO_ALIGN_RIGHT, "%d", 
+        g_game->gameState->m_credits);
 
 }
 
@@ -1239,8 +1212,9 @@ void ModuleShipConfig::Update(){}
 
 void ModuleShipConfig::Draw()
 {
+        al_set_target_bitmap(g_game->GetBackBuffer());
 	//blit the background image
-	blit(shipConfig, g_game->GetBackBuffer(), 0, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+	al_draw_bitmap(shipConfig, 0, 0, 0);
 
 	//step through active buttons
 	for(int i=0; i<buttonsActive; ++i)

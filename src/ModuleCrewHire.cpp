@@ -7,7 +7,6 @@
 //	Date: 3/16/21
 //*/
 
-#include "env.h"
 #include "ModuleCrewHire.h"
 #include "AudioSystem.h"
 #include "QuestMgr.h"
@@ -18,43 +17,19 @@
 #include "Util.h"
 #include "Label.h"
 #include "PauseMenu.h"
+#include "crewhire_resources.h"
 
 using namespace std;
 
-#define GENERIC_EXIT_BTN_NORM_BMP        0        /* BMP  */
-#define GENERIC_EXIT_BTN_OVER_BMP        1        /* BMP  */
-#define ICONS_SMALL_GREEN_TGA            2        /* BMP  */
-#define ICONS_SMALL_RED_TGA              3        /* BMP  */
-#define ICONS_SMALL_TGA                  4        /* BMP  */
-#define PERSONEL_BACKGROUND_BMP          5        /* BMP  */
-#define PERSONEL_BTN2_BMP                6        /* BMP  */
-#define PERSONEL_BTN2_DIS_BMP            7        /* BMP  */
-#define PERSONEL_BTN2_HOV_BMP            8        /* BMP  */
-#define PERSONEL_BTN_BMP                 9        /* BMP  */
-#define PERSONEL_BTN_DIS_BMP             10       /* BMP  */
-#define PERSONEL_BTN_HOV_BMP             11       /* BMP  */
-#define PERSONEL_CATBTN_BMP              12       /* BMP  */
-#define PERSONEL_CATBTN_DIS_BMP          13       /* BMP  */
-#define PERSONEL_CATBTN_HOV_BMP          14       /* BMP  */
-//#define PERSONEL_COMBAR_BMP              15       /* BMP  */
-//#define PERSONEL_DURBAR_BMP              16       /* BMP  */
-//#define PERSONEL_ENGBAR_BMP              17       /* BMP  */
-//#define PERSONEL_LRBAR_BMP               18       /* BMP  */
-//#define PERSONEL_MEDBAR_BMP              19       /* BMP  */
-//#define PERSONEL_MINIPOSITIONS_BMP       20       /* BMP  */
-//#define PERSONEL_NAVBAR_BMP              21       /* BMP  */
-//#define PERSONEL_SCIBAR_BMP              22       /* BMP  */
-//#define PERSONEL_TACBAR_BMP              23       /* BMP  */
-
-DATAFILE *chdata;
-
+ALLEGRO_DEBUG_CHANNEL("ModuleCrewHire")
 
 #define PERSONEL_SCREEN 0
 #define UNEMPLOYEED_SCREEN 1
 
 #define CREW_X 561
 #define CREW_Y 538
-#define CREW_HEIGHT 145
+//#define CREW_HEIGHT 145
+#define CREW_HEIGHT 174
 #define CREW_WIDTH 465
 
 #define UNEMPLOYEED_X 564
@@ -118,6 +93,8 @@ DATAFILE *chdata;
 #define EVENT_CREWLISTBOX_CLICK 15
 #define EVENT_UNEMPLOYEEDLISTBOX_CLICK 16
 
+#define AVAILABLE_TEXT_COLOR WHITE
+#define UNASSIGNED_TEXT_COLOR YELLOW
 
 ModuleCrewHire::ModuleCrewHire(void) : 
 	lastEmployeeSpawn(-1),
@@ -137,7 +114,8 @@ ModuleCrewHire::ModuleCrewHire(void) :
 	selectedOfficer(NULL),
 	unassignedCrew(NULL),
 	unemployeed(NULL),
-	unemployeedType(NULL)
+	unemployeedType(NULL),
+	resources(CREWHIRE_IMAGES)
 {
 
 	for (int i=0; i < 8; ++i) m_PositionBtns[i] = NULL;
@@ -145,25 +123,6 @@ ModuleCrewHire::ModuleCrewHire(void) :
 
 ModuleCrewHire::~ModuleCrewHire(void) {}
 
-void ModuleCrewHire::OnKeyPress(int keyCode)	{ Module::OnKeyPress(keyCode); }
-void ModuleCrewHire::OnKeyPressed(int keyCode)
-{
-	Module::OnKeyPressed(keyCode);
-}
-void ModuleCrewHire::OnKeyReleased(int keyCode)
-{
-	Module::OnKeyReleased(keyCode);
-
-	switch (keyCode) 
-	{
-		case KEY_LCONTROL:
-			break;
-
-		case KEY_ESC: 
-			//g_game->modeMgr->LoadModule(MODULE_STARPORT);
-			break;
-	}
-}
 void ModuleCrewHire::OnMouseMove(int x, int y)					
 { 
 	Module::OnMouseMove(x,y); 
@@ -276,19 +235,18 @@ void ModuleCrewHire::OnMouseWheelDown(int x, int y)
 void ModuleCrewHire::OnEvent(Event *event)
 {
 
-	bool playBtnClick = false;
 	bool exitToStarportCommons = false;
 	string escape = "";
 
 	switch (event->getEventType())
 	{
-		case 0xDEADBEEF + 2: //save game
+		case EVENT_SAVE_GAME: //save game
 			g_game->gameState->AutoSave();
 			break;
-		case 0xDEADBEEF + 3: //load game
+		case EVENT_LOAD_GAME: //load game
             g_game->gameState->AutoLoad();
 			break;
-		case 0xDEADBEEF + 4: //quit game
+		case EVENT_QUIT_GAME: //quit game
 			g_game->setVibration(0);
 			escape = g_game->getGlobalString("ESCAPEMODULE");
 			g_game->modeMgr->LoadModule(escape);
@@ -296,7 +254,6 @@ void ModuleCrewHire::OnEvent(Event *event)
 
     case EVENT_EXIT_CLICK:
 		{
-			playBtnClick = true;
 			bool passedCheck = true;
 			for (int i=0; i < (int)tOfficers.size(); i++)
 			{
@@ -312,7 +269,6 @@ void ModuleCrewHire::OnEvent(Event *event)
 		break;
 
 	case EVENT_HIREMORE_CLICK:
-		playBtnClick = true;
 		currentScreen = UNEMPLOYEED_SCREEN;
 		selectedOfficer = NULL;
 		selectedPosition = 1;
@@ -348,7 +304,6 @@ void ModuleCrewHire::OnEvent(Event *event)
 		break;
 
 	case EVENT_FIRE_CLICK:
-		playBtnClick = true;
 		
 		for (int i=0; i < (int)tOfficers.size(); i++)
 		{
@@ -371,7 +326,6 @@ void ModuleCrewHire::OnEvent(Event *event)
 		break;
 
 	case EVENT_UNASSIGN_CLICK:
-		playBtnClick = true;
 		for (int i=0; i < (int)tOfficers.size(); i++)// Find the officer we are clicking on and unassign him
 		{
 			if (tOfficers[i]->GetOfficerType()-1 == selectedPosition)
@@ -450,7 +404,6 @@ void ModuleCrewHire::OnEvent(Event *event)
 	case EVENT_TAC_CLICK:
 	case EVENT_SCI_CLICK:
 	case EVENT_UNK_CLICK:
-		playBtnClick = true;
 		if (currentScreen == PERSONEL_SCREEN)
 		{
 #pragma region Personel Screen functions
@@ -565,8 +518,7 @@ void ModuleCrewHire::OnEvent(Event *event)
 //Close is where you release all your resources
 void ModuleCrewHire::Close()
 {
-	TRACE("CrewHire Close\n");
-	//Module::Close();
+	ALLEGRO_DEBUG("CrewHire Close\n");
 
 	//We must save all the officers to the game state class before closing
 	//NOTE: code modified to use gameState objects directly
@@ -608,9 +560,9 @@ void ModuleCrewHire::Close()
 	//delete the crew position button images
 	for (int i=0; i < 8; i++)
 	{
-		destroy_bitmap(posNormImages[i]);
-		destroy_bitmap(posOverImages[i]);
-		destroy_bitmap(posDisImages[i]);
+		al_destroy_bitmap(posNormImages[i]);
+		al_destroy_bitmap(posOverImages[i]);
+		al_destroy_bitmap(posDisImages[i]);
 	}
 
 	if (m_exitBtn)	{
@@ -662,8 +614,7 @@ void ModuleCrewHire::Close()
 
 
 	//unload the data file (thus freeing all resources at once)
-	unload_datafile(chdata);
-	chdata = NULL;	
+	resources.unload();
 }
 
 
@@ -671,21 +622,16 @@ void ModuleCrewHire::Close()
 //InitModule is where you load all your resources
 bool ModuleCrewHire::Init()
 {
-	BITMAP *btnNorm, *btnOver, *btnDis;
+	ALLEGRO_BITMAP *btnNorm, *btnOver, *btnDis;
 
-	TRACE("  Crew Hire Initialize\n");
+	ALLEGRO_DEBUG("  Crew Hire Initialize\n");
 	
-	//load the datafile
-	chdata = load_datafile("data/crewhire/crewhire.dat");
-	if (!chdata) {
-		g_game->message("CrewHire: Error loading datafile");	
+	//load the resources
+	if (!resources.load()) {
+		g_game->message("CrewHire: Error loading resources");	
 		return false;
 	}
 
-
-	//BETA 3
-	//g_game->ShowMessageBoxWindow("BETA 3 NOTE: A random crew has been assigned for testing purposes. You may still make changes to the crew.");
-	
 	//enable the Pause Menu
 	g_game->pauseMenu->setEnabled(true);
 
@@ -699,25 +645,25 @@ bool ModuleCrewHire::Init()
 
 
 	//Load label for title
-	title = new Label("Welcome to Crew Match v.0.3!", 28, 170, 456, 30, makecol(0,255,128), g_game->font32);
+	title = new Label("Welcome to Crew Match v.0.3!", 28, 170, 456, 30, al_map_rgb(0,255,128), g_game->font32);
 	title->Refresh();
 
 	//Load label for slogan
-	slogan = new Label("Where you can hire the finest galatic crew!", 28, 200, 456, 40, makecol(0,255,255), g_game->font22);
+	slogan = new Label("Where you can hire the finest galatic crew!", 28, 200, 456, 40, al_map_rgb(0,255,255), g_game->font22);
 	slogan->Refresh();
  
 	//Load label for directions
 	directions = new Label("Click on your crew members to the right to reassign or fire them. You can also browse for future employees by clicking on the Hire More Crew Members button",
-		28, 240, 456, 408, makecol(0,255,255), g_game->font18);
+		28, 240, 456, 408, al_map_rgb(0,255,255), g_game->font18);
 	directions->Refresh();
 
 	//Load label for hiremoreDirections
 	hiremoreDirections = new Label("On the right is a list potential galatic faring employees. You can view their statistics by clicking on them.",
-		28, 240, 456, 408, makecol(0,255,255), g_game->font18);
+		28, 240, 456, 408, al_map_rgb(0,255,255), g_game->font18);
 	hiremoreDirections->Refresh();
 
 	//Load label for stats
-	stats = new Label("                  - Statistics -", 28, 170, 456, 30, makecol(0,255,128), g_game->font32);
+	stats = new Label("                  - Statistics -", 28, 170, 456, 30, al_map_rgb(0,255,128), g_game->font32);
 	stats->Refresh();
 
 	//setup unassignedCrew scrollbox
@@ -819,87 +765,84 @@ bool ModuleCrewHire::Init()
 	for (int i=0; i < (int)g_game->gameState->m_unemployedOfficers.size(); ++i)
 	{
 		//add this person to the AVAILABLE FOR HIRE list
-		coloredString.String = g_game->gameState->m_unemployedOfficers[i]->name;
-		unemployeed->Write(coloredString);
+		unemployeed->Write(g_game->gameState->m_unemployedOfficers[i]->name, AVAILABLE_TEXT_COLOR);
 
-		coloredString.String = g_game->gameState->m_unemployedOfficers[i]->GetPreferredProfession();
-		unemployeedType->Write(coloredString);
+		unemployeedType->Write(g_game->gameState->m_unemployedOfficers[i]->GetPreferredProfession(), AVAILABLE_TEXT_COLOR);
 	}
 
 
 	//load the background
-	m_background = (BITMAP*)chdata[PERSONEL_BACKGROUND_BMP].dat;
-	if (!m_background) 
-	{
-		g_game->message("CrewHire: Error loading personel_background");
-		return false;
-	}
+	m_background = resources[PERSONEL_BACKGROUND];
 
 	//Create escape button for the module
-	btnNorm = (BITMAP*)chdata[GENERIC_EXIT_BTN_NORM_BMP].dat;
-	btnOver = (BITMAP*)chdata[GENERIC_EXIT_BTN_OVER_BMP].dat;
-	m_exitBtn = new Button(btnNorm,btnOver,NULL,EXITBTN_X,EXITBTN_Y,EVENT_NONE,EVENT_EXIT_CLICK, g_game->font24, "Exit", makecol(255,0,0),"click");
+	btnNorm = resources[GENERIC_EXIT_BTN_NORM];
+	btnOver = resources[GENERIC_EXIT_BTN_OVER];
+	m_exitBtn = new Button(btnNorm,btnOver,NULL,EXITBTN_X,EXITBTN_Y,EVENT_NONE,EVENT_EXIT_CLICK, g_game->font24, "Exit", al_map_rgb(255,0,0),"click");
 	if (m_exitBtn == NULL) return false;
 	if (!m_exitBtn->IsInitialized()) return false;
 
 	//Create and initialize the Back button for the module
-	m_backBtn = new Button(btnNorm,btnOver,NULL,EXITBTN_X,EXITBTN_Y,EVENT_NONE,EVENT_BACK_CLICK, g_game->font24, "Back", makecol(255,0,0),"click");
+	m_backBtn = new Button(btnNorm,btnOver,NULL,EXITBTN_X,EXITBTN_Y,EVENT_NONE,EVENT_BACK_CLICK, g_game->font24, "Back", al_map_rgb(255,0,0),"click");
 	if (m_backBtn == NULL) return false;
 	if (!m_backBtn->IsInitialized()) return false;
 
 	//Create and initialize the HireMore button for the module
-	btnNorm = (BITMAP*)chdata[PERSONEL_BTN2_BMP].dat;
-	btnOver = (BITMAP*)chdata[PERSONEL_BTN2_HOV_BMP].dat;
-	btnDis = (BITMAP*)chdata[PERSONEL_BTN2_DIS_BMP].dat;
-	m_hiremoreBtn = new Button(btnNorm,btnOver,btnDis,HIREMOREBTN_X,HIREMOREBTN_Y,EVENT_NONE,EVENT_HIREMORE_CLICK, g_game->font24, "Hire More Crew Members", makecol(0,255,255),"click");
+	btnNorm = resources[PERSONEL_BTN2];
+	btnOver = resources[PERSONEL_BTN2_HOV];
+	btnDis = resources[PERSONEL_BTN2_DIS];
+	m_hiremoreBtn = new Button(btnNorm,btnOver,btnDis,HIREMOREBTN_X,HIREMOREBTN_Y,EVENT_NONE,EVENT_HIREMORE_CLICK, g_game->font24, "Hire More Crew Members", al_map_rgb(0,255,255),"click");
 	if (m_hiremoreBtn == NULL)
 		return false;
 	if (!m_hiremoreBtn->IsInitialized())
 		return false;
 
 	//Create and initialize the Hire button for the module
-	btnNorm = (BITMAP*)chdata[PERSONEL_BTN_BMP].dat;
-	btnOver = (BITMAP*)chdata[PERSONEL_BTN_HOV_BMP].dat;
-	btnDis = (BITMAP*)chdata[PERSONEL_BTN_DIS_BMP].dat;
-	m_hireBtn = new Button(btnNorm,btnOver,btnDis,HIREBTN_X,HIREBTN_Y,EVENT_NONE,EVENT_HIRE_CLICK, g_game->font24, "Hire", makecol(0,255,255),"click");
+	btnNorm = resources[PERSONEL_BTN];
+	btnOver = resources[PERSONEL_BTN_HOV];
+	btnDis = resources[PERSONEL_BTN2_DIS];
+	m_hireBtn = new Button(btnNorm,btnOver,btnDis,HIREBTN_X,HIREBTN_Y,EVENT_NONE,EVENT_HIRE_CLICK, g_game->font24, "Hire", al_map_rgb(0,255,255),"click");
 	if (m_hireBtn == NULL)	return false;
 	if (!m_hireBtn->IsInitialized()) return false;
 
 	//Create and initialize the Fire button for the module
-	m_fireBtn = new Button(btnNorm,btnOver,btnDis,FIREBTN_X,FIREBTN_Y,EVENT_NONE,EVENT_FIRE_CLICK, g_game->font24, "Fire", makecol(0,255,255),"click");
+	m_fireBtn = new Button(btnNorm,btnOver,btnDis,FIREBTN_X,FIREBTN_Y,EVENT_NONE,EVENT_FIRE_CLICK, g_game->font24, "Fire", al_map_rgb(0,255,255),"click");
 	if (m_fireBtn == NULL)	return false;
 	if (!m_fireBtn->IsInitialized())	return false;
 
 	//Create and initialize the Assign Position button for the module
-	m_unassignBtn = new Button(btnNorm,btnOver,btnDis,UNASSIGNBTN_X,UNASSIGNBTN_Y,EVENT_NONE,EVENT_UNASSIGN_CLICK, g_game->font24, "Unassign", makecol(0,255,255),"click");
+	m_unassignBtn = new Button(btnNorm,btnOver,btnDis,UNASSIGNBTN_X,UNASSIGNBTN_Y,EVENT_NONE,EVENT_UNASSIGN_CLICK, g_game->font24, "Unassign", al_map_rgb(0,255,255),"click");
 	if (m_unassignBtn == NULL)	return false;
 	if (!m_unassignBtn->IsInitialized())	return false;
 
 
-	BITMAP *blackIcons = (BITMAP*)chdata[ICONS_SMALL_TGA].dat;
-	BITMAP *greenIcons = (BITMAP*)chdata[ICONS_SMALL_GREEN_TGA].dat; 
-	BITMAP *redIcons = (BITMAP*)chdata[ICONS_SMALL_RED_TGA].dat;
+	ALLEGRO_BITMAP *blackIcons = resources[ICONS_SMALL];
+	ALLEGRO_BITMAP *greenIcons = resources[ICONS_SMALL_GREEN];
+	ALLEGRO_BITMAP *redIcons = resources[ICONS_SMALL_RED];
 
-	btnNorm = (BITMAP*)chdata[PERSONEL_CATBTN_BMP].dat;
-	btnOver = (BITMAP*)chdata[PERSONEL_CATBTN_HOV_BMP].dat;
-	btnDis = (BITMAP*)chdata[PERSONEL_CATBTN_DIS_BMP].dat;
+	btnNorm = resources[PERSONEL_CATBTN];
+	btnOver = resources[PERSONEL_CATBTN_HOV];
+	btnDis = resources[PERSONEL_CATBTN_DIS];
 
 	//create crew buttons	
-	BITMAP *temp = create_bitmap(30,30);
-
 	char positions[8][20] = {"- Captain - ", "- Science -","- Navigation -","- Engineering -","- Communication -","- Medical -","- Tactical -","- Unassigned -"};
 
 	for (int i=0; i < 8; i++)
 	{
 		//create a normal image for each crew position button
-		posNormImages[i] = create_bitmap(btnNorm->w, btnNorm->h);
-		blit(btnNorm, posNormImages[i], 0, 0, 0, 0, btnNorm->w, btnNorm->h);
+		posNormImages[i] = al_create_bitmap(al_get_bitmap_width(btnNorm), al_get_bitmap_height(btnNorm));
+                al_set_target_bitmap(posNormImages[i]);
+                al_clear_to_color(al_map_rgba(0, 0, 0, 0));
+                al_draw_bitmap(btnNorm, 0, 0, 0);
 		//create an over image for each crew position button
-		posOverImages[i] = create_bitmap(btnOver->w, btnOver->h);
-		blit(btnOver, posOverImages[i], 0, 0, 0, 0, btnOver->w, btnOver->h);
+		posOverImages[i] = al_create_bitmap(al_get_bitmap_width(btnOver), al_get_bitmap_height(btnOver));
+                al_set_target_bitmap(posOverImages[i]);
+                al_clear_to_color(al_map_rgba(0, 0, 0, 0));
+                al_draw_bitmap(btnOver, 0, 0, 0);
 		//create a disabled image for each crew position button
-		posDisImages[i] = create_bitmap(btnDis->w, btnDis->h);
-		blit(btnDis, posDisImages[i], 0, 0, 0, 0, btnDis->w, btnDis->h);
+		posDisImages[i] = al_create_bitmap(al_get_bitmap_width(btnDis), al_get_bitmap_height(btnDis));
+                al_clear_to_color(al_map_rgba(0, 0, 0, 0));
+                al_set_target_bitmap(posDisImages[i]);
+                al_draw_bitmap(btnDis, 0, 0, 0);
 
 		//Create and initialize the new button
 		m_PositionBtns[i] = new Button( posNormImages[i], posOverImages[i], posDisImages[i],
@@ -908,76 +851,29 @@ bool ModuleCrewHire::Init()
 		if (m_PositionBtns[i] == NULL)	return false;
 		if (!m_PositionBtns[i]->IsInitialized())	return false;
 		
-		blit(blackIcons, temp, 30 * i, 0, 0, 0, 30, 30);
-		draw_trans_sprite(m_PositionBtns[i]->GetImgNormal(), temp, 0, 0);
+                al_set_target_bitmap(m_PositionBtns[i]->GetImgNormal());
+		al_draw_bitmap_region(blackIcons, 30 * i, 0, 30, 30, 0, 0, 0);
 		
-		blit(greenIcons, temp, 30 * i, 0, 0, 0, 30, 30);
-		draw_trans_sprite(m_PositionBtns[i]->GetImgMouseOver(), temp, 0, 0);
+		al_set_target_bitmap(m_PositionBtns[i]->GetImgMouseOver());
+		al_draw_bitmap_region(greenIcons, 30 * i, 0, 30, 30, 0, 0, 0);
 
-		blit(redIcons, temp, 30 * i, 0, 0, 0, 30, 30);
-		draw_trans_sprite(m_PositionBtns[i]->GetImgDisabled(), temp, 0, 0);
+		al_set_target_bitmap(m_PositionBtns[i]->GetImgDisabled());
+		al_draw_bitmap_region(redIcons, 30 * i, 0, 30, 30, 0, 0, 0);
 
-		alfont_textout_ex(m_PositionBtns[i]->GetImgNormal(), g_game->font24, positions[i], 35, 4, makecol(0,255,255), -1);
-		alfont_textout_ex(m_PositionBtns[i]->GetImgMouseOver(), g_game->font24, positions[i], 35, 4, makecol(0,255,255), -1);
-		alfont_textout_ex(m_PositionBtns[i]->GetImgDisabled(), g_game->font24, positions[i], 35, 4, makecol(0,255,255), -1);
+		al_set_target_bitmap(m_PositionBtns[i]->GetImgNormal());
+		al_draw_text(g_game->font24, al_map_rgb(0,255,255), 35, 4, 0, positions[i]);
+		al_set_target_bitmap(m_PositionBtns[i]->GetImgMouseOver());
+		al_draw_text(g_game->font24, al_map_rgb(0,255,255), 35, 4, 0, positions[i]);
+		al_set_target_bitmap(m_PositionBtns[i]->GetImgDisabled());
+		al_draw_text(g_game->font24, al_map_rgb(0,255,255), 35, 4, 0, positions[i]);
 	}
-	destroy_bitmap(temp);
-
 	
-	m_miniSkills = (BITMAP*)load_bitmap("data/crewhire/PERSONEL_MINIPOSITIONS.BMP",NULL);
+	m_miniSkills = al_load_bitmap("data/crewhire/personel_miniPositions.bmp");
 	if (!m_miniSkills) {
 		g_game->message("CrewHire: Error loading personel_miniPositions");
 		return false;
 	}
-
-	//m_skillBars[0] = (BITMAP*)chdata[PERSONEL_SCIBAR_BMP].dat;
-	//if (!m_skillBars[0]) {
-	//	g_game->message("CrewHire: Error loading personel_sciBar");
-	//	return false;
-	//}
-	//
-	//m_skillBars[1] = (BITMAP*)chdata[PERSONEL_NAVBAR_BMP].dat;
-	//if (!m_skillBars[1]) {
-	//	g_game->message("CrewHire: Error loading personel_navBar");
-	//	return false;
-	//}
-
-	//m_skillBars[2] = (BITMAP*)chdata[PERSONEL_ENGBAR_BMP].dat;
-	//if (!m_skillBars[2]) {
-	//	g_game->message("CrewHire: Error loading personel_engBar");
-	//	return false;
-	//}
-
-	//m_skillBars[3] = (BITMAP*)chdata[PERSONEL_COMBAR_BMP].dat;
-	//if (!m_skillBars[3]) {
-	//	g_game->message("CrewHire: Error loading personel_comBar");
-	//	return false;
-	//}
-
-	//m_skillBars[4] = (BITMAP*)chdata[PERSONEL_MEDBAR_BMP].dat;
-	//if (!m_skillBars[4]) {
-	//	g_game->message("CrewHire: Error loading personel_medBar");
-	//	return false;
-	//}
-
-	//m_skillBars[5] = (BITMAP*)chdata[PERSONEL_TACBAR_BMP].dat;
-	//if (!m_skillBars[5]) {
-	//	g_game->message("CrewHire: Error loading personel_tacBar");
-	//	return false;
-	//}
-
-	//m_skillBars[6] = (BITMAP*)chdata[PERSONEL_LRBAR_BMP].dat;
-	//if (!m_skillBars[6]) {
-	//	g_game->message("CrewHire: Error loading personel_lrBar");
-	//	return false;
-	//}
-	//
-	//m_skillBars[7] = (BITMAP*)chdata[PERSONEL_DURBAR_BMP].dat;
-	//if (!m_skillBars[7]) {
-	//	g_game->message("CrewHire: Error loading personel_durBar");
-	//	return false;
-	//}
-
+        al_convert_mask_to_alpha(m_miniSkills, MASK_COLOR);
 
 	//tell questmgr that Personnel event has occurred
 	g_game->questMgr->raiseEvent(18);
@@ -996,7 +892,8 @@ void ModuleCrewHire::Update()
 
 void ModuleCrewHire::Draw()
 {
-	blit(m_background, g_game->GetBackBuffer(), 0, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    al_set_target_bitmap(g_game->GetBackBuffer());
+	al_draw_bitmap(m_background, 0, 0, 0);
 
 	switch (currentScreen)
 	{
@@ -1066,7 +963,7 @@ void ModuleCrewHire::Draw()
 			{
 				if (selectedPositionLastRun != selectedPosition)
 				{	
-					if (selectedPosition != 7 || (selectedPosition == 7 && selectedOfficer != NULL) )
+					if (selectedOfficer != NULL)
 					{
 						if (selectedOfficer->GetOfficerType() != OFFICER_CAPTAIN)
 						{
@@ -1132,15 +1029,13 @@ void ModuleCrewHire::Draw()
 			for (int i=0; i < (int)tOfficers.size(); i++)
 			{
 				if (tOfficers[i]->GetOfficerType() != OFFICER_NONE)
-					alfont_textout_ex(g_game->GetBackBuffer(), g_game->font24, tOfficers[i]->name.c_str(),CREWPOSITION_X, CREWPOSITION_Y +((tOfficers[i]->GetOfficerType()-1)*CREWSPACING), ((tOfficers[i]->GetOfficerType()-1) == selectedPosition ?  makecol(0,255,255) : makecol(255,255,255)), -1);
+					al_draw_text(g_game->font24, ((tOfficers[i]->GetOfficerType()-1) == selectedPosition ?  al_map_rgb(0,255,255) : al_map_rgb(255,255,255)), CREWPOSITION_X, CREWPOSITION_Y +((tOfficers[i]->GetOfficerType()-1)*CREWSPACING), 0, tOfficers[i]->name.c_str());
 			}
 #pragma endregion
 			break;
 
 		case UNEMPLOYEED_SCREEN:
 #pragma region Unemployeed Screen
-			//unemployeed->Draw(g_game->GetBackBuffer());
-
 			unemployeedType->Draw(g_game->GetBackBuffer());
 
 			m_backBtn->Run(g_game->GetBackBuffer());
@@ -1162,11 +1057,6 @@ void ModuleCrewHire::Draw()
 			break;
 
 	}
-
-	//DEBUG CODE -- do not delete
-	//int y = 0;
-    //g_game->PrintDefault(g_game->GetBackBuffer(), 750, y, "last spawn   : " + Util::ToString(lastEmployeeSpawn), BLACK);
-	//y+=10;g_game->PrintDefault(g_game->GetBackBuffer(), 750, y, "current visit: " + Util::ToString(currentVisit), BLACK);
 }
 
 void ModuleCrewHire::DrawOfficerInfo(Officer *officer)
@@ -1181,7 +1071,7 @@ void ModuleCrewHire::DrawOfficerInfo(Officer *officer)
         "learning",
         "durability" };
 
-	draw_sprite(g_game->GetBackBuffer(), m_miniSkills, SKILLICONS_X, SKILLICONS_Y);
+	al_draw_bitmap(m_miniSkills, SKILLICONS_X, SKILLICONS_Y, 0);
 
 	stats->Draw(g_game->GetBackBuffer());
 
@@ -1237,8 +1127,7 @@ void ModuleCrewHire::RefreshUnassignedCrewBox()
 	{
 		if (tOfficers[i]->GetOfficerType() == OFFICER_NONE)
 		{
-			coloredString.String = tOfficers[i]->name;
-			unassignedCrew->Write(coloredString);
+			unassignedCrew->Write(tOfficers[i]->name, UNASSIGNED_TEXT_COLOR);
 		}
 	}
 	unassignedCrew->OnMouseMove(unassignedCrew->GetX(),unassignedCrew->GetY());
@@ -1251,11 +1140,8 @@ void ModuleCrewHire::RefreshUnemployeedCrewBox()
 
 	for (int i=0; i < (int)g_game->gameState->m_unemployedOfficers.size(); i++)
 	{
-		coloredString.String = g_game->gameState->m_unemployedOfficers[i]->name;
-		unemployeed->Write(coloredString);
-
-		coloredString.String = g_game->gameState->m_unemployedOfficers[i]->GetPreferredProfession();
-		unemployeedType->Write(coloredString);
+		unemployeed->Write(g_game->gameState->m_unemployedOfficers[i]->name, UNASSIGNED_TEXT_COLOR);
+		unemployeedType->Write(g_game->gameState->m_unemployedOfficers[i]->GetPreferredProfession(), UNASSIGNED_TEXT_COLOR);
 	}
 	unemployeedType->OnMouseMove(unemployeedType->GetX(),unemployeedType->GetY());
 	unemployeedType->OnMouseMove(0,0);

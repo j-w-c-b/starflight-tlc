@@ -15,16 +15,10 @@ PlanetSurfacePlayerVessel::~PlanetSurfacePlayerVessel() {}
 
 void PlanetSurfacePlayerVessel::Move()
 {
-	///* the function name */
-	//lua_getglobal(luaVM, this->GetScriptName().append("Move").c_str());
-
-	//// call the function 
-	//lua_call(luaVM, 0, 0);
-
 	PlanetSurfaceObject::Move();
 }
 
-void PlanetSurfacePlayerVessel::Draw(BITMAP *Canvas)
+void PlanetSurfacePlayerVessel::Draw(ALLEGRO_BITMAP *Canvas)
 {
 	PlanetSurfaceObject::Draw(Canvas);
 

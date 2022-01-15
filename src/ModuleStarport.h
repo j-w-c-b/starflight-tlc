@@ -8,11 +8,11 @@
 #ifndef _STARPORT_H
 #define _STARPORT_H 1
 
-#include "env.h"
-#include <allegro.h>
+#include <allegro5/allegro.h>
 #include "Module.h"
 #include "Sprite.h"
 #include "ScrollBox.h"
+#include "ResourceManager.h"
 
 class ModuleStarport : public Module
 {
@@ -42,7 +42,7 @@ struct doorArea { int left, right, middle; };
 private:
 	~ModuleStarport();	//dtor
 
-	BITMAP					*starport;
+	ALLEGRO_BITMAP					*starport;
 	Sprite					*door;
 	Sprite					*avatar;
 	int						playerx;
@@ -57,6 +57,7 @@ private:
 	bool					m_bNotified;
 	doorArea				doors[NUMBER_OF_DOORS];
 	bool flag_showWelcome;
+	ResourceManager<ALLEGRO_BITMAP> resources;
 
 	bool testDoors();
 	void movePlayerLeft(int distanceInPixels);
@@ -65,21 +66,20 @@ private:
 	void drawDoors();
 
 public:
-	ModuleStarport();	//ctor
-	void Close();
-	void Update();
-	bool Init();
-	void OnEvent(Event *event);
-	void OnKeyPress(int keyCode);
-	void OnKeyPressed(int keyCode);
-	void OnKeyReleased(int keyCode);
-	void OnMouseClick(int button, int x, int y);
-	void OnMouseMove(int x, int y);
-	void OnMousePressed(int button, int x, int y);
-	void OnMouseReleased(int button, int x, int y);
-	void OnMouseWheelDown(int x, int y);
-	void OnMouseWheelUp(int x, int y);
-	void Draw();
+	ModuleStarport();
+	virtual void Close() override;
+	virtual void Update() override;
+	virtual bool Init() override;
+	virtual void OnEvent(Event *event) override;
+	virtual void OnKeyPressed(int keyCode) override;
+	virtual void OnKeyReleased(int keyCode) override;
+	virtual void OnMouseClick(int button, int x, int y) override;
+	virtual void OnMouseMove(int x, int y) override;
+	virtual void OnMousePressed(int button, int x, int y) override;
+	virtual void OnMouseReleased(int button, int x, int y) override;
+	virtual void OnMouseWheelDown(int x, int y) override;
+	virtual void OnMouseWheelUp(int x, int y) override;
+	virtual void Draw() override;
 
 };
 

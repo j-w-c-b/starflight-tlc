@@ -9,9 +9,9 @@
 
 #pragma once
 
-#include <allegro.h>
+#include <allegro5/allegro.h>
 #include <string>
-using namespace std;
+
 
 class TexturedSphere
 {
@@ -19,23 +19,20 @@ private:
     int TEX_SIZE;
     int MAP_SIZE;
     double ASPECT_RATIO;
-    double M_PI;
     int *coord_transform_table;
     int *screen2sphere_table;
-    int *tex_table; 
-    BITMAP *source_bmp;
+    ALLEGRO_COLOR *tex_table; 
+    ALLEGRO_BITMAP *source_bmp;
     bool textureWasSet; //do not destroy passed texture, only a loaded one
 
     void InitSphereLookupTables(void);
     void Spherical2Cartesian(int alpha, int beta, double *x, double *y, double *z);
     void Cartesian2Sphere(double x, double y, double z, int *alpha, int *beta);
-    void CreateTextureTable(BITMAP *bmp);
+    void CreateTextureTable(ALLEGRO_BITMAP *bmp);
 
 public:
     TexturedSphere(int tex_size);
     ~TexturedSphere(void);
-    bool LoadTexture(string bmpfile);
-    bool SetTexture(BITMAP *texture);
-    void Draw(BITMAP *dest, int phi, int theta, int psi, int radius, int center_x, int center_y);
-
+    bool SetTexture(ALLEGRO_BITMAP *texture);
+    void Draw(ALLEGRO_BITMAP *dest, int phi, int theta, int psi, int radius, int center_x, int center_y);
 };

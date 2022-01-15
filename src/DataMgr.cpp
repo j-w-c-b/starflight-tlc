@@ -5,9 +5,8 @@
 	Date: 01/22/2007
 */
 
-#include "env.h"
-#include <allegro.h>
-#include <alfont.h>
+#include <allegro5/allegro.h>
+#include <allegro5/allegro_font.h>
 #include "DataMgr.h"
 #include "tinyxml/tinyxml.h"
 #include "Archive.h"
@@ -16,6 +15,8 @@
 #include "Game.h"
 #include <cstdarg>
 #include "QuestMgr.h"
+
+ALLEGRO_DEBUG_CHANNEL("DataMgr")
 
 using namespace std;
 
@@ -78,7 +79,7 @@ void Item::Reset()
    y = 0;
 }
 
-ItemType Item::ItemTypeFromString(std::string s)
+ItemType Item::ItemTypeFromString(const string &s)
 {
    ItemType result = IT_INVALID;
 
@@ -106,36 +107,7 @@ ItemType Item::ItemTypeFromString(std::string s)
    return result;
 }
 
-std::string Item::ItemTypeToString(ItemType itemType)
-{
-   string result;
-
-   switch (itemType)
-   {
-   case IT_ARTIFACT:
-      result = "Artifact";
-      break;
-   case IT_RUIN: 
-      result = "Ruin";
-      break;
-   case IT_MINERAL:
-      result = "Mineral";
-      break;
-   case IT_LIFEFORM:
-      result = "Life Form";
-      break;
-   case IT_TRADEITEM:
-      result = "Trade Item";
-      break;
-   default:
-      result = "INVALID";
-      break;
-   }
-
-   return result;
-}
-
-ItemAge Item::ItemAgeFromString(std::string s)
+ItemAge Item::ItemAgeFromString(const string &s)
 {
    ItemAge result = IA_INVALID;
 
@@ -154,32 +126,6 @@ ItemAge Item::ItemAgeFromString(std::string s)
    else if (s == "Space Faring")
    {
       result = IA_SPACEFARING;
-   }
-
-   return result;
-}
-
-std::string Item::ItemAgeToString(ItemAge itemAge)
-{
-   string result;
-
-   switch (itemAge)
-   {
-   case IA_STONE:
-      result = "Stone";
-      break;
-   case IA_METAL:
-      result = "Metal";
-      break;
-   case IA_INDUSTRIAL:
-      result = "Industrial";
-      break;
-   case IA_SPACEFARING:
-      result = "Space Faring";
-      break;
-   default:
-      result = "INVALID";
-      break;
    }
 
    return result;
@@ -258,7 +204,7 @@ Planet * Star::GetPlanetByID(ID id)
    return result;
 }
 
-SpectralClass Star::SpectralClassFromString(string s)
+SpectralClass Star::SpectralClassFromString(const string &s)
 {
    SpectralClass result = SC_INVALID;
 
@@ -289,41 +235,6 @@ SpectralClass Star::SpectralClassFromString(string s)
    else if (s == "O")
    {
       result = SC_O;
-   }
-
-   return result;
-}
-
-string Star::SpectralClassToString(SpectralClass spectralClass)
-{
-   string result;
-
-   switch (spectralClass)
-   {
-   case SC_M:
-      result = "M";
-      break;
-   case SC_K:
-      result = "K";
-      break;
-   case SC_G:
-      result = "G";
-      break;
-   case SC_F:
-      result = "F";
-      break;
-   case SC_A:
-      result = "A";
-      break;
-   case SC_B:
-      result = "B";
-      break;
-   case SC_O:
-      result = "O";
-      break;
-   default:
-      result = "INVALID";
-      break;
    }
 
    return result;
@@ -369,7 +280,7 @@ Planet & Planet::operator=(const Planet &rhs)
    return *this;
 }
 
-PlanetSize Planet::PlanetSizeFromString(std::string size)
+PlanetSize Planet::PlanetSizeFromString(const string &size)
 {
    PlanetSize result = PS_INVALID;
 
@@ -422,7 +333,7 @@ string Planet::PlanetSizeToString(PlanetSize size)
    return result;
 }
 
-PlanetType Planet::PlanetTypeFromString(std::string type)
+PlanetType Planet::PlanetTypeFromString(const string &type)
 {
    PlanetType result = PT_INVALID;
 
@@ -500,7 +411,7 @@ string Planet::PlanetTypeToString(PlanetType type)
    return result;
 }
 
-PlanetTemperature Planet::PlanetTemperatureFromString(std::string temperature)
+PlanetTemperature Planet::PlanetTemperatureFromString(const string &temperature)
 {
    PlanetTemperature result = PTMP_INVALID;
 
@@ -570,7 +481,7 @@ string Planet::PlanetTemperatureToString(PlanetTemperature temperature)
    return result;
 }
 
-PlanetGravity Planet::PlanetGravityFromString(std::string gravity)
+PlanetGravity Planet::PlanetGravityFromString(const string &gravity)
 {
    PlanetGravity result = PG_INVALID;
 
@@ -640,7 +551,7 @@ string Planet::PlanetGravityToString(PlanetGravity gravity)
    return result;
 }
 
-PlanetAtmosphere Planet::PlanetAtmosphereFromString(std::string atmosphere)
+PlanetAtmosphere Planet::PlanetAtmosphereFromString(const string &atmosphere)
 {
    PlanetAtmosphere result = PA_INVALID;
 
@@ -710,7 +621,7 @@ string Planet::PlanetAtmosphereToString(PlanetAtmosphere atmosphere)
    return result;
 }
 
-PlanetWeather Planet::PlanetWeatherFromString(std::string weather)
+PlanetWeather Planet::PlanetWeatherFromString(const string &weather)
 {
    PlanetWeather result = PW_INVALID;
 
@@ -738,40 +649,6 @@ PlanetWeather Planet::PlanetWeatherFromString(std::string weather)
    return result;
 }
 
-string Planet::PlanetWeatherToString(PlanetWeather weather)
-{
-   string result;
-
-   switch (weather)
-   {
-   case PW_NONE:
-      result = "NONE";
-      break;
-
-   case PW_CALM:
-      result = "CALM";
-      break;
-
-   case PW_MODERATE:
-      result = "MODERATE";
-      break;
-
-   case PW_VIOLENT:
-      result = "VIOLENT";
-      break;
-
-   case PW_VERYVIOLENT:
-      result = "VERYVIOLENT";
-      break;
-
-   default:
-      result = "INVALID";
-      break;
-   }
-
-   return result;
-}
-
 DataMgr::DataMgr()
 : m_initialized(false)
 {
@@ -784,12 +661,11 @@ DataMgr::~DataMgr()
       delete (*i);
    }
 
-   for (vector<std::pair<std::string*,std::string*>*>::iterator i = humanNames.begin(); i != humanNames.end(); ++i)
-   {
-      delete (*i);
+   for (auto &i : humanNames) {
+      delete (i->second);
    }
-   for (flux_iter i = g_game->dataMgr->flux.begin(); i != g_game->dataMgr->flux.end(); i++){
-		delete (*i);
+   for (auto &i :  g_game->dataMgr->flux) {
+		delete i;
 	}
 	flux.clear();
 }
@@ -824,7 +700,7 @@ Item* DataMgr::GetItemByID(ID id)
    return result;
 }
 
-Item* DataMgr::GetItem(string name) {
+Item* DataMgr::GetItem(const string &name) {
 	Item* result= NULL;
 	for (vector<Item *>::iterator i= items.begin(); i != items.end(); ++i){
 		if ((*i)->name == name) result= *i;
@@ -888,41 +764,6 @@ Planet* DataMgr::GetPlanetByID(ID id)
    return result;
 }
 
-
-int DataMgr::GetNumHumanNames()
-{
-	return (int)humanNames.size();
-}
-
-string DataMgr::GetFullName(int id)
-{
-	if (id < (int)humanNames.size() && id >= 0)
-		return *humanNames[id]->first + " " + *humanNames[id]->second;
-	else
-		return "";
-}
-
-string DataMgr::GetFirstName(int id)
-{
-	if (id < (int)humanNames.size() && id >= 0)
-		return *humanNames[id]->first;
-	else
-		return "";
-}
-
-string DataMgr::GetLastName(int id)
-{
-	if (id < (int)humanNames.size() && id >= 0)
-		return *humanNames[id]->second;
-	else
-		return "";
-}
-
-string DataMgr::GetRandWholeName()
-{
-	int randomID = Util::Random(0, (int)humanNames.size()-1);
-	return *humanNames[randomID]->first + " " + *humanNames[randomID]->second;
-}
 
 string DataMgr::GetRandMixedName()
 {
@@ -1284,7 +1125,7 @@ bool DataMgr::LoadGalaxy()
 			 newPlanet.gravity     == PG_INVALID   ||
 			 newPlanet.atmosphere  == PA_INVALID )
 		{
-				std::string msg = "loadGalaxy: error loading planet #" + newPlanet.id;
+				std::string msg = "loadGalaxy: error loading planet #" + to_string(newPlanet.id);
 				msg += " , name -- " + newPlanet.name + " --";
 				msg += " , size " + Planet::PlanetSizeToString(newPlanet.size);
 				msg += " , type " + Planet::PlanetTypeToString(newPlanet.type);
@@ -1292,8 +1133,8 @@ bool DataMgr::LoadGalaxy()
 				msg += " , gravity " + Planet::PlanetGravityToString(newPlanet.gravity);
 				msg += " , atmosphere " + Planet::PlanetAtmosphereToString(newPlanet.atmosphere);
 				msg += "\n";
-				TRACE(msg.c_str());
-				ASSERT(0);
+				ALLEGRO_DEBUG("%s\n", msg.c_str());
+				ALLEGRO_ASSERT(0);
 		}
 
       // make sure the host star does exist
@@ -1373,26 +1214,6 @@ bool DataMgr::LoadHumanNames()
 
 	return true;
 }
-
-/*
- * THIS CODE WAS ONLY NEEDED FOR TEMPORARY OFFICER DATA
- */
-//Officer* DataMgr::GetRandOfficer(int type)
-//{
-//	Officer *o = new Officer();
-//
-//	o->name = g_game->dataMgr->GetRandMixedName();
-//
-//	o->SetOfficerType(type);
-//
-//	for (int i=0; i < 6; i++)
-//		o->attributes[i] = Util::Random(0,200);
-//
-//	o->attributes[6] = Util::Random(1,25);
-//	o->attributes[7] = Util::Random(1,25);
-//
-//	return o;
-//}
 
 Items::Items()
 {
@@ -1475,39 +1296,6 @@ bool Items::Serialize(Archive& ar)
    return true;
 }
 
-void Items::RandomPopulate(int maxNumStacks, int maxNumItemsPerStack, ItemType typeFilter /*= IT_INVALID*/)
-{
-   Reset();
-
-   int numStacks = rand() % maxNumStacks + 1;
-   int numItemTypes = g_game->dataMgr->GetNumItems();
-
-   map<int,bool> usedItemTypes;
-
-   for (int i = 0; i < numStacks; i++)
-   {
-      int itemTypeIdx = -1;
-      Item* pItem = NULL;
-      while (itemTypeIdx < 0)
-      {
-         int randItemTypeIdx = rand() % numItemTypes;
-         pItem = g_game->dataMgr->GetItem(randItemTypeIdx);;
-         if (usedItemTypes.find(randItemTypeIdx) == usedItemTypes.end())
-         {
-            if ((typeFilter == IT_INVALID) ||
-                ((typeFilter & pItem->itemType) != 0))
-            {
-               usedItemTypes[randItemTypeIdx] = true;
-               itemTypeIdx = randItemTypeIdx;
-            }
-         }
-      }
-
-      int numItemsInStack = rand() % maxNumItemsPerStack + 1;
-      stacks.push_back(make_pair(pItem->id,numItemsInStack));
-   }
-}
-
 int Items::GetNumStacks()
 {
    return (int)stacks.size();
@@ -1532,53 +1320,6 @@ void Items::GetStack(int idx, Item& item, int& numItemsInStack)
    item = *pItem;
    numItemsInStack = stack.second;
 }
-
-bool Items::CheckForSpace(int spaceLimit, ... )
-{
-	int totalIDs = 0;
-	va_list itemIDs;
-
-	va_start( itemIDs, spaceLimit );
-
-	for (int id = va_arg( itemIDs, int ), lastID = id; id != lastID; lastID = id, id = va_arg( itemIDs, int ))
-	{
-		++totalIDs;
-		for (vector<pair<ID,int> >::iterator i = stacks.begin(); i != stacks.end(); ++i)
-		{
-		  if (i->first == id)
-		  {
-			  --totalIDs;
-			 break;
-		  }
-		}
-	}
-
-	va_end( itemIDs );
-
-	return (spaceLimit >= (int)stacks.size() + totalIDs);
-}
-
-
-bool Items::CheckForSpace(int spaceLimit, int totalSentIDs, int itemIDs[] )
-{
-	int totalIDs = 0;
-
-	for (int id = 0; id < totalSentIDs; ++id )
-	{
-		++totalIDs;
-		for (vector<pair<ID,int> >::iterator i = stacks.begin(); i != stacks.end(); ++i)
-		{
-		  if (i->first == itemIDs[id])
-		  {
-			 --totalIDs;
-			 break;
-		  }
-		}
-	}
-
-	return (spaceLimit >= (int)stacks.size() + totalIDs);
-}
-
 
 void Items::AddItems(ID id, int numItemsToAdd)
 {
@@ -1671,26 +1412,6 @@ void Items::Get_Item_By_ID(int id, Item& item, int &num_in_stack){
 		 num_in_stack = i->second;
          break;
       }
-   }
-   if (pItem == NULL){
-      return;
-   }
-   item = *pItem;
-}
-
-void Items::Get_Item_By_Name(std::string name, Item& item, int &num_in_stack){
-   item.Reset();
-   num_in_stack = 0;
-
-   Item * pItem = new Item();
-   for (vector<pair<ID,int> >::iterator i = stacks.begin(); i != stacks.end(); ++i){
-         pItem = g_game->dataMgr->GetItemByID(i->first);
-		 if(pItem->name == name){
-			 num_in_stack = i->second;
-			 break;
-		 }else{
-			pItem = NULL;
-		 }
    }
    if (pItem == NULL){
       return;

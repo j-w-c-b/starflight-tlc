@@ -10,32 +10,23 @@
 
 #include "Module.h"
 #include "Button.h"
+#include "ResourceManager.h"
 
 class ModuleMessageGUI : public Module
 {
 private:
-	BITMAP *img_message;
-	BITMAP *img_socket;
+	ALLEGRO_BITMAP *img_message;
+	ALLEGRO_BITMAP *img_socket;
 
-	DATAFILE *data;
+	ResourceManager<ALLEGRO_BITMAP> resources;
 
 public:
 	ModuleMessageGUI();
-	~ModuleMessageGUI();
-	bool Init();
-	void Update();
-	void Draw();
-	void OnKeyPress( int keyCode );
-	void OnKeyPressed(int keyCode);
-	void OnKeyReleased(int keyCode);
-	void OnMouseMove(int x, int y);
-	void OnMouseClick(int button, int x, int y);
-	void OnMousePressed(int button, int x, int y);
-	void OnMouseReleased(int button, int x, int y);
-	void OnMouseWheelUp(int x, int y);
-	void OnMouseWheelDown(int x, int y);
-	void OnEvent(Event *event);
-	void Close();
+	virtual ~ModuleMessageGUI();
+	virtual bool Init() override;
+	virtual void Update() override;
+	virtual void Draw() override;
+	virtual void Close() override;
 };
 
 #endif

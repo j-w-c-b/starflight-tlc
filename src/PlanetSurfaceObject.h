@@ -1,14 +1,13 @@
 #pragma once
 
-#include "env.h"
-#include <allegro.h>
+#include <allegro5/allegro.h>
 #include <string>
-#include <alfont.h>
+#include <allegro5/allegro_font.h>
 #include <vector>
 #include <map>
 #include "DataMgr.h"
 
-#include <lua.hpp>
+#include "lua.hpp"
 
 class Sprite;
 class Event;
@@ -41,7 +40,7 @@ public:
 	PlanetSurfaceObject();
 	PlanetSurfaceObject(lua_State *LuaVM, std::string ScriptName);
 
-	~PlanetSurfaceObject();
+	virtual ~PlanetSurfaceObject();
 
 	void Initialize();
 
@@ -52,13 +51,12 @@ public:
 	virtual void Update();
 	virtual void TimedUpdate();
 	virtual void Draw();
-	virtual void Draw(BITMAP *Canvas);
+	virtual void Draw(ALLEGRO_BITMAP *Canvas);
 	virtual bool CheckCollision(PlanetSurfaceObject * otherPSO);
 	virtual bool CheckCollision(int x, int y, int width, int height);
 	virtual void AddAnimation(std::string name, int startFrame, int endFrame, int delay);
 	virtual void SetActiveAnimation(std::string name);
 
-	virtual void OnMouseMove(int x, int y);
 	virtual bool OnMouseReleased(int button, int x, int y);
 	virtual void getActions();
 	virtual void OnEvent(int event);
@@ -86,7 +84,6 @@ public:
 	bool IsBlackMarketItem()					const { return blackMarketItem; }
 	std::string GetScriptName()					const { return scriptName; }
 	bool IsScanned()							const { return scanned; }
-	bool UsesAlpha()							const { return UseAlpha; }
 	bool IsSelected()							const { return selected; }
 	int getStunCount()							const { return stunCount; }
 	double getX()								const { return x; }
@@ -129,7 +126,7 @@ public:
 	int getThreshold2()							const { return threshold2; }
 	int getThreshold3()							const { return threshold3; }
 
-	int getMinimapColor()						const { return minimapColor; }
+	ALLEGRO_COLOR getMinimapColor()						const { return minimapColor; }
 	int getMinimapSize()						const { return minimapSize; }
 
 	//mutators
@@ -148,13 +145,10 @@ public:
 	void setAsBlackMarketItem(bool initBlackMarket)	{ blackMarketItem = initBlackMarket; }
 	void setScanned(bool initScanned)				{ scanned = initScanned; }
 	void setStunCount(int initStunCount)			{ stunCount = initStunCount; }
-	void setAlpha(bool initAlpha)					{ UseAlpha = initAlpha; }
 	void setSelected(bool initSelected)				{ selected = initSelected; }
 	//The set positions are in the cpp
 	void setX(double initX);
 	void setY(double initY);
-	void setXOffset(double initXOffset);	
-	void setYOffset(double initYOffset);		
 	void setPos(double initX, double initY);	
 	void setPosOffset(double initX, double initY);
 
@@ -194,7 +188,7 @@ public:
 	void setThreshold2(int initThreshold2)			{ threshold2 = initThreshold2; }
 	void setThreshold3(int initThreshold3)			{ threshold3 = initThreshold3; }
 
-	void setMinimapColor(int initColor)				{ minimapColor = initColor; }
+	void setMinimapColor(ALLEGRO_COLOR initColor)				{ minimapColor = initColor; }
 	void setMinimapSize(int initSize)				{ minimapSize = initSize; }
 
     std::string description;
@@ -224,16 +218,14 @@ protected:
 	ItemAge itemAge;
 	bool shipRepairMetal;	// is this a ship repair metal?
 	bool blackMarketItem;	// is this a blackmarket item?
-	//Label *hoverLabel;
 	bool selected;
 	bool scanned;
-	int minimapColor; //Minimap dot color
+	ALLEGRO_COLOR minimapColor; //Minimap dot color
 	int minimapSize; //Size of the minimap dot
 
-	static std::map<std::string, BITMAP*> graphics; 
+	static std::map<std::string, ALLEGRO_BITMAP*> graphics; 
 
-	BITMAP		*image;
-	bool		UseAlpha;
+	ALLEGRO_BITMAP		*image;
 	bool		moved;
     double		x;
 	double		y;

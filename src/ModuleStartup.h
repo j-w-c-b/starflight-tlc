@@ -7,9 +7,7 @@
 */
  
 
-#include "env.h"
-#include <fmod.hpp>
-#include <allegro.h>
+#include <allegro5/allegro.h>
 #include "Module.h"
 
 class ModuleStartup : public Module
@@ -18,27 +16,18 @@ public:
 	ModuleStartup();
 	virtual ~ModuleStartup();
 
-	bool Init();
-	void Update();
-	void Draw();
-	void OnKeyPress(int keyCode);
-	void OnKeyPressed(int keyCode);
-	void OnKeyReleased(int keyCode);
-	void OnMouseMove(int x, int y);
-	void OnMouseClick(int button, int x, int y);	
-	void OnMousePressed(int button, int x, int y);
-	void OnMouseReleased(int button, int x, int y);
-	void OnEvent(Event *event);
-	void Close();
+	virtual bool Init() override;
+	virtual void Update() override;
+	virtual void Draw() override;
+	virtual void OnKeyReleased(int keyCode) override;
+	virtual void Close() override;
 
 private:
-	int fadein(BITMAP *dest, BITMAP *source, int speed);
-	int fadeout(BITMAP *dest, BITMAP *source, int speed);
+	int fadein(ALLEGRO_BITMAP *dest, ALLEGRO_BITMAP *source, int speed);
+	int fadeout(ALLEGRO_BITMAP *dest, ALLEGRO_BITMAP *source, int speed);
 
-	BITMAP *m_background;
-	BITMAP *fader;
-	BITMAP *scratchpad;
-	BITMAP *copyright;
+	ALLEGRO_BITMAP *m_background;
+	ALLEGRO_BITMAP *copyright;
 	int display_mode;
 
 };

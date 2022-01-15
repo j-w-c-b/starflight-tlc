@@ -6,8 +6,10 @@
 */
 
 #include <sstream>
-#include "env.h"
-#include <allegro.h>
+
+#include <allegro5/allegro.h>
+#include <allegro5/allegro_primitives.h>
+
 #include "Util.h"
 #include "GameState.h"
 #include "Game.h"
@@ -15,48 +17,26 @@
 #include "DataMgr.h"
 #include "Script.h"
 #include "ModuleMedical.h"
+#include "medical_resources.h"
 
 using namespace std;
 
 int gvl = 0, gvr = 0; //global viewer right and left
-const int RIGHT_TARGET_OFFSET	= 600;//SCREEN_W - 436;
+const int RIGHT_TARGET_OFFSET	= 600;//SCREEN_WIDTH - 436;
 const int LEFT_TARGET_OFFSET	= 396;
 const int VIEWER_MOVE_RATE		= 16;
 #define CATBTN_X 633
 #define CATBTN_Y 120
 #define CATSPACING 40
 
+
+ALLEGRO_DEBUG_CHANNEL("ModuleMedical")
+
 int right_offset = SCREEN_WIDTH, 
 	left_offset = -LEFT_TARGET_OFFSET,
 	left_offset2 = -LEFT_TARGET_OFFSET;
 
-
-#define BTN_DIS_BMP                      0        /* BMP  */
-#define BTN_HOV_BMP                      1        /* BMP  */
-#define BTN_NORM_BMP                     2        /* BMP  */
-#define GUI_VIEWER_BMP                   3        /* BMP  */
-#define GUI_VIEWER_RIGHT_BMP             4        /* BMP  */
-#define MED_BAR_COMMUNICATION_BMP        5        /* BMP  */
-#define MED_BAR_DURABILITY_BMP           6        /* BMP  */
-#define MED_BAR_ENGINEER_BMP             7        /* BMP  */
-#define MED_BAR_HEALTH_BMP               8        /* BMP  */
-#define MED_BAR_LEARN_BMP                9        /* BMP  */
-#define MED_BAR_MEDICAL_BMP              10       /* BMP  */
-#define MED_BAR_NAVIGATION_BMP           11       /* BMP  */
-#define MED_BAR_SCIENCE_BMP              12       /* BMP  */
-#define MED_BAR_TACTICAL_BMP             13       /* BMP  */
-#define MED_WINDOW_DATA_BMP              14       /* BMP  */
-#define MEDICAL_CAPTBTN_BMP              15       /* BMP  */
-#define MEDICAL_CAPTBTN_DIS_BMP          16       /* BMP  */
-#define MEDICAL_CAPTBTN_HOV_BMP          17       /* BMP  */
-#define RIGHT_VIEWER_BG_BMP              18       /* BMP  */
-
-
-
-DATAFILE *meddata;
-
-
-ModuleMedical::ModuleMedical() {}
+ModuleMedical::ModuleMedical() : resources(MEDICAL_IMAGES) {}
 
 ModuleMedical::~ModuleMedical(){}
 
@@ -258,7 +238,6 @@ void ModuleMedical::OnEvent(Event *event)
 			if(b_examine == false && viewer_active == false)
 			{
 				viewer_active = true;
-				//b_examine = false;
 			} 
 			else if(viewer_active == true && b_examine == true)
 			{
@@ -286,14 +265,10 @@ void ModuleMedical::OnEvent(Event *event)
 
 bool ModuleMedical::Init()
 {
-	TRACE("  ModuleMedical::Init()\n");
+	ALLEGRO_DEBUG("  ModuleMedical::Init()\n");
 
 	b_examine = false;
 	selected_officer = NULL;
-
-	//disable all healing
-	//cease_healing();
-
 
 	//
 	// GUI stuff
@@ -303,134 +278,37 @@ bool ModuleMedical::Init()
 	g_game->audioSystem->Load("data/medical/buttonclick.ogg", "click");
 
 	//load data file
-	meddata = load_datafile("data/medical/medical.dat");
-	if (!meddata) {
-		g_game->message("Medical: Error loading data file");
+	if (!resources.load()) {
+		g_game->message("Medical: Error loading resources");
 		return false;
 	}
 
-	//img_left_viewer2 = load_bitmap("data/medical/gui_viewer_right.bmp", NULL);
-	img_left_viewer2 = (BITMAP*)meddata[GUI_VIEWER_RIGHT_BMP].dat;
-	if (!img_left_viewer2) {
-		g_game->message("Medical: Error loading img_left_viewer2 image");
-		return false;
-	}
+	img_left_viewer2 = resources[GUI_VIEWER_RIGHT];
+	img_right_viewer = resources[GUI_VIEWER_RIGHT];
+	img_right_bg = resources[RIGHT_VIEWER_BG];
+	img_left_viewer = resources[GUI_VIEWER];
 
-	//img_right_viewer = load_bitmap("data/medical/gui_viewer_right.bmp", NULL);
-	img_right_viewer = (BITMAP*)meddata[GUI_VIEWER_RIGHT_BMP].dat;
-	if (!img_right_viewer) {
-		g_game->message("Medical: Error loading gui_viewer_right image");
-		return false;
-	}
-
-	//img_right_bg = load_bitmap("data/medical/right_viewer_bg.bmp", NULL);
-	img_right_bg = (BITMAP*)meddata[RIGHT_VIEWER_BG_BMP].dat;
-	if (!img_right_bg) {
-		g_game->message("Medical: Error loading right_viewer_bg image");
-		return false;
-	}
-
-	//img_left_viewer = load_bitmap("data/medical/gui_viewer.bmp", NULL);
-	img_left_viewer = (BITMAP*)meddata[GUI_VIEWER_BMP].dat;
-	if (!img_left_viewer) {
-		g_game->message("Medical: Error loading gui_viewer image");
-		return false;
-	}
-
-	//img_left_bg = load_bitmap("data/medical/med_window_data.bmp", NULL);
-	img_left_bg = (BITMAP*)meddata[MED_WINDOW_DATA_BMP].dat;
-	if (!img_left_bg) {
-		g_game->message("Medical: Error loading med_window_data image");
-		return false;
-	}
-
-	//img_health_bar = load_bitmap("data/medical/med_bar_health.bmp", NULL);
-	img_health_bar = (BITMAP*)meddata[MED_BAR_HEALTH_BMP].dat;
-	if (!img_health_bar) {
-		g_game->message("Medical: Error loading med_bar_health image");
-		return false;
-	}
-	
-	//img_science_bar = load_bitmap("data/medical/med_bar_science.bmp", NULL);
-	img_science_bar = (BITMAP*)meddata[MED_BAR_SCIENCE_BMP].dat;
-	if (!img_science_bar) {
-		g_game->message("Medical: Error loading med_bar_science image");
-		return false;
-	}
-	
-	//img_nav_bar = load_bitmap("data/medical/med_bar_navigation.bmp", NULL);
-	img_nav_bar = (BITMAP*)meddata[MED_BAR_NAVIGATION_BMP].dat;
-	if (!img_nav_bar) {
-		g_game->message("Medical: Error loading med_bar_navigation image");
-		return false;
-	}
-	
-	//img_medical_bar = load_bitmap("data/medical/med_bar_medical.bmp", NULL); 
-	img_medical_bar = (BITMAP*)meddata[MED_BAR_MEDICAL_BMP].dat;
-	if (!img_medical_bar) {
-		g_game->message("Medical: Error loading med_bar_medical image");
-		return false;
-	}
-	
-	//img_engineer_bar = load_bitmap("data/medical/med_bar_engineer.bmp", NULL); 
-	img_engineer_bar = (BITMAP*)meddata[MED_BAR_ENGINEER_BMP].dat;
-	if (!img_engineer_bar) {
-		g_game->message("Medical: Error loading med_bar_engineer image");
-		return false;
-	}
-	
-	//img_dur_bar = load_bitmap("data/medical/med_bar_durability.bmp", NULL);
-	img_dur_bar = (BITMAP*)meddata[MED_BAR_DURABILITY_BMP].dat;
-	if (!img_dur_bar) {
-		g_game->message("Medical: Error loading med_bar_durability image");
-		return false;
-	}
-	
-	//img_learn_bar = load_bitmap("data/medical/med_bar_learn.bmp", NULL);
-	img_learn_bar = (BITMAP*)meddata[MED_BAR_LEARN_BMP].dat;
-	if (!img_learn_bar) {
-		g_game->message("Medical: Error loading med_bar_learn image");
-		return false;
-	}
-	
-	//img_comm_bar = load_bitmap("data/medical/med_bar_communication.bmp", NULL);
-	img_comm_bar = (BITMAP*)meddata[MED_BAR_COMMUNICATION_BMP].dat;
-	if (!img_comm_bar) {
-		g_game->message("Medical: Error loading med_bar_communication image");
-		return false;
-	}
-	
-	//img_tac_bar = load_bitmap("data/medical/med_bar_tactical.bmp", NULL);
-	img_tac_bar = (BITMAP*)meddata[MED_BAR_TACTICAL_BMP].dat;
-	if (!img_tac_bar) {
-		g_game->message("Medical: Error loading med_bar_tactical image");
-		return false;
-	}
+	img_left_bg = resources[MED_WINDOW_DATA];
+	img_health_bar = resources[MED_BAR_HEALTH];
+	img_science_bar = resources[MED_BAR_SCIENCE];
+	img_nav_bar = resources[MED_BAR_NAVIGATION];
+	img_medical_bar = resources[MED_BAR_MEDICAL];
+	img_engineer_bar = resources[MED_BAR_ENGINEER];
+	img_dur_bar = resources[MED_BAR_DURABILITY];
+	img_learn_bar = resources[MED_BAR_LEARN];
+	img_comm_bar = resources[MED_BAR_COMMUNICATION];
+	img_tac_bar = resources[MED_BAR_TACTICAL];
 
 	//load crew button images
-	img_button_crew = (BITMAP*)meddata[MEDICAL_CAPTBTN_BMP].dat;
-	if (!img_button_crew) {
-		g_game->message("Medical: Error loading crew button image");
-		return false;
-	}
-
-	img_button_crew_hov = (BITMAP*)meddata[MEDICAL_CAPTBTN_HOV_BMP].dat;
-	if (!img_button_crew_hov) {
-		g_game->message("Medical: Error loading crew button hover image");
-		return false;
-	}
-
-	img_button_crew_dis = (BITMAP*)meddata[MEDICAL_CAPTBTN_DIS_BMP].dat;
-	if (!img_button_crew_dis) {
-		g_game->message("Medical: Error loading crew button disabled image");
-		return false;
-	}
+	img_button_crew = resources[MEDICAL_CAPTBTN];
+	img_button_crew_hov = resources[MEDICAL_CAPTBTN_HOV];
+	img_button_crew_dis = resources[MEDICAL_CAPTBTN_DIS];
 
 	for (int i=0; i < 7; i++)
 	{
 		//Create and initialize the crew buttons
 		OfficerBtns[i] = new Button(img_button_crew, img_button_crew_hov, img_button_crew_dis,
-			CATBTN_X, CATBTN_Y + (i * CATSPACING), 0, -100 - i, g_game->font22,"", makecol(255,255,255), "click");
+			CATBTN_X, CATBTN_Y + (i * CATSPACING), 0, -100 - i, g_game->font22,"", al_map_rgb(255,255,255), "click");
 
 		if (OfficerBtns[i] == NULL){return false;}
 		if (!OfficerBtns[i]->IsInitialized()){return false;}
@@ -446,21 +324,9 @@ bool ModuleMedical::Init()
 	OfficerBtns[6]->SetButtonText("DOC. " + g_game->gameState->officerDoc->name);
 
 	//load plus button images
-	img_treat = (BITMAP*)meddata[BTN_NORM_BMP].dat;
-	if (!img_treat) {
-		g_game->message("Medical: Error loading plus button image");
-		return false;
-	}
-	img_treat_hov = (BITMAP*)meddata[BTN_HOV_BMP].dat;
-	if (!img_treat_hov) {
-		g_game->message("Medical: Error loading hov button image");
-		return false;
-	}
-	img_treat_dis = (BITMAP*)meddata[BTN_DIS_BMP].dat;
-	if (!img_treat_dis) {
-		g_game->message("Medical: Error loading plus button disabled image");
-		return false;
-	}
+	img_treat = resources[BTN_NORM];
+	img_treat_hov = resources[BTN_HOV];
+	img_treat_hov = resources[BTN_DIS];
 
 	//Create and initialize the heal buttons
 	//they share the same location but are unique for each crew to make events simpler
@@ -472,32 +338,16 @@ bool ModuleMedical::Init()
 		if (!HealBtns[i]->IsInitialized()){return false;}
 	}
 
-
-	//DEBUG CODE
-	//g_game->gameState->officerCap->attributes.setVitality(90);
-	//g_game->gameState->officerSci->attributes.setVitality(70);
-	//g_game->gameState->officerNav->attributes.setVitality(55);
-	//g_game->gameState->officerTac->attributes.setVitality(40);
-	//g_game->gameState->officerEng->attributes.setVitality(25);
-	//g_game->gameState->officerCom->attributes.setVitality(10);
-	//g_game->gameState->officerDoc->attributes.setVitality(0);  //kill the doctor
-	//g_game->gameState->officerDoc->attributes.setMedical(50);
-	//g_game->gameState->officerCap->attributes.setMedical(20);
-
 	return true;
 }
 
 void ModuleMedical::Close()
 {
-	TRACE("*** ModuleMedical::Close()\n");
-
-	//disable all healing
-	//cease_healing();
+	ALLEGRO_DEBUG("*** ModuleMedical::Close()\n");
 
 	try {
 
-		unload_datafile(meddata);
-		meddata = NULL;
+		resources.unload();
 
 		for (int i=0; i < 7; i++){
 			delete OfficerBtns[i];
@@ -513,10 +363,10 @@ void ModuleMedical::Close()
 
 	}
 	catch (std::exception e) {
-		TRACE(e.what());
+		ALLEGRO_DEBUG("%s\n", e.what());
 	}
 	catch(...) {
-		TRACE("Unhandled exception in ModuleMedical::Close\n");
+		ALLEGRO_DEBUG("Unhandled exception in ModuleMedical::Close\n");
 	}
 }
 
@@ -751,19 +601,21 @@ void ModuleMedical::Draw()
         "learning",
         "durability" };
 
+    al_set_target_bitmap(g_game->GetBackBuffer());
+
 	float percentile = 0.00f;
 	char t_buffer[20];
 
     //update medical status
 	MedicalUpdate();
 
-	if(right_offset < SCREEN_W)
+	if(right_offset < SCREEN_WIDTH)
 	{
 		//draw background
-		masked_blit(img_right_viewer, g_game->GetBackBuffer(), 0, 0, right_offset, 85, img_right_viewer->w, img_right_viewer->h);
+		al_draw_bitmap(img_right_viewer, right_offset, 85, 0);
 
 		//draw crew gui
-		blit(img_right_bg, g_game->GetBackBuffer(), 0, 0, right_offset + 34, 119, img_right_bg->w, img_right_bg->h);
+		al_draw_bitmap(img_right_bg, right_offset + 34, 119, 0);
 
 		//crew buttons
 		for(int i=0; i < 7; i++){
@@ -775,15 +627,15 @@ void ModuleMedical::Draw()
 #pragma region Left Window 2
 	if(left_offset2 > -LEFT_TARGET_OFFSET)
 	{
-		draw_sprite_h_flip(g_game->GetBackBuffer(),img_left_viewer2,left_offset2-43,85);
-		blit(img_right_bg, g_game->GetBackBuffer(), 0, 0, left_offset2 + 64, 119, img_right_bg->w, img_right_bg->h);
+		al_draw_bitmap(img_left_viewer2,left_offset2-43,85,ALLEGRO_FLIP_HORIZONTAL);
+		al_draw_bitmap(img_right_bg, left_offset2 + 64, 119, 0);
 		if(selected_officer != NULL)
 		{
 			//print crew person's name
 			g_game->Print22(g_game->GetBackBuffer(), left_offset2 + 75,130, selected_officer->GetTitle() + ": " + selected_officer->name, WHITE); 
 
 			//print health status
-			int health_color = 0;
+			ALLEGRO_COLOR health_color = BLACK;
 			std::string status = "";
 			if(selected_officer->attributes.getVitality() <= 0){
 				health_color = BLACK;
@@ -811,7 +663,7 @@ void ModuleMedical::Draw()
 
 			//draw the health bar
 			percentile = selected_officer->attributes.getVitality();
-			rectfill(g_game->GetBackBuffer(), left_offset2 + 75, 260, left_offset2 + 75 + 260 * percentile / 100, 315, health_color );
+			al_draw_filled_rectangle(left_offset2 + 75, 260, left_offset2 + 75 + 260 * percentile / 100, 315, health_color);
 			
 			//print health percentage
 			sprintf(t_buffer, "%.0f%%%%",percentile);
@@ -834,8 +686,8 @@ void ModuleMedical::Draw()
 
 	if(left_offset > -LEFT_TARGET_OFFSET)
     {
-		masked_blit(img_left_viewer, g_game->GetBackBuffer(), 0, 0, left_offset-43, 10, img_left_viewer->w, img_left_viewer->h);
-		blit(img_left_bg, g_game->GetBackBuffer(), 0, 0, left_offset + 67, 43, img_left_bg->w, img_left_bg->h);
+		al_draw_bitmap(img_left_viewer, left_offset-43, 10, 0);
+		al_draw_bitmap(img_left_bg, left_offset + 67, 43, 0);
 
         //display officer stat bars
 		if(selected_officer != NULL)
@@ -844,47 +696,47 @@ void ModuleMedical::Draw()
 
             //vitality bar
 			percentile = selected_officer->attributes.getVitality(); percentile /= 100;
-			masked_blit(img_health_bar, g_game->GetBackBuffer(), 0, 0, x, 46, img_health_bar->w * percentile, img_health_bar->h);
+			al_draw_bitmap_region(img_health_bar, 0, 0, al_get_bitmap_width(img_health_bar) * percentile, al_get_bitmap_height(img_health_bar), x, 46, 0);
             g_game->Print22(g_game->GetBackBuffer(), x + 10, 46 + 2, "health", BLACK);
 
             //science bar
 			percentile = selected_officer->attributes.getScience();	percentile /= 250;
-			masked_blit(img_science_bar, g_game->GetBackBuffer(), 0, 0, x, 85, img_science_bar->w * percentile, img_science_bar->h);
+			al_draw_bitmap_region(img_science_bar, 0, 0, al_get_bitmap_width(img_science_bar) * percentile, al_get_bitmap_height(img_science_bar), x, 85, 0);
             g_game->Print22(g_game->GetBackBuffer(), x + 10, 85 + 2, "science skill", BLACK);
 
             //navigation bar
 			percentile = selected_officer->attributes.getNavigation(); percentile /= 250;
-			masked_blit(img_nav_bar, g_game->GetBackBuffer(), 0, 0, x, 129, img_nav_bar->w * percentile, img_nav_bar->h);
+			al_draw_bitmap_region(img_nav_bar, 0, 0, al_get_bitmap_width(img_nav_bar) * percentile, al_get_bitmap_height(img_nav_bar), x, 129, 0);
             g_game->Print22(g_game->GetBackBuffer(), x + 10, 129 + 2, "navigation skill", BLACK);
 
             //engineering bar
 			percentile = selected_officer->attributes.getEngineering(); percentile /= 250;
-			masked_blit(img_engineer_bar, g_game->GetBackBuffer(), 0, 0, x, 177, img_engineer_bar->w * percentile, img_engineer_bar->h);
+			al_draw_bitmap_region(img_engineer_bar, 0, 0, al_get_bitmap_width(img_engineer_bar) * percentile, al_get_bitmap_height(img_engineer_bar), x, 177, 0);
             g_game->Print22(g_game->GetBackBuffer(), x + 10, 177 + 2, "engineering skill", BLACK);
 
             //communications bar
 			percentile = selected_officer->attributes.getCommunication(); percentile /= 250;
-			masked_blit(img_comm_bar, g_game->GetBackBuffer(), 0, 0, x, 221, img_comm_bar->w * percentile, img_comm_bar->h);
+			al_draw_bitmap_region(img_comm_bar, 0, 0, al_get_bitmap_width(img_comm_bar) * percentile, al_get_bitmap_height(img_comm_bar), x, 221, 0);
             g_game->Print22(g_game->GetBackBuffer(), x + 10, 221 + 2, "communications skill", BLACK);
 
             //medical bar
 			percentile = selected_officer->attributes.getMedical(); percentile /= 250;
-			masked_blit(img_medical_bar, g_game->GetBackBuffer(), 0, 0, x, 266, img_medical_bar->w * percentile, img_medical_bar->h);
+			al_draw_bitmap_region(img_medical_bar, 0, 0, al_get_bitmap_width(img_medical_bar) * percentile, al_get_bitmap_height(img_medical_bar), x, 266, 0);
             g_game->Print22(g_game->GetBackBuffer(), x + 10, 266 + 2, "medical skill", BLACK);
 
             //tactical bar
 			percentile = selected_officer->attributes.getTactics(); percentile /= 250;
-			masked_blit(img_tac_bar, g_game->GetBackBuffer(), 0, 0, x, 311, img_tac_bar->w * percentile, img_tac_bar->h);
+			al_draw_bitmap_region(img_tac_bar, 0, 0, al_get_bitmap_width(img_tac_bar) * percentile, al_get_bitmap_height(img_tac_bar), x, 311, 0);
             g_game->Print22(g_game->GetBackBuffer(), x + 10, 311 + 2, "tactical skill", BLACK);
 
             //learning rate bar
 			percentile = selected_officer->attributes.getLearnRate(); percentile /= 65;
-			masked_blit(img_learn_bar, g_game->GetBackBuffer(), 0, 0, x, 357, img_learn_bar->w * percentile, img_learn_bar->h);
+			al_draw_bitmap_region(img_learn_bar, 0, 0, al_get_bitmap_width(img_learn_bar) * percentile, al_get_bitmap_height(img_learn_bar), x, 357, 0);
             g_game->Print22(g_game->GetBackBuffer(), x + 10, 357 + 2, "learning", BLACK);
 
             //durability
 			percentile = selected_officer->attributes.getDurability(); percentile /= 65;
-			masked_blit(img_dur_bar, g_game->GetBackBuffer(), 0, 0, x, 401, img_dur_bar->w * percentile, img_dur_bar->h);
+			al_draw_bitmap_region(img_dur_bar, 0, 0, al_get_bitmap_width(img_dur_bar) * percentile, al_get_bitmap_height(img_dur_bar), x, 401, 0);
             g_game->Print22(g_game->GetBackBuffer(), x + 10, 401 + 2, "durability", BLACK);
 		}
 	}
@@ -913,7 +765,7 @@ void ModuleMedical::Draw()
 			}
 		}
 	}else{
-		if(right_offset < SCREEN_W)
+		if(right_offset < SCREEN_WIDTH)
         {
 			right_offset += VIEWER_MOVE_RATE;
 		}
@@ -932,10 +784,6 @@ void ModuleMedical::Draw()
 
 }
 
-void ModuleMedical::OnKeyPressed(int keyCode){}
-void ModuleMedical::OnKeyPress( int keyCode ){}
-void ModuleMedical::OnKeyReleased(int keyCode){}
-
 void ModuleMedical::OnMouseMove(int x, int y)
 {
 	if (g_game->gameState->getCurrentSelectedOfficer() != OFFICER_MEDICAL)
@@ -947,8 +795,6 @@ void ModuleMedical::OnMouseMove(int x, int y)
 	}
 }
 
-void ModuleMedical::OnMouseClick(int button, int x, int y){}
-void ModuleMedical::OnMousePressed(int button, int x, int y){}
 void ModuleMedical::OnMouseReleased(int button, int x, int y)
 {
 	if (g_game->gameState->getCurrentSelectedOfficer() != OFFICER_MEDICAL)
@@ -959,6 +805,3 @@ void ModuleMedical::OnMouseReleased(int button, int x, int y)
 		HealBtns[i]->OnMouseReleased(button, x,y);
 	}
 }
-
-void ModuleMedical::OnMouseWheelUp(int x, int y){}
-void ModuleMedical::OnMouseWheelDown(int x, int y){}

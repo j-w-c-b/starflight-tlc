@@ -8,10 +8,9 @@
 #ifndef INTERPLANETARYTRAVEL_H
 #define INTERPLANETARYTRAVEL_H
 
-#include "env.h"
 #include <math.h>
 #include <string>
-#include <alfont.h>
+#include <allegro5/allegro_font.h>
 #include "Module.h"
 #include "TileScroller.h"
 #include "ScrollBox.h"
@@ -19,6 +18,7 @@
 #include "GameState.h"
 #include "DataMgr.h"
 #include "Label.h"
+#include "ResourceManager.h"
 
 class ModuleInterPlanetaryTravel : public Module
 {
@@ -30,14 +30,14 @@ private:
 	int				planetFound;
 	bool			distressSignal;
 
-	BITMAP *miniMap; 
+	ALLEGRO_BITMAP *miniMap; 
 	ScrollBox::ScrollBox *text;
 
 	int loadStarSystem(int id);
 	void updateMiniMap();
 	void checkShipPosition();
 	bool checkSystemBoundary(int x,int y);
-	void Print(std::string str, int color, int delay);
+	void Print(std::string str, ALLEGRO_COLOR color, int delay);
 
 	//this struct helps to simplify searches when ship moves over a planet
 	struct planet_t {
@@ -50,7 +50,6 @@ private:
 
 	planet_t planets[10];
 
-	DATAFILE *ipdata;
 	int tilex, tiley, tilenum;
 	bool flag_DoOrbit;
 	bool flag_DoDock;
@@ -72,24 +71,24 @@ private:
 	std::string tac;
 	std::string eng;
 	std::string doc;
+	ResourceManager<ALLEGRO_BITMAP> resources;
 
 public:
-	ModuleInterPlanetaryTravel(void);
-	~ModuleInterPlanetaryTravel(void);
-	bool Init();
-	void Update();
-	void Draw();
-	void OnKeyPress(int keyCode);
-	void OnKeyPressed(int keyCode);
-	void OnKeyReleased(int keyCode);
-	void OnMouseMove(int x, int y);
-	void OnMouseClick(int button, int x, int y);
-	void OnMousePressed(int button, int x, int y);
-	void OnMouseReleased(int button, int x, int y);
-	void OnMouseWheelUp(int x, int y);
-	void OnMouseWheelDown(int x, int y);
-	void OnEvent(Event *event);
-	void Close();
+	ModuleInterPlanetaryTravel();
+	~ModuleInterPlanetaryTravel();
+	virtual bool Init() override;
+	virtual void Update() override;
+	virtual void Draw() override;
+	virtual void OnKeyPress(int keyCode) override;
+	virtual void OnKeyReleased(int keyCode) override;
+	virtual void OnMouseMove(int x, int y) override;
+	virtual void OnMouseClick(int button, int x, int y) override;
+	virtual void OnMousePressed(int button, int x, int y) override;
+	virtual void OnMouseReleased(int button, int x, int y) override;
+	virtual void OnMouseWheelUp(int x, int y) override;
+	virtual void OnMouseWheelDown(int x, int y) override;
+	virtual void OnEvent(Event *event) override;
+	virtual void Close() override;
 };
 
 #endif

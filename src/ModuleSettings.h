@@ -1,7 +1,6 @@
 #pragma once
 
-#include "env.h"
-#include <allegro.h>
+#include <allegro5/allegro.h>
 #include "Module.h"
 #include "Stardate.h"
 #include "Button.h"
@@ -19,24 +18,22 @@ class ModuleSettings : public Module
 public:
 	ModuleSettings(void);
 	virtual ~ModuleSettings(void);
-	bool Init();
-	void Update();
-	void Draw();
-	void OnKeyPress(int keyCode);
-	void OnKeyPressed(int keyCode);
-	void OnKeyReleased(int keyCode);
-	void OnMouseMove(int x, int y);
-	void OnMouseClick(int button, int x, int y);
-	void OnMousePressed(int button, int x, int y);
-	void OnMouseReleased(int button, int x, int y);
-	void OnMouseWheelUp(int x, int y);
-	void OnMouseWheelDown(int x, int y);
-	void OnEvent(Event *event);
-	void Close();
+	virtual bool Init() override;
+	virtual void Update() override;
+	virtual void Draw() override;
+	virtual void OnKeyReleased(int keyCode) override;
+	virtual void OnMouseMove(int x, int y) override;
+	virtual void OnMouseClick(int button, int x, int y) override;
+	virtual void OnMousePressed(int button, int x, int y) override;
+	virtual void OnMouseReleased(int button, int x, int y) override;
+	virtual void OnMouseWheelUp(int x, int y) override;
+	virtual void OnMouseWheelDown(int x, int y) override;
+	virtual void OnEvent(Event *event) override;
+	virtual void Close() override;
     bool SaveConfigurationFile();
 
 private:
-	BITMAP	*background;
+	ALLEGRO_BITMAP	*background;
 	Button	*btn_exit,
             *btn_fullscreen,
 			*btn_controls[11],

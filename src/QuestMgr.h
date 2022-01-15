@@ -30,7 +30,6 @@ public:
 	std::string getDebrief() { return questDebrief; }
 
 	void getScriptGlobals();
-	void setScriptGlobals();
 	void setStoredValue(int value);
 	void VerifyRequirements(int reqCode = -1, int reqType = -1, int reqAmt = -1);
 	void giveReward();
@@ -41,14 +40,7 @@ public:
 	int questRewCode, questRewType;
 	float questRewAmt;
 
-	//int storedValue;		//moved into GameState with the others to avoid
-							//assignment conflicts during game loading.
-
 private:
-	//active_quest is maintained by GameState and stored in savegame file
-	//all functions in QuestMgr utilize the GameState variable 
-	//int active_quest;
-
 	Script *script;
 
 	int questId;

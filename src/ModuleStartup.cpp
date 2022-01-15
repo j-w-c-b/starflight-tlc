@@ -7,9 +7,11 @@
 	Date: Jan,2008
 */
 
-#include "env.h"
 #include <exception>
-#include <allegro.h>
+
+#include <allegro5/allegro.h>
+#include <allegro5/allegro_primitives.h>
+
 #include "Game.h"
 #include "ModeMgr.h"
 #include "DataMgr.h"
@@ -21,6 +23,8 @@
 void showOpeningStory(int page);
 int storypage = 0;
 
+ALLEGRO_DEBUG_CHANNEL("ModuleStartup")
+
 ModuleStartup::ModuleStartup()
 {
 	display_mode = 3;
@@ -31,18 +35,15 @@ ModuleStartup::~ModuleStartup(){}
 
 bool ModuleStartup::Init()
 {
-    m_background = (BITMAP*)load_bitmap("data/startup/space_1280.bmp",NULL);
+    m_background = al_load_bitmap("data/startup/space_1280.bmp");
 
 
 	//load copyright screen
-	copyright = (BITMAP*)load_bitmap("data/startup/STARTUP_COPYRIGHTS.BMP",NULL);
+	copyright = al_load_bitmap("data/startup/startup_copyrights.bmp");
 	if (!copyright) {
 		g_game->message("Startup: Error loading startup_copyrights");
 		return false;
 	}
-
-	//create fader scratch pad
-	fader = create_bitmap(SCREEN_W, SCREEN_H);
 
 	return true;
 }
@@ -50,32 +51,27 @@ bool ModuleStartup::Init()
 void ModuleStartup::Close()
 {
 	try {
-		destroy_bitmap(fader);
-		destroy_bitmap(scratchpad);
-        destroy_bitmap(copyright);
-        destroy_bitmap(m_background);
+        al_destroy_bitmap(copyright);
+        al_destroy_bitmap(m_background);
 	}
 	catch(std::exception e) {
-		TRACE(e.what());
+		ALLEGRO_DEBUG("%s\n", e.what());
 	}
 	catch(...) {
-		TRACE("Unhandled exception in Startup::Close\n");
+		ALLEGRO_DEBUG("Unhandled exception in Startup::Close\n");
 	}
 }
 
-
-int ModuleStartup::fadein(BITMAP *dest, BITMAP *source, int speed)
+int ModuleStartup::fadein(ALLEGRO_BITMAP *dest, ALLEGRO_BITMAP *source, int speed)
 {
 	int retval = 0;
 	static int loop = 0;
-	
+
+	al_set_target_bitmap(dest);
 	if (loop < 256-speed)
 	{
 		loop += speed;
-		clear(fader);
-		set_trans_blender(0,0,0,loop);
-		draw_trans_sprite(fader, source, 0, 0);
-		blit(fader, dest, 0,0, 0,0, source->w, source->h);
+		al_draw_filled_rectangle( 0,0, al_get_bitmap_width(source), al_get_bitmap_height(source), al_map_rgba(0,0,0,255 - loop));
 	}
 	else {
 		loop = 0;
@@ -85,21 +81,19 @@ int ModuleStartup::fadein(BITMAP *dest, BITMAP *source, int speed)
 	return retval;
 }
 
-int ModuleStartup::fadeout(BITMAP *dest, BITMAP *source, int speed)
+int ModuleStartup::fadeout(ALLEGRO_BITMAP *dest, ALLEGRO_BITMAP *source, int speed)
 {
 	int retval = 0;
 	static int loop = 255;
 
+	al_set_target_bitmap(dest);
 	if (loop > speed)
 	{
 		loop -= speed;
-		clear(fader);
-		set_trans_blender(0,0,0,loop);
-		draw_trans_sprite(fader, source, 0, 0);
-		blit(fader, dest, 0,0, 0,0, source->w, source->h);
+		al_draw_filled_rectangle( 0,0, al_get_bitmap_width(source), al_get_bitmap_height(source), al_map_rgba(0,0,0,loop));
 	}
 	else {
-		rectfill(dest, 0,0, source->w, source->h, makecol(0,0,0));
+		al_draw_filled_rectangle( 0,0, al_get_bitmap_width(source), al_get_bitmap_height(source), al_map_rgba(0,0,0,255));
 		loop = 255;
 		retval = 1;
 	}
@@ -112,8 +106,9 @@ void ModuleStartup::Update(){}
 void ModuleStartup::Draw()
 {
 	static bool title_done = false;
+        al_set_target_bitmap(g_game->GetBackBuffer());
 
-    blit(m_background, g_game->GetBackBuffer(), 0, 0, 0, 0, g_game->GetBackBuffer()->w, g_game->GetBackBuffer()->h);
+    al_draw_bitmap(m_background, 0, 0, 0);
 
 	switch (display_mode) {
 
@@ -129,7 +124,7 @@ void ModuleStartup::Draw()
 			}
 
 		} else {
-			blit(copyright, g_game->GetBackBuffer(), 0, 0, 0, 0, copyright->w, copyright->h);
+		al_draw_bitmap(copyright, 0, 0, 0);
 			if (Util::ReentrantDelay(4000))
 				display_mode = 2;
 		}
@@ -160,41 +155,10 @@ void ModuleStartup::Draw()
 
 #pragma region INPUT
 
-void ModuleStartup::OnKeyPress(int keyCode){}
-void ModuleStartup::OnKeyPressed(int keyCode){}
-
-void ModuleStartup::OnKeyReleased(int keyCode)
+void ModuleStartup::OnKeyReleased(int /*keyCode*/)
 {
 	switch (display_mode) {
-	
 	//pressing any key will fast forward the slideshow
-	case 1: //fade in copyright
-		display_mode = 2;
-		break;
-
-	case 2: //fade out copyright
-		display_mode = 3;
-		break;
-
-    case 3: //opening story
-        storypage++;
-        if (storypage > 4)
-            display_mode = 100;
-        break;
-
-	case 100: //done
-		break;
-	}
-}
-
-void ModuleStartup::OnMouseMove(int x, int y){}
-void ModuleStartup::OnMouseClick(int button, int x, int y){}
-void ModuleStartup::OnMousePressed(int button, int x, int y){}
-void ModuleStartup::OnMouseReleased(int button, int x, int y)
-{
-	switch (display_mode) {
-	
-	//mouse click to turn each page
 	case 1: //fade in copyright
 		display_mode = 2;
 		break;
@@ -216,10 +180,6 @@ void ModuleStartup::OnMouseReleased(int button, int x, int y)
 
 #pragma endregion
 
-
-void ModuleStartup::OnEvent(Event *event){}
-
-
 void showOpeningStory(int page)
 {
  /*   g_game->Print18(g_game->GetBackBuffer(), 50, SCREEN_HEIGHT-40,
@@ -235,4 +195,3 @@ void showOpeningStory(int page)
     }
 
 }
-

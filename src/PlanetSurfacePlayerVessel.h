@@ -1,9 +1,8 @@
 #pragma once
 
-#include "env.h"
-#include <allegro.h>
+#include <allegro5/allegro.h>
 #include <string>
-#include <alfont.h>
+#include <allegro5/allegro_font.h>
 #include <vector>
 #include <list>
 #include "PlanetSurfaceObject.h"
@@ -13,10 +12,10 @@ class PlanetSurfacePlayerVessel : public PlanetSurfaceObject
 public:
 	PlanetSurfacePlayerVessel(lua_State *LuaVM, std::string ScriptName);
 
-	~PlanetSurfacePlayerVessel();
+	virtual ~PlanetSurfacePlayerVessel();
 
-	virtual void Draw(BITMAP *Canvas);
-	virtual void Move();
+	virtual void Draw(ALLEGRO_BITMAP *Canvas) override;
+	virtual void Move() override;
 	
 	void ForwardThrust(bool active)		{ forwardThrust = active; }		
 	void ReverseThrust(bool active)		{ reverseThrust = active; }			

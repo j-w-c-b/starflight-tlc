@@ -4,51 +4,43 @@
 #include "Game.h"
 #include "Util.h"
 
-//Label::Label(std::string Text, int X, int Y, int Width, int Height) :
-//	text(Text),
-//	xPos(X),
-//	yPos(Y),
-//	width(Width),
-//	height(Height)
-//{
-//	alFont = Game::gameState->font;
-//	image = create_bitmap(Width, Height);
-//}
+using namespace std;
 
-Label::Label(std::string Text, int X, int Y, int Width, int Height, int Color, ALFONT_FONT *Font) :
-	text(Text),
+Label::Label(const string &Text, int X, int Y, int Width, int Height, ALLEGRO_COLOR Color, ALLEGRO_FONT *Font) :
 	xPos(X),
 	yPos(Y),
 	width(Width),
 	height(Height),
 	color(Color),
+	text(Text),
 	alFont(Font)
 {
-	image = create_bitmap(Width, Height);
+	image = al_create_bitmap(Width, Height);
 }
 
 Label::~Label()
 {
 	if (image != NULL)
 	{
-		destroy_bitmap(image);
+		al_destroy_bitmap(image);
 		image = NULL;
 	}
 }
 
 void Label::Refresh()
 {
-	clear_to_color(image, makecol(255,0,255));
+    al_set_target_bitmap(image);
+    al_clear_to_color(al_map_rgba(0, 0, 0, 0));
 
     //handle wrapping
-	if (alfont_text_length(alFont, text.c_str()) > width)
+	if (al_get_text_width(alFont, text.c_str()) > width)
 	{
 		int startpos = 0, a = 0, h = 0;
 		std::list<int> spacePos;
 		std::string::iterator stringIt;
-		for (stringIt = text.begin(); stringIt != text.end(); stringIt++)
+		for (auto &i : text)
 		{
-			if ((*stringIt) == ' ')
+			if (i == ' ')
 				spacePos.push_back(a);
 			a++;
 		}
@@ -56,71 +48,41 @@ void Label::Refresh()
 		std::list<int>::iterator myIt = spacePos.begin();
 		while (myIt != spacePos.end())
 		{
-			while (myIt != spacePos.end() && alfont_text_length(alFont, text.substr(startpos, (*myIt) - startpos).c_str()) < width)
+			while (myIt != spacePos.end() && al_get_text_width(alFont, text.substr(startpos, (*myIt) - startpos).c_str()) < width)
 			{
-				myIt++;
+				++myIt;
 			}
 			if (myIt != spacePos.begin())
-				myIt--;
+				--myIt;
 
-			alfont_textprintf_ex(image, alFont, 0, h, color,-1,(text.substr(startpos, (*myIt) - startpos)).c_str());
-			h += alfont_get_font_height(alFont);
+			al_draw_text(alFont, color, 0, h, 0,(text.substr(startpos, (*myIt) - startpos)).c_str());
+			h += al_get_font_line_height(alFont);
 			
 			if (h > height) break;
 
 			startpos = (*myIt)+1;
-			myIt++;
+			--myIt;
 		}
 	}
 	else
 	{
         //print entire message on one line
-		alfont_textprintf_ex(image, alFont, 0, 0, color, -1, text.c_str());
+		al_draw_text(alFont, color, 0, 0, 0, text.c_str());
 	}
 }
 
-void Label::Draw(BITMAP *Canvas)
+void Label::Draw(ALLEGRO_BITMAP *Canvas)
 {
-	draw_sprite(Canvas, image, xPos, yPos);
+	al_set_target_bitmap(Canvas);
+	al_draw_bitmap(image, xPos, yPos, 0);
 }
 
-void Label::SetWidth(int Width)
-{
-	width = Width;
-}
-
-void Label::SetHeight(int Height)
-{
-	height = Height;
-}
-
-void Label::SetColor(int Color)
-{
-	color = Color;
-}
-
-void Label::SetText(std::string Text)
+void Label::SetText(const string &Text)
 {
 	text = Text;
 }
 
-void Label::SetFont(ALFONT_FONT *Font)
+void Label::SetFont(ALLEGRO_FONT *Font)
 {
 	alFont = Font;
 }
-
-void Label::Append(double Value, int Size)
-{
-	text += Util::ToString((int)Value);
-}
-
-void Label::Append(int Value, int Size)
-{
-	text += Util::ToString(Value);
-}
-
-void Label::Append(float Value, int Size)
-{
-	text += Util::ToString((int)Value);
-}
-

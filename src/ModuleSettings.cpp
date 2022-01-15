@@ -4,10 +4,9 @@
 	Author: Keith Patch
 	Date: October 2008
 */
-#include "env.h"
 #include <sstream>
 #include <fstream>
-#include <allegro.h>
+#include <allegro5/allegro.h>
 #include "Util.h"
 #include "GameState.h"
 #include "Game.h"
@@ -20,17 +19,14 @@
 
 using namespace std;
 
-const int EXITBTN_WIDTH							= 176;
-const int EXITBTN_HEIGHT						= 74;
-const int EXITBTN_X								= 50;
-const int EXITBTN_Y								= 688;
 const int EVENT_EXIT							= -1;
 
 const int EVENT_CONTROLS						= 100;
-const int EVENT_DEFAULT							= -100;
 const int EVENT_SAVESETTINGS					= -200;
 const int EVENT_RES_CHANGE  = 9900;
 const int EVENT_FULLSCREEN_BUTTON = 9901;
+
+ALLEGRO_DEBUG_CHANNEL("ModuleSettings")
 
 std::string old_resolution="";
 
@@ -49,26 +45,26 @@ ModuleSettings::~ModuleSettings(void){}
 
 bool ModuleSettings::Init()
 {
-	TRACE("  ModuleSettings Initialize\n");
+	ALLEGRO_DEBUG("  ModuleSettings Initialize\n");
 
 	cmd_selected = 0;
 	button_selected = 0;
 
-	background = load_bitmap("data/settings/background.tga",NULL);
+	background = al_load_bitmap("data/settings/background.tga");
 	if (!background) {
 		g_game->message("Settings: Error loading background");
 		return false;
 	}
 
-	BITMAP *imgNorm=NULL, *imgOver=NULL; 
+	ALLEGRO_BITMAP *imgNorm=NULL, *imgOver=NULL; 
 	g_game->audioSystem->Load("data/cantina/buttonclick.ogg", "click");
 
     //exit button
-	imgNorm = load_bitmap("data/settings/button1.tga",0);
-	imgOver = load_bitmap("data/settings/button.tga",0);
+	imgNorm = al_load_bitmap("data/settings/button1.tga");
+	imgOver = al_load_bitmap("data/settings/button.tga");
 	btn_exit = new Button(
 		imgNorm, imgOver, NULL, 
-		10, SCREEN_HEIGHT-imgNorm->h-10, 
+		10, SCREEN_HEIGHT-al_get_bitmap_height(imgNorm)-10, 
         0, EVENT_EXIT, g_game->font22, "EXIT", GOLD, "click", true, true);
 	if(!btn_exit) return false;
 	if(!btn_exit->IsInitialized()) return false;
@@ -76,7 +72,7 @@ bool ModuleSettings::Init()
     //save button
 	btn_save = new Button(
 		imgNorm, imgOver, NULL, 
-		140, SCREEN_HEIGHT-imgNorm->h-10,  
+		140, SCREEN_HEIGHT-al_get_bitmap_height(imgNorm)-10,  
         0, EVENT_SAVESETTINGS, g_game->font22, "SAVE", GOLD, "click", true, true);
 	if(!btn_save) return false;
 	if(!btn_save->IsInitialized()) return false;
@@ -113,19 +109,19 @@ bool ModuleSettings::Init()
     	40, 100, 200, 230, EVENT_RES_CHANGE);
     resScrollbox->setLines(g_game->videomodes.size());
 	resScrollbox->DrawScrollBar(true);
-    resScrollbox->SetColorBackground(makecol(30,30,30));
-    resScrollbox->SetColorItemBorder(makecol(40,40,40));
-    resScrollbox->SetColorControls(makecol(130,130,130));
+    resScrollbox->SetColorBackground(al_map_rgb(30,30,30));
+    resScrollbox->SetColorItemBorder(al_map_rgb(40,40,40));
+    resScrollbox->SetColorControls(al_map_rgb(130,130,130));
     resScrollbox->PaintNormalImage();
-    resScrollbox->SetColorHover(makecol(160,160,160));
+    resScrollbox->SetColorHover(al_map_rgb(160,160,160));
     resScrollbox->PaintHoverImage();
-    resScrollbox->SetColorSelectedBackground(makecol(80,80,160));
-    resScrollbox->SetColorSelectedHighlight(makecol(160,160,255));
+    resScrollbox->SetColorSelectedBackground(al_map_rgb(80,80,160));
+    resScrollbox->SetColorSelectedHighlight(al_map_rgb(160,160,255));
     resScrollbox->PaintSelectedImage();
 
     chosenResolution = g_game->getGlobalString("RESOLUTION");
 
-    for (Game::VideoModeIterator mode = g_game->videomodes.begin(); mode != g_game->videomodes.end(); ++mode)
+    for (auto mode = g_game->videomodes.begin(); mode != g_game->videomodes.end(); ++mode)
 	{
         std::ostringstream os;
         os << mode->width << " x " << mode->height;
@@ -136,14 +132,14 @@ bool ModuleSettings::Init()
 
 
     //create fullscreen toggle
-    BITMAP *toggleImage=NULL;
-    toggleImage = (BITMAP*)load_bitmap("data/settings/button32_normal.bmp",NULL);
+    ALLEGRO_BITMAP *toggleImage=NULL;
+    toggleImage = al_load_bitmap("data/settings/button32_normal.bmp");
     if (!toggleImage) {
         g_game->fatalerror("Settings: Error loading toggle image\n");
         return false;
     }
-    BITMAP *toggleImageOver=NULL;
-    toggleImageOver = (BITMAP*)load_bitmap("data/settings/button32_over.bmp",NULL);
+    ALLEGRO_BITMAP *toggleImageOver=NULL;
+    toggleImageOver = al_load_bitmap("data/settings/button32_over.bmp");
     if (!toggleImageOver) {
         g_game->fatalerror("Settings: Error loading toggle image\n");
         return false;
@@ -168,7 +164,7 @@ bool ModuleSettings::Init()
 
 void ModuleSettings::Close()
 {
-	TRACE("*** ModuleSettings closing\n");
+	ALLEGRO_DEBUG("*** ModuleSettings closing\n");
 	try {
         if (btn_fullscreen!=NULL)
         {
@@ -189,23 +185,24 @@ void ModuleSettings::Close()
 			btn_save->Destroy();
 			btn_save = NULL;
 		}
-        if (!btn_fullscreen) {
+        if (btn_fullscreen) {
             btn_fullscreen->Destroy();
             btn_fullscreen=NULL;
         }
 	}
 	catch(std::exception e) {
-		TRACE(e.what());
+		ALLEGRO_DEBUG("%s\n", e.what());
 	}
 	catch(...) {
-		TRACE("Unhandled exception in ModuleSettings::Close\n");
+		ALLEGRO_DEBUG("Unhandled exception in ModuleSettings::Close\n");
 	}
 }
 	
 void ModuleSettings::Draw()
 {
 	//draw background
-	blit(background, g_game->GetBackBuffer(), 0, 0, 0, 0, background->w, background->h);
+    al_set_target_bitmap(g_game->GetBackBuffer());
+    al_draw_bitmap(background, 0, 0, 0);
 
     btn_save->Run(g_game->GetBackBuffer());
 	btn_exit->Run(g_game->GetBackBuffer());
@@ -222,7 +219,6 @@ void ModuleSettings::Draw()
     g_game->Print32(g_game->GetBackBuffer(), 680, 30, "CONTROLS");
 	int x = btn_controls[0]->GetX() + btn_controls[0]->GetWidth() + 10;
     int y = btn_controls[0]->GetY()+5;
-	std::ostringstream os;
 
 	g_game->Print20(g_game->GetBackBuffer(), x, y, "Forward", WHITE); 	y+=40;
 	g_game->Print20(g_game->GetBackBuffer(), x, y, "Turn left", WHITE);	y+=40;
@@ -234,7 +230,7 @@ void ModuleSettings::Draw()
 	g_game->Print20(g_game->GetBackBuffer(), x, y, "Fire missile", WHITE);  	y+=40;
 	g_game->Print20(g_game->GetBackBuffer(), x, y, "Toggle shield", WHITE); 	y+=40;
 	g_game->Print20(g_game->GetBackBuffer(), x, y, "Toggle weapons", WHITE);    y+=40;
-    g_game->Print20(g_game->GetBackBuffer(), x, y, "Select bridge station", WHITE);    y+=40;
+    g_game->Print20(g_game->GetBackBuffer(), x, y, "Select bridge station", WHITE);
 
 	//draw buttons for each command
 	for(int i=0; i<11; i++)
@@ -251,11 +247,9 @@ void ModuleSettings::Draw()
 
 #pragma region INPUT
 
-void ModuleSettings::OnKeyPressed(int keyCode){}
-void ModuleSettings::OnKeyPress( int keyCode ){}
 void ModuleSettings::OnKeyReleased(int keyCode)
 {
-	if (keyCode == KEY_ESC)
+	if (keyCode == ALLEGRO_KEY_ESCAPE)
     { 
 		g_game->modeMgr->LoadModule(MODULE_TITLESCREEN);
 		return;
@@ -325,7 +319,7 @@ bool ModuleSettings::SaveConfigurationFile()
     configfile.open("data/config.lua", std::ofstream::out | std::ofstream::trunc);
     if (!configfile.is_open())
     {
-        TRACE("ModuleSettings: error opening config.lua\n");
+        ALLEGRO_DEBUG("ModuleSettings: error opening config.lua\n");
         return false;
     }
     
@@ -339,7 +333,6 @@ bool ModuleSettings::SaveConfigurationFile()
     configfile.close();
 
     //use new video mode
-    //g_game->Initialize_Graphics();
     int cx = SCREEN_WIDTH/2;
     int cy = SCREEN_HEIGHT/2;
     g_game->ShowMessageBoxWindow("SETTINGS SAVED","Please restart the program for changes to take effect...", 
@@ -359,7 +352,7 @@ void ModuleSettings::OnEvent(Event *event)
             {
                 old_resolution = chosenResolution;
                 chosenResolution = resScrollbox->GetSelectedItem();
-                TRACE("Resolution change: %s\n", chosenResolution.c_str());
+                ALLEGRO_DEBUG("Resolution change: %s\n", chosenResolution.c_str());
             }
             break;
 

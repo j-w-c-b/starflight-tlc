@@ -10,15 +10,16 @@
 #ifndef _PLANETSURFACE_H
 #define _PLANETSURFACE_H
 
-#include <lua.hpp>
+#include "lua.hpp"
 
-#include "env.h"
-#include <allegro.h>
+#include <allegro5/allegro.h>
 #include "Module.h"
 #include "TileScroller.h"
 #include "PlayerShipSprite.h"
 #include "ScrollBox.h"
 #include "DataMgr.h"
+#include "ResourceManager.h"
+
 #include <map>
 
 class PlanetSurfaceObject;
@@ -49,41 +50,41 @@ private:
 	/* the Lua interpreter */
 	lua_State *LuaVM;
 
-	std::map<std::string, BITMAP*> portraits;
-	std::map<std::string, BITMAP*>::iterator portraitsIt;
+	std::map<std::string, ALLEGRO_BITMAP*> portraits;
+	std::map<std::string, ALLEGRO_BITMAP*>::iterator portraitsIt;
 
 	Button *cargoBtn;
 
-	BITMAP *img_messages;
-	BITMAP *img_socket;
-	BITMAP *img_gauges;
-	BITMAP *img_aux;
-	BITMAP *img_control;
-	BITMAP *surface;
-	BITMAP *minimap;
-	BITMAP *btnNormal;
-	BITMAP *btnDisabled;
-	BITMAP *btnMouseOver;
-	BITMAP *btnSelect;
-	BITMAP *btnBigNormal;
-	BITMAP *btnBigDisabled;
-	BITMAP *btnBigMouseOver;
-	BITMAP *btnBigSelect;
-	BITMAP *Static;
-	BITMAP *Cargo;
-	BITMAP *Cargo_BarFill;
-	BITMAP *CargoMouseOver;
+	ALLEGRO_BITMAP *img_messages;
+	ALLEGRO_BITMAP *img_socket;
+	ALLEGRO_BITMAP *img_gauges;
+	ALLEGRO_BITMAP *img_aux;
+	ALLEGRO_BITMAP *img_control;
+	ALLEGRO_BITMAP *surface;
+	ALLEGRO_BITMAP *minimap;
+	ALLEGRO_BITMAP *btnNormal;
+	ALLEGRO_BITMAP *btnDisabled;
+	ALLEGRO_BITMAP *btnMouseOver;
+	ALLEGRO_BITMAP *btnSelect;
+	ALLEGRO_BITMAP *btnBigNormal;
+	ALLEGRO_BITMAP *btnBigDisabled;
+	ALLEGRO_BITMAP *btnBigMouseOver;
+	ALLEGRO_BITMAP *btnBigSelect;
+	ALLEGRO_BITMAP *Static;
+	ALLEGRO_BITMAP *Cargo;
+	ALLEGRO_BITMAP *Cargo_BarFill;
+	ALLEGRO_BITMAP *CargoMouseOver;
 
-	BITMAP *Timer_BarFill;
-	BITMAP *Timer_BarEmpty;
-	BITMAP *HP_Bar;
+	ALLEGRO_BITMAP *Timer_BarFill;
+	ALLEGRO_BITMAP *Timer_BarEmpty;
+	ALLEGRO_BITMAP *HP_Bar;
 
-	BITMAP *Fuel;
-	BITMAP *FuelBar;
-	BITMAP *Armor;
-	BITMAP *ArmorBar;
-	BITMAP *Hull;
-	BITMAP *HullBar;
+	ALLEGRO_BITMAP *Fuel;
+	ALLEGRO_BITMAP *FuelBar;
+	ALLEGRO_BITMAP *Armor;
+	ALLEGRO_BITMAP *ArmorBar;
+	ALLEGRO_BITMAP *Hull;
+	ALLEGRO_BITMAP *HullBar;
 
 	int CMDBUTTONS_UL_X;
 	int CMDBUTTONS_UL_Y;
@@ -109,6 +110,8 @@ private:
 	double cargoFillPercent;
 
 	Planet *planet;
+	ResourceManager<ALLEGRO_BITMAP> resources;
+
 public:
 	PlanetSurfaceObject *cinematicShip;
 	PlanetSurfaceObject *psObjectHolder;
@@ -142,17 +145,17 @@ public:
 	Label *label;
 
 	ModulePlanetSurface(void);
-	bool Init();
-	void Update();
-	void Draw();
+	virtual bool Init() override;
+	virtual void Update() override;
+	virtual void Draw() override;
 	void drawMinimap();
 	void drawHPBar(PlanetSurfaceObject *PSO);
 	void updateCargoFillPercent();
 	double CalcDistance(PlanetSurfaceObject *PSO1, PlanetSurfaceObject *PSO2);
 	void PostMessage(std::string text);
-	void PostMessage(std::string text, int color);
-	void PostMessage(std::string text, int color, int blanksBefore);
-	void PostMessage(std::string text, int color, int blanksBefore, int blanksAfter);
+	void PostMessage(std::string text, ALLEGRO_COLOR color);
+	void PostMessage(std::string text, ALLEGRO_COLOR color, int blanksBefore);
+	void PostMessage(std::string text, ALLEGRO_COLOR color, int blanksBefore, int blanksAfter);
 	void LoadPortrait(std::string name, std::string filepath);
 	void ShowPortrait(std::string name);
 	void CheckForCollisions(PlanetSurfaceObject *PSO);
@@ -163,17 +166,16 @@ public:
 	void AddPlanetSurfaceObject(PlanetSurfaceObject *PSO);
 	void RemovePlanetSurfaceObject(PlanetSurfaceObject *PSO);
 
-	void OnKeyPress(int keyCode);
-	void OnKeyPressed(int keyCode);
-	void OnKeyReleased(int keyCode);
-	void OnMouseMove(int x, int y);
-	void OnMouseClick(int button, int x, int y);
-	void OnMousePressed(int button, int x, int y);
-	void OnMouseReleased(int button, int x, int y);
-	void OnMouseWheelUp(int x, int y);
-	void OnMouseWheelDown(int x, int y);
-	void OnEvent(Event *event);
-	void Close();
+	virtual void OnKeyPress(int keyCode) override;
+	virtual void OnKeyReleased(int keyCode) override;
+	virtual void OnMouseMove(int x, int y) override;
+	virtual void OnMouseClick(int button, int x, int y) override;
+	virtual void OnMousePressed(int button, int x, int y) override;
+	virtual void OnMouseReleased(int button, int x, int y) override;
+	virtual void OnMouseWheelUp(int x, int y) override;
+	virtual void OnMouseWheelDown(int x, int y) override;
+	virtual void OnEvent(Event *event) override;
+	virtual void Close() override;
 	
 	bool fabTilemap();
 	bool fabAsteroid();
@@ -181,7 +183,6 @@ public:
 	bool fabFrozen();
 	bool fabOceanic();
 	bool fabMolten();
-	//bool fabGasGiant();
 	bool fabAcidic();
 	void fabPlanetSurfaceObjects( std::string scriptName, std::string scriptFile, int filter, int maxPerItemType, int maxItemTypes );
 

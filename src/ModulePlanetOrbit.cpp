@@ -13,9 +13,16 @@
 
 
 #include <exception>
-#include "env.h"
 
+#include <allegro5/allegro.h>
+#include <allegro5/allegro_primitives.h>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wreorder-ctor"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 #include "PerlinTL.h"
+#pragma GCC diagnostic pop
+
 #include "ModulePlanetOrbit.h"
 #include "AudioSystem.h"
 #include "QuestMgr.h"
@@ -29,7 +36,8 @@
 #include "PauseMenu.h"
 using namespace std;
 
-//sprite *planetImg;
+ALLEGRO_DEBUG_CHANNEL("ModulePlanetOrbit")
+
 float m_rotationAngle;
 int starid = -1;
 int planetid = -1;
@@ -38,12 +46,11 @@ double planetRotationSpeed, planetRotation;
 int lightmapOffsetX, lightmapOffsetY;
 std::string lightmapFilename;
 
-BITMAP *planet_topography, *planet_scanner_map, *planet_texture;
+ALLEGRO_BITMAP *planet_topography, *planet_scanner_map, *planet_texture;
 bool flag_DoDock = false;
 
 ModulePlanetOrbit::ModulePlanetOrbit(void)
 {
-    audio_scan = NULL;
 }
 
 ModulePlanetOrbit::~ModulePlanetOrbit(void){}
@@ -52,10 +59,6 @@ ModulePlanetOrbit::~ModulePlanetOrbit(void){}
 
 
 #pragma region INPUT
-
-void ModulePlanetOrbit::OnKeyPress(int keyCode){}
-void ModulePlanetOrbit::OnKeyPressed(int keyCode){}
-void ModulePlanetOrbit::OnKeyReleased(int keyCode){}
 
 void ModulePlanetOrbit::OnMouseMove(int x, int y)
 {
@@ -89,23 +92,22 @@ void ModulePlanetOrbit::OnMouseWheelDown(int x, int y)
 
 #pragma endregion
 
-
 void ModulePlanetOrbit::OnEvent(Event *event)
 {
 	string escape;
 	switch(event->getEventType())
 	{
         //pause menu events
-		case 0xDEADBEEF + 2: //save game
+		case EVENT_SAVE_GAME: //save game
 			g_game->gameState->AutoSave();
 			g_game->printout(text, "<Game Saved>", WHITE, 5000);
 			return;
 			break;
-		case 0xDEADBEEF + 3: //load game
+		case EVENT_LOAD_GAME: //load game
 			g_game->gameState->AutoLoad();
 			return;//this must come after any LoadModule call
 			break;
-		case 0xDEADBEEF + 4: //quit game
+		case EVENT_QUIT_GAME: //quit game
 			g_game->setVibration(0);
 			escape = g_game->getGlobalString("ESCAPEMODULE");
 			g_game->modeMgr->LoadModule(escape);
@@ -151,10 +153,6 @@ void ModulePlanetOrbit::OnEvent(Event *event)
         case EVENT_CAPTAIN_QUESTLOG :
             g_game->printout(text, "Please break orbit before viewing the mission log", YELLOW, -1);
             break;
-
-		//case EVENT_CAPTAIN_LOG:
-			//g_game->printout(text, "This planet cannot be logged for colonization.", YELLOW, 5000);
-			//break;
 
 		case EVENT_SCIENCE_SCAN:
 			if ((planetScan == 0 || planetScan == 3) && planetAnalysis == 0) {
@@ -267,16 +265,16 @@ bool ModulePlanetOrbit::CreatePlanetTexture()
     ostringstream os;
     os << "data/planetorbit/planet_" << randomness << "_256.bmp";
     orbitFilename = os.str();
-    TRACE("Planet orbit filename: %s\n", orbitFilename.c_str());
+    ALLEGRO_DEBUG("Planet orbit filename: %s\n", orbitFilename.c_str());
 
 	os.str("");
 	os << "data/planetorbit/planet_" << randomness << "_500.bmp";
 	surfaceFilename = os.str();
-	TRACE("Planet surface filename: %s\n", surfaceFilename.c_str());
+	ALLEGRO_DEBUG("Planet surface filename: %s\n", surfaceFilename.c_str());
 
     //try to find planet texture previously generated
 	planet_texture=NULL;
-    planet_texture = (BITMAP*)load_bitmap(orbitFilename.c_str(), NULL);
+    planet_texture = (ALLEGRO_BITMAP*)al_load_bitmap(orbitFilename.c_str());
 	if (!planet_texture) 
     {
 	    //generate planet texture for ORBIT render 256x256
@@ -286,7 +284,7 @@ bool ModulePlanetOrbit::CreatePlanetTexture()
 	    createPlanetSurface(TEX_SIZE_SURFACE, TEX_SIZE_SURFACE, randomness, planetType, surfaceFilename);
 
         //load newly generated planet texture
-        planet_texture = (BITMAP*)load_bitmap(orbitFilename.c_str(), NULL);
+        planet_texture = (ALLEGRO_BITMAP*)al_load_bitmap(orbitFilename.c_str());
 	    if (!planet_texture) {
 		    g_game->message("PlanetOrbit: Error loading planet texture");
 		    return false;
@@ -298,18 +296,22 @@ bool ModulePlanetOrbit::CreatePlanetTexture()
 	static int asw = (int)g_game->getGlobalNumber("AUX_SCREEN_WIDTH");
 	static int ash = (int)g_game->getGlobalNumber("AUX_SCREEN_HEIGHT");
 
-    //create planet topography bitmap for minimap
-	planet_topography = create_bitmap(asw, ash);
-	clear_bitmap(planet_topography);
+    //create planet topography ALLEGRO_BITMAP for minimap
+	planet_topography = al_create_bitmap(asw, ash);
+	al_set_target_bitmap(planet_topography);
+	al_clear_to_color(BLACK);
 
 	//scale planet texture onto topography, cutting skewed N/S poles (drop 10 pixels from top/bottom)
- 	stretch_blit(planet_texture, planet_topography, 
-        0, 10, planet_texture->w, planet_texture->h-20, 
-        1, 1, planet_topography->w-2, planet_topography->h-2);
+
+ 	al_set_target_bitmap(planet_topography);
+ 	al_draw_scaled_bitmap(planet_texture, 
+        0, 10, al_get_bitmap_width(planet_texture), al_get_bitmap_height(planet_texture)-20, 
+        1, 1, al_get_bitmap_width(planet_topography)-2, al_get_bitmap_height(planet_topography)-2, 0);
 
 	//now create a scratch image as a duplicate of topography used for sensor scans
-	planet_scanner_map = create_bitmap(asw, ash);
-    draw_sprite(planet_scanner_map, planet_topography, 0, 0);
+	planet_scanner_map = al_create_bitmap(asw, ash);
+    al_set_target_bitmap(planet_scanner_map);
+    al_draw_bitmap(planet_topography, 0, 0, 0);
 
 
     //create texture-mapped sphere of the planet
@@ -325,38 +327,31 @@ bool ModulePlanetOrbit::CreatePlanetTexture()
 
 void ModulePlanetOrbit::Close()
 {
-	TRACE("PlanetOrbit Destroy\n");
+	ALLEGRO_DEBUG("PlanetOrbit Destroy\n");
 
 	try {
         if (lightmap_overlay) {
-            destroy_bitmap(lightmap_overlay);
+            al_destroy_bitmap(lightmap_overlay);
             lightmap_overlay=NULL;
         }
 		if (planet_topography) {
-            destroy_bitmap(planet_topography);
+            al_destroy_bitmap(planet_topography);
             planet_topography=NULL;
         }
         if (planet_scanner_map) {
-            destroy_bitmap(planet_scanner_map);
+            al_destroy_bitmap(planet_scanner_map);
             planet_scanner_map=NULL;
         }
         if (planet_texture) {
-            destroy_bitmap(planet_texture);
+            al_destroy_bitmap(planet_texture);
             planet_texture = NULL;
         }
         if (background) {
-            destroy_bitmap(background);
+            al_destroy_bitmap(background);
             background=NULL;
         }
-        //if (img_viewer) {
-        //    destroy_bitmap(img_viewer);
-        //    img_viewer=NULL;
-        //}
 
-        if (audio_scan) {
-            delete audio_scan;
-            audio_scan = NULL;
-        }
+        audio_scan.reset();
 
 		if (text != NULL)
 		{
@@ -366,10 +361,10 @@ void ModulePlanetOrbit::Close()
 
 	}
 	catch(std::exception e) {
-		TRACE(e.what());
+		ALLEGRO_DEBUG("%s\n", e.what());
 	}
 	catch(...) {
-		TRACE("Unhandled exception in PlanetOrbit::Close\n");
+		ALLEGRO_DEBUG("Unhandled exception in PlanetOrbit::Close\n");
 	}
 }
 
@@ -378,7 +373,7 @@ void ModulePlanetOrbit::Close()
 bool ModulePlanetOrbit::Init()
 {
 	g_game->SetTimePaused(false);	//game-time normal in this module.
-	TRACE("  PlanetOrbit Initialize\n");
+	ALLEGRO_DEBUG("  PlanetOrbit Initialize\n");
 
 #ifdef DEBUGMODE
     if (g_game->getGlobalString("STARTUPMODULE") == "PLANETORBIT")
@@ -395,11 +390,8 @@ bool ModulePlanetOrbit::Init()
 	planetAnalysis = 0;
 	flag_DoDock = false;
 
-	//clear screen
-	//rectfill(g_game->GetBackBuffer(), 0, 0, SCREEN_W-1, SCREEN_H-1, BLACK);
-
     //load the background
-    background = (BITMAP*)load_bitmap("data/planetorbit/STARFIELD.tga",NULL);
+    background = al_load_bitmap("data/planetorbit/STARFIELD.tga");
     if (!background) {
         g_game->fatalerror("PlanetOrbit: Error loading background");
         return false;
@@ -412,7 +404,7 @@ bool ModulePlanetOrbit::Init()
 	gui_viewer_y = 10;
 	gui_viewer_dir = gvs;
 	gui_viewer_sliding = false;
-	img_viewer = (BITMAP*)load_bitmap("data/spacetravel/GUI_VIEWER.BMP",NULL);*/
+	img_viewer = al_load_bitmap("data/spacetravel/gui_viewer.bmp");*/
 
 	//create the ScrollBox for message window
 	static int gmx = (int)g_game->getGlobalNumber("GUI_MESSAGE_POS_X");
@@ -426,10 +418,6 @@ bool ModulePlanetOrbit::Init()
     //point global scrollbox to local one in this module for access by sub-modules
     g_game->g_scrollbox = text;
 
-    //set default text size
-	//alfont_set_font_size(g_game->font10, 20);
-
-
 	//get current star data
 	Star *star = g_game->dataMgr->GetStarByID(g_game->gameState->player->currentStar);
 	if (star)
@@ -439,7 +427,7 @@ bool ModulePlanetOrbit::Init()
 
 
 	//read planet data
-	if (g_game->gameState->player->currentPlanet > -1)
+	if (star != nullptr && g_game->gameState->player->currentPlanet > -1)
 	{
 		planet = star->GetPlanetByID(g_game->gameState->player->currentPlanet);
 		if (planet) {
@@ -495,7 +483,7 @@ bool ModulePlanetOrbit::Init()
     //load planet lightmap overlay
     lightmapFilename = "data/planetorbit/" + lightmapFilename;
     lightmap_overlay=NULL;
-    lightmap_overlay = (BITMAP*)load_bitmap(lightmapFilename.c_str(),NULL);
+    lightmap_overlay = (ALLEGRO_BITMAP*)al_load_bitmap(lightmapFilename.c_str());
     if (!lightmap_overlay) {
         g_game->fatalerror("PlanetOrbit: error loading lightmap_overlay");
         return false;
@@ -524,7 +512,6 @@ bool ModulePlanetOrbit::Init()
 			g_game->fatalerror("PlanetOrbit: Error loading audio_scan.wav");
 			return false;
 		}
-		//audio_scan->SetVolume(0.5f);
 	}
 
 	return true;
@@ -534,7 +521,6 @@ bool ModulePlanetOrbit::Init()
 void ModulePlanetOrbit::Update()
 {
 	std::string temp;
-	std::ostringstream ostr;
 	Officer *currentSci = g_game->gameState->getCurrentSci();
 
 	if (planetScan == 1)
@@ -710,8 +696,8 @@ void ModulePlanetOrbit::Update()
 	//planet scan?
 	if (planetScan == 1) 
     {
-        int pw = planet_topography->w-7;
-        int ph = planet_topography->h-7;
+        int pw = al_get_bitmap_width(planet_topography)-7;
+        int ph = al_get_bitmap_height(planet_topography)-7;
 
         //draw a bunch of random sensor blips
         for (int n=0; n<8; n++)
@@ -721,8 +707,8 @@ void ModulePlanetOrbit::Update()
 		    r.top = rand() % ph;
 		    r.right = r.left + 4;
 		    r.bottom = r.top + 4;
-		    int color = makecol(100+rand() % 155, 0, 100+rand() % 155);
-		    rectfill(planet_topography, r.left, r.top, r.right, r.bottom, color);
+		    ALLEGRO_COLOR color = al_map_rgb(100+rand() % 155, 0, 100+rand() % 155);
+		    al_draw_filled_rectangle( r.left, r.top, r.right, r.bottom, color);
         }
 
         g_game->audioSystem->Play( audio_scan );
@@ -730,7 +716,8 @@ void ModulePlanetOrbit::Update()
 	}
 	else {
 		//restore original topography
-		blit(planet_scanner_map,planet_topography,0,0,0,0,planet_topography->w,planet_topography->h);
+                al_set_target_bitmap(planet_topography);
+		al_draw_bitmap(planet_scanner_map,0,0,0);
 	}
 
 
@@ -750,30 +737,19 @@ void ModulePlanetOrbit::Update()
 
 void ModulePlanetOrbit::Draw()
 {
-	//blit(background, g_game->GetBackBuffer(), 0, 0, 0, 0, background->w, background->h-200);
-    draw_trans_sprite(g_game->GetBackBuffer(), background, 0, 0);
-
-	//draw gui viewer
-	//static int gvl = (int)g_game->getGlobalNumber("GUI_VIEWER_LEFT");
-	//static int gvr = (int)g_game->getGlobalNumber("GUI_VIEWER_RIGHT");
-	//if (gui_viewer_sliding) 
-    //{
-	//	gui_viewer_x += gui_viewer_dir;
-	//	if (gui_viewer_x <= gvl || gui_viewer_x >= gvr)
-	//		gui_viewer_sliding = false;
-	//}
-	//masked_blit(img_viewer, g_game->GetBackBuffer(), 0, 0, gui_viewer_x, gui_viewer_y, img_viewer->w, img_viewer->h);
+    al_set_target_bitmap(g_game->GetBackBuffer());
+    al_draw_bitmap(background, 0, 0, 0);
 
     //clear aux window
 	static int asx = (int)g_game->getGlobalNumber("AUX_SCREEN_X");
 	static int asy = (int)g_game->getGlobalNumber("AUX_SCREEN_Y");
 	static int asw = (int)g_game->getGlobalNumber("AUX_SCREEN_WIDTH");
 	static int ash = (int)g_game->getGlobalNumber("AUX_SCREEN_HEIGHT");
-	rectfill(g_game->GetBackBuffer(), asx, asy, asx + asw, asy + ash, makecol(0,0,0));
+	al_draw_filled_rectangle( asx, asy, asx + asw, asy + ash, al_map_rgb(0,0,0));
 
     
     //draw topography map of planet in the aux window
-    blit(planet_topography, g_game->GetBackBuffer(), 0, 0, asx, asy, planet_topography->w, planet_topography->h);
+   al_draw_bitmap(planet_topography, asx, asy, 0);
 
 
 	//draw message window
@@ -781,7 +757,6 @@ void ModulePlanetOrbit::Draw()
 
     //draw rotating planet as textured sphere
     static double rot = 0.0;
-    int rotation = (int) Util::Round( rot );
     int cx = SCREEN_WIDTH/2;
     int cy = 250;
     planetRotation += planetRotationSpeed;
@@ -790,7 +765,7 @@ void ModulePlanetOrbit::Draw()
     rot = Util::WrapValue(rot, 0.0, 256.0);
 
     //draw planet lightmap overlay 
-    draw_trans_sprite(g_game->GetBackBuffer(), lightmap_overlay, cx+lightmapOffsetX, cy+lightmapOffsetY);
+    al_draw_bitmap(lightmap_overlay, cx+lightmapOffsetX, cy+lightmapOffsetY, 0);
 
 
 #ifdef DEBUGMODE

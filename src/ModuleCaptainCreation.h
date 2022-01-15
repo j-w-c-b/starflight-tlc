@@ -2,13 +2,12 @@
 #define MODULECAPTAINCREATION_H
 #pragma once
 
-#include "env.h"
-#include <allegro.h>
-#include <alfont.h>
-#include <fmod.hpp>
+#include <allegro5/allegro.h>
+#include <allegro5/allegro_font.h>
 #include "Module.h"
 #include "GameState.h"
 #include "AudioSystem.h"
+#include "ResourceManager.h"
 
 class Button;
 class Label;
@@ -18,20 +17,20 @@ class ModuleCaptainCreation : public Module
 public:
 	ModuleCaptainCreation(void);
 	virtual ~ModuleCaptainCreation(void);
-	virtual bool Init();
-	void Update();
-	virtual void Draw();
-	virtual void OnKeyPress(int keyCode);
-	virtual void OnKeyPressed(int keyCode);
-	virtual void OnKeyReleased(int keyCode);
-	virtual void OnMouseMove(int x, int y);
-	virtual void OnMouseClick(int button, int x, int y);
-	virtual void OnMousePressed(int button, int x, int y);
-	virtual void OnMouseReleased(int button, int x, int y);
-	virtual void OnMouseWheelUp(int x, int y);
-	virtual void OnMouseWheelDown(int x, int y);
-	virtual void OnEvent(Event *event);
-	virtual void Close();
+	virtual bool Init() override;
+	virtual void Update() override;
+	virtual void Draw() override;
+	virtual void OnKeyPress(int keyCode) override;
+	virtual void OnKeyPressed(int keyCode) override;
+	virtual void OnKeyReleased(int keyCode) override;
+	virtual void OnMouseMove(int x, int y) override;
+	virtual void OnMouseClick(int button, int x, int y) override;
+	virtual void OnMousePressed(int button, int x, int y) override;
+	virtual void OnMouseReleased(int button, int x, int y) override;
+	virtual void OnMouseWheelUp(int x, int y) override;
+	virtual void OnMouseWheelDown(int x, int y) override;
+	virtual void OnEvent(Event *event) override;
+	virtual void Close() override;
 
 private:
 
@@ -48,14 +47,14 @@ private:
 
 	WizPage			m_wizPage;
 
-	BITMAP			*m_professionChoiceBackground;
+	ALLEGRO_BITMAP			*m_professionChoiceBackground;
 	
-	BITMAP 			*m_scientificBtn;
-	BITMAP 			*m_scientificBtnMouseOver;
-	BITMAP 			*m_freelanceBtn;
-	BITMAP 			*m_freelanceBtnMouseOver;
-	BITMAP 			*m_militaryBtn;
-	BITMAP 			*m_militaryBtnMouseOver;
+	ALLEGRO_BITMAP 			*m_scientificBtn;
+	ALLEGRO_BITMAP 			*m_scientificBtnMouseOver;
+	ALLEGRO_BITMAP 			*m_freelanceBtn;
+	ALLEGRO_BITMAP 			*m_freelanceBtnMouseOver;
+	ALLEGRO_BITMAP 			*m_militaryBtn;
+	ALLEGRO_BITMAP 			*m_militaryBtnMouseOver;
 
 	Label 			*m_profInfoScientific;
 	Label 			*m_profInfoFreelance;
@@ -63,30 +62,30 @@ private:
 
 	Label 			*m_profInfoBox;
 
-	BITMAP 			*m_detailsBackground;
+	ALLEGRO_BITMAP 			*m_detailsBackground;
 
-	BITMAP 			*m_plusBtn;
-	BITMAP 			*m_plusBtnMouseOver;
+	ALLEGRO_BITMAP 			*m_plusBtn;
+	ALLEGRO_BITMAP 			*m_plusBtnMouseOver;
 
-	BITMAP 			*m_resetBtn;
-	BITMAP 			*m_resetBtnMouseOver;
+	ALLEGRO_BITMAP 			*m_resetBtn;
+	ALLEGRO_BITMAP 			*m_resetBtnMouseOver;
 
 	Button			*m_finishBtn;
 
-	BITMAP			*m_cursor[2];
+	ALLEGRO_BITMAP			*m_cursor[2];
 	int				m_cursorIdx;
 	int				m_cursorIdxDelay;
 
-	BITMAP			*m_backBtn;
-	BITMAP			*m_backBtnMouseOver;
+	ALLEGRO_BITMAP			*m_backBtn;
+	ALLEGRO_BITMAP			*m_backBtnMouseOver;
 
-	BITMAP			*m_mouseOverImg;
+	ALLEGRO_BITMAP			*m_mouseOverImg;
 	int				m_mouseOverImgX;
 	int				m_mouseOverImgY;
 
-	Sample *m_sndBtnClick;
-	Sample *m_sndClick;
-	Sample *m_sndErr;
+	std::shared_ptr<Sample>		m_sndBtnClick;
+	std::shared_ptr<Sample>		m_sndClick;
+	std::shared_ptr<Sample>		m_sndErr;
 
 	// in progress captain vars; once finished with creation, these
 	// get stored to the game state
@@ -101,6 +100,7 @@ private:
 	int				m_availProfPts;
 
 	Button*			m_minusBtns[8];
+        ResourceManager<ALLEGRO_BITMAP>	m_resources;
 };
 
 #endif

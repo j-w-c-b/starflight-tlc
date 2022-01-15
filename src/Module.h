@@ -25,14 +25,12 @@ Date: Dec, 06
 #ifndef MODULE_H
 #define MODULE_H
 
-#include "env.h"
 #include "Game.h"
 #include <vector>
 #include "Events.h"
 
-struct BITMAP;
+struct ALLEGRO_BITMAP;
 class GameState;
-//class Event;
 class MessageBoxWindow;
 
 class Module
@@ -46,12 +44,6 @@ public:
 	// once added, this module takes over ownership of the child module and will
 	// delete it when this module is deleted.
 	void AddChildModule(Module * m);
-
-	// after all modules have been run, performing processing and rendering to
-	// their own local surfaces, this is called recursively to get everything
-	// rendered.
-	//void BlitToParent(BITMAP * parent);
-	//void Draw(BITMAP *target);
 
 	/**
 	* call the base class method, perform any module-specific initialization
@@ -67,22 +59,13 @@ public:
 	virtual void Update();
 
 	/**
-	* perform any module-specific processing and rendering to the local canvas.
-	* note that the color (255,0,255) will be treated as transparent when this
-	* module's local canvas gets blit'd to the parent canvas.
+	* perform any module-specific processing and rendering to the frame buffer
 	*/
 	virtual void Draw();
 
 	/**
-	* Perform any OpenGL 3D rendering; this is called after all the 2D rendering
-	* is done; the 3D gfx overlay the 2D; only used by modules which do 3D rendering
-	* make sure to call the base class
-	*/
-	//virtual void Draw3D();
-
-	/**
 	* invoked on active modules when a key is pressed. key code is taken from
-	* allegro.h (for example, KEY_SPACE). make sure to call the base class impl.
+	* allegro.h (for example, ALLEGRO_KEY_SPACE). make sure to call the base class impl.
 	*/
 	virtual void OnKeyPressed(int keyCode);
 
@@ -95,7 +78,7 @@ public:
 
 	/**
 	* invoked on active modules when a key is released. key code is taken from
-	* allegro.h (for example, KEY_SPACE). make sure to call the base class impl.
+	* allegro.h (for example, ALLEGRO_KEY_SPACE). make sure to call the base class impl.
 	*/
 	virtual void OnKeyReleased(int keyCode);
 
@@ -150,41 +133,16 @@ public:
 
 protected:
 
-	// the game state
-	//GameState * m_gameState;
-
-	// the data manager
-	//DataMgr * m_dataMgr;
-
-	// the sound manager
-	//FMOD::System * m_soundSystem;
-
 	// nybble moved these here so derived classes can know where they are in relation to
 	// their parent position relative to parent
 	int						m_x;
 	int						m_y;
-
-
-	/**
-	* call this from derived classes to initialize the position of this
-	* module relative to its parent and to set the size of the rendering
-	* canvas
-	*/
-	//virtual bool InitCanvas(int x, int y, int w, int h);
-
-	// local rendering canvas for this module or game mode (not usually the whole screen)
-	// use GetCanvas accessor method rather than directly using this variable
-	//BITMAP * m_canvas;
 
 private:
 
 
 	// child modules (used when this module is a game mode root, not used when it's a normal module)
 	std::vector<Module*>	m_modules;
-
-	//flag determines when this module participates within the game mode
-	//when false, this module will be dormant because ModeMgr will ignore it
-	bool					_functional;
 
 	// overall module count for the game (used for loading screen progress bar)
 	static int				m_totalNumModules;

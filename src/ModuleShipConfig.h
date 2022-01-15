@@ -8,12 +8,12 @@
 #ifndef _SHIPCONFIG_H
 #define _SHIPCONFIG_H 1
 
-#include "env.h"
-#include <allegro.h>
+#include <allegro5/allegro.h>
 #include <vector>
 #include "Module.h"
 #include "Button.h"
 #include "GameState.h"
+#include "ResourceManager.h"
 
 #define MAX_CARGOPODS 16
 #define BUTTON_X_START 130
@@ -145,37 +145,31 @@ class ModuleShipConfig : public Module
 {
 
 public:
-	ModuleShipConfig();	//ctor
-	bool Init();
-	void Update();
-	void Draw();
-	void OnKeyPress(int keyCode);
-	void OnKeyPressed(int keyCode);
-	void OnKeyReleased(int keyCode);
-	void OnMouseMove(int x, int y);
-	void OnMouseClick(int button, int x, int y);
-	void OnMousePressed(int button, int x, int y);
-	void OnMouseReleased(int button, int x, int y);
-	void OnMouseWheelUp(int x, int y);
-	void OnMouseWheelDown(int x, int y);
-	void OnEvent(Event * event);
-	void Close();	
+	ModuleShipConfig();
+	virtual bool Init() override;
+	virtual void Update() override;
+	virtual void Draw() override;
+	virtual void OnKeyPressed(int keyCode) override;
+	virtual void OnMouseMove(int x, int y) override;
+	virtual void OnMouseReleased(int button, int x, int y) override;
+	virtual void OnEvent(Event * event) override;
+	virtual void Close() override;
 
 private:
-	~ModuleShipConfig();	//dtor
+	virtual ~ModuleShipConfig() {}
 	
 	int						buttonsActive;
 	std::vector<ButtonType>	menuPath;
 	Button 					*buttons[NUMBER_OF_BUTTONS];
-	//ALFONT_FONT				*fontPtr;
-	BITMAP					*shipImage;
-	BITMAP					*shipConfig;
+	ALLEGRO_BITMAP					*shipImage;
+	ALLEGRO_BITMAP					*shipConfig;
 	int						repairCost;
 	bool					inputName;
 	std::string				shipName;
-	Sample 					*m_sndClick;
-	Sample 					*m_sndErr;
-	BITMAP					*m_cursor;
+        std::shared_ptr<Sample>                 m_sndClick;
+        std::shared_ptr<Sample>                 m_sndErr;
+	ALLEGRO_BITMAP					*m_cursor;
+	ResourceManager<ALLEGRO_BITMAP>		m_resources;
 
 	void display() const;
 	std::string convertMenuPathToString() const;

@@ -1,13 +1,17 @@
-#include "TexturedSphere.h"
-#include <allegro.h>
 #include <sstream>
+#include <cmath>
+
+#include <allegro5/allegro.h>
+
+#include "TexturedSphere.h"
+
+using namespace std;
 
 TexturedSphere::TexturedSphere(int tex_size) 
 {
     TEX_SIZE = tex_size;
     MAP_SIZE = 256;
     ASPECT_RATIO = 1.04;
-    M_PI = 3.14159265;
     coord_transform_table = NULL;
     screen2sphere_table = NULL;
     tex_table = NULL; 
@@ -18,12 +22,12 @@ TexturedSphere::TexturedSphere(int tex_size)
 
 TexturedSphere::~TexturedSphere()
 {
-    //only destroy bitmap if it was loaded, not passed
+    //only destroy ALLEGRO_BITMAP if it was loaded, not passed
     //a passed texture should be destroyed by the caller
     if (!textureWasSet)
     {
         if (source_bmp != NULL) 
-            destroy_bitmap(source_bmp);
+            al_destroy_bitmap(source_bmp);
     }
 
     if (coord_transform_table != NULL) 
@@ -34,30 +38,12 @@ TexturedSphere::~TexturedSphere()
         free(tex_table);
 }
 
-bool TexturedSphere::LoadTexture(string bmpfile)
+bool TexturedSphere::SetTexture(ALLEGRO_BITMAP *new_texture)
 {
-    //destroy bitmap if it was previously loaded
+    //destroy ALLEGRO_BITMAP if it was previously created
     if (source_bmp != NULL)
     {
-        destroy_bitmap(source_bmp);
-        source_bmp = NULL;
-    }
-
-    source_bmp = NULL;
-    source_bmp = (BITMAP*)load_bitmap(bmpfile.c_str(),NULL);
-    if (!source_bmp) return false;
-
-    //assuming texture file was loaded, then generate the map
-    CreateTextureTable(source_bmp);
-    return true;
-}
-
-bool TexturedSphere::SetTexture(BITMAP *new_texture)
-{
-    //destroy bitmap if it was previously created
-    if (source_bmp != NULL)
-    {
-        destroy_bitmap(source_bmp);
+        al_destroy_bitmap(source_bmp);
         source_bmp = NULL;
     }
 
@@ -89,12 +75,12 @@ void TexturedSphere::Spherical2Cartesian(int alpha, int beta, double *x, double 
 	 
 void TexturedSphere::Cartesian2Sphere(double x, double y, double z, int *alpha, int *beta)
 {
-	double beta1, alpha1, w;
+	double beta1, alpha1;
 	   
 	/* convert to Spherical Coordinates */ 
 	beta1 = asin(y);
 	if (fabs(cos(beta1)) > 0.0) {  // we'll be dividing by cos(beta1)
-	    w = x / cos(beta1);
+	    double w = x / cos(beta1);
 	    if (w > 1) w = 1; if (w < -1) w = -1;   // Check bounds
 	    alpha1 = acos(w);
 	    if (z/cos(beta1) < 0) // Check for wrapping around top/bottom of sphere
@@ -114,49 +100,42 @@ void TexturedSphere::Cartesian2Sphere(double x, double y, double z, int *alpha, 
 	if (*beta >= MAP_SIZE) *beta = MAP_SIZE-1;
 }
 	 
-// Do not call unless source bitmap has been loaded first!
+// Do not call unless source ALLEGRO_BITMAP has been loaded first!
 // unsigned short for 16 bit, can use int for 32 bit, char for 8 bit 
-void TexturedSphere::CreateTextureTable(BITMAP *bmp) 
+void TexturedSphere::CreateTextureTable(ALLEGRO_BITMAP *bmp) 
 {
 	int x, y;
-    int p;
-	int testj, testi = 0;	//jjh
-    tex_table = (int *)malloc( (TEX_SIZE*(TEX_SIZE+1)*sizeof(int)) );
+    ALLEGRO_COLOR p;
+    tex_table = (ALLEGRO_COLOR *)malloc( (TEX_SIZE*(TEX_SIZE+1)*sizeof(ALLEGRO_COLOR)) );
+
+    int new_bitmap_flags = al_get_new_bitmap_flags();
+    al_set_new_bitmap_flags(ALLEGRO_MEMORY_BITMAP);
+    ALLEGRO_BITMAP *mem_bmp = al_clone_bitmap(bmp);
+    al_set_new_bitmap_flags(new_bitmap_flags);
+    int width = al_get_bitmap_width(mem_bmp);
+    int height = al_get_bitmap_height(mem_bmp);
 
 // jjh-> working on getting the spherical image on the screen to match the surface image in the aux screen.  Initially, the spherical image was upside
 // down.  with the new code added below, it's now right-side up, and no longer a mirror image on longitude.
-
-//here's the original code:  
-//this maps any sized bitmap onto the texture map
-//	for (int i=0; i<TEX_SIZE; i++)		
-//    {
-//	    for (int j=0; j<TEX_SIZE+1; j++)
-//        {
-//            x = i * bmp->w / TEX_SIZE; 
-//            y = j * bmp->h / TEX_SIZE;
-//			  p = getpixel(bmp, x, y);  
-//map 2D coords into 1D array
-//		  tex_table[j*TEX_SIZE+i] = p;
-//        }
-//    }
 
 //Probably a more eleagant way to do this, but this works for now.  old code fills tex_table left-to-right, top-to-bottom.
 //new code still pulls pixel that way, but fills tex_table bottom-to-top and right-to-left.
 
 	for (int i=0; i<TEX_SIZE; i++)			//i controls the column.  i = 0 starts in column 0 
     {										//j controls the row. j = 0 starts row 0
-		testj = TEX_SIZE;					//testj starts row at 255
-		testi = (TEX_SIZE - 1) - i;			//testi starts column at 255
+		int testj = TEX_SIZE;					//testj starts row at 255
+		int testi = (TEX_SIZE - 1) - i;			//testi starts column at 255
 	    for (int j=0; j<TEX_SIZE+1; j++)	
         {
-            x = i * bmp->w / TEX_SIZE;		//i and j dictate which pixel is pulled from the texture. 
-            y = j * bmp->h / TEX_SIZE;		//so don't change them to solve the problem.
-	        p = getpixel(bmp, x, y); 
+            x = i * width / TEX_SIZE;		//i and j dictate which pixel is pulled from the texture. 
+            y = j * height / TEX_SIZE;		//so don't change them to solve the problem.
+	        p = al_get_pixel(mem_bmp, x, y); 
 //map 2D coords into 1D array
 		  tex_table[testj*TEX_SIZE+testi] = p;
 		  testj--;
         }
     }
+    al_destroy_bitmap(mem_bmp);
 }
 
 void TexturedSphere::InitSphereLookupTables()
@@ -199,20 +178,24 @@ void TexturedSphere::InitSphereLookupTables()
 
 
 //phi, theta, psi must be 0-255 due to lookup table
-void TexturedSphere::Draw(BITMAP *dest, int phi, int theta, int psi, int radius, int center_x, int center_y)
+void TexturedSphere::Draw(ALLEGRO_BITMAP *dest, int phi, int theta, int psi, int radius, int center_x, int center_y)
 {
 	int x, y;            // current Pixel-Position 
 	int xr;              // Half Width of Sphere (pixels) in current scanline 
-	int beta1, alpha1;   // initial spherical coordinates 
-	int xinc, xscaled; // auxiliary variables 
 	int alpha_beta2,alpha_beta3;  
+        int old_bitmap_flags = al_get_new_bitmap_flags();
+        al_set_new_bitmap_flags(ALLEGRO_MEMORY_BITMAP);
+        ALLEGRO_BITMAP *memory_bmp = al_clone_bitmap(dest);
+        al_set_new_bitmap_flags(old_bitmap_flags);
 	    /* spherical coordinates of the 2nd and 3rd rotated system 
 	        (the 2 coordinates are stored in a single integer)       */
-	 
 
+	al_set_target_bitmap(memory_bmp);
 	/* For all Scanlines ... */
 	for(y = -radius+1;y < radius; y++) 
     {
+	    int xinc, xscaled; // auxiliary variables 
+	    int beta1, alpha1;   // initial spherical coordinates 
 	    /* compute the Width of the Sphere in this Scanline */
 	    xr = (int)(sqrt( (double)(radius*radius - y*y) ) * ASPECT_RATIO); // Can be turned into fixed point
 	    if (xr==0) xr = 1;
@@ -221,8 +204,6 @@ void TexturedSphere::Draw(BITMAP *dest, int phi, int theta, int psi, int radius,
 	    beta1 = screen2sphere_table[(y+radius) * TEX_SIZE/(2*radius)] * TEX_SIZE;
 
         //x << y == x * 2^y
-        //TEX_SIZE << 16 = TEX_SIZE * 65535
-	    //xinc = (TEX_SIZE << 16) / (2*xr);
         //xinc = (TEX_SIZE * 65535) / (2*xr);
         xinc = 16776960 / (2*xr);
 	    xscaled = 0;
@@ -234,7 +215,6 @@ void TexturedSphere::Draw(BITMAP *dest, int phi, int theta, int psi, int radius,
             //x >> y == x / 2^y
             //xscaled / 2^16
             //xscaled / 65536
-	        //alpha1 = screen2sphere_table[xscaled >> 16] / 2;
             alpha1 = screen2sphere_table[xscaled / 65536] / 2;
 
 	        xscaled += xinc;
@@ -247,9 +227,12 @@ void TexturedSphere::Draw(BITMAP *dest, int phi, int theta, int psi, int radius,
 	        alpha_beta3 = coord_transform_table[alpha_beta2] + psi;
 	     
 	        /* draw the Pixel */
-	        putpixel(dest, x+center_x, y+center_y, tex_table[alpha_beta3]); 
+	        al_put_pixel(x+center_x, y+center_y, tex_table[alpha_beta3]); 
 	    }
 	}
+        al_set_target_bitmap(dest);
+        al_draw_bitmap(memory_bmp, 0, 0, 0);
+        al_destroy_bitmap(memory_bmp);
 }
 
 

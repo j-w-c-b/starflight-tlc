@@ -5,18 +5,15 @@
 	Date: 
 */
 
-#include "env.h"
 #include "ModuleCredits.h"
 #include "Game.h"
 #include "DataMgr.h"
 #include "ModeMgr.h"
+#include "credits_resources.h"
+
 using namespace std;
 
-
-#define BACKGROUND_TGA                   0        /* BMP  */
-
-
-
+ALLEGRO_DEBUG_CHANNEL("ModuleCredits")
 /*
   This is not elegant or data driven but it meets our needs. The credit list for this game
   is not large so we can update this as needed without exposing a data file to end-user manipulation.
@@ -65,57 +62,44 @@ string credits[numcredits][2] = {
 
 
 
-ModuleCredits::ModuleCredits(void)
+ModuleCredits::ModuleCredits(void) : resources(CREDITS_IMAGES)
 {
 	background = NULL;
 }
 ModuleCredits::~ModuleCredits(void) {}
-void ModuleCredits::OnKeyPress(int keyCode)	{ }
-void ModuleCredits::OnKeyPressed(int keyCode) { }
-void ModuleCredits::OnKeyReleased(int keyCode)
+
+void ModuleCredits::OnKeyReleased(int /*keyCode*/)
 {
 	g_game->modeMgr->LoadModule(MODULE_TITLESCREEN);
 	return;
 }
-void ModuleCredits::OnMouseMove(int x, int y){ }
-void ModuleCredits::OnMouseClick(int button, int x, int y) { }
-void ModuleCredits::OnMousePressed(int button, int x, int y) { }
-void ModuleCredits::OnMouseReleased(int button, int x, int y)
-{ 
+
+void ModuleCredits::OnMouseReleased(int /*button*/, int /*x*/, int /*y*/)
+{
 	g_game->modeMgr->LoadModule(MODULE_TITLESCREEN);
 	return;
 }
-void ModuleCredits::OnMouseWheelUp(int x, int y){ }
-void ModuleCredits::OnMouseWheelDown(int x, int y){}
-void ModuleCredits::OnEvent(Event *event) {}
+
 void ModuleCredits::Close()
 {
-	TRACE("Credits Close\n");
+	ALLEGRO_DEBUG("Credits Close\n");
 
 	//unload the data file 
-	unload_datafile(datafile);
-	datafile = NULL;
-
+	resources.unload();
 }
 
 bool ModuleCredits::Init()
 {
-	TRACE("  ModuleCredits Initialize\n");
+	ALLEGRO_DEBUG("  ModuleCredits Initialize\n");
 
 	//load the datafile
-	datafile = load_datafile("data/credits/credits.dat");
-	if (!datafile) {
-		g_game->message("Credits: Error loading datafile");	
+	if (!resources.load()) {
+		g_game->message("Credits: Error loading resources");
 		return false;
 	}
 
 	//Load background
-	//background = load_bitmap("data/credits/background.tga",NULL);
-	background = (BITMAP*)datafile[BACKGROUND_TGA].dat;
-	if (!background) {
-		g_game->message("Credits: Error loading background");
-		return false;
-	}
+	background = resources[BACKGROUND];
 
 	g_game->Print32(background, 390, 10, "CONTRIBUTORS", STEEL, true);
 
@@ -136,8 +120,7 @@ void ModuleCredits::Update()
 void ModuleCredits::Draw()
 {
 	//draw background
-	blit(background, g_game->GetBackBuffer(), 0, 0, 0, 0, background->w, background->h);
-
-
+        al_set_target_bitmap(g_game->GetBackBuffer());
+        al_draw_bitmap(background, 0, 0, 0);
 }
 

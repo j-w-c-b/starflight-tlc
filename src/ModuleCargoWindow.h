@@ -1,10 +1,10 @@
 #ifndef _CARGO_WINDOW_H
 #define _CARGO_WINDOW_H
 
-#include <fmod.hpp>
 #include "DataMgr.h"
 #include "Module.h"
 #include "AudioSystem.h"
+#include "ResourceManager.h"
 
 class Items;
 class Button;
@@ -24,21 +24,16 @@ public:
 	ModuleCargoWindow();
 	virtual ~ModuleCargoWindow();
 
-	virtual bool Init();
-	void Update();
+	virtual bool Init() override;
+	virtual void Update() override;
 	void UpdateLists();
-	virtual void Draw();
-	virtual void OnKeyPress( int keyCode );
-	virtual void OnKeyPressed(int keyCode);
-	virtual void OnKeyReleased(int keyCode);
-	virtual void OnMouseMove(int x, int y);
-	virtual void OnMouseClick(int button, int x, int y);
-	virtual void OnMousePressed(int button, int x, int y);
-	virtual void OnMouseReleased(int button, int x, int y);
-	virtual void OnMouseWheelUp(int x, int y);
-	virtual void OnMouseWheelDown(int x, int y);
-	virtual void OnEvent(Event *event);
-	virtual void Close();
+	virtual void Draw() override;
+	virtual void OnMouseMove(int x, int y) override;
+	virtual void OnMouseClick(int button, int x, int y) override;
+	virtual void OnMousePressed(int button, int x, int y) override;
+	virtual void OnMouseReleased(int button, int x, int y) override;
+	virtual void OnEvent(Event *event) override;
+	virtual void Close() override;
 	bool isVisible(void) { return (m_x > gui_viewer_left && initialized); }
 
 	//Force the window into it's starting (hidden) state.
@@ -50,11 +45,8 @@ private:
 	//true between end of Init() and start of Close(). false otherwise.
 	bool initialized;
 
-	DATAFILE *cwdata;
-	DATAFILE *svdata;
-
 	//the window itself
-	BITMAP *img_viewer;
+	ALLEGRO_BITMAP *img_viewer;
 	int gui_viewer_left;
 	int gui_viewer_right;
 	int gui_viewer_speed;
@@ -69,10 +61,11 @@ private:
 	ScrollBox::ScrollBox    *m_playerListValue;
 	
 	Button                  *m_jettisonButton;
-	Sample                  *m_sndButtonClick;
+	std::shared_ptr<Sample>  m_sndButtonClick;
 
 	Label                   *spaceStatus;
 	int                     maxSpace;
+	ResourceManager<ALLEGRO_BITMAP> m_resources;
 };
 
 #endif /* _CARGO_WINDOW_H */

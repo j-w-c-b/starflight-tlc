@@ -3,7 +3,7 @@
 
 #define SQUARE(d_value) d_value*d_value
 
-Flux::Flux(void){
+Flux::Flux(){
 	m_id = 0;
 	m_tile.Y = 0; 
 	m_tile.X = 0; 

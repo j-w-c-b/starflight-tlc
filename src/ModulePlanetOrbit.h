@@ -8,8 +8,7 @@
 #ifndef _PLANETORBIT_H
 #define _PLANETORBIT_H
 
-#include "env.h"
-#include <allegro.h>
+#include <allegro5/allegro.h>
 #include "ScrollBox.h"
 #include "Module.h"
 #include "DataMgr.h"
@@ -25,9 +24,8 @@ private:
 
 	bool CreatePlanetTexture();
 	
-	//BITMAP *img_viewer;
-	BITMAP *background;
-    Sample *audio_scan;
+	ALLEGRO_BITMAP *background;
+	std::shared_ptr<Sample> audio_scan;
 
 	//shortcuts to crew last names to simplify code
 	std::string com;
@@ -50,27 +48,24 @@ private:
 	PlanetType planetType;
 	Planet *planet;
 
-    BITMAP *lightmap_overlay;
+    ALLEGRO_BITMAP *lightmap_overlay;
 
     TexturedSphere *texsphere;
 
 
 public:
 	ModulePlanetOrbit(void);
-	bool Init();
-	void Update();
-	void Draw();
-	void OnKeyPress(int keyCode);
-	void OnKeyPressed(int keyCode);
-	void OnKeyReleased(int keyCode);
-	void OnMouseMove(int x, int y);
-	void OnMouseClick(int button, int x, int y);
-	void OnMousePressed(int button, int x, int y);
-	void OnMouseReleased(int button, int x, int y);
-	void OnMouseWheelUp(int x, int y);
-	void OnMouseWheelDown(int x, int y);
-	void OnEvent(Event *event);
-	void Close();
+	virtual bool Init() override;
+	virtual void Update() override;
+	virtual void Draw() override;
+	virtual void OnMouseMove(int x, int y) override;
+	virtual void OnMouseClick(int button, int x, int y) override;
+	virtual void OnMousePressed(int button, int x, int y) override;
+	virtual void OnMouseReleased(int button, int x, int y) override;
+	virtual void OnMouseWheelUp(int x, int y) override;
+	virtual void OnMouseWheelDown(int x, int y) override;
+	virtual void OnEvent(Event *event) override;
+	virtual void Close() override;
 
 	void doorbit();
 	void dosurface();

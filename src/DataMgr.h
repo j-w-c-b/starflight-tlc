@@ -16,7 +16,7 @@
 #include <vector>
 #include <map>
 #include <utility>
-#include <alfont.h>
+#include <allegro5/allegro_font.h>
 #include <list>
 #include "Flux.h"
 #include "Script.h"
@@ -98,10 +98,8 @@ public:
    std::string description;
 
    // helper methods for working with the enumerated types
-   static ItemType ItemTypeFromString(std::string s);
-   static std::string ItemTypeToString(ItemType itemType);
-   static ItemAge ItemAgeFromString(std::string s);
-   static std::string ItemAgeToString(ItemAge itemAge);
+   static ItemType ItemTypeFromString(const std::string &s);
+   static ItemAge ItemAgeFromString(const std::string &s);
 };
 
 // used to represent a collection of items; the collection is comprised of
@@ -125,7 +123,6 @@ public:
     * @param maxNumItemsPerStack # of items in any stack will not exceed this value
     * @param typeFilter if provided, only items of the specified type mask will be generated
     */
-   void RandomPopulate(int maxNumStacks, int maxNumItemsPerStack, ItemType typeFilter = IT_INVALID);
 
    /**
     * returns the number of stacks, each stack contains a set of a single item type
@@ -144,16 +141,6 @@ public:
    void AddItems(ID id, int numItemsToAdd);
 
    /**
-	* this function should be called before any item is added to the inventory!
-	* returns true if it finds space for the list of items, and false if it doesn't.
-	* the ellipse takes in the item ids of each item to be added
-    */
-	bool CheckForSpace(int spaceLimit, ... );
-	bool CheckForSpace(int spaceLimit, int totalSentIDs, int itemIDs[] );
-
-
-
-   /**
     * remove the specified quantity of the item ID from this object; the stack of this
     * item type will be decremented by the specified amount; it will not go below zero.
     */
@@ -169,8 +156,6 @@ public:
     * scan the vector for the item with the given id value and set the item placeholder to the item matching that id
     */
    void Get_Item_By_ID(int id, Item& item, int &num_in_stack);
-
-   void Get_Item_By_Name(std::string name, Item& item, int &num_in_stack);
 
 
 private:
@@ -236,8 +221,7 @@ public:
    Planet * GetPlanetByID(ID id); // by ID
 
    // helper methods for working with the enumerated types
-   static SpectralClass SpectralClassFromString(std::string s);
-   static std::string SpectralClassToString(SpectralClass spectralClass);
+   static SpectralClass SpectralClassFromString(const std::string &s);
 
 private:
 
@@ -361,23 +345,22 @@ public:
    bool landable;
 
    // helper methods for working with the enumerated types
-   static PlanetSize PlanetSizeFromString(std::string size);
+   static PlanetSize PlanetSizeFromString(const std::string &size);
    static std::string PlanetSizeToString(PlanetSize size);
 
-   static PlanetType PlanetTypeFromString(std::string type);
+   static PlanetType PlanetTypeFromString(const std::string &type);
    static std::string PlanetTypeToString(PlanetType type);
 
-   static PlanetTemperature PlanetTemperatureFromString(std::string temperature);
+   static PlanetTemperature PlanetTemperatureFromString(const std::string &temperature);
    static std::string PlanetTemperatureToString(PlanetTemperature temperature);
 
-   static PlanetGravity PlanetGravityFromString(std::string gravity);
+   static PlanetGravity PlanetGravityFromString(const std::string &gravity);
    static std::string PlanetGravityToString(PlanetGravity gravity);
 
-   static PlanetAtmosphere PlanetAtmosphereFromString(std::string atmosphere);
+   static PlanetAtmosphere PlanetAtmosphereFromString(const std::string &atmosphere);
    static std::string PlanetAtmosphereToString(PlanetAtmosphere atmosphere);
 
-   static PlanetWeather PlanetWeatherFromString(std::string weather);
-   static std::string PlanetWeatherToString(PlanetWeather weather);
+   static PlanetWeather PlanetWeatherFromString(const std::string &weather);
 };
 
 class DataMgr
@@ -397,7 +380,7 @@ public:
    int GetNumItems();
    Item* GetItem(int idx);			// by index [0..N)
    Item* GetItemByID(ID id);		// by ID
-   Item* GetItem(std::string name); // by name
+   Item* GetItem(const std::string &name); // by name
 
    // used to access the available stars; memory is owned by this class; you should not delete
    // any returned objects
@@ -411,15 +394,8 @@ public:
    std::map<ID,Planet*> allPlanetsByID;
    Planet *GetPlanetByID(ID id);
 
-   int GetNumHumanNames();
-   std::string GetFullName(int id);
-   std::string GetFirstName(int id);
-   std::string GetLastName(int id);
-   std::string GetRandWholeName();
    std::string GetRandMixedName();
 
-  //this should have only be needed during testing
-   //Officer* GetRandOfficer(int type);
    std::list<Flux*> flux;
 
 

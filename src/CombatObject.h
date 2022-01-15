@@ -1,7 +1,6 @@
 #pragma once
 
-#include "env.h"
-#include <allegro.h>
+#include <allegro5/allegro.h>
 #include <string>
 #include "DataMgr.h"
 #include "Sprite.h"
@@ -58,7 +57,7 @@ public:
 
 	//mutators
 	void setID(int initID)					{ id = initID; }
-	void setName(std::string initName)		{ name = initName; }
+	void setName(const std::string &initName)		{ name = initName; }
 	void setDamage(double initDamage)		{ damage = initDamage; }
 	void setHealth(int initHealth)			{ health = initHealth; }
 	void setAlpha(bool initAlpha)			{ UseAlpha = initAlpha; }

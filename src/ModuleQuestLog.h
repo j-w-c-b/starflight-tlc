@@ -9,40 +9,32 @@
 #define MODULEQUESTLOG_H
 
 #include "Module.h"
-#include <allegro.h>
+#include <allegro5/allegro.h>
 #include "GameState.h"
 #include "EventMgr.h"
 #include "Label.h"
+#include "ResourceManager.h"
 
 class ModuleQuestLog : public Module
 {
 public:
 	ModuleQuestLog();
 	virtual ~ModuleQuestLog();
-	virtual bool Init();
-	void Update();
-	virtual void Draw();
-	virtual void OnKeyPress( int keyCode );
-	virtual void OnKeyPressed(int keyCode);
-	virtual void OnKeyReleased(int keyCode);
-	virtual void OnMouseMove(int x, int y);
-	virtual void OnMouseClick(int button, int x, int y);
-	virtual void OnMousePressed(int button, int x, int y);
-	virtual void OnMouseReleased(int button, int x, int y);
-	virtual void OnMouseWheelUp(int x, int y);
-	virtual void OnMouseWheelDown(int x, int y);
-	virtual void OnEvent(Event *event);
-	virtual void Close();
+	virtual bool Init() override;
+	virtual void Update() override;
+	virtual void Draw() override;
+	virtual void OnEvent(Event *event) override;
+	virtual void Close() override;
 
 private:
 	bool log_active;
 	int viewer_offset_x, viewer_offset_y;
 
-	BITMAP *questDataWindow;
-	BITMAP *window;
+	ALLEGRO_BITMAP *window;
 
 	Label *questName;
 	Label *questDesc;
+	ResourceManager<ALLEGRO_BITMAP> resources;
 
 };
 

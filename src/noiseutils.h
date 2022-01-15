@@ -29,8 +29,6 @@
 
 #include "noise/noise.h"
 
-using namespace noise;
-
 namespace noise
 {
 
@@ -324,7 +322,6 @@ namespace noise
     /// If you specify a new size for the noise map and the new size is
     /// smaller than the current size, the allocated memory will not be
     /// reallocated.
-    /// Call ReclaimMem() to reclaim the wasted memory.
     ///
     /// <b>Border Values</b>
     ///
@@ -555,15 +552,6 @@ namespace noise
           return m_width;
         }
 
-        /// Reallocates the noise map to recover wasted memory.
-        ///
-        /// @throw noise::ExceptionOutOfMemory Out of memory.  (Yes, this
-        /// method can return an out-of-memory exception because two noise
-        /// maps will temporarily exist in memory during this call.)
-        ///
-        /// The contents of the noise map is unaffected.
-        void ReclaimMem ();
-
         /// Sets the value to use for all positions outside of the noise map.
         ///
         /// @param borderValue The value to use for all positions outside of
@@ -606,16 +594,6 @@ namespace noise
         /// This method does nothing if the noise map object is empty or the
         /// position is outside the bounds of the noise map.
         void SetValue (int x, int y, float value);
-
-        /// Takes ownership of the buffer within the source noise map.
-        ///
-        /// @param source The source noise map.
-        ///
-        /// On exit, the source noise map object becomes empty.
-        ///
-        /// This method only moves the buffer pointer so this method is very
-        /// quick.
-        void TakeOwnership (NoiseMap& source);
 
       private:
 
@@ -720,7 +698,6 @@ namespace noise
     ///
     /// If you specify a new size for the image and the new size is smaller
     /// than the current size, the allocated memory will not be reallocated.
-    /// Call ReclaimMem() to reclaim the wasted memory.
     ///
     /// <b>Border Values</b>
     ///
@@ -949,15 +926,6 @@ namespace noise
           return m_width;
         }
 
-        /// Reallocates the image to recover wasted memory.
-        ///
-        /// @throw noise::ExceptionOutOfMemory Out of memory.  (Yes, this
-        /// method can return an out-of-memory exception because two images
-        /// will exist temporarily in memory during this call.)
-        ///
-        /// The contents of the image is unaffected.
-        void ReclaimMem ();
-
         /// Sets the color value to use for all positions outside of the
         /// image.
         ///
@@ -1000,16 +968,6 @@ namespace noise
         /// This method does nothing if the image is empty or the position is
         /// outside the bounds of the image.
         void SetValue (int x, int y, const Color& value);
-
-        /// Takes ownership of the buffer within the source image.
-        ///
-        /// @param source The source image.
-        ///
-        /// On exit, the source image object becomes empty.
-        ///
-        /// This method only moves the buffer pointer so this method is very
-        /// quick.
-        void TakeOwnership (Image& source);
 
       private:
 
@@ -1496,7 +1454,7 @@ namespace noise
         /// Constructor.
         NoiseMapBuilderCylinder ();
 
-        virtual void Build ();
+        virtual void Build() override;
 
         /// Returns the lower angle boundary of the cylindrical noise map.
         ///
@@ -1605,7 +1563,7 @@ namespace noise
         /// Constructor.
         NoiseMapBuilderPlane ();
 
-        virtual void Build ();
+        virtual void Build () override;
 
         /// Enables or disables seamless tiling.
         ///
@@ -1738,7 +1696,7 @@ namespace noise
         /// Constructor.
         NoiseMapBuilderSphere ();
 
-        virtual void Build ();
+        virtual void Build () override;
 
         /// Returns the eastern boundary of the spherical noise map.
         ///
@@ -1855,7 +1813,7 @@ namespace noise
     ///
     /// This class contains two pre-made gradients: a grayscale gradient and a
     /// color gradient suitable for terrain.  To use these pre-made gradients,
-    /// call the BuildGrayscaleGradient() or BuildTerrainGradient() methods,
+    /// call the BuildGrayscaleGradient() methods,
     /// respectively.
     ///
     /// @note The color value passed to AddGradientPoint() has an alpha
@@ -1954,16 +1912,6 @@ namespace noise
         /// - -1.0 maps to black
         /// - 1.0 maps to white
         void BuildGrayscaleGradient ();
-
-        /// Builds a color gradient suitable for terrain.
-        ///
-        /// @post The original gradient is cleared and a terrain gradient is
-        /// created.
-        ///
-        /// This gradient color at position 0.0 is the "sea level".  Above
-        /// that value, the gradient contains greens, browns, and whites.
-        /// Below that value, the gradient contains various shades of blue.
-        void BuildTerrainGradient ();
 
         /// Clears the color gradient.
         ///

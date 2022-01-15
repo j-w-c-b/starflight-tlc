@@ -5,7 +5,6 @@
 //	Date: 11/17/07
 //*/
 
-#include "env.h"
 #include "Util.h"
 #include "ModuleCantina.h"
 #include "AudioSystem.h"
@@ -16,20 +15,11 @@
 #include "ModeMgr.h"
 //#include "QuestMgr.h"
 #include "Label.h"
+#include "cantina_resources.h"
 
 using namespace std;
 
-#define CANTINA_BACKGROUND_BMP           0        /* BMP  */
-#define CANTINA_BTN_BMP                  1        /* BMP  */
-#define CANTINA_BTN_DIS_BMP              2        /* BMP  */
-#define CANTINA_BTN_HOV_BMP              3        /* BMP  */
-#define CANTINA_EXIT_BTN_NORM_BMP        4        /* BMP  */
-#define CANTINA_EXIT_BTN_OVER_BMP        5        /* BMP  */
-#define MILITARYOPS_BACKGROUND_BMP       6        /* BMP  */
-#define RESEARCHLAB_BACKGROUND_BMP       7        /* BMP  */
-
-DATAFILE *candata;
-
+ALLEGRO_DEBUG_CHANNEL("ModuleCantina")
 
 #define EXITBTN_X 16
 #define EXITBTN_Y 698
@@ -63,42 +53,34 @@ DATAFILE *candata;
 #define EVENT_TURNIN_CLICK 7
 
 
-ModuleCantina::ModuleCantina(void) {}
+ModuleCantina::ModuleCantina(void) : resources(CANTINA_IMAGES) {}
 
 ModuleCantina::~ModuleCantina(void) 
 {
-	TRACE("ModuleCantina Dead\n");
+	ALLEGRO_DEBUG("ModuleCantina Dead\n");
 }
 
-void ModuleCantina::OnKeyPress(int keyCode)	{ }
-void ModuleCantina::OnKeyPressed(int keyCode){}
 void ModuleCantina::OnKeyReleased(int keyCode)
 {
 	switch (keyCode) 
 	{
-		case KEY_LCONTROL:
+		case ALLEGRO_KEY_LCTRL:
 			break;
 
-		case KEY_ESC: 
-			//g_game->modeMgr->LoadModule(MODULE_STARPORT);
-			//return;
+		case ALLEGRO_KEY_ESCAPE: 
 			break;
 	}
 }
-void ModuleCantina::OnMouseMove(int x, int y)					
-{ 
+void ModuleCantina::OnMouseMove(int x, int y)
+{
 	m_exitBtn->OnMouseMove(x,y);
 	m_turninBtn->OnMouseMove(x,y);
 }
-void ModuleCantina::OnMouseClick(int button, int x, int y)	{ }
-void ModuleCantina::OnMousePressed(int button, int x, int y){ }
-void ModuleCantina::OnMouseReleased(int button, int x, int y)	
-{ 
+void ModuleCantina::OnMouseReleased(int button, int x, int y)
+{
 	m_turninBtn->OnMouseReleased(button,x,y);
 	m_exitBtn->OnMouseReleased(button,x,y);
 }
-void ModuleCantina::OnMouseWheelUp(int x, int y){ }
-void ModuleCantina::OnMouseWheelDown(int x, int y)	{}
 
 void ModuleCantina::OnEvent(Event *event)
 {
@@ -129,24 +111,22 @@ void ModuleCantina::Close()
 		}
 
 		//unload the data file (thus freeing all resources at once)
-		unload_datafile(candata);
-		candata = NULL;	
+		resources.unload();
 	}
 	catch(std::exception e) {
-		TRACE(e.what());
+		ALLEGRO_DEBUG("%s\n", e.what());
 	}
 	catch(...) {
-		TRACE("Unhandled exception in TitleScreen::Close\n");
+		ALLEGRO_DEBUG("Unhandled exception in TitleScreen::Close\n");
 	}
 }
 
 bool ModuleCantina::Init()
 {
-	TRACE("  Cantina/Research Lab/Military Ops Initialize\n");
+	ALLEGRO_DEBUG("  Cantina/Research Lab/Military Ops Initialize\n");
 	
 	//load the datafile
-	candata = load_datafile("data/cantina/cantina.dat");
-	if (!candata) {
+	if (!resources.load()) {
 		g_game->message("Cantina: Error loading datafile");		
 		return false;
 	}
@@ -156,19 +136,19 @@ bool ModuleCantina::Init()
 	g_game->audioSystem->Load("data/cantina/buttonclick.ogg", "click");
 
 	//Create and initialize the ESC button for the module
-	BITMAP *btnNorm, *btnOver, *btnDis;
+	ALLEGRO_BITMAP *btnNorm, *btnOver, *btnDis;
 	
-	btnNorm = (BITMAP*)candata[CANTINA_EXIT_BTN_NORM_BMP].dat;
-	btnOver = (BITMAP*)candata[CANTINA_EXIT_BTN_OVER_BMP].dat;	
+	btnNorm = resources[CANTINA_EXIT_BTN_NORM];
+	btnOver = resources[CANTINA_EXIT_BTN_OVER];
 	m_exitBtn = new Button(btnNorm, btnOver, NULL,
 		EXITBTN_X,EXITBTN_Y,EVENT_NONE,EVENT_EXIT_CLICK, g_game->font24, "Exit", BLACK,"click");
 	if (m_exitBtn == NULL) return false;
 	if (!m_exitBtn->IsInitialized()) return false;
 
 	//load button images
-	btnNorm = (BITMAP*)candata[CANTINA_BTN_BMP].dat;
-	btnOver = (BITMAP*)candata[CANTINA_BTN_HOV_BMP].dat;	
-	btnDis = (BITMAP*)candata[CANTINA_BTN_DIS_BMP].dat;
+	btnNorm = resources[CANTINA_BTN];
+	btnOver = resources[CANTINA_BTN_HOV];
+	btnDis = resources[CANTINA_BTN_DIS];
 
 	//Create and initialize the TURNIN button for the module
 	m_turninBtn = new Button(btnNorm, btnOver, btnDis, 
@@ -183,34 +163,31 @@ bool ModuleCantina::Init()
 	switch (g_game->gameState->getProfession())
 	{
 		case PROFESSION_SCIENTIFIC:
-			m_background = (BITMAP*)candata[RESEARCHLAB_BACKGROUND_BMP].dat;			
+			m_background = resources[RESEARCHLAB_BACKGROUND];
 			m_turninBtn->SetButtonText("Breakthrough!");
 			m_exitBtn->SetButtonText("Terminate");
 			label1 = "PROJECT TITLE";
 			label2 = "DESCRIPTION";
-			//label3 = "REQUIREMENTS";
 			label4 = "REWARD";
 			labelcolor = LTBLUE;
 			textcolor = DODGERBLUE;
 			break;
 		case PROFESSION_MILITARY:
-			m_background = (BITMAP*)candata[MILITARYOPS_BACKGROUND_BMP].dat;			
+			m_background = resources[MILITARYOPS_BACKGROUND];
 			m_turninBtn->SetButtonText("Accomplished!");
 			m_exitBtn->SetButtonText("Dismissed");
 			label1 = "MISSION CODENAME";
 			label2 = "DESCRIPTION";
-			//label3 = "REQUIREMENTS";
 			label4 = "REWARD";
 			labelcolor = ORANGE;
 			textcolor = DKORANGE;
 			break;
 		default:
-			m_background = (BITMAP*)candata[CANTINA_BACKGROUND_BMP].dat;			
+			m_background = resources[CANTINA_BACKGROUND];
 			m_turninBtn->SetButtonText("Pay Up!");
 			m_exitBtn->SetButtonText("Scram");
 			label1 = "JOB NAME";
 			label2 = "DESCRIPTION";
-			//label3 = "REQUIREMENTS";
 			label4 = "REWARD";
 			labelcolor = LTYELLOW;
 			textcolor = YELLOW;
@@ -228,9 +205,6 @@ bool ModuleCantina::Init()
 
 	questLong = new Label("", LONG_X, LONG_Y+23, LONG_W, LONG_H, textcolor, g_game->font22);
 	questLong->Refresh();
-
-	//questDetails = new Label("", DETAIL_X, DETAIL_Y+23, DETAIL_W, DETAIL_H, textcolor, g_game->font22);
-	//questDetails->Refresh();
 
 	questReward = new Label("", REWARD_X, REWARD_Y+23, REWARD_W, REWARD_H, textcolor, g_game->font22);
 	questReward->Refresh();
@@ -339,9 +313,10 @@ void ModuleCantina::Draw()
 {
 	Item *item=NULL;
 	int id;
+        al_set_target_bitmap(g_game->GetBackBuffer());
 
 	//draw background
-	blit(m_background, g_game->GetBackBuffer(), 0, 0, 0, 0, m_background->w, m_background->h);
+        al_draw_bitmap(m_background, 0, 0, 0);
 
 	//draw buttons
 	m_exitBtn->Run(g_game->GetBackBuffer());

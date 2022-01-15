@@ -1,10 +1,10 @@
-#include <allegro.h>
+#include <allegro5/allegro.h>
 #include "Timer.h"
 
 
 Timer::Timer(void)
 {
-	#if defined(_POSIX_SOURCE)
+	#if defined(_POSIX_SOURCE) || defined(__APPLE__)
 	gettimeofday(&initial, NULL);
 	#endif
 
@@ -18,7 +18,7 @@ long Timer::getTimer()
 	#if defined(_MSC_VER) || defined(WIN32)
 	return (long) clock();
 
-	#elif defined(_POSIX_SOURCE)
+	#elif defined(_POSIX_SOURCE) || defined(__APPLE__)
 	timeval current, delta;
 	gettimeofday(&current, NULL);
 	timersub(&current, &initial, &delta);
@@ -30,22 +30,9 @@ long Timer::getTimer()
 	#endif
 }
 
-void Timer::setTimer(long value)
-{
-	timer_start = value;
-}
-
-
 long Timer::getStartTimeMillis()
 {
 	return getTimer() - timer_start;
-}
-
-//warning: this is a blocking sleep
-void Timer::sleep(long ms)
-{
-	long start = getTimer();
-	while (start + ms > getTimer());
 }
 
 void Timer::reset()

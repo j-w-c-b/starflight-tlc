@@ -15,12 +15,19 @@
 
 // all eventType definitions should go here, really.
 
-const int CARGO_EVENT_UPDATE  = -9959;
-const int EVENT_HIDE_CONTROLS = -9960;
-const int EVENT_SHOW_CONTROLS = -9961;
-
+enum
+{
 //NOTE: the game engine doesn't treat this as anything special and will happily broadcast it.
-const int EVENT_NONE          = -300;
+    EVENT_NONE                = 55000,
+    EVENT_CLOSE,
+    EVENT_SAVE_GAME,
+    EVENT_LOAD_GAME,
+    EVENT_QUIT_GAME,
+    EVENT_MOUSEOVER,
+    EVENT_HIDE_CONTROLS,
+    EVENT_SHOW_CONTROLS,
+    CARGO_EVENT_UPDATE,
+};
 
 
 /**
@@ -40,17 +47,4 @@ public:
    void setEventType(int eventType) { this->eventType = eventType; }
    int getEventType() { return this->eventType; }
 };
-
-class EventSpaceTravel : public Event
-{
-private:
-   ~EventSpaceTravel() {}
-
-public:
-   EventSpaceTravel(int id) { this->eventType = id; }
-
-   int starid;
-   int planetid;
-};
-
 #endif

@@ -8,8 +8,7 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include "env.h"
-#include <allegro.h>
+#include <allegro5/allegro.h>
 #include <stdlib.h>
 #include <math.h> 
 #include <iostream>
@@ -43,14 +42,6 @@ public:
 	  return oss.str();
 	}
 
-    template<typename T> static T FromString(const std::string& str)
-    {
-        std::istringstream ss(str);
-        T ret;
-        ss >> ret;
-        return ret;
-    }
-
     static int StringToInt(const std::string &str)
     {
         int i;
@@ -61,26 +52,6 @@ public:
             return 0;
         }
         return i;
-    }
-
-    static double StringToDouble(const std::string &str)
-    {
-        double d;
-        try {
-            d = std::stod(str);
-        }
-        catch (...) {
-            return 0;
-        }
-        return d;
-    }
-
-    /**
-     * Rounds to nearest whole number (including negatives)
-     */
-    static double Round(double num) 
-    {
-        return (num > 0.0) ? floor(num + 0.5) : ceil(num - 0.5);
     }
 
 
@@ -136,50 +107,12 @@ public:
 	  return val;
    }
 
-   /**
-    * simple interpolation
-    */
-   static float Interpolate(float val, float valMin, float valMax, float newMin, float newMax);
-
-   /**
-    * converts an angle in degrees to an allegro fixed point angular value
-    */
-   static long DegsToFixed(float degs);
-
-   /**
-    * normalize the specified angle to force it into [0,360) degrees
-    */
-   static void NormalizeAngle(double &angle);
-
-   /**
-    * Scales to the specified width, preserving the aspect ratio
-    */
-   static void ScaleToWidth(float curWidth, float curHeight, float newWidth, float &newHeight);
-
-   /**
-    * Scales to the specified height, preserving the aspect ratio
-    */
-   static void ScaleToHeight(float curWidth, float curHeight, float newHeight, float &newWidth);
-
-   /**
-    * Checks to see if two floating point numbers are equal.
-	*/
-   static bool FloatEq(double a, double b, double epsilon = 0.0001);
-
 	//this function will continue to return false until millisecond delay has 
 	//transpired, which is useful when called from inside a loop or timed routine
 	static int ReentrantDelay(int ms);
 	
-   // cleans non-printing chars and leading/trailing whitespace from strings
-   static void CleanAndTrimString(std::string& s);
-
    // converts a string to all upper case
    static std::string ToUpper(std::string& str);
-   static void MakeUpper(std::string& s);
-
-   // breaks up a string into tokens using the specified delimeter(s)
-   static void Tokenize(std::string str, std::vector<std::string>& toks, std::string delim);
-
 };
 
 class Rect

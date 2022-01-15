@@ -45,14 +45,14 @@ const std::string MODULE_MESSAGEGUI			= "MESSAGEGUI";
 
 class Module;
 class GameState;
-struct BITMAP;
+struct ALLEGRO_BITMAP;
 class Game;
 class Event;
 
 class Mode
 {
 	public:
-		Mode(Module *module, std::string path);
+		Mode(Module *module, const std::string &path);
 
 	private:
 		Module *rootModule;
@@ -65,12 +65,12 @@ class ModeMgr
 {
 public:
 
-	ModeMgr(Game *game);
+	explicit ModeMgr(Game *game);
 
 	virtual ~ModeMgr();
 
-	void AddMode(std::string modeName, Module *rootModule, std::string musicPath);
-	bool LoadModule(std::string moduleName);
+	void AddMode(const std::string &modeName, Module *rootModule, const std::string &musicPath);
+	bool LoadModule(const std::string &moduleName);
 	void CloseCurrentModule();
 
 	std::string GetCurrentModuleName() { return currentModeName; }
@@ -78,10 +78,6 @@ public:
 
 	void Update();
 	void Draw();
-
-	//void BlitToParent(BITMAP *parent);
-
-	void EndGame();
 
 	// call to broadcast the specified event to all modules which are part
 	// of the active mode
@@ -102,7 +98,7 @@ public:
 private:
 
 	Module *m_activeRootModule;
-	Sample *currentMusic;
+        std::shared_ptr<Sample> currentMusic;
 
 	std::string prevModeName;
 	std::string currentModeName;

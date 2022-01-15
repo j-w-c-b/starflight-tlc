@@ -46,8 +46,10 @@
 */
 
 #include <sstream>
-#include "env.h"
-#include <allegro.h>
+
+#include <allegro5/allegro.h>
+#include <allegro5/allegro_primitives.h>
+
 #include "Util.h"
 #include "GameState.h"
 #include "ModeMgr.h"
@@ -60,33 +62,14 @@
 #include "Script.h"
 #include "ModuleAuxiliaryDisplay.h"
 #include "Button.h"
+#include "auxiliary_resources.h"
 
 using namespace std;
 
-#define AUX_ICON_FREELANCE_TGA           0        /* BMP  */
-#define AUX_ICON_MILITARY_TGA            1        /* BMP  */
-#define AUX_ICON_SCIENCE_TGA             2        /* BMP  */
-//#define GUI_AUX_BMP                    3        /* BMP  */
-#define HIGH_RES_SHIP_FREELANCE_TGA      4        /* BMP  */
-#define HIGH_RES_SHIP_MILITARY_TGA       5        /* BMP  */
-#define HIGH_RES_SHIP_SCIENCE_TGA        6        /* BMP  */
-#define IS_TILES_SMALL_BMP               7        /* BMP  */
+ALLEGRO_DEBUG_CHANNEL("ModuleAuxiliaryDisplay")
 
-
-DATAFILE *auxdata;
-
-
-ModuleAuxiliaryDisplay::ModuleAuxiliaryDisplay() {}
+ModuleAuxiliaryDisplay::ModuleAuxiliaryDisplay() : resources(AUXILIARY_IMAGES) {}
 ModuleAuxiliaryDisplay::~ModuleAuxiliaryDisplay(){}
-void ModuleAuxiliaryDisplay::OnKeyPressed(int keyCode){}
-void ModuleAuxiliaryDisplay::OnKeyPress( int keyCode ){}
-void ModuleAuxiliaryDisplay::OnKeyReleased(int keyCode){}
-void ModuleAuxiliaryDisplay::OnMouseMove(int x, int y){}
-void ModuleAuxiliaryDisplay::OnMouseClick(int button, int x, int y){}
-void ModuleAuxiliaryDisplay::OnMousePressed(int button, int x, int y){}
-void ModuleAuxiliaryDisplay::OnMouseReleased(int button, int x, int y){}
-void ModuleAuxiliaryDisplay::OnMouseWheelUp(int x, int y){}
-void ModuleAuxiliaryDisplay::OnMouseWheelDown(int x, int y){}
 
 void ModuleAuxiliaryDisplay::OnEvent(Event *event)
 {
@@ -104,28 +87,23 @@ void ModuleAuxiliaryDisplay::Close()
 {
 	delete scroller;
 
-    destroy_bitmap(img_aux);
+    al_destroy_bitmap(img_aux);
 
-	//unload the data file
-	unload_datafile(auxdata);
-	auxdata = NULL;
-
+	resources.unload();
 }
 
 bool ModuleAuxiliaryDisplay::Init()
 {
-	TRACE("  ModuleAuxiliaryDisplay Initialize\n");
+	ALLEGRO_DEBUG("  ModuleAuxiliaryDisplay Initialize\n");
 
 	//load the datafile
-	auxdata = load_datafile("data/auxiliary/auxiliary.dat");
-	if (!auxdata) {
-		g_game->message("Auxiliary: Error loading datafile");
+	if (!resources.load()) {
+		g_game->message("Auxiliary: Error loading resources");
 		return false;
 	}
 
-    //create a new color
-	HEADING_COLOR = makecol(0,168,168);
-
+	//create a new color
+	HEADING_COLOR = al_map_rgb(0,168,168);
 
 	canvas = g_game->GetBackBuffer();
 
@@ -141,52 +119,36 @@ bool ModuleAuxiliaryDisplay::Init()
 
 
 	//load the aux gui
-	img_aux = (BITMAP*)load_bitmap("data/spacetravel/GUI_AUX.BMP",NULL);
+	img_aux = al_load_bitmap("data/spacetravel/gui_aux.bmp");
 	if (!img_aux) {
 		g_game->message("Aux: Error loading gui_aux");
 		return false;
 	}
+        al_convert_mask_to_alpha(img_aux, MASK_COLOR);
 
 	//load ship status icon
 	ship_icon_image = NULL;
 	switch(g_game->gameState->getProfession()){
 		case PROFESSION_FREELANCE:
-			ship_icon_image = (BITMAP*)auxdata[AUX_ICON_FREELANCE_TGA].dat;
-			if (!ship_icon_image) {
-				g_game->message("Aux: error loading ship image");
-				return false;
-			}
+			ship_icon_image = resources[AUX_ICON_FREELANCE];
 			break;
 		case PROFESSION_MILITARY:
-			ship_icon_image = (BITMAP*)auxdata[AUX_ICON_MILITARY_TGA].dat;
-			if (!ship_icon_image) {
-				g_game->message("Aux: error loading ship image");
-				return false;
-			}
+			ship_icon_image = resources[AUX_ICON_MILITARY];
 			break;
 		case PROFESSION_SCIENTIFIC:
-			ship_icon_image = (BITMAP*)auxdata[AUX_ICON_SCIENCE_TGA].dat;
-			if (!ship_icon_image) {
-				g_game->message("Aux: error loading ship image");
-				return false;
-			}
+			ship_icon_image = resources[AUX_ICON_SCIENCE];
 			break;
 
-		default: ASSERT(0);
+		default: ALLEGRO_ASSERT(0);
 	}
-	if(ship_icon_image == NULL){return false;}
+	if (!ship_icon_image) {
+		g_game->message("Aux: error loading ship image");
+		return false;
+	}
 
 	//create ship status icon sprite
 	ship_icon_sprite = new Sprite();
 	ship_icon_sprite->setImage(ship_icon_image);
-
-	//load scroller tiles
-	/*tiles_image = (BITMAP*)auxdata[IS_TILES_SMALL_BMP].dat;
-	if (!tiles_image) {
-		g_game->message("Aux: Error loading is_tiles_small");
-		return false;
-	}*/
-
 
 	init_nav();
 
@@ -216,16 +178,15 @@ void ModuleAuxiliaryDisplay::init_nav()
 		return;
 	}
 	//initialize mini tile scroller for nav
-	scroller->setTileImage( (BITMAP*)auxdata[IS_TILES_SMALL_BMP].dat );
+	scroller->setTileImage(resources[IS_TILES_SMALL]);
 	scroller->setScrollPosition(g_game->gameState->player->posHyperspace);
 
-	Star *star;
 	int spectral = -1;
 
 	//set specific tiles in the scrolling tilemap with star data from DataMgr
 	for (int i = 0; i < g_game->dataMgr->GetNumStars(); i++)
 	{
-		star = g_game->dataMgr->GetStar(i);
+		Star *star = g_game->dataMgr->GetStar(i);
 
 		//these numbers match the ordering of the images in is_tiles.bmp and are not in astronomical order
 		switch (star->spectralClass ) {
@@ -236,7 +197,7 @@ void ModuleAuxiliaryDisplay::init_nav()
 			case SC_F: spectral = 3; break;		//lt yellow
 			case SC_B: spectral = 2; break;		//lt blue
 			case SC_A: spectral = 1; break;		//white
-			default: ASSERT(0); break;
+			default: ALLEGRO_ASSERT(0); break;
 		}
 		//set tile number in tile scroller to star sprite number
 		scroller->setTile(star->x, star->y, spectral);
@@ -261,38 +222,37 @@ void ModuleAuxiliaryDisplay::updateAll()
 		os.str(""); y+=20;
 		g_game->Print20(canvas, x, y, "DAMAGE:", HEADING_COLOR);
 		os.str("");
-		int damage = 0; //ship.getHullIntegrity();
-		int damage_color = SKYBLUE;
+		int damage = 0;
+		ALLEGRO_COLOR damage_color = SKYBLUE;
 		if (damage > 66) {
 			os << "HEAVY";
-			damage_color = makecol(240,0,0); //red
+			damage_color = al_map_rgb(240,0,0); //red
 		}
 		else if (damage > 33) {
 			os << "MODERATE";
-			damage_color = makecol(240,240,0); //yellow
+			damage_color = al_map_rgb(240,240,0); //yellow
 		}
 		else if (damage > 0) {
 			os << "LIGHT";
-			damage_color = makecol(0,200,0); //green
+			damage_color = al_map_rgb(0,200,0); //green
 		}
 		else {
 			os << "NONE";
 		}
-		g_game->Print20(canvas, x+84, y, os.str(), damage_color);	//x was +75  JJH
+		g_game->Print20(canvas, x+84, y, os.str(), damage_color);
 
 		//cargo status
 		os.str(""); x+=75; y+=20;								
 		g_game->Print20(canvas, x, y, "CARGO:", HEADING_COLOR);
 		os << cargoFillPercent << "%%";
-		g_game->Print18(canvas, x+78, y, os.str(), SKYBLUE);		//was Print20  x was +72   JJH
+		g_game->Print18(canvas, x+78, y, os.str(), SKYBLUE);
 
 		//fuel status
 		os.str(""); y+=20;
 		g_game->Print20(canvas, x, y, "ENERGY:", HEADING_COLOR);
-        //int fuel = g_game->gameState->m_ship.getFuel() * 100.0;
         int fuel = g_game->gameState->m_ship.getEnduriumOnBoard();
         os << fuel;
-		g_game->Print18(canvas, x+78, y, os.str(), SKYBLUE);		//was Print20  x was +72   JJH
+		g_game->Print18(canvas, x+78, y, os.str(), SKYBLUE);
 
 		//shield status
 		os.str(""); y+=20;
@@ -314,18 +274,18 @@ void ModuleAuxiliaryDisplay::updateAll()
 
 		//ship icon image
 		ship_icon_sprite->setPos(asx+18,asy+45);
-		ship_icon_sprite->drawframe(g_game->GetBackBuffer(),true);
+		ship_icon_sprite->drawframe(g_game->GetBackBuffer());
 
 		//shield bar is 48 pixels tall
 		int shield = ship.getShieldClass();
-		rectfill(g_game->GetBackBuffer(),asx+2,asy+95,asx+12,asy+95-shield*8,RED);
-		rect(g_game->GetBackBuffer(),asx+2,asy+95,asx+12,asy+95-48,STEEL);
+		al_draw_filled_rectangle(asx+2,asy+95,asx+12,asy+95-shield*8,RED);
+		al_draw_rectangle(asx+2,asy+95,asx+12,asy+95-48,STEEL, 1);
 		g_game->Print18(canvas,asx+2,asy+96,"S",STEEL);
 
 		//armor bar is 48 pixels tall
 		int armor = ship.getArmorClass();
-		rectfill(g_game->GetBackBuffer(),asx+56,asy+95,asx+66,asy+95-armor*8,YELLOW);
-		rect(g_game->GetBackBuffer(),asx+56,asy+95,asx+66,asy+95-48,STEEL);
+		al_draw_filled_rectangle(asx+56,asy+95,asx+66,asy+95-armor*8,YELLOW);
+		al_draw_rectangle(asx+56,asy+95,asx+66,asy+95-48,STEEL, 1);
 		g_game->Print18(canvas,asx+56,asy+96,"A",STEEL);
 
 	}
@@ -334,7 +294,7 @@ void ModuleAuxiliaryDisplay::updateAll()
 
 void ModuleAuxiliaryDisplay::updateCap()
 {
-	int HEADING_COLOR = makecol(0,168,168);
+	ALLEGRO_COLOR HEADING_COLOR = al_map_rgb(0,168,168);
 	Ship ship = g_game->gameState->getShip();
 	ProfessionType profession;
 	std::ostringstream os;
@@ -383,7 +343,7 @@ void ModuleAuxiliaryDisplay::updateSci()
 
 void ModuleAuxiliaryDisplay::updateNav()
 {
-	int HEADING_COLOR = makecol(0,168,168);
+	ALLEGRO_COLOR HEADING_COLOR = al_map_rgb(0,168,168);
 	ostringstream os;
 	int x = asx,y = asy+130;
 	char s[255];
@@ -426,7 +386,8 @@ void ModuleAuxiliaryDisplay::updateNav()
 
 void ModuleAuxiliaryDisplay::PrintSystemStatus(int x,int y,int value)
 {
-    int color, x2;
+    ALLEGRO_COLOR color;
+    int x2;
     string status;
 	if(value <= 0){
 		color = BLACK;
@@ -562,27 +523,23 @@ void ModuleAuxiliaryDisplay::updateMed()
 	medical_display(g_game->gameState->officerDoc, x, y, "MED. ");
 }
 
-void ModuleAuxiliaryDisplay::medical_display(Officer* officer_data, int x, int y, std::string additional_data){
-	int text_color = 0;
+void ModuleAuxiliaryDisplay::medical_display(Officer* officer_data, int x, int y, const string &additional_data){
+	ALLEGRO_COLOR text_color = BLACK;
 	std::string status = "";
-	int x2 = 0;
+	int x2 = 100;
 	std::ostringstream os;
 	if(officer_data->attributes.getVitality() <= 0){
 		text_color = BLACK;
 		status = "DEAD";
-		x2 = 200;
 	}else if(officer_data->attributes.getVitality() < 25){
 		text_color = RED2;
 		status = "CRITICAL";
-		x2 = 175;
 	}else if(officer_data->attributes.getVitality() < 50){
 		text_color = YELLOW2;
 		status = "INJURED";
-		x2 = 175;
 	}else{
 		text_color = GREEN2;
 		status = "HEALTHY";
-		x2 = 170;
 	}
 
 	//name and rank
@@ -592,8 +549,6 @@ void ModuleAuxiliaryDisplay::medical_display(Officer* officer_data, int x, int y
 	os.str(""); //clear
 
 	//medical status
-
-	x2 = 150; //test
 
 	os << status;
 	g_game->Print18(canvas, x2, y, os.str(), text_color);
@@ -612,23 +567,21 @@ void ModuleAuxiliaryDisplay::updateCrew()
 		case OFFICER_TACTICAL:		updateTac(); break;
 		default:
 			//this should never happen, so we want a fatal if it happens to find the bug
-			TRACE("  [AuxiliaryDisplay] ERROR: No officer selected in control panel.");
+			ALLEGRO_DEBUG("  [AuxiliaryDisplay] ERROR: No officer selected in control panel.");
 	}
 }
-
-void ModuleAuxiliaryDisplay::Update() {}
 
 void ModuleAuxiliaryDisplay::DrawBackground()
 {
 	// draw the aux gui
-	masked_blit(img_aux, canvas, 0, 0, gax, gay, img_aux->w, img_aux->h);
+	al_draw_bitmap(img_aux, gax, gay, 0);
 }
 
 void ModuleAuxiliaryDisplay::DrawContent()
 {
 	//clear the "lcd" portion of the screen with darkgreen
-	static int lcdcolor = makecol(20,40,0);
-	rectfill(canvas, asx, asy, asx+asw, asy+ash, lcdcolor);
+	static ALLEGRO_COLOR lcdcolor = al_map_rgb(20,40,0);
+	al_draw_filled_rectangle( asx, asy, asx+asw, asy+ash, lcdcolor);
 
 	updateAll();
 	updateCrew();

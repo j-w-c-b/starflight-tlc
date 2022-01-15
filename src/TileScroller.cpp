@@ -1,6 +1,5 @@
 
-#include "env.h"
-#include <allegro.h>
+#include <allegro5/allegro.h>
 #include "TileScroller.h"
 
 TileScroller::TileScroller()
@@ -30,13 +29,13 @@ void TileScroller::destroy()
 {
 	if (scrollbuffer) 
 	{
-		destroy_bitmap(scrollbuffer);
+		al_destroy_bitmap(scrollbuffer);
 		scrollbuffer = NULL;
 	}
 
 	if (bLoaded && tiles) 
 	{
-		destroy_bitmap(tiles);
+		al_destroy_bitmap(tiles);
 		tiles = NULL;
 	}
 }
@@ -59,43 +58,25 @@ short TileScroller::getTile(int col, int row)
    return tiledata[col][row];
 }
 
-short TileScroller::getTilebyCoords(int x, int y)
-{
-   return tiledata[x/tilewidth][y/tileheight];
-}
-
-void TileScroller::setTileImage(BITMAP *image) 
+void TileScroller::setTileImage(ALLEGRO_BITMAP *image) 
 { 
 	if (!image) return;
 	
 	//if tile image was previously loaded, free it's memory
 	if (bLoaded && tiles) {
-		destroy_bitmap(tiles);
+		al_destroy_bitmap(tiles);
 	}
 	
-	if (image) {
-		this->tiles = image; 
-		//image is now a pointer, not loaded
-		bLoaded = false;
-	}
-}
-
-int TileScroller::loadTileImage(char *filename)
-{
-	tiles = load_bitmap(filename, NULL);
-	if (tiles) 
-		bLoaded = true;
-	else 
-		bLoaded = false;
-
-	return bLoaded;
+    this->tiles = image; 
+    //image is now a pointer, not loaded
+    bLoaded = false;
 }
 
 int TileScroller::createScrollBuffer(int width,int height)
 {
    this->windowwidth = width;
    this->windowheight = height;
-	scrollbuffer = create_bitmap(width + tilewidth * 2, height + tileheight * 2);
+	scrollbuffer = al_create_bitmap(width + tilewidth * 2, height + tileheight * 2);
    return (scrollbuffer != NULL);
 }
 
@@ -137,6 +118,7 @@ void TileScroller::updateScrollBuffer()
    int rows = windowheight / tileheight;
 
    //draw tiles onto the scroll buffer surface
+   al_set_target_bitmap(scrollbuffer);
    int tx,ty;
    for (int y=0; y<=rows; y++) {
 	  for (int x=0; x<=cols; x++)	{
@@ -150,7 +132,7 @@ void TileScroller::updateScrollBuffer()
 		 left = (tilenum % columns) * tilewidth;
 		 top = (tilenum / columns) * tileheight;
 
-		 blit(tiles, scrollbuffer, left, top, x*tilewidth, y*tileheight, tilewidth, tileheight);
+		 al_draw_bitmap_region(tiles, left, top, tilewidth, tileheight, x*tilewidth, y*tileheight, 0);
 
 		}
 	}
@@ -159,7 +141,7 @@ void TileScroller::updateScrollBuffer()
 /**
  * Draws the portion of the scroll buffer based on the current partial tile scroll position.
 **/ 
-void TileScroller::drawScrollWindow(BITMAP *dest, int x, int y, int width, int height)
+void TileScroller::drawScrollWindow(ALLEGRO_BITMAP *dest, int x, int y, int width, int height)
 {
 	//prevent a crash
 	if (tilewidth < 1 || tileheight < 1) return;
@@ -168,7 +150,8 @@ void TileScroller::drawScrollWindow(BITMAP *dest, int x, int y, int width, int h
 	int partialx = (int)scrollx % tilewidth;
 	int partialy = (int)scrolly % tileheight;
 	
-	//draw the scroll buffer to the destination bitmap
+	//draw the scroll buffer to the destination ALLEGRO_BITMAP
+        al_set_target_bitmap(dest);
 	if (scrollbuffer)
-		blit(scrollbuffer, dest, partialx, partialy, x, y, width, height);
+		al_draw_bitmap_region(scrollbuffer, partialx, partialy, width, height,x, y, 0);
 }

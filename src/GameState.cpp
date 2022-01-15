@@ -9,7 +9,6 @@
 #include <sstream>
 #include <fstream>
 #include <exception>
-#include "env.h"
 #include "Util.h"
 #include "GameState.h"
 #include "Archive.h"
@@ -22,6 +21,8 @@
 #include "Events.h"
 
 using namespace std;
+
+ALLEGRO_DEBUG_CHANNEL("GameState")
 
 //OFFICER CLASS
 
@@ -47,7 +48,7 @@ Officer::~Officer()
     vcap: otoh, enum are nice because compilers know about them, also you can use the switch construct
      with them, so i did one anyway.
 **/
-bool Officer::SkillUp(string skill, int amount)
+bool Officer::SkillUp(const string &skill, int amount)
 {
 	//because of the way we use attributes.extra_variable, all sort of bad things will happen if we allow captain
 	//skills to increase thru this function and the captain is filling several roles.
@@ -85,7 +86,7 @@ bool Officer::SkillUp(string skill, int amount)
 		if (this->attributes.tactics + amount >= 255) this->attributes.tactics = 255;
 		else this->attributes.tactics += amount;
 	}
-	else ASSERT(0);
+	else ALLEGRO_ASSERT(0);
 
 	return true;
 }
@@ -136,7 +137,7 @@ bool Officer::SkillUp(Skill skill, int amount)
 			else this->attributes.tactics += amount;
 		break;
 
-		default: ASSERT(0);
+		default: ALLEGRO_ASSERT(0);
     }
 
     return true;
@@ -479,8 +480,12 @@ std::string convertClassTypeToString(int num)
 	return "Error in convertClassTypeToString()";
 }
 
-Ship::Ship():
-maxEngineClass(0),maxArmorClass(0),maxShieldClass(0),maxLaserClass(0),maxMissileLauncherClass(0)
+Ship::Ship()
+: maxEngineClass(0)
+, maxShieldClass(0)
+, maxArmorClass(0)
+, maxMissileLauncherClass(0)
+, maxLaserClass(0)
 {
 	 Reset();
 }
@@ -489,7 +494,7 @@ Ship::~Ship() {}
 
 void Ship::initializeRepair()
 {
-	TRACE("Calling Ship::initializeRepair()\n");
+	ALLEGRO_DEBUG("Calling Ship::initializeRepair()\n");
 
 	//roll the minerals that will be used for repair
 	for ( int i=0; i < NUM_REPAIR_PARTS; i++){
@@ -499,7 +504,7 @@ void Ship::initializeRepair()
 				case 2: repairMinerals[i] = ITEM_ALUMINUM;   break;
 				case 3: repairMinerals[i] = ITEM_TITANIUM;   break;
 				case 4: repairMinerals[i] = ITEM_SILICA;     break;
-				default: ASSERT(0);
+				default: ALLEGRO_ASSERT(0);
 			}
 	}
 
@@ -647,21 +652,6 @@ float Ship::getMaxShieldCapacity()
 	}
 }
 
-float Ship::getMaxShieldCapacityAtFullIntegrity()
-{
-	switch(shieldClass) {
-		case 1: return g_game->getGlobalNumber("SHIELD1_STRENGTH"); break;
-		case 2: return g_game->getGlobalNumber("SHIELD2_STRENGTH"); break;
-		case 3: return g_game->getGlobalNumber("SHIELD3_STRENGTH"); break;
-		case 4: return g_game->getGlobalNumber("SHIELD4_STRENGTH"); break;
-		case 5: return g_game->getGlobalNumber("SHIELD5_STRENGTH"); break;
-		case 6: return g_game->getGlobalNumber("SHIELD6_STRENGTH"); break;
-		case 7: return g_game->getGlobalNumber("SHIELD7_STRENGTH"); break;
-		case 8: return g_game->getGlobalNumber("SHIELD8_STRENGTH"); break;
-		default: return 0;
-	}
-}
-
 float Ship::getHullIntegrity()								const { return hullIntegrity; }
 float Ship::getArmorIntegrity()								const { return armorIntegrity; }
 float Ship::getShieldIntegrity()							const { return shieldIntegrity; }
@@ -671,7 +661,6 @@ float Ship::getEngineIntegrity()							const { return engineIntegrity; }
 float Ship::getMissileLauncherIntegrity()					const { return missileLauncherIntegrity; }
 float Ship::getLaserIntegrity()								const { return laserIntegrity; }
 
-//std::string Ship::getCargoPodCountString()					const { return convertClassTypeToString(cargoPodCount); }
 std::string Ship::getEngineClassString()					const { return convertClassTypeToString(engineClass); }
 std::string Ship::getShieldClassString()					const { return convertClassTypeToString(shieldClass); }
 std::string Ship::getArmorClassString()						const { return convertClassTypeToString(armorClass); }
@@ -697,17 +686,9 @@ void Ship::ConsumeFuel(int iterations)
 	    float percent_amount = 0.001f / g_game->gameState->m_ship.getEngineClass();
 
         g_game->gameState->m_ship.augFuel(-percent_amount);
-
-        float fuel = g_game->gameState->m_ship.getFuel();
-        if (fuel < 0.0f) fuel = 0.0f;
     }
 }
 
-void Ship::setFuel(float percentage)								
-{
-    fuelPercentage = percentage; 
-    capFuel();
-}
 void Ship::augFuel(float percentage)
 {
 	fuelPercentage += percentage;
@@ -762,7 +743,7 @@ void Ship::injectEndurium()
 #pragma endregion
 
 //mutators
-void Ship::setName(std::string initName)							{ name = initName; }
+void Ship::setName(const string &initName)							{ name = initName; }
 void Ship::setCargoPodCount(int initCargoPodCount)					{ cargoPodCount = initCargoPodCount; }
 void Ship::cargoPodPlusPlus()										{ cargoPodCount++; }
 void Ship::cargoPodMinusMinus()										{ cargoPodCount--; }
@@ -793,13 +774,6 @@ void Ship::setArmorIntegrity(float value)
 	if (value > getMaxArmorIntegrity()) value = getMaxArmorIntegrity();
 	armorIntegrity = value;
 }
-void Ship::augArmorIntegrity(float amount)           
-{ 
-    if (armorIntegrity + amount < 100)
-        setArmorIntegrity(armorIntegrity+amount); 
-    else
-        setArmorIntegrity(100);
-}
 
 void Ship::setShieldIntegrity(float value)
 {
@@ -820,13 +794,6 @@ void Ship::setShieldCapacity(float value)
 	if (value < 0.0f) value = 0.0f;
 	if (value > getMaxShieldCapacity()) value = getMaxShieldCapacity();
 	shieldCapacity = value;
-}
-void Ship::augShieldCapacity(float amount)          
-{ 
-    if (shieldCapacity + amount < 100)
-        setShieldCapacity(shieldCapacity+amount); 
-    else
-        setShieldCapacity(100);
 }
 
 void Ship::setEngineIntegrity(float value)
@@ -873,27 +840,27 @@ void Ship::augLaserIntegrity(float amount)
 
 void Ship::setMaxEngineClass(int engineClass)
 {
-	ASSERT(engineClass >= 1 && engineClass <= 6);
+	ALLEGRO_ASSERT(engineClass >= 1 && engineClass <= 6);
 	maxEngineClass = engineClass;
 }
 void Ship::setMaxArmorClass(int armorClass)
 {
-	ASSERT(armorClass >= 1 && armorClass <= 6);
+	ALLEGRO_ASSERT(armorClass >= 1 && armorClass <= 6);
 	maxArmorClass = armorClass;
 }
 void Ship::setMaxShieldClass(int shieldClass)
 {
-	ASSERT(shieldClass >= 1 && shieldClass <= 8);
+	ALLEGRO_ASSERT(shieldClass >= 1 && shieldClass <= 8);
 	maxShieldClass = shieldClass;
 }
 void Ship::setMaxLaserClass(int laserClass)
 {
-	ASSERT(laserClass >= 1 && laserClass <= 9);
+	ALLEGRO_ASSERT(laserClass >= 1 && laserClass <= 9);
 	maxLaserClass = laserClass;
 }
 void Ship::setMaxMissileLauncherClass(int missileLauncherClass)
 {
-	ASSERT(missileLauncherClass >= 1 && missileLauncherClass <= 9);
+	ALLEGRO_ASSERT(missileLauncherClass >= 1 && missileLauncherClass <= 9);
 	maxMissileLauncherClass = missileLauncherClass;
 }
 
@@ -929,7 +896,6 @@ void Ship::Reset()
 	      so the values set here are the definitive ones. Presumably this was not the original purpose
 	      of this function but it was thereafter hijacked to override ModuleCaptainCreation.
 	*/
-	//name                     = "Hyperion";
 	cargoPodCount            =   0;
 	engineClass              =   0; //this will be upgraded with a tutorial mission
 	shieldClass              =   0;
@@ -944,22 +910,6 @@ void Ship::Reset()
 	laserIntegrity           =   0;
 	hasTV                    =true;
 	fuelPercentage           =1.0f;
-
-	/*
-	These properties are not stored on disk; they must be recalculated at captain creation and at savegame load
-	NOTE: we can't actually reset them here or they will override the one set in captain creation.
-	*/
-	//maxEngineClass           = 0;
-	//maxArmorClass            = 0;
-	//maxShieldClass           = 0;
-	//maxLaserClass            = 0;
-	//maxMissileLauncherClass  = 0;
-}
-
-void Ship::RunDiagnostic()
-{
-	//verify that all ship components are valid?
-
 }
 
 bool Ship::Serialize(Archive& ar)
@@ -1072,7 +1022,6 @@ void Ship::damageRandomSystemOrCrew(int odds, int mindamage, int maxdamage)
 	if (Util::Random(1,100) > odds) return;
 
 	float amount;
-//	int health;
 	int damage = Util::Random(mindamage,maxdamage);
 	int system = Util::Random(0,4); //0=hull,1=laser,2=missile,3=shield,4=engine,5=crew
 
@@ -1097,7 +1046,6 @@ void Ship::damageRandomSystemOrCrew(int odds, int mindamage, int maxdamage)
 				amount -= damage;
 				if (amount < 1) {
 					amount = 1;
-					//setLaserClass(0); //this is too harsh!
 					g_game->printout(g_game->g_scrollbox, "Your laser has been heavily damaged!",RED,1000);
 				}
 				else g_game->printout(g_game->g_scrollbox, "Laser is sustaining damage.",YELLOW,1000);
@@ -1111,7 +1059,6 @@ void Ship::damageRandomSystemOrCrew(int odds, int mindamage, int maxdamage)
 				amount -= damage;
 				if (amount < 1) {
 					amount = 1;
-					//setMissileLauncherClass(0);
 					g_game->printout(g_game->g_scrollbox, "The missile launcher has been heavily damaged!",RED,1000);
 				}
 				else g_game->printout(g_game->g_scrollbox,"Missile launcher is sustaining damage.",YELLOW,1000);
@@ -1125,7 +1072,6 @@ void Ship::damageRandomSystemOrCrew(int odds, int mindamage, int maxdamage)
 				amount -= damage;
 				if (amount < 1) {
 					amount = 1;
-					//setShieldClass(0);
 					g_game->printout(g_game->g_scrollbox,"The shield generator has been heavily damaged!",RED,1000);
 				}
 				else g_game->printout(g_game->g_scrollbox,"Shield generator is sustaining damage.",YELLOW,1000);
@@ -1139,7 +1085,6 @@ void Ship::damageRandomSystemOrCrew(int odds, int mindamage, int maxdamage)
 				amount -= damage;
 				if (amount < 1) {
 					amount = 1;
-					//setEngineClass(0);
 					g_game->printout(g_game->g_scrollbox,"The engine has been heavily damaged!",RED,1000);
 				}
 				else g_game->printout(g_game->g_scrollbox,"Engine is sustaining damage.",YELLOW,1000);
@@ -1241,15 +1186,6 @@ int Attributes::getMedical()								const { return medical; }
 float Attributes::getVitality()								const { return vitality; }
 
 //mutators
-void Attributes::setDurability(int initDurability)			{ durability = initDurability; }
-void Attributes::setLearnRate(int initLearnRate)			{ learnRate = initLearnRate; }
-void Attributes::setScience(int initScience)				{ science = initScience; }
-void Attributes::setNavigation(int initNavigation)			{ navigation = initNavigation; }
-void Attributes::setTactics(int initTactics)				{ tactics = initTactics; }
-void Attributes::setEngineering(int initEngineering)		{ engineering = initEngineering; }
-void Attributes::setCommunication(int initCommunication)	{ communication = initCommunication; }
-void Attributes::setMedical(int initMedical)				{ medical = initMedical;}
-void Attributes::setVitality(float initVital)				{ vitality = initVital; capVitality();}
 void Attributes::augVitality(float value)					{ vitality += value; capVitality();}
 void Attributes::capVitality()								{ if(vitality > 100){vitality = 100;} if(vitality < 0){vitality = 0;} }
 
@@ -1331,7 +1267,31 @@ GameState::GameState():
 	officerEng(NULL),
 	officerCom(NULL),
 	officerDoc(NULL)
-{}
+{
+}
+
+ALLEGRO_PATH *
+GameState::get_save_file_path(GameSaveSlot slot)
+{
+    ALLEGRO_ASSERT(slot != GAME_SAVE_SLOT_UNKNOWN);
+    string slotpathname;
+    if (slot == GAME_SAVE_SLOT_NEW)
+    {
+	slotpathname = "newcaptain.dat";
+    }
+    else
+    {
+	slotpathname = string("saves/savegame-") + to_string(slot) + string(".dat");
+    }
+    if (save_dir_path == NULL)
+    {
+	save_dir_path = al_get_standard_path(ALLEGRO_USER_DATA_PATH);
+    }
+    ALLEGRO_PATH *save_file_path = al_create_path(slotpathname.c_str());
+    al_rebase_path(save_dir_path, save_file_path);
+
+    return save_file_path;
+}
 
 GameState::~GameState()
 {
@@ -1611,8 +1571,6 @@ void GameState::Reset()
 	m_baseGameTimeSecs = 0;
 
 	stardate.Reset();	//altered to use current object.
-	//Stardate sdNew;
-	//g_game->gameState->stardate = sdNew;
 
 	setCaptainSelected(false);
 
@@ -1815,8 +1773,6 @@ bool GameState::Serialize(Archive& ar)
 
 	  //the base game time is added to the current ms timer to get an accurate
 	  //date (from gameTimeSecs), so we save gameTimeSecs, but read back into
-	  //baseGameTimeSecs:
-	   //ar << (double)(m_baseGameTimeSecs + m_gameTimeSecs);	//m_gameTimeSecs already includes base.
 	   ar << (double) m_gameTimeSecs;
 
 	   if (!stardate.Serialize(ar))
@@ -1867,7 +1823,6 @@ bool GameState::Serialize(Archive& ar)
 	  //save quest data
 	  ar << activeQuest;
 	  //storedValue keeps track of current quest objective
-	  //ar << g_game->questMgr->storedValue;
 	  ar << storedValue;
 
    }
@@ -1958,25 +1913,30 @@ bool GameState::Serialize(Archive& ar)
 	  //load quest data
 	  ar >> activeQuest;
 	  ar >> storedValue;
-	  //ar >> g_game->questMgr->storedValue;
    }
 
    return true;
 }
 
-std::string GameState::currentSaveGameFile;
+GameState::GameSaveSlot GameState::currentSaveGameSlot = GameState::GAME_SAVE_SLOT_UNKNOWN;
+ALLEGRO_PATH *GameState::save_dir_path = nullptr;
 
 #define GAME_MAGIC  0xAAFFAAFF
 #define GAME_STRING "StarflightTLC-SaveGame"
 #define GAME_SCHEMA 0
 
-bool GameState::SaveGame(std::string fileName)
+bool GameState::SaveGame(GameSaveSlot slot)
 {
-   currentSaveGameFile = fileName;
+   currentSaveGameSlot = slot;
+	ALLEGRO_PATH *slot_path = get_save_file_path(slot);
+	ensure_save_dir();
 
    Archive ar;
-	if (!ar.Open(fileName,Archive::AM_STORE))
+	if (!ar.Open(slot_path, Archive::AM_STORE))
+	{
+		al_destroy_path(slot_path);
 		return false;
+	}
 
 	int GameMagic = GAME_MAGIC;     //studying
    ar << GameMagic;
@@ -1990,6 +1950,7 @@ bool GameState::SaveGame(std::string fileName)
 	if (!Serialize(ar))
    {
       ar.Close();
+		al_destroy_path(slot_path);
       return false;
    }
 
@@ -1997,25 +1958,30 @@ bool GameState::SaveGame(std::string fileName)
 
    ar.Close();
 
+	al_destroy_path(slot_path);
 	return true;
 }
 
-GameState* GameState::ReadGame(std::string fileName)
+GameState* GameState::ReadGame(GameSaveSlot slot)
 {
-   currentSaveGameFile = fileName;
+   currentSaveGameSlot = slot;
+	ALLEGRO_PATH *slot_path = get_save_file_path(slot);
 
 	Archive ar;
-	if (!ar.Open(fileName,Archive::AM_LOAD)) {
-		TRACE("*** GameState: Cannot open save game file");
+	if (!ar.Open(slot_path, Archive::AM_LOAD)) {
+		ALLEGRO_DEBUG("*** GameState: Cannot open save game file");
+		al_destroy_path(slot_path);
 		return NULL;
 	}
+	al_destroy_path(slot_path);
 
 	//numeric code uniquely identifying this game's file
    int LoadedGameMagic;
    ar >> LoadedGameMagic;
    if ( (unsigned int) LoadedGameMagic != GAME_MAGIC ) {
 	   g_game->message("Invalid save game file");
-       TRACE("*** GameState: Invalid save game file");
+       ALLEGRO_DEBUG("*** GameState: Invalid save game file");
+		al_destroy_path(slot_path);
       return NULL;
    }
 
@@ -2024,7 +1990,7 @@ GameState* GameState::ReadGame(std::string fileName)
    ar >> LoadedGameString;
    if (LoadedGameString != GAME_STRING) {
 	   g_game->message("Invalid save game file");
-       TRACE("*** GameState: Invalid save game file");
+       ALLEGRO_DEBUG("*** GameState: Invalid save game file");
       return NULL;
    }
 
@@ -2032,7 +1998,7 @@ GameState* GameState::ReadGame(std::string fileName)
    int LoadedGameSchema = 0;
    ar >> LoadedGameSchema;
    if (LoadedGameSchema > GAME_SCHEMA) {
-	   TRACE("*** GameState: Incorrect schema in save game file");
+	   ALLEGRO_DEBUG("*** GameState: Incorrect schema in save game file");
       return NULL;
    }
 
@@ -2041,7 +2007,7 @@ GameState* GameState::ReadGame(std::string fileName)
 
 	if (!g->Serialize(ar))
 	{
-		TRACE("*** GameState: Error reading save game file");
+		ALLEGRO_DEBUG("*** GameState: Error reading save game file");
 		delete g;
 		ar.Close();
 		return NULL;
@@ -2051,7 +2017,7 @@ GameState* GameState::ReadGame(std::string fileName)
    ar >> LoadedGameMagic;
    if ( (unsigned int) LoadedGameMagic != GAME_MAGIC )
    {
-	   TRACE("*** GameState: Error loading save game file");
+	   ALLEGRO_DEBUG("*** GameState: Error loading save game file");
       delete g;
       ar.Close();
       return NULL;
@@ -2061,10 +2027,10 @@ GameState* GameState::ReadGame(std::string fileName)
 	return g;
 }
 
-GameState * GameState::LoadGame(std::string fileName) {
-	TRACE("\n");
-	GameState* gs= ReadGame(fileName);
-	if (gs == NULL) {TRACE(" in GameState::LoadGame\n"); return gs; }	//message picks up where ReadGame left off.
+GameState * GameState::LoadGame(GameSaveSlot slot) {
+	ALLEGRO_DEBUG("\n");
+	GameState* gs= ReadGame(slot);
+	if (gs == NULL) {ALLEGRO_DEBUG(" in GameState::LoadGame\n"); return gs; }	//message picks up where ReadGame left off.
 
 	gs->m_captainSelected= true;
 	*g_game->gameState= *gs;		//assign to game state.
@@ -2132,7 +2098,7 @@ GameState * GameState::LoadGame(std::string fileName) {
 			break;
 		default:
 			//cant happen
-			ASSERT(0);
+			ALLEGRO_ASSERT(0);
 	}
 
 	g_game->gameState->m_ship.setMaxEngineClass(maxEngineClass);
@@ -2149,18 +2115,27 @@ GameState * GameState::LoadGame(std::string fileName) {
 	#ifdef DEBUG
 	DumpStats(g_game->gameState);	//dump statistics to file.
 	#endif
-	TRACE("Game state loaded successfully\n");
+	ALLEGRO_DEBUG("Game state loaded successfully\n");
 	return g_game->gameState;		//return gs & leave deletion to caller?
+}
+
+
+void
+GameState::DeleteGame(GameSaveSlot slot) {
+	ALLEGRO_PATH *slot_path = get_save_file_path(slot);
+	if (al_filename_exists(al_path_cstr(slot_path, ALLEGRO_NATIVE_PATH_SEP))) {
+		al_remove_filename(al_path_cstr(slot_path, ALLEGRO_NATIVE_PATH_SEP));
+	}
 }
 
 void GameState::AutoSave()
 {
-	if (currentSaveGameFile.size() == 0) {
+	if (currentSaveGameSlot == GAME_SAVE_SLOT_UNKNOWN) {
 		g_game->ShowMessageBoxWindow("", "There is no active player savegame file!");
 		return;
 	}
 
-   SaveGame(currentSaveGameFile);
+   SaveGame(currentSaveGameSlot);
 
    g_game->ShowMessageBoxWindow("", "Game state has been saved", 400, 200, GREEN);
 
@@ -2168,19 +2143,12 @@ void GameState::AutoSave()
 
 void GameState::AutoLoad()
 {
-	if (currentSaveGameFile.size() == 0) {
+	if (currentSaveGameSlot == GAME_SAVE_SLOT_UNKNOWN) {
 		g_game->ShowMessageBoxWindow("", "There is no active player savegame file to load!");
 		return;
 	}
 
-   GameState* lgs = LoadGame(currentSaveGameFile);
-	//if (lgs != NULL)		//logic now handled in LoadGame
-	//{
-	//   lgs->m_captainSelected = true;
-	//   *this = *lgs;
-	//   delete lgs;
-	//}
-
+   GameState* lgs = LoadGame(currentSaveGameSlot);
 	if (lgs != NULL)
 		g_game->ShowMessageBoxWindow("", "Game has been restored to last save point", 400, 200, GREEN);
 	else
@@ -2197,9 +2165,6 @@ void GameState::AutoLoad()
 //accessors
 
 
-//Stardate GameState::getStardate()								const { return m_stardate; }
-bool GameState::isCaptainSelected()								const { return m_captainSelected; }
-ProfessionType GameState::getProfession()						const { return m_profession; }
 int GameState::getCredits()										const { return m_credits; }
 
 string GameState::getProfessionString()
@@ -2227,7 +2192,7 @@ Officer *GameState::getOfficer(int officerType)
 		case OFFICER_COMMUNICATION:		return officerCom; break;
 		case OFFICER_MEDICAL:			return officerDoc; break;
 		case OFFICER_TACTICAL:			return officerTac; break;
-		default: ASSERT(0);
+		default: ALLEGRO_ASSERT(0);
 	}
 
 	//UNREACHABLE
@@ -2237,7 +2202,7 @@ Officer *GameState::getOfficer(int officerType)
 }
 
 // Helper function in case some module doesn't like to work directly with explicit officer objects
-Officer *GameState::getOfficer(std::string officerName)
+Officer *GameState::getOfficer(const string &officerName)
 {
 	if (officerName == "CAPTAIN")
 		return officerCap;
@@ -2254,7 +2219,7 @@ Officer *GameState::getOfficer(std::string officerName)
 	else if (officerName == "TACTICAL" || officerName == "TACTICAL OFFICER")
 		return officerTac;
 	else
-		ASSERT(0);
+		ALLEGRO_ASSERT(0);
 
 	//to keep the compiler happy
 	return NULL;
@@ -2267,24 +2232,6 @@ Officer* GameState::getCurrentTac() { return (officerTac->attributes.vitality > 
 Officer* GameState::getCurrentEng() { return (officerEng->attributes.vitality > 0)? officerEng : officerCap; }
 Officer* GameState::getCurrentCom() { return (officerCom->attributes.vitality > 0)? officerCom : officerCap; }
 Officer* GameState::getCurrentDoc() { return (officerDoc->attributes.vitality > 0)? officerDoc : officerCap; }
-
-Officer* GameState::getCurrentOfficerByType(OfficerType officertype)
-{
-	switch(officertype){
-		case OFFICER_CAPTAIN       : return officerCap;
-		case OFFICER_SCIENCE       : return getCurrentSci();
-		case OFFICER_NAVIGATION    : return getCurrentNav();
-		case OFFICER_ENGINEER      : return getCurrentEng();
-		case OFFICER_COMMUNICATION : return getCurrentCom();
-		case OFFICER_MEDICAL       : return getCurrentDoc();
-		case OFFICER_TACTICAL      : return getCurrentTac();
-
-		default: ASSERT(0);		
-	}
-
-	//to keep the compiler happy
-	return NULL;
-}
 
 //calculate effective skill level taking into account vitality and captain modifier
 int GameState::CalcEffectiveSkill(Skill skill)
@@ -2324,15 +2271,12 @@ int GameState::CalcEffectiveSkill(Skill skill)
 			off_vitality = officerDoc->attributes.vitality;
 			break;
 
-		default: ASSERT(0);
+		default: ALLEGRO_ASSERT(0);
 	}
 
 	float res = (off_vitality > 0)?
 		off_skill*off_vitality/100 + cap_skill/10*cap_vitality/100 :
 		cap_skill*cap_vitality/100;
-
-//	TRACE("CalcSkill: skill %d, cap_skill %f, cap_vitality %f, off_skill %f, off_vitality %f, res %f\n",
-//				skill,cap_skill,cap_vitality,off_skill,off_vitality,res);
 
 	return res;
 }
@@ -2374,7 +2318,7 @@ bool GameState::SkillCheck(Skill skill)
 			skill_value = CalcEffectiveSkill(SKILL_COMMUNICATION);
 			break;
 		default:
-			ASSERT(0);
+			ALLEGRO_ASSERT(0);
 	}
 
 	//this is to set tempOfficer->lastSkillCheck to current stardate
@@ -2433,14 +2377,13 @@ string GameState::getCurrentAlienName() {return player->getAlienRaceNamePlural(g
 int GameState::getAlienAttitude() {AlienRaces region= getCurrentAlien();	return alienAttitudes[region]; }
 
 //mutators
-//void GameState::setStardate(const Stardate &initStardate)							{ m_stardate = initStardate; }
 void GameState::setCaptainSelected(bool initCaptainSelected)						{ m_captainSelected = initCaptainSelected; }
 void GameState::setProfession(const ProfessionType &initProfession)					{ m_profession = initProfession; }
 void GameState::setCredits(int initCredits)											{ m_credits = initCredits; }
 void GameState::augCredits(int amount)												{ m_credits += amount; }
 void GameState::setShip(const Ship &initShip)										{ m_ship = initShip; }
 
-void GameState::setProfession(string profession) {
+void GameState::setProfession(const string &profession) {
 	if 		(profession == "none")			m_profession= PROFESSION_NONE;
 	else if (profession == "freelance")		m_profession= PROFESSION_FREELANCE;
 	else if (profession == "military")		m_profession= PROFESSION_MILITARY;
@@ -2452,4 +2395,23 @@ void GameState::setProfession(string profession) {
 void GameState::setAlienAttitude(int value) {
 	if (value < 0) value= 0;					if (value > 100) value= 100;
 	AlienRaces region= getCurrentAlien();		alienAttitudes[region]= value;
+}
+
+
+bool GameState::ensure_save_dir()
+{
+	ALLEGRO_PATH *saves_subdir = al_create_path("saves");
+	bool res = true;
+
+	if (save_dir_path == NULL)
+	{
+		save_dir_path = al_get_standard_path(ALLEGRO_USER_DATA_PATH);
+	}
+	al_rebase_path(save_dir_path, saves_subdir);
+	if (!al_filename_exists(al_path_cstr(saves_subdir, ALLEGRO_NATIVE_PATH_SEP)))
+	{
+		res = al_make_directory(al_path_cstr(saves_subdir, ALLEGRO_NATIVE_PATH_SEP));
+	}
+	al_destroy_path(saves_subdir);
+	return res;
 }

@@ -14,32 +14,19 @@
 class ModuleTopGUI : public Module
 {
 private:
-	//BITMAP *img_aux;
-	//BITMAP *canvas;
-	BITMAP *img_gauges;
-	BITMAP *img_fuel_gauge;
-	BITMAP *img_hull_gauge;
-	BITMAP *img_shield_gauge;
-	BITMAP *img_armor_gauge;
-	//Button* btn_inject_fuel;
+	ALLEGRO_BITMAP *img_gauges;
+	ALLEGRO_BITMAP *img_fuel_gauge;
+	ALLEGRO_BITMAP *img_hull_gauge;
+	ALLEGRO_BITMAP *img_shield_gauge;
+	ALLEGRO_BITMAP *img_armor_gauge;
 public:
 	ModuleTopGUI();
 	~ModuleTopGUI();
-	bool Init();
-	void Update();
+	virtual bool Init() override;
+	virtual void Update() override;
 	void UpdateInjector();
-	void Draw();
-	void OnKeyPress( int keyCode );
-	void OnKeyPressed(int keyCode);
-	void OnKeyReleased(int keyCode);
-	void OnMouseMove(int x, int y);
-	void OnMouseClick(int button, int x, int y);
-	void OnMousePressed(int button, int x, int y);
-	void OnMouseReleased(int button, int x, int y);
-	void OnMouseWheelUp(int x, int y);
-	void OnMouseWheelDown(int x, int y);
-	void OnEvent(Event *event);
-	void Close();
+	virtual void Draw() override;
+	virtual void Close() override;
 };
 
 #endif

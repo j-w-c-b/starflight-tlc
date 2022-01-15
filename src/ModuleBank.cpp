@@ -7,29 +7,9 @@
 #include "ModuleBank.h"
 #include "QuestMgr.h"
 #include "AudioSystem.h"
+#include "bank_resources.h"
 
-#define BANK_BACKGROUND_BMP              0        /* BMP  */
-#define BANK_BANNER_BMP                  1        /* BMP  */
-#define BANK_BUTTON_CONFIRM_HOVER_BMP    2        /* BMP  */
-#define BANK_BUTTON_CONFIRM_NORMAL_BMP   3        /* BMP  */
-#define BANK_BUTTON_EXIT_BMP             4        /* BMP  */
-#define BANK_BUTTON_EXIT_HOVER_BMP       5        /* BMP  */
-#define BANK_BUTTON_HELP_BMP             6        /* BMP  */
-#define BANK_BUTTON_HELP_HOVER_BMP       7        /* BMP  */
-#define BANK_BUTTON_PAY_HOVER_BMP        8        /* BMP  */
-#define BANK_BUTTON_PAY_NORMAL_BMP       9        /* BMP  */
-#define BANK_BUTTON_TAKE_HOVER_BMP       10       /* BMP  */
-#define BANK_BUTTON_TAKE_NORMAL_BMP      11       /* BMP  */
-#define BANK_CALC_BUTTON_DEACTIVATE_BMP  12       /* BMP  */
-#define BANK_CALC_BUTTON_HOVER_BMP       13       /* BMP  */
-#define BANK_CALC_BUTTON_NORMAL_BMP      14       /* BMP  */
-#define BANK_HELP_WINDOW_BMP             15       /* BMP  */
-
-DATAFILE *bdata;
-
-
-//NOTE: EVENT_NONE is now defined Events.h
-//const int EVENT_NONE							= 0;
+ALLEGRO_DEBUG_CHANNEL("ModuleBank")
 
 const int EVENT_TAKE							= 101;
 const int EVENT_PAY								= 201;
@@ -38,17 +18,12 @@ const int EVENT_EXIT							= -1;
 const int EVENT_HELP							= 401;
 
 
-const int EXITBTN_WIDTH							= 176;
-const int EXITBTN_HEIGHT						= 74;
-const int EXITBTN_X								= 50;//100;
-const int EXITBTN_Y								= 688;//594;
+const int EXITBTN_X								= 50;
+const int EXITBTN_Y								= 688;
 
-//const int BANK_BUTTON_PADDING					= 5;
-
-//const int TELLER_FONT_SIZE						= 22;
 const int INFO_FONT_SIZE						= 18;
-const int INFO_OUTPUT_X							= 190;//700;
-const int INFO_OUTPUT_Y							= 190;//225;
+const int INFO_OUTPUT_X							= 190;
+const int INFO_OUTPUT_Y							= 190;
 
 const int MAX_LOAN								= 10000;
 const int LOAN_BRONZE							= 1000;
@@ -76,17 +51,17 @@ const int CALC_ZERO_Y							= 495;
 const int CALC_OUT_X							= 850;
 const int CALC_OUT_Y							= 215;
 
-const int CONFIRM_BTN_X							= 700;//407;
-const int CONFIRM_BTN_Y							= 255;//335;
+const int CONFIRM_BTN_X							= 700;
+const int CONFIRM_BTN_Y							= 255;
 
-const int TAKE_BTN_X							= 750;//470;
-const int TAKE_BTN_Y							= 175;//254;
+const int TAKE_BTN_X							= 750;
+const int TAKE_BTN_Y							= 175;
 
-const int PAY_BTN_X								= 630;//342;
-const int PAY_BTN_Y								= 175;//254;
+const int PAY_BTN_X								= 630;
+const int PAY_BTN_Y								= 175;
 
-const int BANK_BANNER_X							= 92;//128
-const int BANK_BANNER_Y							= 0; //111
+const int BANK_BANNER_X							= 92;
+const int BANK_BANNER_Y							= 0; 
 
 const unsigned int MAX_DIGITS					= 5;
 
@@ -98,7 +73,7 @@ const int HELP_BTN_Y							= 10;
 const int HELP_WINDOW_X							= 338;
 const int HELP_WINDOW_Y							= 160;
 
-ModuleBank::ModuleBank(void){
+ModuleBank::ModuleBank(void) : resources(BANK_IMAGES) {
 	i_max_loan = 0;
 	i_amount_owed = 0;
 	i_time_lapsed = 0;
@@ -110,19 +85,16 @@ ModuleBank::ModuleBank(void){
 }
 
 ModuleBank::~ModuleBank(void){
-	TRACE("ModuleBank Dead\n");
+	ALLEGRO_DEBUG("ModuleBank Dead\n");
 }
 
 bool ModuleBank::Init()
 {
-	//if (!Module::Init()){return false;}
-	TRACE("ModuleBank Initialize\n");
+	ALLEGRO_DEBUG("ModuleBank Initialize\n");
 
 
-	//load the datafile
-	bdata = load_datafile("data/bank/bank.dat");
-	if (!bdata) {
-		g_game->message("Bank: Error loading datafile");	
+	if (!resources.load()) {
+		g_game->message("Bank: Error loading resources");	
 		return false;
 	}
 
@@ -138,8 +110,7 @@ bool ModuleBank::Init()
 
 	{
 		b_help_visible = false;
-		alfont_set_font_size(g_game->font10, 22);
-		m_help_window = new ScrollBox::ScrollBox(g_game->font10,
+		m_help_window = new ScrollBox::ScrollBox(g_game->font22,
 												 ScrollBox::SB_TEXT,
 												 HELP_WINDOW_X+27,
 												 HELP_WINDOW_Y+15,
@@ -147,19 +118,18 @@ bool ModuleBank::Init()
 												 318);
 		if (m_help_window == NULL){ return false; }
 		
-		//m_help_window->SetTopPad(10);
 		m_help_window->setLines(32);
 		m_help_window->DrawScrollBar(true);
-		m_help_window->Write("Bank Help:", makecol(255,255,0));
-		m_help_window->Write("", makecol(255,255,255));
-		m_help_window->Write("Use the 'take' and 'pay' buttons to select between paying and taking a loan.", makecol(255,255,255));
-		m_help_window->Write("By clicking the keys on the keypad you can type in a number for withdrawal. You can use up to (and including) 6 digits, for a max value of 999,999.", makecol(255,255,255));
-		m_help_window->Write("Use the button, labeled 'confirm', to pay or take the value listed on the keypad screen.", makecol(255,255,255));
-		m_help_window->Write("", makecol(255,255,255));
-		m_help_window->Write("A word of caution:", makecol(255,0,0));
-		m_help_window->Write(" High bank loans have high interest rates. Be wary of taking loans larger than you need.", makecol(255,255,255));
-		m_help_window->Write("A minimum payment must be payed every 7 days. By paying in excess you can cover additional payments ahead of time.", makecol(255,255,255));
-		m_help_window->Write("Failure to pay the loan will result in severe punishment. It is not recommended that you test the banks generosity.", makecol(255,255,255));
+		m_help_window->Write("Bank Help:", al_map_rgb(255,255,0));
+		m_help_window->Write("", al_map_rgb(255,255,255));
+		m_help_window->Write("Use the 'take' and 'pay' buttons to select between paying and taking a loan.", al_map_rgb(255,255,255));
+		m_help_window->Write("By clicking the keys on the keypad you can type in a number for withdrawal. You can use up to (and including) 6 digits, for a max value of 999,999.", al_map_rgb(255,255,255));
+		m_help_window->Write("Use the button, labeled 'confirm', to pay or take the value listed on the keypad screen.", al_map_rgb(255,255,255));
+		m_help_window->Write("", al_map_rgb(255,255,255));
+		m_help_window->Write("A word of caution:", al_map_rgb(255,0,0));
+		m_help_window->Write(" High bank loans have high interest rates. Be wary of taking loans larger than you need.", al_map_rgb(255,255,255));
+		m_help_window->Write("A minimum payment must be payed every 7 days. By paying in excess you can cover additional payments ahead of time.", al_map_rgb(255,255,255));
+		m_help_window->Write("Failure to pay the loan will result in severe punishment. It is not recommended that you test the banks generosity.", al_map_rgb(255,255,255));
 	}
 	m_bWarned = false;
 	digit_list.clear();
@@ -173,104 +143,83 @@ bool ModuleBank::Init()
 
 bool ModuleBank::init_images()
 {
-	
-	bmp_bank_background = (BITMAP*)bdata[BANK_BACKGROUND_BMP].dat;
-	if (bmp_bank_background == NULL) {
-		g_game->message("Bank: Error loading background");
-		return false;
-	}
-	
-	bmp_bank_banner = (BITMAP*)bdata[BANK_BANNER_BMP].dat;
-	if (bmp_bank_banner == NULL) {
-		g_game->message("Bank: Error loading banner");
-		return false;
-	}
-
-	bmp_help_window = (BITMAP*)bdata[BANK_HELP_WINDOW_BMP].dat;
-	if (bmp_help_window == NULL) {
-		g_game->message("Bank: Error loading help window");
-		return false;
-	}
+        // resources.load() will fail if these are nullptr, so we can just look
+        // them up here.
+	bmp_bank_background = resources[BANK_BACKGROUND];
+	bmp_bank_banner = resources[BANK_BANNER];
+	bmp_help_window = resources[BANK_HELP_WINDOW];
 
 	return true;
 }
 
 bool ModuleBank::init_buttons(){
-	BITMAP *imgNorm, *imgOver, *imgDis;
+	ALLEGRO_BITMAP *imgNorm, *imgOver, *imgDis;
 	g_game->audioSystem->Load("data/cantina/buttonclick.ogg", "click");
 
-	imgNorm = (BITMAP*)bdata[BANK_BUTTON_EXIT_BMP].dat;
-	imgOver = (BITMAP*)bdata[BANK_BUTTON_EXIT_HOVER_BMP].dat;
+	imgNorm = resources[BANK_BUTTON_EXIT];
+	imgOver = resources[BANK_BUTTON_EXIT_HOVER];
 	exit_button = new Button(//exit button
 				imgNorm, 
 				imgOver, 
 				NULL, 
-				EXITBTN_X, EXITBTN_Y, 0, EVENT_EXIT, g_game->font10, "", makecol(255,255,255), "click");
+				EXITBTN_X, EXITBTN_Y, 0, EVENT_EXIT, g_game->font10, "", al_map_rgb(255,255,255), "click");
 	if(exit_button){
 		if(!exit_button->IsInitialized()){return false;}
 	}else{return false;}
 
 
-	imgNorm = (BITMAP*)bdata[BANK_BUTTON_HELP_BMP].dat;
-	imgOver = (BITMAP*)bdata[BANK_BUTTON_HELP_HOVER_BMP].dat;
+	imgNorm = resources[BANK_BUTTON_HELP];
+	imgOver = resources[BANK_BUTTON_HELP_HOVER];
 	help_button = new Button(//help button
 				imgNorm, 
 				imgOver, 
 				NULL, 
-				HELP_BTN_X, HELP_BTN_Y, 0, EVENT_HELP, g_game->font10, "", makecol(255,255,255), "click");
+				HELP_BTN_X, HELP_BTN_Y, 0, EVENT_HELP, g_game->font10, "", al_map_rgb(255,255,255), "click");
 	if(help_button){
 		if(!help_button->IsInitialized()){return false;}
 	}else{return false;}
 
-
-
-	imgNorm = (BITMAP*)bdata[BANK_BUTTON_CONFIRM_NORMAL_BMP].dat;
-	imgOver = (BITMAP*)bdata[BANK_BUTTON_CONFIRM_HOVER_BMP].dat;
+	imgNorm = resources[BANK_BUTTON_CONFIRM_NORMAL];
+	imgOver = resources[BANK_BUTTON_CONFIRM_HOVER];
 	confirm_button = new Button(//confirm button
 				imgNorm,  
 				imgOver, 
 				NULL, 
-				CONFIRM_BTN_X,CONFIRM_BTN_Y, 0, EVENT_CONFIRM, g_game->font10, "Confirm", makecol(255,255,255), "click");
+				CONFIRM_BTN_X,CONFIRM_BTN_Y, 0, EVENT_CONFIRM, g_game->font10, "Confirm", al_map_rgb(255,255,255), "click");
 	if(confirm_button){
 		if(!confirm_button->IsInitialized()){return false;}
 	}else{return false;}
 
-
-
-	imgNorm = (BITMAP*)bdata[BANK_BUTTON_PAY_NORMAL_BMP].dat;
-	imgOver = (BITMAP*)bdata[BANK_BUTTON_PAY_HOVER_BMP].dat;
+	imgNorm = resources[BANK_BUTTON_PAY_NORMAL];
+	imgOver = resources[BANK_BUTTON_PAY_HOVER];
 	pay_button = new Button(//pay button
 				imgNorm, 
 				imgOver, 
 				NULL, 
-				PAY_BTN_X, PAY_BTN_Y, 0, EVENT_PAY, g_game->font10, "Pay", makecol(255,255,255), "click");
+				PAY_BTN_X, PAY_BTN_Y, 0, EVENT_PAY, g_game->font10, "Pay", al_map_rgb(255,255,255), "click");
 	if(pay_button){
 		if(!pay_button->IsInitialized()){return false;}
 	}else{return false;}
 
-
-
-	imgNorm = (BITMAP*)bdata[BANK_BUTTON_TAKE_NORMAL_BMP].dat;
-	imgOver = (BITMAP*)bdata[BANK_BUTTON_TAKE_HOVER_BMP].dat;
+	imgNorm = resources[BANK_BUTTON_TAKE_NORMAL];
+	imgOver = resources[BANK_BUTTON_TAKE_HOVER];
 	take_button = new Button(//take button
 				imgNorm, 
 				imgOver, 
 				NULL, 
-				TAKE_BTN_X,TAKE_BTN_Y, 0, EVENT_TAKE, g_game->font10, "Take", makecol(255,255,255), "click");
+				TAKE_BTN_X,TAKE_BTN_Y, 0, EVENT_TAKE, g_game->font10, "Take", al_map_rgb(255,255,255), "click");
 	if(take_button){
 		if(!take_button->IsInitialized()){return false;}
 	}else{return false;}
 
-
-
-	imgNorm = (BITMAP*)bdata[BANK_CALC_BUTTON_NORMAL_BMP].dat;
-	imgOver = (BITMAP*)bdata[BANK_CALC_BUTTON_HOVER_BMP].dat;
-	imgDis = (BITMAP*)bdata[BANK_CALC_BUTTON_DEACTIVATE_BMP].dat;
+	imgNorm = resources[BANK_CALC_BUTTON_NORMAL];
+	imgOver = resources[BANK_CALC_BUTTON_HOVER];
+	imgDis = resources[BANK_CALC_BUTTON_DEACTIVATE];
 	calc_buttons[0] = new Button(
 					imgNorm, 
 					imgOver, 
 					imgDis, 
-		/*345, 572,*/CALC_ZERO_X, CALC_ZERO_Y, 0, CALC_ZERO, g_game->font10, "0", makecol(0,255,0), "click");
+		/*345, 572,*/CALC_ZERO_X, CALC_ZERO_Y, 0, CALC_ZERO, g_game->font22, "0", al_map_rgb(0,255,0), "click");
 
 	calc_buttons[1] = new Button(
 					imgNorm, 
@@ -278,7 +227,7 @@ bool ModuleBank::init_buttons(){
 					imgDis, 
 		/*345, 500,*/CALC_ZERO_X, 
 					 CALC_ZERO_Y - CALC_PADDING_Y, 
-					 0, CALC_ONE, g_game->font10, "1", makecol(0,255,0), "click");
+					 0, CALC_ONE, g_game->font22, "1", al_map_rgb(0,255,0), "click");
 
 	calc_buttons[2] = new Button(
 					imgNorm, 
@@ -286,7 +235,7 @@ bool ModuleBank::init_buttons(){
 					imgDis, 
 		/*427, 500,*/CALC_ZERO_X + ( CALC_PADDING_X ), 
 					 CALC_ZERO_Y - ( CALC_PADDING_Y ), 
-					 0, CALC_TWO, g_game->font10, "2", makecol(0,255,0), "click");
+					 0, CALC_TWO, g_game->font22, "2", al_map_rgb(0,255,0), "click");
 
 	calc_buttons[3] = new Button(
 					imgNorm, 
@@ -294,7 +243,7 @@ bool ModuleBank::init_buttons(){
 					imgDis, 
 		/*509, 500,*/CALC_ZERO_X + ( CALC_PADDING_X ) * 2, 
 					 CALC_ZERO_Y - ( CALC_PADDING_Y ), 
-					 0, CALC_THREE, g_game->font10, "3", makecol(0,255,0), "click");
+					 0, CALC_THREE, g_game->font22, "3", al_map_rgb(0,255,0), "click");
 
 	calc_buttons[4] = new Button(
 					imgNorm, 
@@ -302,7 +251,7 @@ bool ModuleBank::init_buttons(){
 					imgDis, 
 		/*345, 428,*/CALC_ZERO_X, 
 					 CALC_ZERO_Y - ( CALC_PADDING_Y ) * 2, 
-					 0, CALC_FOUR, g_game->font10, "4", makecol(0,255,0), "click");
+					 0, CALC_FOUR, g_game->font22, "4", al_map_rgb(0,255,0), "click");
 
 	calc_buttons[5] = new Button(
 					imgNorm, 
@@ -310,7 +259,7 @@ bool ModuleBank::init_buttons(){
 					imgDis, 
 		/*427, 428,*/CALC_ZERO_X + ( CALC_PADDING_X ), 
 					 CALC_ZERO_Y - ( CALC_PADDING_Y ) * 2, 
-					 0, CALC_FIVE, g_game->font10, "5", makecol(0,255,0), "click");
+					 0, CALC_FIVE, g_game->font22, "5", al_map_rgb(0,255,0), "click");
 
 	calc_buttons[6] = new Button(
 					imgNorm, 
@@ -318,14 +267,14 @@ bool ModuleBank::init_buttons(){
 					imgDis, 
 		/*509, 428,*/CALC_ZERO_X + ( CALC_PADDING_X ) * 2, 
 					 CALC_ZERO_Y - ( CALC_PADDING_Y ) * 2, 
-					 0, CALC_SIX, g_game->font10, "6", makecol(0,255,0), "click");
+					 0, CALC_SIX, g_game->font22, "6", al_map_rgb(0,255,0), "click");
 
 	calc_buttons[7] = new Button(
 					imgNorm, 
 					imgOver, 
 					imgDis, 
 		/*345, 356,*/CALC_ZERO_X, 
-					 CALC_ZERO_Y - ( CALC_PADDING_Y ) * 3,  0, CALC_SEVEN, g_game->font10, "7", makecol(0,255,0), "click");
+					 CALC_ZERO_Y - ( CALC_PADDING_Y ) * 3,  0, CALC_SEVEN, g_game->font22, "7", al_map_rgb(0,255,0), "click");
 
 	calc_buttons[8] = new Button(
 					imgNorm, 
@@ -333,7 +282,7 @@ bool ModuleBank::init_buttons(){
 					imgDis, 
 		/*427, 356,*/CALC_ZERO_X + ( CALC_PADDING_X ), 
 					 CALC_ZERO_Y - ( CALC_PADDING_Y ) * 3, 
-					 0, CALC_EIGHT, g_game->font10, "8", makecol(0,255,0), "click");
+					 0, CALC_EIGHT, g_game->font22, "8", al_map_rgb(0,255,0), "click");
 
 	calc_buttons[9] = new Button(
 					imgNorm, 
@@ -341,7 +290,7 @@ bool ModuleBank::init_buttons(){
 					imgDis, 
 		/*509, 356,*/CALC_ZERO_X + ( CALC_PADDING_X ) * 2, 
 					 CALC_ZERO_Y - ( CALC_PADDING_Y ) * 3, 
-					 0, CALC_NINE, g_game->font10, "9", makecol(0,255,0), "click");
+					 0, CALC_NINE, g_game->font22, "9", al_map_rgb(0,255,0), "click");
 	
 	calc_buttons[10] = new Button(
 					imgNorm, 
@@ -349,7 +298,7 @@ bool ModuleBank::init_buttons(){
 					imgDis, 
 		/*509, 572,*/CALC_ZERO_X + ( CALC_PADDING_X ) * 2, 
 					 CALC_ZERO_Y, 
-					 0, CALC_CLEAR, g_game->font10, "Clear", makecol(0,255,0), "click");
+					 0, CALC_CLEAR, g_game->font22, "Clear", al_map_rgb(0,255,0), "click");
 
 	for(int i = 0; i < NUM_CALC_BUTTONS; i++){
 		if(calc_buttons[i]){
@@ -378,7 +327,6 @@ void ModuleBank::Update()
 		if(g_game->gameState->player->hasHyperspacePermit() == false){
 			g_game->gameState->player->set_HyperspacePermit(true);
 		}
-	//	m_due_date = g_game->gameState->getStardate();
 	}else{
 		b_has_loan = true;
 	}
@@ -395,87 +343,78 @@ void ModuleBank::Draw()
 	}
 	{//help window
 		if(b_help_visible){
-			masked_blit(bmp_help_window, g_game->GetBackBuffer(), 0,0, HELP_WINDOW_X, HELP_WINDOW_Y, bmp_help_window->w, bmp_help_window->h);
+			al_draw_bitmap(bmp_help_window, HELP_WINDOW_X, HELP_WINDOW_Y, 0);
 			m_help_window->Draw(g_game->GetBackBuffer());
 		}
 	}
 }
 
 void ModuleBank::render_images(){
-	{
-		blit(bmp_bank_background,g_game->GetBackBuffer(),0,0,0,0,g_game->GetBackBuffer()->w,g_game->GetBackBuffer()->h);//render background
-		masked_blit(bmp_bank_banner, g_game->GetBackBuffer(), 0,0, BANK_BANNER_X, BANK_BANNER_Y, bmp_bank_banner->w, bmp_bank_banner->h);//render background
-	}
-	{//exit button
+		al_draw_bitmap(bmp_bank_background,0,0,0);
+		al_draw_bitmap(bmp_bank_banner, BANK_BANNER_X, BANK_BANNER_Y, 0); //render background
 		exit_button->Run(g_game->GetBackBuffer());
 		help_button->Run(g_game->GetBackBuffer());
-	}
-	{//calc buttons
 		confirm_button->Run(g_game->GetBackBuffer());
 		pay_button->Run(g_game->GetBackBuffer());
 		take_button->Run(g_game->GetBackBuffer());
 		for(int i = 0; i < NUM_CALC_BUTTONS; i++){
 			calc_buttons[i]->Run(g_game->GetBackBuffer());
 		}
-	}
 }
 
 void ModuleBank::render_text(){
 	char c_output[256];
 	
-	alfont_set_font_size(g_game->font10,INFO_FONT_SIZE);
-
 	if(b_considering_pay){
 		sprintf(c_output,"PAY:");
-		alfont_textprintf(g_game->GetBackBuffer(), g_game->font10, CALC_TEXT_X, CALC_TEXT_Y, makecol(255,255,255), c_output);
+		al_draw_text(g_game->font22, al_map_rgb(255,255,255), CALC_TEXT_X, CALC_TEXT_Y, 0, c_output);
 	}else if(b_considering_take){
 		sprintf(c_output,"TAKE:");
-		alfont_textprintf(g_game->GetBackBuffer(), g_game->font10, CALC_TEXT_X, CALC_TEXT_Y, makecol(255,255,255), c_output);
+		al_draw_text(g_game->font22, al_map_rgb(255,255,255), CALC_TEXT_X, CALC_TEXT_Y, 0, c_output);
 	}
 	int x = CALC_OUT_X, y = CALC_OUT_Y;
 	if(!digit_list.empty()){
 		int total = 0;
 		int digit = 1;
-		for(std::list<int>::iterator i = digit_list.begin(); i != digit_list.end(); i++, digit*=10){
-			total += (*i) * digit;
-			sprintf(c_output,"%i", (*i));
-			alfont_textprintf(g_game->GetBackBuffer(), g_game->font10, x, y, makecol(255,255,255), c_output);
+		for(auto i : digit_list) {
+			total += i * digit;
+			sprintf(c_output,"%i", i);
+			al_draw_text(g_game->font22, al_map_rgb(255,255,255), x, y, 0, c_output);
 			x -= 16;
+                        digit *= 10;
 		}
 		if(total > MAX_LOAN){
-			total = MAX_LOAN;
 			digit_list.clear();
 			digit_list.push_front(1);
 			for(unsigned int i = 1; i < MAX_DIGITS; i++){digit_list.push_front(0);}
 		}
 	}else{
 		sprintf(c_output,"0");
-		alfont_textprintf(g_game->GetBackBuffer(), g_game->font10, x, y, makecol(255,255,255), c_output);
+		al_draw_text(g_game->font22, al_map_rgb(255,255,255), x, y, 0, c_output);
 	}
 	
 	sprintf(c_output,"Date: %s", g_game->gameState->stardate.GetFullDateString().c_str());//display date
-	alfont_textprintf(g_game->GetBackBuffer(), g_game->font10, INFO_OUTPUT_X, INFO_OUTPUT_Y, makecol(255,255,255),c_output);
+	al_draw_text(g_game->font12, al_map_rgb(255,255,255), INFO_OUTPUT_X, INFO_OUTPUT_Y, 0, c_output);
 
 	sprintf(c_output,"Credits: %i", g_game->gameState->getCredits()); //display credits
-	alfont_textprintf(g_game->GetBackBuffer(), g_game->font10, INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE, makecol(255,255,255),c_output);
+	al_draw_text(g_game->font12, al_map_rgb(255,255,255),INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE, 0, c_output);
 
-	alfont_set_font_size(g_game->font10,INFO_FONT_SIZE);
 	if(this->b_has_loan == true){ //does the player have a loan?
 		sprintf(c_output,"Date Taken: %s", date_taken.GetDateString().c_str());
-		alfont_textprintf(g_game->GetBackBuffer(), g_game->font10, INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*2, makecol(255,255,255),c_output);
+		al_draw_text(g_game->font22, al_map_rgb(255,255,255),INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*2, 0, c_output);
 		
 		sprintf(c_output,"Amount Owed: %i", i_amount_owed);
-		alfont_textprintf(g_game->GetBackBuffer(), g_game->font10, INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*3, makecol(255,255,255),c_output);
+		al_draw_text(g_game->font22, al_map_rgb(255,255,255),INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*3, 0, c_output);
 		
 		if( is_overdue() ){
 			sprintf(c_output,"Payment: %i", i_minimum_payment);
-			alfont_textprintf(g_game->GetBackBuffer(), g_game->font10, INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*6, ORANGE,c_output);
+			al_draw_text(g_game->font22, ORANGE, INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*6, 0,c_output);
 
 			sprintf(c_output,"Due: %s", m_due_date.GetDateString().c_str());
-			alfont_textprintf(g_game->GetBackBuffer(), g_game->font10, INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*7, ORANGE,c_output);
+			al_draw_text(g_game->font22, ORANGE, INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*7, 0,c_output);
 
 			sprintf(c_output,"PAYMENT OVERDUE!");
-			alfont_textprintf(g_game->GetBackBuffer(), g_game->font10, INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*8, ORANGE, c_output);
+			al_draw_text(g_game->font22, ORANGE, INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*8, 0, c_output);
 		
 			if(!m_bWarned){
 				g_game->ShowMessageBoxWindow("", " - Your payment is overdue! - ", 400, 150);
@@ -484,19 +423,16 @@ void ModuleBank::render_text(){
 
 		}else{
 			sprintf(c_output,"Payment: %i", i_minimum_payment);
-			alfont_textprintf(g_game->GetBackBuffer(), g_game->font10, INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*6, makecol(255,255,255),c_output);
+			al_draw_text(g_game->font22, al_map_rgb(255,255,255), INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*6, 0, c_output);
 
 			sprintf(c_output,"Due: %s", m_due_date.GetDateString().c_str());
-			alfont_textprintf(g_game->GetBackBuffer(), g_game->font10, INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*7, makecol(255,255,255),c_output);
+			al_draw_text(g_game->font22, al_map_rgb(255,255,255),INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*7, 0, c_output);
 		}
 		
 		sprintf(c_output,"Interest Rate: %.2f", f_interest_rate);
-		alfont_textprintf(g_game->GetBackBuffer(), g_game->font10, INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*4, makecol(255,255,255),c_output);
+		al_draw_text(g_game->font22, al_map_rgb(255,255,255),INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*4, 0, c_output);
 
-	}/*else{
-		sprintf(c_output,"Loan Amount: %i", i_max_loan);
-		alfont_textprintf(g_game->GetBackBuffer(), g_game->font10, INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*3, makecol(255,255,255),c_output);
-	}*/
+	}
 }
 
 
@@ -603,8 +539,9 @@ void ModuleBank::push_digit(int value){
 
 void ModuleBank::take_loan(){
 	int total = 0, digit = 1;
-	for(std::list<int>::iterator i = digit_list.begin(); i != digit_list.end(); i++, digit*=10){
-		total += (*i) * digit;
+	for (auto i : digit_list) {
+		total += i * digit;
+                digit *= 10;
 	}
 	i_amount_owed = i_original_loan = total;
 
@@ -676,9 +613,7 @@ void ModuleBank::pay_loan(){
 
 void ModuleBank::OnKeyReleased(int keyCode)
 {
-	if (keyCode == KEY_ESC){ 
-		//g_game->modeMgr->LoadModule(MODULE_STARPORT);
-		//return;
+	if (keyCode == ALLEGRO_KEY_ESCAPE){ 
 	}
 }
 
@@ -723,67 +658,67 @@ void ModuleBank::OnKeyPressed(int keyCode){
 	Event e;
 	if(!b_help_visible){
 		switch (keyCode) {
-			case KEY_0:
-			case KEY_0_PAD:
+			case ALLEGRO_KEY_0:
+			case ALLEGRO_KEY_PAD_0:
 				e.setEventType(CALC_ZERO);
 				g_game->modeMgr->BroadcastEvent(&e);
 				break;
-			case KEY_1:
-			case KEY_1_PAD:
+			case ALLEGRO_KEY_1:
+			case ALLEGRO_KEY_PAD_1:
 				e.setEventType(CALC_ONE);
 				g_game->modeMgr->BroadcastEvent(&e);
 				break;
-			case KEY_2:
-			case KEY_2_PAD:
+			case ALLEGRO_KEY_2:
+			case ALLEGRO_KEY_PAD_2:
 				e.setEventType(CALC_TWO);
 				g_game->modeMgr->BroadcastEvent(&e);
 				break;
-			case KEY_3:
-			case KEY_3_PAD:
+			case ALLEGRO_KEY_3:
+			case ALLEGRO_KEY_PAD_3:
 				e.setEventType(CALC_THREE);
 				g_game->modeMgr->BroadcastEvent(&e);
 				break;
-			case KEY_4:
-			case KEY_4_PAD:
+			case ALLEGRO_KEY_4:
+			case ALLEGRO_KEY_PAD_4:
 				e.setEventType(CALC_FOUR);
 				g_game->modeMgr->BroadcastEvent(&e);
 				break;
-			case KEY_5:
-			case KEY_5_PAD:
+			case ALLEGRO_KEY_5:
+			case ALLEGRO_KEY_PAD_5:
 				e.setEventType(CALC_FIVE);
 				g_game->modeMgr->BroadcastEvent(&e);
 				break;
-			case KEY_6:
-			case KEY_6_PAD:
+			case ALLEGRO_KEY_6:
+			case ALLEGRO_KEY_PAD_6:
 				e.setEventType(CALC_SIX);
 				g_game->modeMgr->BroadcastEvent(&e);
 				break;
-			case KEY_7:
-			case KEY_7_PAD:
+			case ALLEGRO_KEY_7:
+			case ALLEGRO_KEY_PAD_7:
 				e.setEventType(CALC_SEVEN);
 				g_game->modeMgr->BroadcastEvent(&e);
 				break;
-			case KEY_8:
-			case KEY_8_PAD:
+			case ALLEGRO_KEY_8:
+			case ALLEGRO_KEY_PAD_8:
 				e.setEventType(CALC_EIGHT);
 				g_game->modeMgr->BroadcastEvent(&e);
 				break;
-			case KEY_9:
-			case KEY_9_PAD:
+			case ALLEGRO_KEY_9:
+			case ALLEGRO_KEY_PAD_9:
 				e.setEventType(CALC_NINE);
 				g_game->modeMgr->BroadcastEvent(&e);
 				break;
-			case KEY_ENTER:
-			case KEY_ENTER_PAD:
+			case ALLEGRO_KEY_ENTER:
+			case ALLEGRO_KEY_PAD_ENTER:
 				e.setEventType(EVENT_CONFIRM);
 				g_game->modeMgr->BroadcastEvent(&e);
 				break;
-			case KEY_DEL:
-			case KEY_DEL_PAD:
+			case ALLEGRO_KEY_DELETE:
+			case ALLEGRO_KEY_PAD_DELETE:
 				e.setEventType(CALC_CLEAR);
 				g_game->modeMgr->BroadcastEvent(&e);
 				break;
-			case KEY_BACKSPACE:
+			case ALLEGRO_KEY_BACKSPACE:
 				if(!digit_list.empty()){
 					digit_list.pop_front();
 				}
@@ -813,7 +748,7 @@ void ModuleBank::OnMouseWheelDown(int x, int y){
 	}
 }
 void ModuleBank::Close(){
-	TRACE("ModuleBank Closing\n");
+	ALLEGRO_DEBUG("ModuleBank Closing\n");
 	Module::Close();
 
 
@@ -850,16 +785,14 @@ void ModuleBank::Close(){
 			}
 		}
 
-
-		//unload the data file (thus freeing all resources at once)
-		unload_datafile(bdata);
-		bdata = NULL;	
+		//unload the data file
+		resources.unload();
 	}
 	catch(std::exception e) {
-		TRACE(e.what());
+		ALLEGRO_DEBUG("%s\n", e.what());
 	}
 	catch(...) {
-		TRACE("Unhandled exception in Bank::Close\n");
+		ALLEGRO_DEBUG("Unhandled exception in Bank::Close\n");
 	}
 }
 

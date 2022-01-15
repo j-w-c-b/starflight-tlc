@@ -1,4 +1,3 @@
-#include "env.h"
 #include "ModuleCaptainCreation.h"
 #include "Button.h"
 #include "AudioSystem.h"
@@ -6,36 +5,11 @@
 #include "ModeMgr.h"
 #include "Game.h"
 #include "Label.h"
+#include "captaincreation_resources.h"
+
 using namespace std;
 
-
-#define CAPTAINCREATION_BACK_BMP                  0        /* BMP  */
-#define CAPTAINCREATION_BACK_MOUSEOVER_BMP        1        /* BMP  */
-#define CAPTAINCREATION_CURSOR0_BMP               2        /* BMP  */
-#define CAPTAINCREATION_CURSOR1_BMP               3        /* BMP  */
-#define CAPTAINCREATION_DETAILSBACKGROUND_BMP     4        /* BMP  */
-#define CAPTAINCREATION_FINISH_BMP                5        /* BMP  */
-#define CAPTAINCREATION_FINISH_DISABLED_BMP       6        /* BMP  */
-#define CAPTAINCREATION_FINISH_MOUSEOVER_BMP      7        /* BMP  */
-#define CAPTAINCREATION_FREELANCE_BMP             8        /* BMP  */
-#define CAPTAINCREATION_FREELANCE_MOUSEOVER_BMP   9        /* BMP  */
-#define CAPTAINCREATION_MILITARY_BMP             10        /* BMP  */
-#define CAPTAINCREATION_MILITARY_MOUSEOVER_BMP   11        /* BMP  */
-#define CAPTAINCREATION_PLUS_BMP                 12        /* BMP  */
-#define CAPTAINCREATION_PLUS_MOUSEOVER_BMP       13        /* BMP  */
-#define CAPTAINCREATION_PROFESSIONBACKGROUND_BMP 14        /* BMP  */
-#define CAPTAINCREATION_RESET_BMP                15        /* BMP  */
-#define CAPTAINCREATION_RESET_MOUSEOVER_BMP      16        /* BMP  */
-#define CAPTAINCREATION_SCIENTIFIC_BMP           17        /* BMP  */
-#define CAPTAINCREATION_SCIENTIFIC_MOUSEOVER_BMP 18        /* BMP  */
-#define MINUS_BMP                                19        /* BMP  */
-#define MINUS_DISABLED_BMP                       20        /* BMP  */
-#define MINUS_MOUSEOVER_BMP                      21        /* BMP  */
-
-
-DATAFILE *ccdata;
-
-
+ALLEGRO_DEBUG_CHANNEL("ModuleCaptainCreation")
 
 #define PROFBTN_WIDTH 329
 #define PROFBTN_HEIGHT 168
@@ -57,7 +31,7 @@ DATAFILE *ccdata;
 #define EVENT_NONE 0
 #define EVENT_FINISH 101
 
-#define TEXTCOL makecol(0,255,255)
+#define TEXTCOL al_map_rgb(0,255,255)
 
 #define TEXTHEIGHT_TITLES 60
 #define TEXTHEIGHT_PROFESSIONNAMES 40
@@ -186,10 +160,11 @@ DATAFILE *ccdata;
 
 ModuleCaptainCreation::ModuleCaptainCreation(void)
 : m_wizPage(WP_NONE)
-, m_mouseOverImg(NULL)
+, m_profInfoBox(NULL)
 , m_cursorIdx(0)
 , m_cursorIdxDelay(0)
-, m_profInfoBox(NULL)
+, m_mouseOverImg(NULL)
+, m_resources(CAPTAINCREATION_IMAGES)
 {
 }
 
@@ -201,40 +176,18 @@ bool ModuleCaptainCreation::Init()
 {
 	//load the datafile
 
-	ccdata = load_datafile("data/captaincreation/captaincreation.dat");
-	if (!ccdata) {
-		g_game->message("CaptainCreation: Error loading datafile");	
+	if (!m_resources.load()) {
+		g_game->message("CaptainCreation: Error loading resources");
 		return false;
 	}
 
-	m_professionChoiceBackground = (BITMAP*)ccdata[CAPTAINCREATION_PROFESSIONBACKGROUND_BMP].dat;
-	if (m_professionChoiceBackground == NULL)
-		return false;
-
-	m_scientificBtn = (BITMAP*)ccdata[CAPTAINCREATION_SCIENTIFIC_BMP].dat;
-	if (m_scientificBtn == NULL)
-		return false;
-
-	m_scientificBtnMouseOver = (BITMAP*)ccdata[CAPTAINCREATION_SCIENTIFIC_MOUSEOVER_BMP].dat;
-	if (m_scientificBtnMouseOver == NULL)
-		return false;
-
-	m_freelanceBtn = (BITMAP*)ccdata[CAPTAINCREATION_FREELANCE_BMP].dat; 
-	if (m_freelanceBtn == NULL)
-		return false;
-
-	m_freelanceBtnMouseOver = (BITMAP*)ccdata[CAPTAINCREATION_FREELANCE_MOUSEOVER_BMP].dat;
-	if (m_freelanceBtnMouseOver == NULL)
-		return false;
-
-
-	m_militaryBtn = (BITMAP*)ccdata[CAPTAINCREATION_MILITARY_BMP].dat;
-	if (m_militaryBtn == NULL)
-		return false;
-
-	m_militaryBtnMouseOver = (BITMAP*)ccdata[CAPTAINCREATION_MILITARY_MOUSEOVER_BMP].dat;
-	if (m_militaryBtnMouseOver == NULL)
-		return false;
+	m_professionChoiceBackground = m_resources[CAPTAINCREATION_PROFESSIONBACKGROUND];
+	m_scientificBtn = m_resources[CAPTAINCREATION_SCIENTIFIC];
+	m_scientificBtnMouseOver = m_resources[CAPTAINCREATION_SCIENTIFIC_MOUSEOVER];
+	m_freelanceBtn = m_resources[CAPTAINCREATION_FREELANCE];
+	m_freelanceBtnMouseOver = m_resources[CAPTAINCREATION_FREELANCE_MOUSEOVER];
+	m_militaryBtn = m_resources[CAPTAINCREATION_MILITARY];
+	m_militaryBtnMouseOver = m_resources[CAPTAINCREATION_MILITARY_MOUSEOVER];
 
 	m_profInfoScientific = new Label("Even though the universe regresses towards smaller and smaller components, it is still plenty large to hide a few mysteries. The Scientific Officer represents the pinnacle of Myrrdanian brainpower. Armed with wit, cunning, intelligence... and a stun gun these brave souls explore the edges of the galaxy documenting planets and capturing life forms for study. Not to mention, the ability to recommend a planet for colonization comes with monetary and retirement perks. Mostly monetary seeing as distant planet construction usually takes some time to kick start.",
 		150, 420, 750, 400, WHITE, g_game->font24);
@@ -255,51 +208,33 @@ bool ModuleCaptainCreation::Init()
 	m_profInfoMilitary->Refresh();
 
 
-	m_detailsBackground = (BITMAP*)ccdata[CAPTAINCREATION_DETAILSBACKGROUND_BMP].dat;
-	if (m_detailsBackground == NULL)
-		return false;
+	m_detailsBackground = m_resources[CAPTAINCREATION_DETAILSBACKGROUND];
+	m_resetBtn = m_resources[CAPTAINCREATION_RESET];
+	m_resetBtnMouseOver = m_resources[CAPTAINCREATION_RESET_MOUSEOVER];
 
-	m_resetBtn = (BITMAP*)ccdata[CAPTAINCREATION_RESET_BMP].dat;
-	if (m_resetBtn == NULL)
-		return false;
-
-	m_resetBtnMouseOver = (BITMAP*)ccdata[CAPTAINCREATION_RESET_MOUSEOVER_BMP].dat;
-	if (m_resetBtnMouseOver == NULL)
-		return false;
-
-	BITMAP *btnNorm, *btnOver, *btnDis;
+	ALLEGRO_BITMAP *btnNorm, *btnOver, *btnDis;
 	
-	btnNorm = (BITMAP*)ccdata[CAPTAINCREATION_FINISH_BMP].dat;
-	btnOver = (BITMAP*)ccdata[CAPTAINCREATION_FINISH_MOUSEOVER_BMP].dat;
-	btnDis = (BITMAP*)ccdata[CAPTAINCREATION_FINISH_DISABLED_BMP].dat;
+	btnNorm = m_resources[CAPTAINCREATION_FINISH];
+	btnOver = m_resources[CAPTAINCREATION_FINISH_MOUSEOVER];
+	btnDis = m_resources[CAPTAINCREATION_FINISH_DISABLED];
 	
 	m_finishBtn = new Button(btnNorm, btnOver, btnDis,
 		FINISHBTN_X,FINISHBTN_Y,EVENT_NONE,EVENT_FINISH,"",false,true);
 	if (m_finishBtn == NULL) return false;
 	if (!m_finishBtn->IsInitialized()) return false;
 
-	m_cursor[0] = (BITMAP*)ccdata[CAPTAINCREATION_CURSOR0_BMP].dat;
-	if (m_cursor[0] == NULL) return false;
+	m_cursor[0] = m_resources[CAPTAINCREATION_CURSOR0];
+	m_cursor[1] = m_resources[CAPTAINCREATION_CURSOR1];
 
-	m_cursor[1] = (BITMAP*)ccdata[CAPTAINCREATION_CURSOR1_BMP].dat;
-	if (m_cursor[1] == NULL) return false;
+	m_backBtn = m_resources[CAPTAINCREATION_BACK];
+	m_backBtnMouseOver = m_resources[CAPTAINCREATION_BACK_MOUSEOVER];
 
-	m_backBtn = (BITMAP*)ccdata[CAPTAINCREATION_BACK_BMP].dat;
-	if (m_backBtn == NULL) return false;
+	m_plusBtn = m_resources[CAPTAINCREATION_PLUS];
+	m_plusBtnMouseOver = m_resources[CAPTAINCREATION_PLUS_MOUSEOVER];
 
-	m_backBtnMouseOver = (BITMAP*)ccdata[CAPTAINCREATION_BACK_MOUSEOVER_BMP].dat;
-	if (m_backBtnMouseOver == NULL) return false;
-
-	m_plusBtn = (BITMAP*)ccdata[CAPTAINCREATION_PLUS_BMP].dat;
-	if (m_plusBtn == NULL) return false;
-
-	m_plusBtnMouseOver = (BITMAP*)ccdata[CAPTAINCREATION_PLUS_MOUSEOVER_BMP].dat;
-	if (m_plusBtnMouseOver == NULL) return false;
-
-
-	btnNorm = (BITMAP*)ccdata[MINUS_BMP].dat;
-	btnOver = (BITMAP*)ccdata[MINUS_DISABLED_BMP].dat;
-	btnDis = (BITMAP*)ccdata[MINUS_MOUSEOVER_BMP].dat;
+	btnNorm = m_resources[MINUS];
+	btnOver = m_resources[MINUS_MOUSEOVER];
+	btnDis = m_resources[MINUS_DISABLED];
 	m_minusBtns[0] = new Button(btnNorm, btnOver, btnDis,
 							 PLUS_DURABILITY_X + 42, PLUS_DURABILITY_Y, EVENT_NONE, EVENT_MINUS + 0,"");
 	m_minusBtns[1] = new Button(btnNorm, btnOver, btnDis,
@@ -362,15 +297,16 @@ void ModuleCaptainCreation::Draw()
 	static bool help1 = true;
 	static bool help2 = true;
 
+	al_set_target_bitmap(g_game->GetBackBuffer());
 	switch(m_wizPage)
 	{
 	case WP_PROFESSION_CHOICE:
 		{
-			blit(m_professionChoiceBackground,g_game->GetBackBuffer(),0,0,0,0,screen->w,screen->h);
-			blit(m_scientificBtn,g_game->GetBackBuffer(),0,0,PROFBTN_SCIENTIFIC_X,PROFBTN_SCIENTIFIC_Y,PROFBTN_WIDTH,PROFBTN_HEIGHT);
-			blit(m_freelanceBtn,g_game->GetBackBuffer(),0,0,PROFBTN_FREELANCE_X,PROFBTN_FREELANCE_Y,PROFBTN_WIDTH,PROFBTN_HEIGHT);
-			blit(m_militaryBtn,g_game->GetBackBuffer(),0,0,PROFBTN_MILITARY_X,PROFBTN_MILITARY_Y,PROFBTN_WIDTH,PROFBTN_HEIGHT);
-			blit(m_backBtn,g_game->GetBackBuffer(),0,0,BACKBTN_X,BACKBTN_Y,BACKBTN_WIDTH,BACKBTN_HEIGHT);
+			al_draw_bitmap(m_professionChoiceBackground,0,0,0);
+			al_draw_bitmap(m_scientificBtn,PROFBTN_SCIENTIFIC_X,PROFBTN_SCIENTIFIC_Y,0);
+			al_draw_bitmap(m_freelanceBtn,PROFBTN_FREELANCE_X,PROFBTN_FREELANCE_Y,0);
+			al_draw_bitmap(m_militaryBtn,PROFBTN_MILITARY_X,PROFBTN_MILITARY_Y,0);
+			al_draw_bitmap(m_backBtn,BACKBTN_X,BACKBTN_Y,0);
 
 			if (m_profInfoBox != NULL)
 			{
@@ -379,7 +315,7 @@ void ModuleCaptainCreation::Draw()
 
 			if (m_mouseOverImg != NULL)
 			{
-				blit(m_mouseOverImg,g_game->GetBackBuffer(),0,0,m_mouseOverImgX,m_mouseOverImgY,m_mouseOverImg->w,m_mouseOverImg->h);
+				al_draw_bitmap(m_mouseOverImg,m_mouseOverImgX,m_mouseOverImgY,0);
 			}
 
 			//display tutorial help messages for beginners
@@ -396,20 +332,18 @@ void ModuleCaptainCreation::Draw()
 
 	case WP_DETAILS:
 		{
-			blit(m_detailsBackground,g_game->GetBackBuffer(),0,0,0,0,g_game->GetBackBuffer()->w,g_game->GetBackBuffer()->h);
+			al_draw_bitmap(m_detailsBackground,0,0,0);
 
-			blit(m_backBtn,g_game->GetBackBuffer(),0,0,BACKBTN_X,BACKBTN_Y,BACKBTN_WIDTH,BACKBTN_HEIGHT);
+			al_draw_bitmap(m_backBtn,BACKBTN_X,BACKBTN_Y,0);
 
-			alfont_set_font_size(g_game->font10, TEXTHEIGHT_TITLES);
-			alfont_textout_centre(g_game->GetBackBuffer(),g_game->font10,"Captain Details",g_game->GetBackBuffer()->w/2,30,TEXTCOL);
+			al_draw_text(g_game->font60, TEXTCOL, SCREEN_WIDTH/2,30,ALLEGRO_ALIGN_CENTER,"Captain Details");
 
-			alfont_set_font_size(g_game->font10,TEXTHEIGHT_NAME);
 			char n[128];
 			sprintf(n,"Name: %s", m_name.c_str());
-			alfont_textprintf(g_game->GetBackBuffer(),g_game->font10,NAME_X,NAME_Y,TEXTCOL,n);
+			al_draw_text(g_game->font32,TEXTCOL,NAME_X,NAME_Y,0,n);
 
-			int nlen = alfont_text_length(g_game->font10,n);
-			blit(m_cursor[m_cursorIdx],g_game->GetBackBuffer(),0,0,NAME_X+nlen+2,CURSOR_Y,m_cursor[m_cursorIdx]->w,m_cursor[m_cursorIdx]->h);
+			int nlen = al_get_text_width(g_game->font32,n);
+			al_draw_bitmap(m_cursor[m_cursorIdx],NAME_X+nlen+2,CURSOR_Y, 0);
 
 			if (++m_cursorIdxDelay > CURSOR_DELAY)
 			{
@@ -419,48 +353,46 @@ void ModuleCaptainCreation::Draw()
 				m_cursorIdx = 0;
 			}
 
-			alfont_set_font_size(g_game->font10,TEXTHEIGHT_ATTRIBUTES);
 
-//			alfont_textprintf(m_canvas,g_game->font10,ATTS_X,ATTS_Y,TEXTCOL,"Starting Attributes");
-			alfont_textprintf(g_game->GetBackBuffer(),g_game->font10,DURABILITY_X,DURABILITY_Y,TEXTCOL,"Durability");
-			alfont_textprintf(g_game->GetBackBuffer(),g_game->font10,LEARNRATE_X,LEARNRATE_Y,TEXTCOL,"Learn Rate");
-			alfont_textprintf(g_game->GetBackBuffer(),g_game->font10,SCIENCE_X,SCIENCE_Y,TEXTCOL,"Science");
-			alfont_textprintf(g_game->GetBackBuffer(),g_game->font10,NAVIGATION_X,NAVIGATION_Y,TEXTCOL,"Navigation");
-			alfont_textprintf(g_game->GetBackBuffer(),g_game->font10,TACTICS_X,TACTICS_Y,TEXTCOL,"Tactics");
-			alfont_textprintf(g_game->GetBackBuffer(),g_game->font10,ENGINEERING_X,ENGINEERING_Y,TEXTCOL,"Engineering");
-			alfont_textprintf(g_game->GetBackBuffer(),g_game->font10,COMMUNICATION_X,COMMUNICATION_Y,TEXTCOL,"Communication");
-			alfont_textprintf(g_game->GetBackBuffer(),g_game->font10,MEDICAL_X,MEDICAL_Y,TEXTCOL,"Medical");
+			al_draw_textf(g_game->font32,TEXTCOL,DURABILITY_X,DURABILITY_Y,0,"Durability");
+			al_draw_text(g_game->font32,TEXTCOL,LEARNRATE_X,LEARNRATE_Y,0,"Learn Rate");
+			al_draw_text(g_game->font32,TEXTCOL,SCIENCE_X,SCIENCE_Y,0,"Science");
+			al_draw_text(g_game->font32,TEXTCOL,NAVIGATION_X,NAVIGATION_Y,0,"Navigation");
+			al_draw_text(g_game->font32,TEXTCOL,TACTICS_X,TACTICS_Y,0,"Tactics");
+			al_draw_text(g_game->font32,TEXTCOL,ENGINEERING_X,ENGINEERING_Y,0,"Engineering");
+			al_draw_text(g_game->font32,TEXTCOL,COMMUNICATION_X,COMMUNICATION_Y,0,"Communication");
+			al_draw_text(g_game->font32,TEXTCOL,MEDICAL_X,MEDICAL_Y,0,"Medical");
 
-			alfont_textprintf(g_game->GetBackBuffer(),g_game->font10,ATTS_AVAILPTS_COMMON_X+20,DURABILITY_Y,TEXTCOL,"%d available",m_availPts);
-			alfont_textprintf(g_game->GetBackBuffer(),g_game->font10,ATTS_VALS_COMMON_X,DURABILITY_Y,TEXTCOL,"%d",m_attributes.durability);
-			alfont_textprintf(g_game->GetBackBuffer(),g_game->font10,ATTS_VALS_COMMON_X,LEARNRATE_Y,TEXTCOL,"%d",m_attributes.learnRate);
-			alfont_textprintf(g_game->GetBackBuffer(),g_game->font10,ATTS_AVAILPTS_COMMON_X+20,SCIENCE_Y,TEXTCOL,"%d available",m_availProfPts);
-			alfont_textprintf(g_game->GetBackBuffer(),g_game->font10,ATTS_VALS_COMMON_X,SCIENCE_Y,TEXTCOL,"%d",m_attributes.science);
-			alfont_textprintf(g_game->GetBackBuffer(),g_game->font10,ATTS_VALS_COMMON_X,NAVIGATION_Y,TEXTCOL,"%d",m_attributes.navigation);
-			alfont_textprintf(g_game->GetBackBuffer(),g_game->font10,ATTS_VALS_COMMON_X,TACTICS_Y,TEXTCOL,"%d",m_attributes.tactics);
-			alfont_textprintf(g_game->GetBackBuffer(),g_game->font10,ATTS_VALS_COMMON_X,ENGINEERING_Y,TEXTCOL,"%d",m_attributes.engineering);
-			alfont_textprintf(g_game->GetBackBuffer(),g_game->font10,ATTS_VALS_COMMON_X,COMMUNICATION_Y,TEXTCOL,"%d",m_attributes.communication);
-			alfont_textprintf(g_game->GetBackBuffer(),g_game->font10,ATTS_VALS_COMMON_X,MEDICAL_Y,TEXTCOL,"%d",m_attributes.medical);
+			al_draw_textf(g_game->font32,TEXTCOL,ATTS_AVAILPTS_COMMON_X+20,DURABILITY_Y,0,"%d available",m_availPts);
+			al_draw_textf(g_game->font32,TEXTCOL,ATTS_VALS_COMMON_X,DURABILITY_Y,0,"%d",m_attributes.durability);
+			al_draw_textf(g_game->font32,TEXTCOL,ATTS_VALS_COMMON_X,LEARNRATE_Y,0,"%d",m_attributes.learnRate);
+			al_draw_textf(g_game->font32,TEXTCOL,ATTS_AVAILPTS_COMMON_X+20,SCIENCE_Y,0,"%d available",m_availProfPts);
+			al_draw_textf(g_game->font32,TEXTCOL,ATTS_VALS_COMMON_X,SCIENCE_Y,0,"%d",m_attributes.science);
+			al_draw_textf(g_game->font32,TEXTCOL,ATTS_VALS_COMMON_X,NAVIGATION_Y,0,"%d",m_attributes.navigation);
+			al_draw_textf(g_game->font32,TEXTCOL,ATTS_VALS_COMMON_X,TACTICS_Y,0,"%d",m_attributes.tactics);
+			al_draw_textf(g_game->font32,TEXTCOL,ATTS_VALS_COMMON_X,ENGINEERING_Y,0,"%d",m_attributes.engineering);
+			al_draw_textf(g_game->font32,TEXTCOL,ATTS_VALS_COMMON_X,COMMUNICATION_Y,0,"%d",m_attributes.communication);
+			al_draw_textf(g_game->font32,TEXTCOL,ATTS_VALS_COMMON_X,MEDICAL_Y,0,"%d",m_attributes.medical);
 
-			alfont_textprintf(g_game->GetBackBuffer(),g_game->font10,ATTS_MAX_COMMON_X,DURABILITY_Y,TEXTCOL," (%d max)",m_attributesMax.durability);
-			alfont_textprintf(g_game->GetBackBuffer(),g_game->font10,ATTS_MAX_COMMON_X,LEARNRATE_Y,TEXTCOL," (%d max)",m_attributesMax.learnRate);
-			alfont_textprintf(g_game->GetBackBuffer(),g_game->font10,ATTS_MAX_COMMON_X,SCIENCE_Y,TEXTCOL," (%d max)",m_attributesMax.science);
-			alfont_textprintf(g_game->GetBackBuffer(),g_game->font10,ATTS_MAX_COMMON_X,NAVIGATION_Y,TEXTCOL," (%d max)",m_attributesMax.navigation);
-			alfont_textprintf(g_game->GetBackBuffer(),g_game->font10,ATTS_MAX_COMMON_X,TACTICS_Y,TEXTCOL," (%d max)",m_attributesMax.tactics);
-			alfont_textprintf(g_game->GetBackBuffer(),g_game->font10,ATTS_MAX_COMMON_X,ENGINEERING_Y,TEXTCOL," (%d max)",m_attributesMax.engineering);
-			alfont_textprintf(g_game->GetBackBuffer(),g_game->font10,ATTS_MAX_COMMON_X,COMMUNICATION_Y,TEXTCOL," (%d max)",m_attributesMax.communication);
-			alfont_textprintf(g_game->GetBackBuffer(),g_game->font10,ATTS_MAX_COMMON_X,MEDICAL_Y,TEXTCOL," (%d max)",m_attributesMax.medical);
+			al_draw_textf(g_game->font32,TEXTCOL,ATTS_MAX_COMMON_X,DURABILITY_Y,0," (%d max)",m_attributesMax.durability);
+			al_draw_textf(g_game->font32,TEXTCOL,ATTS_MAX_COMMON_X,LEARNRATE_Y,0," (%d max)",m_attributesMax.learnRate);
+			al_draw_textf(g_game->font32,TEXTCOL,ATTS_MAX_COMMON_X,SCIENCE_Y,0," (%d max)",m_attributesMax.science);
+			al_draw_textf(g_game->font32,TEXTCOL,ATTS_MAX_COMMON_X,NAVIGATION_Y,0," (%d max)",m_attributesMax.navigation);
+			al_draw_textf(g_game->font32,TEXTCOL,ATTS_MAX_COMMON_X,TACTICS_Y,0," (%d max)",m_attributesMax.tactics);
+			al_draw_textf(g_game->font32,TEXTCOL,ATTS_MAX_COMMON_X,ENGINEERING_Y,0," (%d max)",m_attributesMax.engineering);
+			al_draw_textf(g_game->font32,TEXTCOL,ATTS_MAX_COMMON_X,COMMUNICATION_Y,0," (%d max)",m_attributesMax.communication);
+			al_draw_textf(g_game->font32,TEXTCOL,ATTS_MAX_COMMON_X,MEDICAL_Y,0," (%d max)",m_attributesMax.medical);
 
-			blit(m_plusBtn,g_game->GetBackBuffer(),0,0,PLUS_DURABILITY_X,PLUS_DURABILITY_Y,m_plusBtn->w,m_plusBtn->h);
-			blit(m_plusBtn,g_game->GetBackBuffer(),0,0,PLUS_LEARNRATE_X,PLUS_LEARNRATE_Y,m_plusBtn->w,m_plusBtn->h);
-			blit(m_plusBtn,g_game->GetBackBuffer(),0,0,PLUS_SCIENCE_X,PLUS_SCIENCE_Y,m_plusBtn->w,m_plusBtn->h);
-			blit(m_plusBtn,g_game->GetBackBuffer(),0,0,PLUS_NAVIGATION_X,PLUS_NAVIGATION_Y,m_plusBtn->w,m_plusBtn->h);
-			blit(m_plusBtn,g_game->GetBackBuffer(),0,0,PLUS_TACTICS_X,PLUS_TACTICS_Y,m_plusBtn->w,m_plusBtn->h);
-			blit(m_plusBtn,g_game->GetBackBuffer(),0,0,PLUS_ENGINEERING_X,PLUS_ENGINEERING_Y,m_plusBtn->w,m_plusBtn->h);
-			blit(m_plusBtn,g_game->GetBackBuffer(),0,0,PLUS_COMMUNICATION_X,PLUS_COMMUNICATION_Y,m_plusBtn->w,m_plusBtn->h);
-			blit(m_plusBtn,g_game->GetBackBuffer(),0,0,PLUS_MEDICAL_X,PLUS_MEDICAL_Y,m_plusBtn->w,m_plusBtn->h);
+			al_draw_bitmap(m_plusBtn,PLUS_DURABILITY_X,PLUS_DURABILITY_Y,0);
+			al_draw_bitmap(m_plusBtn,PLUS_LEARNRATE_X,PLUS_LEARNRATE_Y,0);
+			al_draw_bitmap(m_plusBtn,PLUS_SCIENCE_X,PLUS_SCIENCE_Y,0);
+			al_draw_bitmap(m_plusBtn,PLUS_NAVIGATION_X,PLUS_NAVIGATION_Y,0);
+			al_draw_bitmap(m_plusBtn,PLUS_TACTICS_X,PLUS_TACTICS_Y,0);
+			al_draw_bitmap(m_plusBtn,PLUS_ENGINEERING_X,PLUS_ENGINEERING_Y,0);
+			al_draw_bitmap(m_plusBtn,PLUS_COMMUNICATION_X,PLUS_COMMUNICATION_Y,0);
+			al_draw_bitmap(m_plusBtn,PLUS_MEDICAL_X,PLUS_MEDICAL_Y,0);
 
-			blit(m_resetBtn,g_game->GetBackBuffer(),0,0,RESET_X,RESET_Y,m_resetBtn->w,m_resetBtn->h);
+			al_draw_bitmap(m_resetBtn,RESET_X,RESET_Y,0);
 
 			if ((m_availPts == 0) &&
 				(m_availProfPts == 0) &&
@@ -477,7 +409,7 @@ void ModuleCaptainCreation::Draw()
 
 			if (m_mouseOverImg != NULL)
 			{
-			blit(m_mouseOverImg,g_game->GetBackBuffer(),0,0,m_mouseOverImgX,m_mouseOverImgY,m_mouseOverImg->w,m_mouseOverImg->h);
+			al_draw_bitmap(m_mouseOverImg,m_mouseOverImgX,m_mouseOverImgY,0);
 			}
 			for(int i=0; i<8; i++){
 				m_minusBtns[i]->Run(g_game->GetBackBuffer());
@@ -495,6 +427,8 @@ void ModuleCaptainCreation::Draw()
 
 		}
 
+		break;
+	case WP_NONE:
 		break;
 	}
 
@@ -551,17 +485,14 @@ void ModuleCaptainCreation::Close()
 		}
 
 		//unload the data file (thus freeing all resources at once)
-		unload_datafile(ccdata);
-		ccdata = NULL;	
+		m_resources.unload();
 	}
 	catch(std::exception e) {
-		TRACE(e.what());
+		ALLEGRO_DEBUG("%s\n", e.what());
 	}
 	catch(...) {
-		TRACE("Unhandled exception in CaptainCreation::Close\n");
+		ALLEGRO_DEBUG("Unhandled exception in CaptainCreation::Close\n");
 	}
-
-
 }
 
 void ModuleCaptainCreation::OnKeyPress(int keyCode)
@@ -571,7 +502,12 @@ void ModuleCaptainCreation::OnKeyPress(int keyCode)
 
 void ModuleCaptainCreation::OnKeyPressed(int keyCode)
 {
+	ALLEGRO_KEYBOARD_STATE keyboard_state;
+
 	Module::OnKeyPressed(keyCode);
+
+	al_get_keyboard_state(&keyboard_state);
+	bool shifted = al_key_down(&keyboard_state, ALLEGRO_KEY_LSHIFT) || al_key_down(&keyboard_state, ALLEGRO_KEY_RSHIFT);
 
 	switch(m_wizPage)
 	{
@@ -580,17 +516,27 @@ void ModuleCaptainCreation::OnKeyPressed(int keyCode)
 			bool playKeySnd = false;
 			bool playErrSnd = false;
 
-			if (((keyCode >= KEY_A) && (keyCode <= KEY_9_PAD)) || (keyCode == KEY_SPACE))
+			if (((keyCode >= ALLEGRO_KEY_A) && (keyCode <= ALLEGRO_KEY_PAD_9)) || (keyCode == ALLEGRO_KEY_SPACE))
 			{
 			if (m_name.size() < NAME_MAXLEN)
 			{
-				char c = (char)scancode_to_ascii(keyCode);
-
-				if ((key[KEY_LSHIFT] || key[KEY_RSHIFT]) && (keyCode < KEY_0) && (keyCode != KEY_SPACE))
+				char c;
+				if (keyCode >= ALLEGRO_KEY_A && keyCode <= ALLEGRO_KEY_Z)
 				{
-					c -= 32;
+					c = (keyCode - ALLEGRO_KEY_A) + (shifted ?'A': 'a');
 				}
-
+				else if (keyCode >= ALLEGRO_KEY_0 && keyCode <= ALLEGRO_KEY_9)
+				{
+					c = (keyCode - ALLEGRO_KEY_0) + '0';
+				}
+				else if (keyCode >= ALLEGRO_KEY_PAD_0 && keyCode <= ALLEGRO_KEY_PAD_9)
+				{
+					c = (keyCode - ALLEGRO_KEY_PAD_0) + '0';
+				}
+				else
+				{
+					c = ' ';
+				}
 				m_name.push_back(c);
 
 				playKeySnd = true;
@@ -598,7 +544,7 @@ void ModuleCaptainCreation::OnKeyPressed(int keyCode)
 			else
 				playErrSnd = true;
 			}
-			else if (keyCode == KEY_BACKSPACE)
+			else if (keyCode == ALLEGRO_KEY_BACKSPACE)
 			{
 			if (m_name.size() > 0)
 			{
@@ -620,6 +566,9 @@ void ModuleCaptainCreation::OnKeyPressed(int keyCode)
 				g_game->audioSystem->Play(m_sndErr); 
 			}
 		}
+		break;
+	case WP_NONE:
+	case WP_PROFESSION_CHOICE:
 		break;
 	}
 }
@@ -699,81 +648,81 @@ void ModuleCaptainCreation::OnMouseMove(int x, int y)
 			m_mouseOverImgY = BACKBTN_Y;
 			}
 			else if ((x >= PLUS_DURABILITY_X) &&
-				(x < (PLUS_DURABILITY_X + m_plusBtn->w)) &&
+				(x < (PLUS_DURABILITY_X + al_get_bitmap_width(m_plusBtn))) &&
 				(y >= PLUS_DURABILITY_Y) &&
-				(y < (PLUS_DURABILITY_Y + m_plusBtn->h)))
+				(y < (PLUS_DURABILITY_Y + al_get_bitmap_height(m_plusBtn))))
 			{
 			m_mouseOverImg = m_plusBtnMouseOver;
 			m_mouseOverImgX = PLUS_DURABILITY_X;
 			m_mouseOverImgY = PLUS_DURABILITY_Y;
 			}
 			else if ((x >= PLUS_LEARNRATE_X) &&
-				(x < (PLUS_LEARNRATE_X + m_plusBtn->w)) &&
+				(x < (PLUS_LEARNRATE_X + al_get_bitmap_width(m_plusBtn))) &&
 				(y >= PLUS_LEARNRATE_Y) &&
-				(y < (PLUS_LEARNRATE_Y + m_plusBtn->h)))
+				(y < (PLUS_LEARNRATE_Y + al_get_bitmap_height(m_plusBtn))))
 			{
 			m_mouseOverImg = m_plusBtnMouseOver;
 			m_mouseOverImgX = PLUS_LEARNRATE_X;
 			m_mouseOverImgY = PLUS_LEARNRATE_Y;
 			}
 			else if ((x >= PLUS_SCIENCE_X) &&
-				(x < (PLUS_SCIENCE_X + m_plusBtn->w)) &&
+				(x < (PLUS_SCIENCE_X + al_get_bitmap_width(m_plusBtn))) &&
 				(y >= PLUS_SCIENCE_Y) &&
-				(y < (PLUS_SCIENCE_Y + m_plusBtn->h)))
+				(y < (PLUS_SCIENCE_Y + al_get_bitmap_height(m_plusBtn))))
 			{
 			m_mouseOverImg = m_plusBtnMouseOver;
 			m_mouseOverImgX = PLUS_SCIENCE_X;
 			m_mouseOverImgY = PLUS_SCIENCE_Y;
 			}
 			else if ((x >= PLUS_NAVIGATION_X) &&
-				(x < (PLUS_NAVIGATION_X + m_plusBtn->w)) &&
+				(x < (PLUS_NAVIGATION_X + al_get_bitmap_width(m_plusBtn))) &&
 				(y >= PLUS_NAVIGATION_Y) &&
-				(y < (PLUS_NAVIGATION_Y + m_plusBtn->h)))
+				(y < (PLUS_NAVIGATION_Y + al_get_bitmap_height(m_plusBtn))))
 			{
 			m_mouseOverImg = m_plusBtnMouseOver;
 			m_mouseOverImgX = PLUS_NAVIGATION_X;
 			m_mouseOverImgY = PLUS_NAVIGATION_Y;
 			}
 			else if ((x >= PLUS_TACTICS_X) &&
-				(x < (PLUS_TACTICS_X + m_plusBtn->w)) &&
+				(x < (PLUS_TACTICS_X + al_get_bitmap_width(m_plusBtn))) &&
 				(y >= PLUS_TACTICS_Y) &&
-				(y < (PLUS_TACTICS_Y + m_plusBtn->h)))
+				(y < (PLUS_TACTICS_Y + al_get_bitmap_height(m_plusBtn))))
 			{
 			m_mouseOverImg = m_plusBtnMouseOver;
 			m_mouseOverImgX = PLUS_TACTICS_X;
 			m_mouseOverImgY = PLUS_TACTICS_Y;
 			}
 			else if ((x >= PLUS_ENGINEERING_X) &&
-				(x < (PLUS_ENGINEERING_X + m_plusBtn->w)) &&
+				(x < (PLUS_ENGINEERING_X + al_get_bitmap_width(m_plusBtn))) &&
 				(y >= PLUS_ENGINEERING_Y) &&
-				(y < (PLUS_ENGINEERING_Y + m_plusBtn->h)))
+				(y < (PLUS_ENGINEERING_Y + al_get_bitmap_height(m_plusBtn))))
 			{
 			m_mouseOverImg = m_plusBtnMouseOver;
 			m_mouseOverImgX = PLUS_ENGINEERING_X;
 			m_mouseOverImgY = PLUS_ENGINEERING_Y;
 			}
 			else if ((x >= PLUS_COMMUNICATION_X) &&
-				(x < (PLUS_COMMUNICATION_X + m_plusBtn->w)) &&
+				(x < (PLUS_COMMUNICATION_X + al_get_bitmap_width(m_plusBtn))) &&
 				(y >= PLUS_COMMUNICATION_Y) &&
-				(y < (PLUS_COMMUNICATION_Y + m_plusBtn->h)))
+				(y < (PLUS_COMMUNICATION_Y + al_get_bitmap_height(m_plusBtn))))
 			{
 			m_mouseOverImg = m_plusBtnMouseOver;
 			m_mouseOverImgX = PLUS_COMMUNICATION_X;
 			m_mouseOverImgY = PLUS_COMMUNICATION_Y;
 			}
 			else if ((x >= PLUS_MEDICAL_X) &&
-				(x < (PLUS_MEDICAL_X + m_plusBtn->w)) &&
+				(x < (PLUS_MEDICAL_X + al_get_bitmap_width(m_plusBtn))) &&
 				(y >= PLUS_MEDICAL_Y) &&
-				(y < (PLUS_MEDICAL_Y + m_plusBtn->h)))
+				(y < (PLUS_MEDICAL_Y + al_get_bitmap_height(m_plusBtn))))
 			{
 			m_mouseOverImg = m_plusBtnMouseOver;
 			m_mouseOverImgX = PLUS_MEDICAL_X;
 			m_mouseOverImgY = PLUS_MEDICAL_Y;
 			}
 			else if ((x >= RESET_X) &&
-				(x < (RESET_X + m_resetBtn->w)) &&
+				(x < (RESET_X + al_get_bitmap_width(m_resetBtn))) &&
 				(y >= RESET_Y) &&
-				(y < (RESET_Y + m_resetBtn->h)))
+				(y < (RESET_Y + al_get_bitmap_height(m_resetBtn))))
 			{
 			m_mouseOverImg = m_resetBtnMouseOver;
 			m_mouseOverImgX = RESET_X;
@@ -786,6 +735,8 @@ void ModuleCaptainCreation::OnMouseMove(int x, int y)
 
 			m_finishBtn->OnMouseMove(x,y);
 		}
+		break;
+	case WP_NONE:
 		break;
 	}
 }
@@ -1086,9 +1037,9 @@ void ModuleCaptainCreation::OnMouseReleased(int button, int x, int y)
 			m_profInfoBox = NULL;
 			}
 			else if ((x >= PLUS_DURABILITY_X) &&
-				(x < (PLUS_DURABILITY_X + m_plusBtn->w)) &&
+				(x < (PLUS_DURABILITY_X + al_get_bitmap_width(m_plusBtn))) &&
 				(y >= PLUS_DURABILITY_Y) &&
-				(y < (PLUS_DURABILITY_Y + m_plusBtn->h)))
+				(y < (PLUS_DURABILITY_Y + al_get_bitmap_height(m_plusBtn))))
 			{
 			if ((m_availPts > 0) && (m_attributes.durability < m_attributesMax.durability))
 			{
@@ -1100,9 +1051,9 @@ void ModuleCaptainCreation::OnMouseReleased(int button, int x, int y)
 				playErrSnd = true;
 			}
 			else if ((x >= PLUS_LEARNRATE_X) &&
-				(x < (PLUS_LEARNRATE_X + m_plusBtn->w)) &&
+				(x < (PLUS_LEARNRATE_X + al_get_bitmap_width(m_plusBtn))) &&
 				(y >= PLUS_LEARNRATE_Y) &&
-				(y < (PLUS_LEARNRATE_Y + m_plusBtn->h)))
+				(y < (PLUS_LEARNRATE_Y + al_get_bitmap_height(m_plusBtn))))
 			{
 			if ((m_availPts > 0) && (m_attributes.learnRate < m_attributesMax.learnRate))
 			{
@@ -1114,9 +1065,9 @@ void ModuleCaptainCreation::OnMouseReleased(int button, int x, int y)
 				playErrSnd = true;
 			}
 			else if ((x >= PLUS_SCIENCE_X) &&
-				(x < (PLUS_SCIENCE_X + m_plusBtn->w)) &&
+				(x < (PLUS_SCIENCE_X + al_get_bitmap_width(m_plusBtn))) &&
 				(y >= PLUS_SCIENCE_Y) &&
-				(y < (PLUS_SCIENCE_Y + m_plusBtn->h)))
+				(y < (PLUS_SCIENCE_Y + al_get_bitmap_height(m_plusBtn))))
 			{
 			if ((m_availProfPts > 0) && (m_attributes.science < m_attributesMax.science))
 			{
@@ -1128,9 +1079,9 @@ void ModuleCaptainCreation::OnMouseReleased(int button, int x, int y)
 				playErrSnd = true;
 			}
 			else if ((x >= PLUS_NAVIGATION_X) &&
-				(x < (PLUS_NAVIGATION_X + m_plusBtn->w)) &&
+				(x < (PLUS_NAVIGATION_X + al_get_bitmap_width(m_plusBtn))) &&
 				(y >= PLUS_NAVIGATION_Y) &&
-				(y < (PLUS_NAVIGATION_Y + m_plusBtn->h)))
+				(y < (PLUS_NAVIGATION_Y + al_get_bitmap_height(m_plusBtn))))
 			{
 			if ((m_availProfPts > 0) && (m_attributes.navigation < m_attributesMax.navigation))
 			{
@@ -1142,9 +1093,9 @@ void ModuleCaptainCreation::OnMouseReleased(int button, int x, int y)
 				playErrSnd = true;
 			}
 			else if ((x >= PLUS_TACTICS_X) &&
-				(x < (PLUS_TACTICS_X + m_plusBtn->w)) &&
+				(x < (PLUS_TACTICS_X + al_get_bitmap_width(m_plusBtn))) &&
 				(y >= PLUS_TACTICS_Y) &&
-				(y < (PLUS_TACTICS_Y + m_plusBtn->h)))
+				(y < (PLUS_TACTICS_Y + al_get_bitmap_height(m_plusBtn))))
 			{
 			if ((m_availProfPts > 0) && (m_attributes.tactics < m_attributesMax.tactics))
 			{
@@ -1156,9 +1107,9 @@ void ModuleCaptainCreation::OnMouseReleased(int button, int x, int y)
 				playErrSnd = true;
 			}
 			else if ((x >= PLUS_ENGINEERING_X) &&
-				(x < (PLUS_ENGINEERING_X + m_plusBtn->w)) &&
+				(x < (PLUS_ENGINEERING_X + al_get_bitmap_width(m_plusBtn))) &&
 				(y >= PLUS_ENGINEERING_Y) &&
-				(y < (PLUS_ENGINEERING_Y + m_plusBtn->h)))
+				(y < (PLUS_ENGINEERING_Y + al_get_bitmap_height(m_plusBtn))))
 			{
 			if ((m_availProfPts > 0) && (m_attributes.engineering < m_attributesMax.engineering))
 			{
@@ -1170,9 +1121,9 @@ void ModuleCaptainCreation::OnMouseReleased(int button, int x, int y)
 				playErrSnd = true;
 			}
 			else if ((x >= PLUS_COMMUNICATION_X) &&
-				(x < (PLUS_COMMUNICATION_X + m_plusBtn->w)) &&
+				(x < (PLUS_COMMUNICATION_X + al_get_bitmap_width(m_plusBtn))) &&
 				(y >= PLUS_COMMUNICATION_Y) &&
-				(y < (PLUS_COMMUNICATION_Y + m_plusBtn->h)))
+				(y < (PLUS_COMMUNICATION_Y + al_get_bitmap_height(m_plusBtn))))
 			{
 			if ((m_availProfPts > 0) && (m_attributes.communication < m_attributesMax.communication))
 			{
@@ -1184,9 +1135,9 @@ void ModuleCaptainCreation::OnMouseReleased(int button, int x, int y)
 				playErrSnd = true;
 			}
 			else if ((x >= PLUS_MEDICAL_X) &&
-				(x < (PLUS_MEDICAL_X + m_plusBtn->w)) &&
+				(x < (PLUS_MEDICAL_X + al_get_bitmap_width(m_plusBtn))) &&
 				(y >= PLUS_MEDICAL_Y) &&
-				(y < (PLUS_MEDICAL_Y + m_plusBtn->h)))
+				(y < (PLUS_MEDICAL_Y + al_get_bitmap_height(m_plusBtn))))
 			{
 			if ((m_availProfPts > 0) && (m_attributes.medical < m_attributesMax.medical))
 			{
@@ -1198,9 +1149,9 @@ void ModuleCaptainCreation::OnMouseReleased(int button, int x, int y)
 				playErrSnd = true;
 			}
 			else if ((x >= RESET_X) &&
-				(x < (RESET_X + m_resetBtn->w)) &&
+				(x < (RESET_X + al_get_bitmap_width(m_resetBtn))) &&
 				(y >= RESET_Y) &&
-				(y < (RESET_Y + m_resetBtn->h)))
+				(y < (RESET_Y + al_get_bitmap_height(m_resetBtn))))
 			{
 			playSnd = true;
 			m_attributes = m_attributesInitial;
@@ -1220,6 +1171,8 @@ void ModuleCaptainCreation::OnMouseReleased(int button, int x, int y)
 				g_game->audioSystem->Play(m_sndErr);
 			}
 		}
+		break;
+	case WP_NONE:
 		break;
 	}
 }
@@ -1337,14 +1290,6 @@ void ModuleCaptainCreation::OnEvent(Event *event)
 	{
 		playBtnSnd = true;
 
-		/*GameState gs;
-		gs.Reset();
-		gs.m_profession = m_profession;
-		gs.officerCap->name = m_name;
-		gs.officerCap->attributes = m_attributes;
-		gs.m_captainSelected = true;
-		gs.SaveGame("newcaptain.dat");*/
-
 		//this ends up calling g_game->gameState->m_ship.Reset()
 		//so most of the changes we did on the ship are thrown out
 		g_game->gameState->Reset();
@@ -1352,7 +1297,7 @@ void ModuleCaptainCreation::OnEvent(Event *event)
 		g_game->gameState->officerCap->name = m_name;
 		g_game->gameState->officerCap->attributes = m_attributes;
 		g_game->gameState->m_captainSelected = true;
-		g_game->gameState->SaveGame("newcaptain.dat");
+		g_game->gameState->SaveGame(GameState::GAME_SAVE_SLOT_NEW);
 
 		creationComplete = true;
 	}

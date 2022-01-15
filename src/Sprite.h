@@ -9,8 +9,7 @@
 #ifndef _SPRITE_H
 #define _SPRITE_H 1
 
-#include "env.h"
-#include <allegro.h>
+#include <allegro5/allegro.h>
 #include <string>
 #include <math.h>
 #include "Point2D.h"
@@ -18,8 +17,8 @@
 class Sprite {
 protected:
 	bool		bLoaded;
-    BITMAP		*frame;
-	BITMAP		*image;
+    ALLEGRO_BITMAP		*frame;
+	ALLEGRO_BITMAP		*image;
     double		x;
 	double		y;
     double		speed;
@@ -133,28 +132,23 @@ public:
 
 // METHODS
 private:
-	int inside(int x,int y,int left,int top,int right,int bottom);
 
 public:
 	Sprite();
 	virtual ~Sprite();
 	bool load(const char *filename);
 	bool load(std::string filename);
-	BITMAP *getImage();
-	bool setImage(BITMAP *source);
+	ALLEGRO_BITMAP *getImage();
+	bool setImage(ALLEGRO_BITMAP *source);
 	void move();
 	void animate();
 	void animate(int low, int high);
-	int pointInside(int px,int py);
-	bool collided(Sprite *other = NULL);
 	bool collidedD(Sprite *other = NULL); //distance based collision
     static double calcAngleMoveX(int angle);
     static double calcAngleMoveY(int angle);
-	void draw(BITMAP *dest);
-	void drawframe(BITMAP *dest, bool UseAlpha = false);
-    void drawframe_rotate(BITMAP *dest, int angle);
-    void drawframe_scale(BITMAP *dest, int dest_w, int dest_h);
-
+	void draw(ALLEGRO_BITMAP *dest);
+	void drawframe(ALLEGRO_BITMAP *dest);
+    void drawframe_rotate(ALLEGRO_BITMAP *dest, int angle);
 };
 
 #endif

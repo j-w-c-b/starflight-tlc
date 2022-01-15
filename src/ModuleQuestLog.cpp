@@ -5,8 +5,7 @@
 	Date: Nov-24-2007
 */
 
-#include "env.h"
-#include <allegro.h>
+#include <allegro5/allegro.h>
 #include "ModuleQuestLog.h"
 #include "GameState.h"
 #include "Game.h"
@@ -15,6 +14,8 @@
 #include "DataMgr.h"
 #include "Label.h"
 #include "ModuleControlPanel.h"
+#include "questviewer_resources.h"
+
 using namespace std;
 
 #define VIEWER_MOVE_RATE 16
@@ -29,12 +30,9 @@ using namespace std;
 #define DESC_H 190
 #define DESC_W NAME_W
 
-#define QUEST_VIEWER_BMP                 0        /* BMP  */
+ALLEGRO_DEBUG_CHANNEL("ModuleQuestLog")
 
-DATAFILE *qldata;
-
-
-ModuleQuestLog::ModuleQuestLog() 
+ModuleQuestLog::ModuleQuestLog() : resources(QUESTVIEWER_IMAGES)
 {
 	log_active = false;
 }
@@ -43,15 +41,6 @@ ModuleQuestLog::~ModuleQuestLog()
 {
 }
 
-void ModuleQuestLog::OnKeyPressed(int keyCode){}
-void ModuleQuestLog::OnKeyPress( int keyCode ){}
-void ModuleQuestLog::OnKeyReleased(int keyCode){}
-void ModuleQuestLog::OnMouseMove(int x, int y){}
-void ModuleQuestLog::OnMouseClick(int button, int x, int y){}
-void ModuleQuestLog::OnMousePressed(int button, int x, int y){}
-void ModuleQuestLog::OnMouseReleased(int button, int x, int y){}
-void ModuleQuestLog::OnMouseWheelUp(int x, int y){}
-void ModuleQuestLog::OnMouseWheelDown(int x, int y){}
 void ModuleQuestLog::OnEvent(Event *event)
 {
 	switch(event->getEventType()) 
@@ -69,26 +58,22 @@ void ModuleQuestLog::OnEvent(Event *event)
 void ModuleQuestLog::Close()
 {
 	try {
-		//close the datafile
-		unload_datafile(qldata);
-		qldata = NULL;
+		resources.unload();
 	}
 	catch(std::exception e) {
-		TRACE(e.what());
+		ALLEGRO_DEBUG("%s\n", e.what());
 	}
 	catch(...) {
-		TRACE("Unhandled exception in QuestLog::Close\n");
+		ALLEGRO_DEBUG("Unhandled exception in QuestLog::Close\n");
 	}
 }
 
 bool ModuleQuestLog::Init()
 {
-	TRACE("ModuleQuestLog Initialize\n");
+	ALLEGRO_DEBUG("ModuleQuestLog Initialize\n");
 	
-	//load the datafile
-	qldata = load_datafile("data/questviewer/questviewer.dat");
-	if (!qldata) {
-		g_game->message("QuestLog: Error loading datafile");	
+	if (!resources.load()) {
+		g_game->message("QuestLog: Error loading resources");	
 		return false;
 	}
 	
@@ -99,24 +84,20 @@ bool ModuleQuestLog::Init()
 	log_active = false;
 
 	//create quest name label
-	int questTitleColor = makecol(255,84,0);
+	ALLEGRO_COLOR questTitleColor = al_map_rgb(255,84,0);
 	questName = new Label(g_game->questMgr->getName(), 
 		viewer_offset_x+NAME_X, viewer_offset_y+NAME_Y, NAME_W, NAME_H, questTitleColor, g_game->font22);
 	questName->Refresh();
 
 	//create quest description label
-	int questTextColor = makecol(255,255,255);
+	ALLEGRO_COLOR questTextColor = al_map_rgb(255,255,255);
 	questDesc = new Label(g_game->questMgr->getShort(), 
 		viewer_offset_x+DESC_X, viewer_offset_y+DESC_Y, DESC_W, DESC_H, questTextColor, g_game->font22);
 	questDesc->Refresh();
 
 
 	//load window GUI
-	window = (BITMAP*)qldata[QUEST_VIEWER_BMP].dat;
-	if (!window) {
-		g_game->message("Error loading quest log window");
-		return 0;
-	}
+	window = resources[QUEST_VIEWER];
 
 	return true;
 }
@@ -137,7 +118,7 @@ void ModuleQuestLog::Draw()
 	if(viewer_offset_x < SCREEN_WIDTH)
 	{
 		//draw background
-		masked_blit(window,g_game->GetBackBuffer(),0,0,viewer_offset_x,viewer_offset_y,window->w,window->h);
+		al_draw_bitmap(window, viewer_offset_x, viewer_offset_y, 0);
 
 		//draw quest title
 		questName->SetX(NAME_X + viewer_offset_x);
@@ -150,7 +131,7 @@ void ModuleQuestLog::Draw()
 
 		//display quest completion status
 		string metstr;
-		int metcolor;
+		ALLEGRO_COLOR metcolor;
 		if (g_game->gameState->getQuestCompleted()) {
 			metstr = "(COMPLETE)";
 			metcolor = GREEN;

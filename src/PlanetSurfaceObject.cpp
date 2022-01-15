@@ -1,4 +1,7 @@
 
+#include <allegro5/allegro.h>
+#include <allegro5/allegro_primitives.h>
+
 #include "PlanetSurfaceObject.h"
 #include "ModulePlanetSurface.h"
 #include "Sprite.h"
@@ -6,66 +9,66 @@
 #include "GameState.h"
 #include "Events.h"
 #include "Util.h"
+#
 using namespace std;
 
 int PlanetSurfaceObject::maxX, PlanetSurfaceObject::minX, PlanetSurfaceObject::maxY, PlanetSurfaceObject::minY = 0;
-std::map<std::string, BITMAP*> PlanetSurfaceObject::graphics;
+std::map<std::string, ALLEGRO_BITMAP*> PlanetSurfaceObject::graphics;
 
 PlanetSurfaceObject::PlanetSurfaceObject() :
-	image(NULL),
 	itemType(IT_INVALID),
 	name(""),
 	value(0.0),
 	size(0.0),
 	danger(0.0),
 	damage(0.0),
-	stunCount(0),
 	health(0),
 	itemAge(IA_INVALID),
 	shipRepairMetal(false),
 	blackMarketItem(false),
-	UseAlpha(false),
-	alive(1),
-	scanned(false),
 	selected(false),
-	direction(0),
-	animColumns(1),
-	animStartX(0),
-	animStartY(0),
-	state(0),
-	objectType(0),
+	scanned(false),
+	minimapColor(BRTORANGE),
+	minimapSize(1),
+	image(NULL),
 	x(0.0f),
 	y(0.0f),
+	stunCount(0),
+	speed(0.0),
+	velX(0.0),
+	velY(0.0),
+	faceAngle(0),
+	moveAngle(0),
+	angleOffset(0),
+	alive(1),
+	state(0),
+	objectType(0),
+	direction(0),
 	width(0),
 	height(0),
 	colHalfWidth(0),
 	colHalfHeight(0),
-	frameWidth(0),
-	frameHeight(0),
 	scale(1),
 	delayX(0),
 	delayY(0),
 	countX(0),
 	countY(0),
-	velX(0.0),
-	velY(0.0),
-	speed(0.0),
 	currFrame(0),
 	totalFrames(1),
+	animDir(1),
 	frameCount(0),
 	frameDelay(10),
-	animDir(1),
-	faceAngle(0),
-	moveAngle(0),
-	angleOffset(0),
+	frameWidth(0),
+	frameHeight(0),
+	animColumns(1),
+	animStartX(0),
+	animStartY(0),
 	counter1(0),
 	counter2(0),
 	counter3(0),
 	threshold1(0),
 	threshold2(0),
-	threshold3(0),
-	minimapColor(BRTORANGE),
-	minimapSize(1)
+	threshold3(0)
 {
 	defaultAnim = new Animation(0, 1, 0);
 	activeAnim = defaultAnim;
@@ -74,61 +77,60 @@ PlanetSurfaceObject::PlanetSurfaceObject() :
 PlanetSurfaceObject::PlanetSurfaceObject(lua_State* LuaVM, std::string ScriptName) :
 	scriptName(ScriptName),
 	luaVM(LuaVM),
-	itemType(IT_INVALID),
 	id(0),
+	itemType(IT_INVALID),
 	name(""),
 	value(0.0),
 	size(0.0),
 	danger(0.0),
 	damage(0.0),
-	stunCount(0),
 	health(0),
 	itemAge(IA_INVALID),
 	shipRepairMetal(false),
 	blackMarketItem(false),
-	image(NULL),
 	selected(false),
-	UseAlpha(false),
-	alive(1),
 	scanned(false),
-	direction(0),
-	animColumns(1),
-	animStartX(0),
-	animStartY(0),
-	state(0),
-	objectType(0),
+	minimapColor(BRTORANGE),
+	minimapSize(1),
+	image(NULL),
 	x(0.0f),
 	y(0.0f),
+	stunCount(0),
+	speed(0.0),
+	velX(0.0),
+	velY(0.0),
+	faceAngle(0),
+	moveAngle(0),
+	angleOffset(0),
+	alive(1),
+	state(0),
+	objectType(0),
+	direction(0),
 	width(0),
 	height(0),
 	colHalfWidth(0),
 	colHalfHeight(0),
-	frameWidth(0),
-	frameHeight(0),
 	scale(1),
 	delayX(0),
 	delayY(0),
 	countX(0),
 	countY(0),
-	velX(0.0),
-	velY(0.0),
-	speed(0.0),
 	currFrame(0),
 	totalFrames(1),
+	animDir(1),
 	frameCount(0),
 	frameDelay(10),
-	animDir(1),
-	faceAngle(0),
-	moveAngle(0),
-	angleOffset(0),
+	frameWidth(0),
+	frameHeight(0),
+	animColumns(1),
+	animStartX(0),
+	animStartY(0),
 	counter1(0),
 	counter2(0),
 	counter3(0),
 	threshold1(0),
 	threshold2(0),
-	threshold3(0),
-	minimapColor(BRTORANGE),
-	minimapSize(1)
+	threshold3(0)
 {
 	defaultAnim = new Animation(0, 1, 0);
 	activeAnim = defaultAnim;
@@ -182,8 +184,6 @@ void PlanetSurfaceObject::setY(double initY)
 		y = initY;
 	}
 }
-void PlanetSurfaceObject::setXOffset(double initXOffset)				{ setX(initXOffset - (frameWidth * scale)/2); }
-void PlanetSurfaceObject::setYOffset(double initYOffset)				{ setY(initYOffset - (frameHeight * scale)/2); }
 void PlanetSurfaceObject::setPos(double initX, double initY)			{ setX(initX); setY(initY); }
 void PlanetSurfaceObject::setPosOffset(double initX, double initY)		{ setX(initX - (frameWidth * scale)/2); setY(initY - (frameHeight * scale)/2); }
 
@@ -202,17 +202,19 @@ void PlanetSurfaceObject::Initialize()
 
 int PlanetSurfaceObject::load(const char *filename) 
 {
-	std::map<std::string, BITMAP*>::iterator it = graphics.find(filename);
+	std::map<std::string, ALLEGRO_BITMAP*>::iterator it = graphics.find(filename);
 
 	if (it == graphics.end())
 	{
-		this->image = load_bitmap(filename, NULL);
+		this->image = al_load_bitmap(filename);
 		if (!this->image) {
 			std::string msg = "Error loading sprite file ";
 			msg += filename; 
 			g_game->message(msg);
 			return 0;
 		}
+		this->image = al_load_bitmap(filename);
+		al_convert_mask_to_alpha(image, MASK_COLOR);
 		graphics[filename] = image;
 	}
 	else
@@ -220,8 +222,8 @@ int PlanetSurfaceObject::load(const char *filename)
 		this->image = it->second;
 	}
 
-	this->width = image->w;
-	this->height = image->h;
+	this->width = al_get_bitmap_width(image);
+	this->height = al_get_bitmap_height(image);
 	
 	//default frame size equals whole image size unless manually changed
 	this->frameWidth = this->width;
@@ -230,7 +232,6 @@ int PlanetSurfaceObject::load(const char *filename)
 	this->colHalfWidth = this->width/2;
 	this->colHalfHeight = this->height/2;
 
-	set_alpha_blender();
     return 1;
 }
 
@@ -301,123 +302,35 @@ void PlanetSurfaceObject::TimedUpdate()
 
 void PlanetSurfaceObject::Draw()
 {
+	al_set_target_bitmap(g_game->GetBackBuffer());
 	if (selected)
-		ellipse(g_game->GetBackBuffer(), (int)(getXOffset() - g_game->gameState->player->posPlanet.x), (int)(getYOffset() - g_game->gameState->player->posPlanet.y), (int)(width * scale)/2, (int)(height * scale)/2, GREEN);
+		al_draw_ellipse((int)(getXOffset() - g_game->gameState->player->posPlanet.x), (int)(getYOffset() - g_game->gameState->player->posPlanet.y), (int)(width * scale)/2, (int)(height * scale)/2, GREEN, 1);
 
 	Draw(g_game->GetBackBuffer());
-	//rect(g_game->GetBackBuffer(), getXOffset() - g_game->gameState->player->posPlanet.x - getColHalfWidth(), getYOffset() - g_game->gameState->player->posPlanet.y  - getColHalfHeight(), getXOffset() - g_game->gameState->player->posPlanet.x + getColHalfWidth(), getYOffset() - g_game->gameState->player->posPlanet.y + getColHalfHeight(), RED);
-
 }
 
-void PlanetSurfaceObject::Draw(BITMAP *dest)
+void PlanetSurfaceObject::Draw(ALLEGRO_BITMAP *dest)
 {
 	if (!image) return;
 	
 	float angle = faceAngle + angleOffset;
-	bool scaled = (scale != 1);
-	bool rotated = (angle != 0);
-
-	BITMAP *scrapFrame = NULL;
-	BITMAP *finalFrame = NULL;
-
 
 	int fx = animStartX + (currFrame % animColumns) * frameWidth;
 	int fy = animStartY + (currFrame / animColumns) * frameHeight;
 
-	if (!scaled && !rotated && !UseAlpha)
-	{
-		//draw normally
-		masked_blit(image, dest, fx, fy, (int)(x - g_game->gameState->player->posPlanet.x), (int)(y - g_game->gameState->player->posPlanet.y), frameWidth, frameHeight);
-		return;
-	}
-	else if (!scaled && !rotated && UseAlpha)
-	{
-		scrapFrame = create_bitmap(frameWidth, frameHeight);
+        al_set_target_bitmap(dest);
 
-		blit(image, scrapFrame, fx, fy, 0, 0, frameWidth, frameHeight);
-		draw_trans_sprite(dest, scrapFrame, (int)(x - g_game->gameState->player->posPlanet.x), (int)(y  - g_game->gameState->player->posPlanet.y));
-		
-		destroy_bitmap(scrapFrame);
-		return;
-	}
-	else if (scaled && rotated && !UseAlpha)
-	{
-		//scrapFrame = create_bitmap(frameWidth, frameHeight);
-		
-		finalFrame = create_bitmap((int)(frameWidth * scale), (int)(frameHeight * scale));
-
-		stretch_blit(image, finalFrame, fx, fy, frameWidth, frameHeight, 0, 0, (int)(frameWidth * scale), (int)(frameHeight * scale));
-		//masked_stretch_blit(image, finalFrame, fx, fy, frameWidth, frameHeight, 0, 0, frameWidth * scale, frameHeight * scale);
-
-
-		//draw rotated image in scale frame onto rotate frame 
-		//adjust for Allegro's 16.16 fixed trig (256 / 360 = 0.7) then divide by 2 radians
-		//rotate_sprite(finalFrame, scrapFrame, (int)x, (int)y, itofix((int)(angle / 0.7f / 2.0f)));
-
-		rotate_sprite(dest, finalFrame, (int)(x - g_game->gameState->player->posPlanet.x), (int)(y - g_game->gameState->player->posPlanet.y), itofix((int)(angle / 0.7f / 2.0f)));
-
-
-		destroy_bitmap(finalFrame);
-		//destroy_bitmap(scrapFrame);
-
-		return;
-	}
-	else if (scaled && !rotated)
-	{
-		finalFrame = create_bitmap((int)(frameWidth * scale), (int)(frameHeight * scale));
-		
-		//Scale paste
-		stretch_blit(image, finalFrame, fx, fy, frameWidth, frameHeight, 0, 0, (int)(frameWidth * scale), (int)(frameHeight * scale));
-	}
-	else if (!scaled && rotated && !UseAlpha)
-	{
-		scrapFrame = create_bitmap(frameWidth, frameHeight);
-
-		blit(image, scrapFrame, fx, fy, 0, 0, frameWidth, frameHeight);
-
-		//adjust for Allegro's 16.16 fixed trig (256 / 360 = 0.7) then divide by 2 radians
-		//rotate_sprite(finalFrame, scrapFrame, 0, 0, itofix((int)(angle / 0.7f / 2.0f)));
-		rotate_sprite(dest, scrapFrame, (int)(x - g_game->gameState->player->posPlanet.x), (int)(y - g_game->gameState->player->posPlanet.y), itofix((int)(angle / 0.7f / 2.0f)));
-
-		destroy_bitmap(scrapFrame);
-
-		return;
-	}
-	else if (!scaled && rotated && UseAlpha)
-	{
-		scrapFrame = create_bitmap(frameWidth, frameHeight);
-
-		if (frameWidth < frameHeight)
-		{
-			finalFrame = create_bitmap(frameHeight, frameHeight);
-		}
-		else
-		{
-			finalFrame = create_bitmap(frameWidth, frameWidth);
-		}
-		
-
-		blit(image, scrapFrame, fx, fy, 0, 0, frameWidth, frameHeight);
-		clear_bitmap(finalFrame);
-
-		//adjust for Allegro's 16.16 fixed trig (256 / 360 = 0.7) then divide by 2 radians
-		rotate_sprite(finalFrame, scrapFrame, 0, 0, itofix((int)(angle / 0.7f / 2.0f)));
-		//rotate_sprite(dest, scrapFrame, (int)x - g_game->gameState->player->posPlanet.x, (int)y - g_game->gameState->player->posPlanet.y, itofix((int)(angle / 0.7f / 2.0f)));
-
-		destroy_bitmap(scrapFrame);
-	}
-
-	if (!UseAlpha)
-	{
-		//draw normally
-		masked_blit(finalFrame, dest, 0, 0, (int)(x - g_game->gameState->player->posPlanet.x), (int)(y - g_game->gameState->player->posPlanet.y), (int)(frameWidth * scale), (int)(frameHeight * scale));
-	}
-	else
-	{
-		draw_trans_sprite(dest, finalFrame, (int)(x - g_game->gameState->player->posPlanet.x), (int)(y - g_game->gameState->player->posPlanet.y));
-	}
-
-	destroy_bitmap(finalFrame);
+        ALLEGRO_BITMAP *frame = al_create_sub_bitmap(image, fx, fy, frameWidth, frameHeight);
+        al_draw_scaled_rotated_bitmap(
+            frame,
+            frameWidth / 2.0,
+            frameHeight / 2.0,
+            (x - g_game->gameState->player->posPlanet.x + frameWidth / 2.0),
+            (y - g_game->gameState->player->posPlanet.y + frameHeight / 2.0),
+            scale, scale,
+            angle * M_PI / 180,
+            0);
+        al_destroy_bitmap(frame);
 }
 
 bool PlanetSurfaceObject::CheckCollision(PlanetSurfaceObject * otherPSO)
@@ -582,11 +495,6 @@ void PlanetSurfaceObject::SetActiveAnimation(std::string name)
 		activeAnim = animationsIt->second;
 }
 
-void PlanetSurfaceObject::OnMouseMove(int x, int y)
-{
-
-}
-
 bool PlanetSurfaceObject::OnMouseReleased(int button, int x, int y)
 {
 	if (button == 0)
@@ -668,11 +576,11 @@ int PlanetSurfaceObject::PointInside(int px,int py)
 
 void PlanetSurfaceObject::EmptyGraphics()
 {
-	std::map<std::string, BITMAP*>::iterator it;
+	std::map<std::string, ALLEGRO_BITMAP*>::iterator it;
 
 	for (it = graphics.begin(); it != graphics.end(); ++it)
 	{
-		destroy_bitmap(it->second);
+		al_destroy_bitmap(it->second);
 		it->second = NULL;
 	}
 	graphics.clear();

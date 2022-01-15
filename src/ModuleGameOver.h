@@ -7,9 +7,8 @@
 #ifndef GAMEOVER_H
 #define GAMEOVER_H
 
-#include "env.h"
-#include <allegro.h>
-#include <alfont.h>
+#include <allegro5/allegro.h>
+#include <allegro5/allegro_font.h>
 #include "Module.h"
 
 class ModuleGameOver : public Module
@@ -18,21 +17,10 @@ private:
 
 public:
 	ModuleGameOver(void);
-	~ModuleGameOver(void);
-	bool Init();
-	void Update();
-	void Draw();
-	void OnKeyPress(int keyCode);
-	void OnKeyPressed(int keyCode);
-	void OnKeyReleased(int keyCode);
-	void OnMouseMove(int x, int y);
-	void OnMouseClick(int button, int x, int y);
-	void OnMousePressed(int button, int x, int y);
-	void OnMouseReleased(int button, int x, int y);
-	void OnMouseWheelUp(int x, int y);
-	void OnMouseWheelDown(int x, int y);
-	void OnEvent(Event *event);
-	void Close();
+	virtual ~ModuleGameOver(void);
+	virtual void Update() override;
+	virtual void Draw() override;
+	virtual void OnKeyReleased(int keyCode) override;
 
 	bool bQuickShutdown;
 };

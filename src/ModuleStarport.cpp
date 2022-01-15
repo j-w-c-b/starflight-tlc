@@ -11,7 +11,6 @@
 
 #include <sstream>
 #include <exception>
-#include "env.h"
 #include "ModuleStarport.h"
 #include "Sprite.h"
 #include "AudioSystem.h"
@@ -22,27 +21,22 @@
 #include "GameState.h"
 #include "PauseMenu.h"
 #include "QuestMgr.h"
+#include "starport_resources.h"
+
 using namespace std;
 
-#define STARPORT_AVATAR_BMP              0        /* BMP  */
-#define STARPORT_BMP                     1        /* BMP  */
-#define STARPORT_DOOR_BMP                2        /* BMP  */
-
-DATAFILE *spdata;
-
+ALLEGRO_DEBUG_CHANNEL("ModuleStarport")
 
 //***********************************************
 // Constructor
 //***********************************************
-ModuleStarport::ModuleStarport(void)
+ModuleStarport::ModuleStarport(void) : resources(STARPORT_IMAGES)
 {
 	//load the starport background
-	//TRACE("    ModuleStarport: Loading starport.bmp");
 
 	//The starport.bmp file is huge so it is loaded at mode startup and remains
 	//in memory during gameplay only to be removed when the root mode terminates
-	spdata = load_datafile("data/starport/starport.dat");
-	if (!spdata) {
+	if (!resources.load()) {
 		g_game->message("Starport: Error loading datafile");
 	}
 
@@ -55,16 +49,7 @@ ModuleStarport::ModuleStarport(void)
 //***********************************************
 ModuleStarport::~ModuleStarport(void)
 {
-	try {
-		unload_datafile(spdata);
-		spdata = NULL;
-	}
-	catch(std::exception e) {
-		TRACE(e.what());
-	}
-	catch(...) {
-		TRACE("Unhandled exception in Starport\n");
-	}
+	resources.unload();
 }
 
 //***********************************************
@@ -134,7 +119,7 @@ void ModuleStarport::movePlayerLeft(int distanceInPixels)
 		else
 			playerx -= distanceInPixels;
 	}
-	else if (g_game->gameState->player->posStarport.x + SCREEN_WIDTH >= starport->w)//If we're scrolled atw right...
+	else if (g_game->gameState->player->posStarport.x + SCREEN_WIDTH >= al_get_bitmap_width(starport))//If we're scrolled atw right...
 	{
 		if (playerx - distanceInPixels > SCREEN_WIDTH/2 - 237/2)
 			playerx -= distanceInPixels;
@@ -163,7 +148,7 @@ void ModuleStarport::movePlayerRight(int distanceInPixels)
 			g_game->gameState->player->posStarport.x += distanceInPixels;
 		}
 	}
-	else if (g_game->gameState->player->posStarport.x + SCREEN_WIDTH >= starport->w)//If we're scrolled atw right...
+	else if (g_game->gameState->player->posStarport.x + SCREEN_WIDTH >= al_get_bitmap_width(starport))//If we're scrolled atw right...
 	{
 		if (playerx + distanceInPixels + 237 + SCREEN_EDGE_PADDING > SCREEN_WIDTH)
 			playerx = SCREEN_WIDTH - 237 - SCREEN_EDGE_PADDING;
@@ -173,8 +158,8 @@ void ModuleStarport::movePlayerRight(int distanceInPixels)
 	else //If we're inbetween...
 	{
 		g_game->gameState->player->posStarport.x += distanceInPixels;
-		if (g_game->gameState->player->posStarport.x + SCREEN_WIDTH > starport->w)
-			g_game->gameState->player->posStarport.x = starport->w - SCREEN_WIDTH;
+		if (g_game->gameState->player->posStarport.x + SCREEN_WIDTH > al_get_bitmap_width(starport))
+			g_game->gameState->player->posStarport.x = al_get_bitmap_width(starport) - SCREEN_WIDTH;
 	}
 }
 
@@ -185,17 +170,15 @@ void ModuleStarport::movePlayerRight(int distanceInPixels)
 void ModuleStarport::Close()
 {
 	try {
-		//destroy_bitmap(starport);
-
 		delete avatar;
 		delete door;
 
 	}
 	catch(std::exception e) {
-		TRACE(e.what());
+		ALLEGRO_DEBUG("%s\n", e.what());
 	}
 	catch(...) {
-		TRACE("Unhandled exception in Starport::Close\n");
+		ALLEGRO_DEBUG("Unhandled exception in Starport::Close\n");
 	}
 }
 
@@ -203,7 +186,7 @@ bool ModuleStarport::Init()
 {
 	g_game->SetTimePaused(true);	//game-time frozen in this module.
 
-	TRACE("  Starport Initialize\n");
+	ALLEGRO_DEBUG("  Starport Initialize\n");
 
 	//enable the Pause Menu
 	g_game->pauseMenu->setEnabled(true);
@@ -212,23 +195,16 @@ bool ModuleStarport::Init()
 	//NOTE: a missing wav file is a soft error for the time being
 	if (!g_game->audioSystem->SampleExists("dooropen.wav")) {
 		if (!g_game->audioSystem->Load("data/starport/dooropen.wav","dooropen")) {
-			TRACE("Starport: Error loading data/starport/dooropen.wav\n");
-			//g_game->message("Starport: Error loading audio file dooropen.wav");
-			//return false;
+			ALLEGRO_DEBUG("Starport: Error loading data/starport/dooropen.wav\n");
 		}
 	}
 
 	//load the starport background
-	starport = (BITMAP *)spdata[STARPORT_BMP].dat;
-	if (!starport)
-	{
-		g_game->message("Starport: Error loading background");
-		return false;
-	}
+	starport = resources[STARPORT];
 
 	//load door
 	door = new Sprite();
-	door->setImage( (BITMAP*)spdata[STARPORT_DOOR_BMP].dat );
+	door->setImage(resources[STARPORT_DOOR]);
 	door->setAnimColumns(2);
 	door->setFrameWidth(180);
 	door->setFrameHeight(237);
@@ -236,13 +212,13 @@ bool ModuleStarport::Init()
 
 	//load avatar
 	avatar = new Sprite();
-	avatar->setImage( (BITMAP*)spdata[STARPORT_AVATAR_BMP].dat );
+	avatar->setImage(resources[STARPORT_AVATAR]);
 	avatar->setAnimColumns(8);
 	avatar->setTotalFrames(16);
 	avatar->setFrameHeight(237);
 	avatar->setFrameWidth(237);
 
-	TRACE("    Positioning avatar\n");
+	ALLEGRO_DEBUG("    Positioning avatar\n");
 	playerx = SCREEN_WIDTH / 2 - 237/2;
 	playery = g_game->getGlobalNumber("PLAYER_STARPORT_START_Y");
 
@@ -296,42 +272,41 @@ void ModuleStarport::OnEvent(Event *event)
 	//check for general events
 	switch(event->getEventType())
 	{
-		case 0xDEADBEEF + 2: //save game
+		case EVENT_SAVE_GAME: //save game
 			g_game->gameState->AutoSave();
 			return;
 			break;
-		case 0xDEADBEEF + 3: //load game
+		case EVENT_LOAD_GAME: //load game
 			g_game->gameState->AutoLoad();
 			return;
 			break;
-		case 0xDEADBEEF + 4: //quit game
+		case EVENT_QUIT_GAME: //quit game
 			escape = g_game->getGlobalString("ESCAPEMODULE");
 			g_game->modeMgr->LoadModule(escape);
 			return;
 			break;
 	}
 }
-void ModuleStarport::OnKeyPress(int keyCode){ }
 
 void ModuleStarport::OnKeyPressed(int keyCode)
 {
 	switch (keyCode)
 	{
         //turn right
-		case KEY_D:
-        case KEY_RIGHT:
+		case ALLEGRO_KEY_D:
+        case ALLEGRO_KEY_RIGHT:
 			movement = 1;
 			break;
 
         //turn left
-		case KEY_A:
-        case KEY_LEFT:
+		case ALLEGRO_KEY_A:
+        case ALLEGRO_KEY_LEFT:
 			movement = -1;
 			break;
 
         //thrust/forward
-		case KEY_W:
-        case KEY_UP:
+		case ALLEGRO_KEY_W:
+        case ALLEGRO_KEY_UP:
 			if(testDoors())
 			{
 				enteringDoor = true;
@@ -347,23 +322,21 @@ void ModuleStarport::OnKeyReleased(int keyCode)
 	switch (keyCode)
 	{
         //turn right
-		case KEY_D:
-        case KEY_RIGHT:
+		case ALLEGRO_KEY_D:
+        case ALLEGRO_KEY_RIGHT:
 			movement = 2; //to indicate stopped in this direction
 			break;
 
         //turn left
-		case KEY_A:
-        case KEY_LEFT:
+		case ALLEGRO_KEY_A:
+        case ALLEGRO_KEY_LEFT:
 			movement = -2; //to indicate stopped in this direction
 			break;
 
 #ifdef DEBUGMODE
 		case STARPORT_JUMP_LEFT:
-			//playerx -= 400; g_game->gameState->player->posStarport.x -= 400;
 			movePlayerLeft(400); break;
 		case STARPORT_JUMP_RIGHT:
-			//playerx += 400;	g_game->gameState->player->posStarport.x += 400;
 			movePlayerRight(400); break;
 
 		case STARPORT_QUEST_PLUS:
@@ -386,9 +359,7 @@ void ModuleStarport::OnKeyReleased(int keyCode)
 #endif
 
 
-		case KEY_ESC:
-			//g_game->ShowPauseMenu();
-			//return;
+		case ALLEGRO_KEY_ESCAPE:
 			break;
 	}
 }
@@ -431,7 +402,7 @@ void ModuleStarport::drawDoors()
 		else
 		{
 			//draw this door if it's in view
-			if (doors[a].right > g_game->gameState->player->posStarport.x && doors[a].left < g_game->gameState->player->posStarport.x + screen->w)
+			if (doors[a].right > g_game->gameState->player->posStarport.x && doors[a].left < g_game->gameState->player->posStarport.x + SCREEN_WIDTH)
 			{
 				//draw left door frame
 				door->setCurrFrame(0);
@@ -544,19 +515,20 @@ void ModuleStarport::Draw()
 	}
 
 	//clear background
-	clear_to_color(g_game->GetBackBuffer(), BLACK);
+	al_set_target_bitmap(g_game->GetBackBuffer());
+	al_clear_to_color(BLACK);
 
 	//update and draw doors
 	drawDoors();
 
 	//draw starport top section
-	blit(starport, g_game->GetBackBuffer(), g_game->gameState->player->posStarport.x, 0, 0, 0, screen->w, 348);
+	al_draw_bitmap_region(starport, g_game->gameState->player->posStarport.x, 0, SCREEN_WIDTH, 348, 0, 0, 0);
 
 	//draw starport floor section
-	blit(starport, g_game->GetBackBuffer(), g_game->gameState->player->posStarport.x, 585, 0, 585, screen->w, 183);
+	al_draw_bitmap_region(starport, g_game->gameState->player->posStarport.x, 585, SCREEN_WIDTH, 183, 0, 585, 0);
 
 	//draw starport middle section
-	masked_blit(starport, g_game->GetBackBuffer(), g_game->gameState->player->posStarport.x, 348, 0, 348, screen->w, 237);
+	al_draw_bitmap_region(starport, g_game->gameState->player->posStarport.x, 348, SCREEN_WIDTH, 237, 0, 348, 0);
 
 
 	//draw avatar
@@ -577,7 +549,7 @@ void ModuleStarport::Draw()
 		door->drawframe(g_game->GetBackBuffer());
 
 		//draw starport center section
-		masked_blit(starport, g_game->GetBackBuffer(), g_game->gameState->player->posStarport.x, 348, 0, 348, screen->w, 237);
+		al_draw_bitmap_region(starport, g_game->gameState->player->posStarport.x, 348, SCREEN_WIDTH, 237, 0, 348, 0);
 	}
 
 	if(g_game->gameState->player->hasOverdueLoan() && g_game->gameState->player->hasHyperspacePermit()){
@@ -605,7 +577,7 @@ void ModuleStarport::Draw()
 			case PROFESSION_FREELANCE: message += "Cantina"; break;
 			case PROFESSION_MILITARY:	message += "War Room"; break;
 			case PROFESSION_SCIENTIFIC:	message += "Research Lab"; break;
-			default: ASSERT(0);
+			default: ALLEGRO_ASSERT(0);
 		}
 		message += " for your first assignment. Use the cursor keys to move left/right, use the up key to enter a room. You can change the default keys from the Settings option on the Title Screen.";
 		g_game->ShowMessageBoxWindow("", message, 400,350, WHITE, 600, 400, false);

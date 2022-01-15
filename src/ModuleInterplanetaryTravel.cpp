@@ -10,7 +10,10 @@
 #include <sstream>
 #include <string>
 #include <exception>
-#include "env.h"
+
+#include <allegro5/allegro.h>
+#include <allegro5/allegro_primitives.h>
+
 #include "ModuleInterplanetaryTravel.h"
 #include "Button.h"
 #include "ModeMgr.h"
@@ -22,16 +25,9 @@
 #include "Label.h"
 #include "QuestMgr.h"
 #include "PauseMenu.h"
+#include "spacetravel_resources.h"
 
 using namespace std;
-
-#define GUI_AUX_BMP                      0        /* BMP  */
-#define GUI_VIEWER_BMP                   1        /* BMP  */
-#define IP_TILES_BMP                     2        /* BMP  */
-#define IS_TILES_BMP                     3        /* BMP  */
-#define SHIELD_TGA                       4        /* BMP  */
-#define STARFIELD_BMP                    5        /* BMP  */
-
 
 //scroller properties
 #define PLANET_SCROLL_X		0
@@ -42,9 +38,11 @@ using namespace std;
 #define PLANETTILESACROSS 100
 #define PLANETTILESDOWN 100
 
+ALLEGRO_DEBUG_CHANNEL("ModuleInterPlanetaryTravel")
+
 const int FlyingHoursBeforeSkillUp = 168;
 
-ModuleInterPlanetaryTravel::ModuleInterPlanetaryTravel(void){}
+ModuleInterPlanetaryTravel::ModuleInterPlanetaryTravel(void) : resources(SPACETRAVEL_IMAGES) {}
 ModuleInterPlanetaryTravel::~ModuleInterPlanetaryTravel(void){}
 
 #pragma endregion
@@ -56,30 +54,30 @@ void ModuleInterPlanetaryTravel::OnKeyPress(int keyCode)
     //Note: fuel consumption in a star system should be negligible since its the impulse engine
     //whereas we're using the hyperspace engine outside the system
 	switch (keyCode) {
-		case KEY_RIGHT:
+		case ALLEGRO_KEY_RIGHT:
 			flag_nav = false;
 			ship->turnright();
 			break;
-		case KEY_LEFT:
+		case ALLEGRO_KEY_LEFT:
 			flag_nav = false;
 			ship->turnleft();
 			break;
-		case KEY_DOWN:
+		case ALLEGRO_KEY_DOWN:
 			flag_nav = false;
 			ship->applybraking();
 			break;
-		case KEY_UP:
+		case ALLEGRO_KEY_UP:
 			flag_nav = flag_thrusting = true;
 			ship->applythrust();
 			g_game->gameState->m_ship.ConsumeFuel();
 			break;
-		case KEY_Q:
+		case ALLEGRO_KEY_Q:
 			flag_nav = true;
 			if (!flag_thrusting) ship->applybraking();
 			ship->starboard();
 			g_game->gameState->m_ship.ConsumeFuel();
 			break;
-		case KEY_E:
+		case ALLEGRO_KEY_E:
 			flag_nav = true;
 			if (!flag_thrusting) ship->applybraking();
 			ship->port();
@@ -89,11 +87,6 @@ void ModuleInterPlanetaryTravel::OnKeyPress(int keyCode)
 	}
 }
 
-
-void ModuleInterPlanetaryTravel::OnKeyPressed(int keyCode)
-{
-}
-
 void ModuleInterPlanetaryTravel::OnKeyReleased(int keyCode)
 {
 	Module::OnKeyReleased(keyCode);
@@ -101,21 +94,21 @@ void ModuleInterPlanetaryTravel::OnKeyReleased(int keyCode)
 	switch (keyCode) {
 
 		//reset ship anim frame when key released
-		case KEY_LEFT:
-		case KEY_RIGHT:
-		case KEY_DOWN:
+		case ALLEGRO_KEY_LEFT:
+		case ALLEGRO_KEY_RIGHT:
+		case ALLEGRO_KEY_DOWN:
 			flag_nav = false;
             ship->cruise();
 			break;
 
-		case KEY_UP:
+		case ALLEGRO_KEY_UP:
 			flag_nav = flag_thrusting = false;
 			ship->applybraking();
 			ship->cruise();
 			break;
 
-		case KEY_Q:
-		case KEY_E:
+		case ALLEGRO_KEY_Q:
+		case ALLEGRO_KEY_E:
 			flag_nav = false;
 			ship->applybraking();
 			ship->cruise();	
@@ -135,7 +128,7 @@ void ModuleInterPlanetaryTravel::OnMouseMove(int x, int y)
 	//check if mouse is over a planet
 
 //debug
-	
+
 	std::string dian4 = "";
 
 	for (int i = 0; i < star->GetNumPlanets(); i++)  {
@@ -212,14 +205,14 @@ void ModuleInterPlanetaryTravel::OnEvent(Event * event)
 
 	int evtype = event->getEventType();
 	switch(evtype) {
-		case 0xDEADBEEF + 2: //save game
+		case EVENT_SAVE_GAME: //save game
 			g_game->gameState->AutoSave();
 			g_game->printout(text, "<Game Saved>", WHITE, 5000);
 			break;
-		case 0xDEADBEEF + 3: //load game
+		case EVENT_LOAD_GAME: //load game
 			g_game->gameState->AutoLoad();
 			break;
-		case 0xDEADBEEF + 4: //quit game
+		case EVENT_QUIT_GAME: //quit game
 			g_game->setVibration(0);
 			escape = g_game->getGlobalString("ESCAPEMODULE");
 			g_game->modeMgr->LoadModule(escape);
@@ -227,7 +220,6 @@ void ModuleInterPlanetaryTravel::OnEvent(Event * event)
 
 		case EVENT_CAPTAIN_LAUNCH:   g_game->printout(text, nav + "Sir, we are not on a planet.",       BLUE,8000); break;
 		case EVENT_CAPTAIN_DESCEND:  g_game->printout(text, nav + "Sir, we are not orbiting a planet.", BLUE,8000); break;
-		//case EVENT_CAPTAIN_LOG:      g_game->printout(text, "<Log planet not yet implemented>", YELLOW,8000);       break;
 		case EVENT_CAPTAIN_QUESTLOG: break;
 
 		case EVENT_SCIENCE_SCAN:     g_game->printout(text, sci + "Sir, we are not near any planets or vessels.", BLUE,8000); break;
@@ -262,7 +254,7 @@ void ModuleInterPlanetaryTravel::OnEvent(Event * event)
 
 void ModuleInterPlanetaryTravel::Close()
 {
-	TRACE("*** Interplanetary Closing\n\n");
+	ALLEGRO_DEBUG("*** Interplanetary Closing\n\n");
 
 	try {
 		if (text != NULL){
@@ -278,14 +270,13 @@ void ModuleInterPlanetaryTravel::Close()
 		}
 
 		//unload the data file (thus freeing all resources at once)
-		unload_datafile(ipdata);
-		ipdata = NULL;
+		resources.unload();
 	}
 	catch(std::exception e) {
-		TRACE(e.what());
+		ALLEGRO_DEBUG("%s\n", e.what());
 	}
 	catch(...) {
-		TRACE("Unhandled exception in InterplanetaryTravel::Close\n");
+		ALLEGRO_DEBUG("Unhandled exception in InterplanetaryTravel::Close\n");
 	}
 
 }
@@ -294,7 +285,7 @@ bool ModuleInterPlanetaryTravel::Init()
 {
 	g_game->SetTimePaused(false);	//game-time normal in this module.
 
-	TRACE("  Interplanetary Initialize\n");
+	ALLEGRO_DEBUG("  Interplanetary Initialize\n");
 
 
 	//enable the Pause Menu
@@ -302,8 +293,7 @@ bool ModuleInterPlanetaryTravel::Init()
 
 
 	//load the datafile
-	ipdata = load_datafile("data/spacetravel/spacetravel.dat");
-	if (!ipdata) {
+	if (!resources.load()) {
 		g_game->message("Interplanetary: Error loading datafile");
 		return false;
 	}
@@ -345,11 +335,7 @@ bool ModuleInterPlanetaryTravel::Init()
 	scroller->setTileImageColumns(9);
 	scroller->setRegionSize(PLANETTILESACROSS,PLANETTILESDOWN);
 
-	BITMAP *tileImage = (BITMAP*)ipdata[IP_TILES_BMP].dat;
-	if (!tileImage) {
-		g_game->message("***Interplanetary: Error loading ip_tiles.bmp");
-		return false;
-	}
+	ALLEGRO_BITMAP *tileImage = resources[IP_TILES];
 	scroller->setTileImage(tileImage);
 
 	if (!scroller->createScrollBuffer(PLANET_SCROLL_WIDTH, PLANET_SCROLL_HEIGHT)) {
@@ -433,11 +419,6 @@ void ModuleInterPlanetaryTravel::Update()
 	//check if any planet is located near ship
 	checkShipPosition();
 
-
-	//display some text
-	//text->Clear();
-	//alfont_set_font_size(g_game->font10, 20);
-
 	//reset vibration danger value
 	g_game->setVibration(0);
 
@@ -516,7 +497,6 @@ void ModuleInterPlanetaryTravel::Update()
 	if (flag_DoHyperspace)
 	{
 		Ship ship = g_game->gameState->getShip();    
-		//float fuelUsage = 0.025;
 
 		if(g_game->gameState->player->hasHyperspacePermit() == false){
 			g_game->printout(text, nav + "Captain, we can't enter hyperspace without a hyperspace permit.", ORANGE,30000);
@@ -723,9 +703,10 @@ void ModuleInterPlanetaryTravel::updateMiniMap()
 	asy = (int)g_game->getGlobalNumber("AUX_SCREEN_Y");
 	static int asw = (int)g_game->getGlobalNumber("AUX_SCREEN_WIDTH");
 	static int ash = (int)g_game->getGlobalNumber("AUX_SCREEN_HEIGHT");
+	al_set_target_bitmap(g_game->GetBackBuffer());
 
 	//clear aux window
-	rectfill(g_game->GetBackBuffer(), asx, asy, asx + asw, asy + ash , makecol(0,0,0));
+	al_draw_filled_rectangle(asx, asy, asx + asw, asy + ash , al_map_rgb(0,0,0));
 
 	//draw ellipses representing planetary orbits
 	int rx,ry,cx,cy;
@@ -737,7 +718,7 @@ void ModuleInterPlanetaryTravel::updateMiniMap()
 			cy = asy + ash / 2;
 			rx = (int)( (2 + i) * 8.7 );
 			ry = (int)( (2 + i) * 8.7 );
-			ellipse(g_game->GetBackBuffer(), cx, cy, rx, ry, makecol(12,12,24));
+			al_draw_ellipse(cx, cy, rx, ry, al_map_rgb(12,12,24), 1);
 		}
 	}
 
@@ -745,7 +726,7 @@ void ModuleInterPlanetaryTravel::updateMiniMap()
 	int systemCenterTileX = scroller->getTilesAcross() / 2;
 	int systemCenterTileY = scroller->getTilesDown() / 2;
 
-	int color;
+	ALLEGRO_COLOR color;
 	switch(star->spectralClass) {
 		case SC_A: color = WHITE; break;
 		case SC_B: color = LTBLUE; break;
@@ -759,28 +740,28 @@ void ModuleInterPlanetaryTravel::updateMiniMap()
 
 	float starx = (int)(asx + systemCenterTileX * 2.3);
 	float stary = (int)(asy + systemCenterTileY * 2.3);
-	circlefill(g_game->GetBackBuffer(), starx, stary, 6, color);
+	al_draw_filled_circle(starx, stary, 6, color);
 
 	//draw planets in aux window
-	color = 0;
+	color = BLACK;
 	int planet=-1, px=0, py=0;
 	for (int i = 0; i < star->GetNumPlanets(); i++)  {
 			planet = planets[i].tilenum;
 			if (planet > 0) {
 				switch(planet) {
-					case 1: color = makecol(255,182,0);	planets[i].radius = 6;		break; //sun
-					case 2: color = makecol(100,0,100);	planets[i].radius = 4;		break; //gas giant
-					case 3: color = makecol(160,12,8);	planets[i].radius = 3;		break; //molten
-					case 4: color = makecol(200,200,255); planets[i].radius = 3;	break; //ice
-					case 5: color = makecol(30,100,240); planets[i].radius = 3;		break; //oceanic
-					case 6: color = makecol(134,67,30);	planets[i].radius = 2;		break; //rocky
-					case 7: color = makecol(95,93,93);	planets[i].radius = 1;		break; //asteroid
-					case 8: color = makecol(55,147,84);	planets[i].radius = 3;		break; //acidic
-					default: color = makecol(90,90,90);	planets[i].radius = 1;		break; //none
+					case 1: color = al_map_rgb(255,182,0);	planets[i].radius = 6;		break; //sun
+					case 2: color = al_map_rgb(100,0,100);	planets[i].radius = 4;		break; //gas giant
+					case 3: color = al_map_rgb(160,12,8);	planets[i].radius = 3;		break; //molten
+					case 4: color = al_map_rgb(200,200,255); planets[i].radius = 3;	break; //ice
+					case 5: color = al_map_rgb(30,100,240); planets[i].radius = 3;		break; //oceanic
+					case 6: color = al_map_rgb(134,67,30);	planets[i].radius = 2;		break; //rocky
+					case 7: color = al_map_rgb(95,93,93);	planets[i].radius = 1;		break; //asteroid
+					case 8: color = al_map_rgb(55,147,84);	planets[i].radius = 3;		break; //acidic
+					default: color = al_map_rgb(90,90,90);	planets[i].radius = 1;		break; //none
 				}
 				px = (int)(asx + planets[i].tilex * 2.27);
 				py = (int)(asy + planets[i].tiley * 2.27);
-				circlefill(g_game->GetBackBuffer(), px, py, planets[i].radius, color);
+				al_draw_filled_circle(px, py, planets[i].radius, color);
 			}
 		}
 
@@ -793,14 +774,14 @@ void ModuleInterPlanetaryTravel::updateMiniMap()
 	//draw player's location on minimap
 	float fx = asx + g_game->gameState->player->posSystem.x / 256 * 2.3;
 	float fy = asy + g_game->gameState->player->posSystem.y / 256 * 2.3;
-	rect(g_game->GetBackBuffer(), (int)fx-1, (int)fy-1, (int)fx+2, (int)fy+2, BLUE);
+	al_draw_rectangle((int)fx-1, (int)fy-1, (int)fx+2, (int)fy+2, BLUE, 1);
 }
 
 int ModuleInterPlanetaryTravel::loadStarSystem(int id)
 {
 	int i;
 
-	TRACE("  Loading star system %i.\n", id);
+	ALLEGRO_DEBUG("  Loading star system %i.\n", id);
 	srand(time(NULL));
 
 
@@ -866,7 +847,7 @@ int ModuleInterPlanetaryTravel::loadStarSystem(int id)
 			case PT_ACIDIC:		planets[i].tilenum = 8;	break;
 			default:
 				planets[i].tilenum = 2; //this bug needs to be fixed
-                TRACE("loadStarSystem: Unknown planet type: %d\n",planet->type);
+                ALLEGRO_DEBUG("loadStarSystem: Unknown planet type: %d\n",planet->type);
 			}
 			scroller->setTile(planets[i].tilex, planets[i].tiley, planets[i].tilenum);
 		}

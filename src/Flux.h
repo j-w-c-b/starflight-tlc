@@ -16,9 +16,9 @@ struct Tile{
 
 class Flux /*: public Sprite*/{
 public:
-	Flux(void);
+	Flux();
 	Flux(int,int);
-	virtual ~Flux(void);
+	virtual ~Flux();
 	Flux(const Flux& rhs);
     Flux& operator=(const Flux& rhs);
 	

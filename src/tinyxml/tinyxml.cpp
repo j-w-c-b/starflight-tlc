@@ -513,10 +513,11 @@ TiXmlElement::TiXmlElement( const TiXmlElement& copy)
 }
 
 
-void TiXmlElement::operator=( const TiXmlElement& base )
+TiXmlElement &TiXmlElement::operator=( const TiXmlElement& base )
 {
 	ClearThis();
 	base.CopyTo( this );
+    return *this;
 }
 
 
@@ -900,10 +901,11 @@ TiXmlDocument::TiXmlDocument( const TiXmlDocument& copy ) : TiXmlNode( TiXmlNode
 }
 
 
-void TiXmlDocument::operator=( const TiXmlDocument& copy )
+TiXmlDocument &TiXmlDocument::operator=( const TiXmlDocument& copy )
 {
 	Clear();
 	copy.CopyTo( this );
+    return *this;
 }
 
 
@@ -1272,10 +1274,11 @@ TiXmlComment::TiXmlComment( const TiXmlComment& copy ) : TiXmlNode( TiXmlNode::C
 }
 
 
-void TiXmlComment::operator=( const TiXmlComment& base )
+TiXmlComment &TiXmlComment::operator=( const TiXmlComment& base )
 {
 	Clear();
 	base.CopyTo( this );
+    return *this;
 }
 
 
@@ -1392,10 +1395,12 @@ TiXmlDeclaration::TiXmlDeclaration( const TiXmlDeclaration& copy )
 }
 
 
-void TiXmlDeclaration::operator=( const TiXmlDeclaration& copy )
+TiXmlDeclaration &TiXmlDeclaration::operator=( const TiXmlDeclaration& copy )
 {
+
 	Clear();
 	copy.CopyTo( this );
+    return *this;
 }
 
 

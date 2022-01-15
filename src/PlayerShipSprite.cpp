@@ -3,7 +3,6 @@
 	PlayerShipSprite.cpp
 */
 
-#include "env.h"
 #include "Game.h"
 #include "GameState.h"
 #include "PlayerShipSprite.h"
@@ -15,6 +14,8 @@ using namespace std;
 /*  
  *  PLAYERSHIPSPRITE CLASS
  */
+
+ALLEGRO_DEBUG_CHANNEL("PlayerShipSprite")
 
 const int TIMER_RATE = 20;
 
@@ -71,7 +72,6 @@ PlayerShipSprite::PlayerShipSprite()
 PlayerShipSprite::~PlayerShipSprite()  {
 	destroy();
 	ship = NULL;
-	//lua_close(L);
 }
 
 void PlayerShipSprite::destroy() {
@@ -108,7 +108,7 @@ double PlayerShipSprite::getMaximumVelocity()
 	int engine = g_game->gameState->getShip().getEngineClass();
 	if (engine < 1 || engine > 6) {
 		engine = 1;
-		TRACE("*** Error in PlayerShipSprite::getMaximumVelocity: Engine class is invalid");
+		ALLEGRO_DEBUG("*** Error in PlayerShipSprite::getMaximumVelocity: Engine class is invalid");
 	}
 
 	switch(engine) {
@@ -131,7 +131,7 @@ double PlayerShipSprite::getForwardThrust()
 	int engine = g_game->gameState->getShip().getEngineClass();
 	if (engine < 1 || engine > 6) {
 		engine = 1;
-		TRACE("*** Error in PlayerShipSprite::getForwardThrust: Engine class is invalid");
+		ALLEGRO_DEBUG("*** Error in PlayerShipSprite::getForwardThrust: Engine class is invalid");
 	}
 
 	switch(engine) {
@@ -166,7 +166,7 @@ double PlayerShipSprite::getTurnRate()
 	int engine = g_game->gameState->getShip().getEngineClass();
 	if (engine < 1 || engine > 6) {
 		engine = 1;
-		TRACE("*** Error in PlayerShipSprite::getTurnRate: Engine class is invalid");
+		ALLEGRO_DEBUG("*** Error in PlayerShipSprite::getTurnRate: Engine class is invalid");
 	}
 
 	switch(engine) {
@@ -255,20 +255,6 @@ void PlayerShipSprite::applythrust()
 	ship->setCurrFrame(1);
 }
 
-void PlayerShipSprite::reversethrust()
-{
-	//slow down ship thrust to 60 fps
-	if (timer.stopwatch(TIMER_RATE)) {
-		ship->setMoveAngle(ship->getFaceAngle() - 270);
-		if (ship->getMoveAngle() < 0) ship->setMoveAngle(359 + ship->getMoveAngle() );
-		ship->setVelX(ship->getVelX() + ship->calcAngleMoveX( ship->getMoveAngle() ) * reverse_thrust);
-		ship->setVelY(ship->getVelY() + ship->calcAngleMoveY( ship->getMoveAngle() ) * reverse_thrust);
-		limitvelocity();
-	}
-
-	ship->setCurrFrame(2);
-}
-
 void PlayerShipSprite::cruise() 
 { 
 	ship->setCurrFrame(0);
@@ -318,7 +304,7 @@ void PlayerShipSprite::applybraking()
 
 }
 
-void PlayerShipSprite::draw(BITMAP *dest) 
+void PlayerShipSprite::draw(ALLEGRO_BITMAP *dest) 
 {
 	ship->drawframe_rotate(dest, (int)ship->getFaceAngle() ); 
 }

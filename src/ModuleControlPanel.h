@@ -13,12 +13,11 @@
 #define MODULECONTROLPANEL_H
 #pragma once
 
-#include "env.h"
-#include <allegro.h>
-#include <fmod.hpp>
+#include <allegro5/allegro.h>
 #include "Module.h"
 #include "DataMgr.h"
 #include "AudioSystem.h"
+#include "ResourceManager.h"
 
 #include <string>
 #include <vector>
@@ -58,50 +57,47 @@ class ModuleControlPanel : public Module
 public:
 	ModuleControlPanel(void);
 	virtual ~ModuleControlPanel(void);
-	virtual bool Init();
-	virtual void Update();
-	virtual void Draw();
-	virtual void OnKeyPress(int keyCode);
-	virtual void OnKeyPressed(int keyCode);
-	virtual void OnKeyReleased(int keyCode);
-	virtual void OnMouseMove(int x, int y);
-	virtual void OnMouseClick(int button, int x, int y);
-	virtual void OnMousePressed(int button, int x, int y);
-	virtual void OnMouseReleased(int button, int x, int y);
-	virtual void OnMouseWheelUp(int x, int y);
-	virtual void OnMouseWheelDown(int x, int y);
-	virtual void OnEvent(Event *event);
-	virtual void Close();
+	virtual bool Init() override;
+	virtual void Update() override;
+	virtual void Draw() override;
+	virtual void OnKeyReleased(int keyCode) override;
+	virtual void OnMouseMove(int x, int y) override;
+	virtual void OnMouseClick(int button, int x, int y) override;
+	virtual void OnMousePressed(int button, int x, int y) override;
+	virtual void OnMouseReleased(int button, int x, int y) override;
+	virtual void OnMouseWheelUp(int x, int y) override;
+	virtual void OnMouseWheelDown(int x, int y) override;
+	virtual void Close() override;
 
-	void SetButton(int ButtonID, bool enabled);
+	ResourceManager<ALLEGRO_BITMAP>         resources;
 	
 private:
 
 	bool bEnabled;
-	BITMAP			*controlPanelBackgroundImg;
+	ALLEGRO_BITMAP			*controlPanelBackgroundImg;
 
-	Sample *sndOfficerSelected;
-	Sample *sndOfficerCommandSelected;
+        std::shared_ptr<Sample> sndOfficerSelected;
+        std::shared_ptr<Sample> sndOfficerCommandSelected;
 
 	class CommandButton
 	{
 	public:
-		CommandButton(ModuleControlPanel& outer, int datFileCmdIcon, std::string cmdName, int posX, int posY);
+		CommandButton(ModuleControlPanel& outer, const std::string &icon, const std::string &cmdName, int posX, int posY);
 		virtual ~CommandButton();
 		
 		
 
-		static bool InitCommon();
+		static bool InitCommon(ModuleControlPanel &outer);
 		bool InitButton();
 		void DestroyButton();
 		static void DestroyCommon();
 		static int GetCommonWidth();
 		static int GetCommonHeight();
 
-		void RenderPlain(BITMAP	*canvas);
-		void RenderDisabled(BITMAP *canvas);
-		void RenderMouseOver(BITMAP	*canvas);
-		void RenderSelected(BITMAP *canvas);
+		void RenderPlain(ALLEGRO_BITMAP	*canvas);
+		void RenderDisabled(ALLEGRO_BITMAP *canvas);
+		void RenderMouseOver(ALLEGRO_BITMAP	*canvas);
+		void RenderSelected(ALLEGRO_BITMAP *canvas);
 
 		bool IsInButton(int x, int y);
 
@@ -115,31 +111,28 @@ private:
 	private:
 		ModuleControlPanel	&outer;
 		
-		//std::string			imgFileCmdIcon; //replaced with datafile
-		int					datFileCmdIcon;
-		
-		std::string			cmdName;
+                std::string				datFileCmdIcon;
+		std::string				cmdName;
 		int					posX;
 		int					posY;
-		BITMAP				*imgCmdIcon;
+		ALLEGRO_BITMAP				*imgCmdIcon;
 		bool				enabled;
 
 		//JH 5/05
 		int					eventID;
 
-		static BITMAP		*imgBackground;
-		static BITMAP		*imgBackgroundDisabled;
-		static BITMAP		*imgBackgroundMouseOver;
-		static BITMAP		*imgBackgroundSelected;
+		static ALLEGRO_BITMAP		*imgBackground;
+		static ALLEGRO_BITMAP		*imgBackgroundDisabled;
+		static ALLEGRO_BITMAP		*imgBackgroundMouseOver;
+		static ALLEGRO_BITMAP		*imgBackgroundSelected;
 
-		void Render(BITMAP *canvas, BITMAP *imgBackground, bool down = false);
+		void Render(ALLEGRO_BITMAP *canvas, ALLEGRO_BITMAP *imgBackground, bool down = false);
 	};
 
 	class OfficerButton
 	{
 	public:
-		//OfficerButton(ModuleControlPanel& outer, OfficerType officerType, std::string imgFileMouseOver, std::string imgFileSelected, int posX, int posY);
-		OfficerButton(ModuleControlPanel& outer, OfficerType officerType, int datFileMouseOver, int datFileSelected, int posX, int posY);
+		OfficerButton(ModuleControlPanel& outer, OfficerType officerType, const std::string &datFileMouseOver, const std::string &datFileSelected, int posX, int posY);
 		virtual ~OfficerButton();
 
 		static bool InitCommon();
@@ -147,8 +140,8 @@ private:
 		void DestroyButton();
 		static void DestroyCommon();
 
-		void RenderMouseOver(BITMAP *canvas);
-		void RenderSelected(BITMAP *canvas);
+		void RenderMouseOver(ALLEGRO_BITMAP *canvas);
+		void RenderSelected(ALLEGRO_BITMAP *canvas);
 
 		bool IsInButton(int x, int y);
 
@@ -156,7 +149,7 @@ private:
 
 		int					posX;
 		int					posY;
-		BITMAP				*imgMouseOver;
+		ALLEGRO_BITMAP				*imgMouseOver;
 
       OfficerType GetOfficerType() { return officerType; }
 
@@ -164,14 +157,11 @@ private:
 		ModuleControlPanel	&outer;
 		OfficerType			officerType;
 		
-		//std::string			imgFileMouseOver;
-		//std::string			imgFileSelected;
-		int					datFileMouseOver;
-		int					datFileSelected;
+		std::string			datFileMouseOver;
+		std::string			datFileSelected;
 		
-		BITMAP				*imgSelected;
-		bool				isSelected;
-		static BITMAP		*imgTipWindowBackground;
+		ALLEGRO_BITMAP			*imgSelected;
+		static ALLEGRO_BITMAP		*imgTipWindowBackground;
 
 	};
 

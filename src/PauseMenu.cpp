@@ -7,7 +7,7 @@
 
 using namespace std;
 
-BITMAP *PauseMenu::bg = NULL;
+ALLEGRO_BITMAP *PauseMenu::bg = NULL;
 Button *PauseMenu::button1 = NULL;
 Button *PauseMenu::button2 = NULL;
 Button *PauseMenu::button3 = NULL;
@@ -20,11 +20,11 @@ PauseMenu::PauseMenu()
 	enabled = false;
 
 	if (bg == NULL)
-		bg = load_bitmap("data/pausemenu/pausemenu_bg.tga", NULL);
+		bg = al_load_bitmap("data/pausemenu/pausemenu_bg.tga");
 
 	//get location of dialog
-	x = 512-bg->w/2;
-	y = 384-bg->h/2;
+	x = 512-al_get_bitmap_width(bg)/2;
+	y = 384-al_get_bitmap_height(bg)/2;
 
 	//SAVE GAME button
 	if (button1 == NULL)
@@ -34,7 +34,7 @@ PauseMenu::PauseMenu()
 			"data/pausemenu/button_over.tga", 
 			"data/pausemenu/button_dis.tga", 
 			x+70, y+45,
-			0xDEADBEEF,	0xDEADBEEF + 2,
+			EVENT_MOUSEOVER,	EVENT_SAVE_GAME,
 			g_game->font20,
 			"SAVE GAME",
 			WHITE);
@@ -48,7 +48,7 @@ PauseMenu::PauseMenu()
 			"data/pausemenu/button_over.tga", 
 			"data/pausemenu/button_dis.tga", 
 			x+70, y+130,
-			0xDEADBEEF,	0xDEADBEEF + 3,
+			EVENT_MOUSEOVER,	EVENT_LOAD_GAME,
 			g_game->font20,
 			"LOAD GAME",
 			WHITE);
@@ -62,7 +62,7 @@ PauseMenu::PauseMenu()
 			"data/pausemenu/button_over.tga", 
 			"data/pausemenu/button_dis.tga", 
 			x+70, y+215,
-			0xDEADBEEF,	0xDEADBEEF + 4,
+			EVENT_MOUSEOVER,	EVENT_QUIT_GAME,
 			g_game->font20,
 			"QUIT GAME",
 			WHITE);
@@ -76,7 +76,7 @@ PauseMenu::PauseMenu()
 			"data/pausemenu/button_over.tga", 
 			"data/pausemenu/button_dis.tga", 
 			x+70, y+300,
-			0xDEADBEEF,	0xDEADBEEF + 1,
+			EVENT_MOUSEOVER,	EVENT_CLOSE,
 			g_game->font20,
 			"RETURN",
 			WHITE);
@@ -86,7 +86,7 @@ PauseMenu::PauseMenu()
 PauseMenu::~PauseMenu()
 {
 	display = false;
-	if (bg != NULL) destroy_bitmap(bg);
+	if (bg != NULL) al_destroy_bitmap(bg);
 	if (button1 != NULL) delete button1;
 	if (button2 != NULL) delete button2;
 	if (button3 != NULL) delete button3;
@@ -114,23 +114,13 @@ bool PauseMenu::OnMouseReleased(int button, int x, int y)
 	if (!result) result = button4->OnMouseReleased(button,x,y);
 	return result;
 }
-
-bool PauseMenu::OnKeyReleased(int keyCode)
-{
-	return false;
-}
-
-
-void PauseMenu::Update()
-{
-}
 void PauseMenu::Draw()
 {
 	if (!enabled) return;
+	al_set_target_bitmap(g_game->GetBackBuffer());
 
 	//draw background
-	draw_trans_sprite(g_game->GetBackBuffer(), bg, x, y); 
-
+	al_draw_bitmap(bg, x, y, 0); 
 
 	//save/load only available in certain modules
 	string module = g_game->gameState->getCurrentModule();
@@ -153,6 +143,4 @@ void PauseMenu::Draw()
 	if(button2)	button2->Run(g_game->GetBackBuffer());
 	if(button3)	button3->Run(g_game->GetBackBuffer());
 	if(button4)	button4->Run(g_game->GetBackBuffer());
-
-
 }

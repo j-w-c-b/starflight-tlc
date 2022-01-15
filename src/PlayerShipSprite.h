@@ -8,8 +8,7 @@
 #ifndef PLAYERSHIPSPRITE_H
 #define PLAYERSHIPSPRITE_H
 
-#include "env.h"
-#include <allegro.h>
+#include <allegro5/allegro.h>
 #include <string>
 #include "Sprite.h"
 #include "Script.h"
@@ -24,8 +23,6 @@ private:
 	double	lateral_thrust;
 	double	turnrate;
 	
-	//lua_State *L;
-
 	Timer timer, braking_timer;
 
 public:
@@ -33,7 +30,6 @@ public:
 	PlayerShipSprite();
 	void destroy();
 	void applythrust();
-	void reversethrust();
 	void limitvelocity();
 	void cruise();
 	void allstop();
@@ -43,7 +39,7 @@ public:
 	void port();
 	void applybraking();
 
-	void draw(BITMAP *dest);
+	void draw(ALLEGRO_BITMAP *dest);
 	double getX() { return ship->getX(); }
 	double getY() { return ship->getY(); }
 	void setX(double value) { ship->setX(value); }

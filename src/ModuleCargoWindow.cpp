@@ -8,7 +8,6 @@
 
 */
 
-#include "env.h"
 #include "DataMgr.h"
 #include "ModeMgr.h"
 #include "ModuleCargoWindow.h"
@@ -22,14 +21,7 @@
 #include "Label.h"
 #include "Util.h"
 #include "ModuleControlPanel.h"
-
-//borders for the jettison button from data/cargohold/cargohold.dat
-//NOTE: static.tga is not used anymore.
-#define CARGO_BTN_BMP                 0         /* BMP  */
-#define CARGO_BTN_MO_BMP              1         /* BMP  */
-
-//the cargo window "skin" from data/cargohold/sideviewer.dat
-#define GUI_VIEWER_BMP                0         /* BMP  */
+#include "cargohold_resources.h"
 
 //gui elements positioning, fonts settings...
 #define PLAYERLIST_X                108
@@ -59,7 +51,9 @@
 //	* CARGO_EVENT_UPDATE                     /* inventory changed */
 
 
-ModuleCargoWindow::ModuleCargoWindow()
+ALLEGRO_DEBUG_CHANNEL("ModuleCargoWindow")
+
+ModuleCargoWindow::ModuleCargoWindow() : m_resources(CARGOHOLD_IMAGES)
 {
 	//from data/globals.lua (left=-440 right=-40 speed=12)
 	gui_viewer_left = (int) g_game->getGlobalNumber("GUI_VIEWER_LEFT");
@@ -68,8 +62,6 @@ ModuleCargoWindow::ModuleCargoWindow()
 
 	initialized = false;
 
-	cwdata                  = NULL;
-	svdata                  = NULL;
 	img_viewer              = NULL;
 
 	m_items                 = NULL;
@@ -90,35 +82,20 @@ ModuleCargoWindow::~ModuleCargoWindow()
 
 bool ModuleCargoWindow::Init()
 {
-	TRACE("  ModuleCargoWindow: initializing...\n");
+	ALLEGRO_DEBUG("  ModuleCargoWindow: initializing...\n");
 
 	//load the window "skin"
-	svdata = load_datafile("data/cargohold/sideviewer.dat");
-	if (!svdata) {
-		g_game->message("CargoWindow: Error loading data/cargohold/sideviewer.dat");
+	if (!m_resources.load()) {
+		g_game->message("CargoWindow: Error loading resources");
 		return false;
 	}
 
-	img_viewer = (BITMAP*)svdata[GUI_VIEWER_BMP].dat;
-	if (img_viewer == NULL) {
-		g_game->message("CargoWindow: Error loading gui_viewer.bmp from data/cargohold/sideviewer.dat");
-		return false;
-	}
+	img_viewer = m_resources[GUI_VIEWER];
 
 	//jettison button
-	cwdata = load_datafile("data/cargohold/cargohold.dat");
-	if (!cwdata) {
-		g_game->message("CargoWindow: Error loading data/cargohold/cargohold.dat");
-		return false;
-	}
-
-	BITMAP *btnNorm, *btnOver;
-	btnNorm = (BITMAP*)cwdata[CARGO_BTN_BMP].dat;
-	btnOver = (BITMAP*)cwdata[CARGO_BTN_MO_BMP].dat;
-	if (btnNorm == NULL || btnOver == NULL) {
-		g_game->message("CargoWindow: Error loading button borders from data/cargohold/cargohold.dat");
-		return false;
-	}
+	ALLEGRO_BITMAP *btnNorm, *btnOver;
+	btnNorm = m_resources[CARGO_BTN];
+	btnOver = m_resources[CARGO_BTN_MO];
 
 	m_jettisonButton = new Button(
 		btnNorm, btnOver, NULL,
@@ -186,7 +163,7 @@ bool ModuleCargoWindow::Init()
 	// initialized when calling this.
 	this->InitViewer();
 
-	TRACE("  ModuleCargoWindow: initialized\n");
+	ALLEGRO_DEBUG("  ModuleCargoWindow: initialized\n");
 
 	return true;
 }
@@ -264,8 +241,6 @@ void ModuleCargoWindow::UpdateLists()
 void ModuleCargoWindow::OnEvent(Event * event)
 {
 	int ev = event->getEventType();
-	//NOTE: uncommenting the following line can help a great deal when tracking bugs.
-	//TRACE("CargoWindow: got event %d (0x%X)\n", ev, (unsigned int) ev);
 
 	switch(ev)
 	{
@@ -316,8 +291,8 @@ void ModuleCargoWindow::OnEvent(Event * event)
 			break;
 
 		default:
-		//NOTE: even after Close(), we still will get at least 0xDEADBEEF+3 and
-		// 0xDEADBEEF+4 (Load/Quit) events, so be careful with what you put here.
+		//NOTE: even after Close(), we still will get at least EVENT_LOAD_GAME and
+		// EVENT_QUIT_GAME (Load/Quit) events, so be careful with what you put here.
 		// Generally speaking, it's probably not a good idea to act upon events
 		// you don't know anything about.
 			break;
@@ -362,7 +337,7 @@ void ModuleCargoWindow::Draw()
 		return;
 
 	//drawing the window
-	masked_blit(img_viewer, g_game->GetBackBuffer(), 0, 0, m_x, m_y, img_viewer->w, img_viewer->h);
+	al_draw_bitmap(img_viewer, m_x, m_y, 0);
 
 	//draw items list header
 	g_game->Print20(g_game->GetBackBuffer(),108+m_x,32+m_y,"ITEM",LTGREEN,true);
@@ -396,10 +371,6 @@ void ModuleCargoWindow::Draw()
 	spaceStatus->SetX(relX2);
 	spaceStatus->SetY(relY2);
 }
-
-void ModuleCargoWindow::OnKeyPress( int keyCode ){}
-void ModuleCargoWindow::OnKeyPressed(int keyCode){}
-void ModuleCargoWindow::OnKeyReleased(int keyCode){}
 
 void ModuleCargoWindow::OnMouseMove(int x, int y)
 {
@@ -443,17 +414,9 @@ void ModuleCargoWindow::OnMouseReleased(int button, int x, int y)
 	m_jettisonButton->SetY(relY);
 }
 
-void ModuleCargoWindow::OnMouseWheelUp(int x, int y)
-{
-}
-
-void ModuleCargoWindow::OnMouseWheelDown(int x, int y)
-{
-}
-
 void ModuleCargoWindow::Close()
 {
-	TRACE("*** ModuleCargoWindow: closing...\n");
+	ALLEGRO_DEBUG("*** ModuleCargoWindow: closing...\n");
 
 	//NOTE: this is needed to prevent some sort of race condition which will
 	// cause the game to crash when leaving PlanetSurface for PlanetOrbit when
@@ -466,17 +429,8 @@ void ModuleCargoWindow::Close()
 	//will tell UpdateLists() the data it needs are not available.
 	initialized = false;
 
-	if (svdata != NULL) {
-		//unload the data file (thus freeing all resources at once)
-		unload_datafile(svdata);
-		svdata = NULL;
-	}
-
-	if (cwdata != NULL) {
-		//unload the data file (thus freeing all resources at once)
-		unload_datafile(cwdata);
-		cwdata = NULL;
-	}
+	//unload the resources
+	m_resources.unload();
 
 	m_items = NULL;
 
@@ -496,9 +450,8 @@ void ModuleCargoWindow::Close()
 		m_jettisonButton = NULL;
 	}
 
-	if (m_sndButtonClick != NULL) {
-		delete m_sndButtonClick;
-		m_sndButtonClick = NULL;
+	if (m_sndButtonClick != nullptr) {
+		m_sndButtonClick.reset();
 	}
 
 	if ( spaceStatus != NULL) {
@@ -506,5 +459,5 @@ void ModuleCargoWindow::Close()
 		spaceStatus = NULL;
 	}
 
-	TRACE("*** ModuleCargoWindow: closed\n");
+	ALLEGRO_DEBUG("*** ModuleCargoWindow: closed\n");
 }

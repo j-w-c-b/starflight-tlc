@@ -1,4 +1,3 @@
-#include "env.h"
 #include "ModuleTradeDepot.h"
 #include "Button.h"
 #include "ScrollBox.h"
@@ -9,27 +8,10 @@
 #include "GameState.h"
 #include "QuestMgr.h"
 #include "Util.h"
+#include "tradedepot_resources.h"
 
 #include <sstream>
 using namespace std;
-
-#define GENERIC_EXIT_BTN_NORM_BMP        0        /* BMP  */
-#define GENERIC_EXIT_BTN_OVER_BMP        1        /* BMP  */
-#define TRADEDEPOT_BACKGROUND_BMP        2        /* BMP  */
-#define TRADEDEPOT_BTN_BMP               3        /* BMP  */
-#define TRADEDEPOT_BTN_MO_BMP            4        /* BMP  */
-#define TRADEDEPOT_CURSOR0_BMP           5        /* BMP  */
-#define TRADEDEPOT_CURSOR1_BMP           6        /* BMP  */
-#define TRADEDEPOT_FILTERBTN_BMP         7        /* BMP  */
-#define TRADEDEPOT_FILTERBTN_MO_BMP      8        /* BMP  */
-#define TRADEDEPOT_PROMPTBTN_BMP         9        /* BMP  */
-#define TRADEDEPOT_PROMPTBTN_MO_BMP      10       /* BMP  */
-#define TRADEDEPOT_QUANTITY_PROMPT_BMP   11       /* BMP  */
-#define TRADEDEPOT_SPINDOWNBTN_BMP       12       /* BMP  */
-#define TRADEDEPOT_SPINDOWNBTN_MO_BMP    13       /* BMP  */
-#define TRADEDEPOT_SPINUPBTN_BMP         14       /* BMP  */
-#define TRADEDEPOT_SPINUPBTN_MO_BMP      15       /* BMP  */
-
 
 #define PLAYERLIST_X 10
 #define PLAYERLIST_Y 240
@@ -138,13 +120,15 @@ using namespace std;
 #define CURSOR_DELAY 10
 #define CURSOR_Y QTYTEXT_Y
 
-const int ITEM_ENDURIUM			= 54;
+ALLEGRO_DEBUG_CHANNEL("ModuleTradeDepot")
 
-DATAFILE *tddata;
+const int ITEM_ENDURIUM			= 54;
 
 
 ModuleTradeDepot::ModuleTradeDepot(void)
-: m_background(NULL)
+: m_tradeMode(TM_TRADING)
+, m_clearListSelOnUpdate(false)
+, m_background(NULL)
 , m_playerList(NULL)
 , m_playerListNumItems(NULL)
 , m_playerListValue(NULL)
@@ -162,15 +146,12 @@ ModuleTradeDepot::ModuleTradeDepot(void)
 , m_checkoutBtn(NULL)
 , m_clearBtn(NULL)
 , m_filterAllBtn(NULL)
-//, m_filterArtifactBtn(NULL)
 , m_filterSpecialtyGoodBtn(NULL)
 , m_filterMineralBtn(NULL)
 , m_filterLifeformBtn(NULL)
 , m_filterTradeItemBtn(NULL)
-//, m_filterShipUpgradeBtn(NULL)
 , exitToStarportCommons(false)
 , m_filterType(IT_INVALID)
-, m_tradeMode(TM_TRADING)
 , m_promptBackground(NULL)
 , m_spinUpBtn(NULL)
 , m_spinDownBtn(NULL)
@@ -179,7 +160,7 @@ ModuleTradeDepot::ModuleTradeDepot(void)
 , m_cancelBtn(NULL)
 , m_cursorIdx(0)
 , m_cursorIdxDelay(0)
-, m_clearListSelOnUpdate(false)
+, m_resources(TRADEDEPOT_IMAGES)
 {
    for (int i = 0; i < TRADEDEPOT_NUMBUTTONS; i++)
    {
@@ -193,22 +174,20 @@ ModuleTradeDepot::~ModuleTradeDepot(void)
 
 bool ModuleTradeDepot::Init()
 {
-	//if (!Module::Init()) return false;
 	item_to_display = IT_INVALID;
 	portrait_string= "";
 
     for (int n=0; n<6; n++) item_portrait[n] = NULL;
-    item_portrait[0] = load_bitmap("data/tradedepot/T_AlienArtifact.tga",NULL); // IT_ARTIFACT
-	item_portrait[2] = load_bitmap("data/tradedepot/T_Gems.tga",NULL);			// IT_MINERAL
-	item_portrait[3] = load_bitmap("data/tradedepot/T_Rabid_Vertruk.tga",NULL);	// IT_LIFEFORM
-	item_portrait[4] = load_bitmap("data/tradedepot/T_Seeds.tga",NULL);			// IT_TRADEITEM
+    item_portrait[0] = al_load_bitmap("data/tradedepot/T_AlienArtifact.tga"); // IT_ARTIFACT
+	item_portrait[2] = al_load_bitmap("data/tradedepot/T_Gems.tga");			// IT_MINERAL
+	item_portrait[3] = al_load_bitmap("data/tradedepot/T_Rabid_Vertruk.tga");	// IT_LIFEFORM
+	item_portrait[4] = al_load_bitmap("data/tradedepot/T_Seeds.tga");			// IT_TRADEITEM
 
-	BITMAP *imgNormal, *imgMO;
+	ALLEGRO_BITMAP *imgNormal, *imgMO;
 
 	//load the datafile
-	tddata = load_datafile("data/tradedepot/tradedepot.dat");
-	if (!tddata) {
-		g_game->message("TradeDepot: Error loading datafile");
+	if (!m_resources.load()) {
+		g_game->message("TradeDepot: Error loading resources");
 		return false;
 	}
 
@@ -220,9 +199,6 @@ bool ModuleTradeDepot::Init()
 
 	//empty the trade depot
 	m_depotItems.Reset();
-
-	//add random items to the trade depot
-    //m_depotItems.RandomPopulate(10, 4, (ItemType) IT_MINERAL);
 
 	//there must always be a supply of endurium!
 	m_depotItems.SetItemCount(ITEM_ENDURIUM, Util::Random(1,6) +6 );
@@ -236,64 +212,62 @@ bool ModuleTradeDepot::Init()
 
 
     //load gui images
-	m_background = (BITMAP*)tddata[TRADEDEPOT_BACKGROUND_BMP].dat;
-	if (m_background == NULL)
-		return false;
+	m_background = m_resources[TRADEDEPOT_BACKGROUND];
 
-   m_playerListValue = new ScrollBox::ScrollBox(g_game->font22,ScrollBox::SB_LIST,PLAYERLIST_X+PLAYERLIST_WIDTH-PLAYERLIST_VALUE_WIDTH,PLAYERLIST_Y,PLAYERLIST_VALUE_WIDTH,PLAYERLIST_HEIGHT,PLAYERLIST_EVENT);
+   m_playerListValue = new ScrollBox::ScrollBox(g_game->font24,ScrollBox::SB_LIST,PLAYERLIST_X+PLAYERLIST_WIDTH-PLAYERLIST_VALUE_WIDTH,PLAYERLIST_Y,PLAYERLIST_VALUE_WIDTH,PLAYERLIST_HEIGHT,PLAYERLIST_EVENT);
    if (m_playerListValue == NULL)
       return false;
 
-   m_playerListNumItems = new ScrollBox::ScrollBox(g_game->font22,ScrollBox::SB_LIST,PLAYERLIST_X+PLAYERLIST_WIDTH-PLAYERLIST_VALUE_WIDTH-PLAYERLIST_NUMITEMS_WIDTH,PLAYERLIST_Y,PLAYERLIST_NUMITEMS_WIDTH,PLAYERLIST_HEIGHT,PLAYERLIST_EVENT);
+   m_playerListNumItems = new ScrollBox::ScrollBox(g_game->font24,ScrollBox::SB_LIST,PLAYERLIST_X+PLAYERLIST_WIDTH-PLAYERLIST_VALUE_WIDTH-PLAYERLIST_NUMITEMS_WIDTH,PLAYERLIST_Y,PLAYERLIST_NUMITEMS_WIDTH,PLAYERLIST_HEIGHT,PLAYERLIST_EVENT);
    if (m_playerListNumItems == NULL)
       return false;
 
-   m_playerList = new ScrollBox::ScrollBox(g_game->font22,ScrollBox::SB_LIST,PLAYERLIST_X,PLAYERLIST_Y,PLAYERLIST_WIDTH,PLAYERLIST_HEIGHT,PLAYERLIST_EVENT);
+   m_playerList = new ScrollBox::ScrollBox(g_game->font24,ScrollBox::SB_LIST,PLAYERLIST_X,PLAYERLIST_Y,PLAYERLIST_WIDTH,PLAYERLIST_HEIGHT,PLAYERLIST_EVENT);
    if (m_playerList == NULL)
       return false;
 
    m_playerListNumItems->LinkBox(m_playerList);
    m_playerListValue->LinkBox(m_playerListNumItems);
 
-   m_sellListValue = new ScrollBox::ScrollBox(g_game->font22,ScrollBox::SB_LIST,SELLLIST_X+SELLLIST_WIDTH-SELLLIST_VALUE_WIDTH,SELLLIST_Y,SELLLIST_VALUE_WIDTH,SELLLIST_HEIGHT,SELLLIST_EVENT);
+   m_sellListValue = new ScrollBox::ScrollBox(g_game->font24,ScrollBox::SB_LIST,SELLLIST_X+SELLLIST_WIDTH-SELLLIST_VALUE_WIDTH,SELLLIST_Y,SELLLIST_VALUE_WIDTH,SELLLIST_HEIGHT,SELLLIST_EVENT);
    if (m_sellListValue == NULL)
       return false;
 
-   m_sellListNumItems = new ScrollBox::ScrollBox(g_game->font22,ScrollBox::SB_LIST,SELLLIST_X+SELLLIST_WIDTH-SELLLIST_VALUE_WIDTH-SELLLIST_NUMITEMS_WIDTH,SELLLIST_Y,SELLLIST_NUMITEMS_WIDTH,SELLLIST_HEIGHT,SELLLIST_EVENT);
+   m_sellListNumItems = new ScrollBox::ScrollBox(g_game->font24,ScrollBox::SB_LIST,SELLLIST_X+SELLLIST_WIDTH-SELLLIST_VALUE_WIDTH-SELLLIST_NUMITEMS_WIDTH,SELLLIST_Y,SELLLIST_NUMITEMS_WIDTH,SELLLIST_HEIGHT,SELLLIST_EVENT);
    if (m_sellListNumItems == NULL)
       return false;
 
-   m_sellList = new ScrollBox::ScrollBox(g_game->font22,ScrollBox::SB_LIST,SELLLIST_X,SELLLIST_Y,SELLLIST_WIDTH,SELLLIST_HEIGHT,SELLLIST_EVENT);
+   m_sellList = new ScrollBox::ScrollBox(g_game->font24,ScrollBox::SB_LIST,SELLLIST_X,SELLLIST_Y,SELLLIST_WIDTH,SELLLIST_HEIGHT,SELLLIST_EVENT);
    if (m_sellList == NULL)
       return false;
 
    m_sellListNumItems->LinkBox(m_sellList);
    m_sellListValue->LinkBox(m_sellListNumItems);
 
-   m_depotListValue = new ScrollBox::ScrollBox(g_game->font22,ScrollBox::SB_LIST,DEPOTLIST_X+DEPOTLIST_WIDTH-DEPOTLIST_VALUE_WIDTH,DEPOTLIST_Y,DEPOTLIST_VALUE_WIDTH,DEPOTLIST_HEIGHT,DEPOTLIST_EVENT);
+   m_depotListValue = new ScrollBox::ScrollBox(g_game->font24,ScrollBox::SB_LIST,DEPOTLIST_X+DEPOTLIST_WIDTH-DEPOTLIST_VALUE_WIDTH,DEPOTLIST_Y,DEPOTLIST_VALUE_WIDTH,DEPOTLIST_HEIGHT,DEPOTLIST_EVENT);
    if (m_depotListValue == NULL)
       return false;
 
-   m_depotListNumItems = new ScrollBox::ScrollBox(g_game->font22,ScrollBox::SB_LIST,DEPOTLIST_X+DEPOTLIST_WIDTH-DEPOTLIST_VALUE_WIDTH-DEPOTLIST_NUMITEMS_WIDTH,DEPOTLIST_Y,DEPOTLIST_NUMITEMS_WIDTH,DEPOTLIST_HEIGHT,DEPOTLIST_EVENT);
+   m_depotListNumItems = new ScrollBox::ScrollBox(g_game->font24,ScrollBox::SB_LIST,DEPOTLIST_X+DEPOTLIST_WIDTH-DEPOTLIST_VALUE_WIDTH-DEPOTLIST_NUMITEMS_WIDTH,DEPOTLIST_Y,DEPOTLIST_NUMITEMS_WIDTH,DEPOTLIST_HEIGHT,DEPOTLIST_EVENT);
    if (m_depotListNumItems == NULL)
       return false;
 
-   m_depotList = new ScrollBox::ScrollBox(g_game->font22,ScrollBox::SB_LIST,DEPOTLIST_X,DEPOTLIST_Y,DEPOTLIST_WIDTH,DEPOTLIST_HEIGHT,DEPOTLIST_EVENT);
+   m_depotList = new ScrollBox::ScrollBox(g_game->font24,ScrollBox::SB_LIST,DEPOTLIST_X,DEPOTLIST_Y,DEPOTLIST_WIDTH,DEPOTLIST_HEIGHT,DEPOTLIST_EVENT);
    if (m_depotList == NULL)
       return false;
 
    m_depotListNumItems->LinkBox(m_depotList);
    m_depotListValue->LinkBox(m_depotListNumItems);
 
-   m_buyListValue = new ScrollBox::ScrollBox(g_game->font22,ScrollBox::SB_LIST,BUYLIST_X+BUYLIST_WIDTH-BUYLIST_VALUE_WIDTH,BUYLIST_Y,BUYLIST_VALUE_WIDTH,BUYLIST_HEIGHT,BUYLIST_EVENT);
+   m_buyListValue = new ScrollBox::ScrollBox(g_game->font24,ScrollBox::SB_LIST,BUYLIST_X+BUYLIST_WIDTH-BUYLIST_VALUE_WIDTH,BUYLIST_Y,BUYLIST_VALUE_WIDTH,BUYLIST_HEIGHT,BUYLIST_EVENT);
    if (m_buyListValue == NULL)
       return false;
 
-   m_buyListNumItems = new ScrollBox::ScrollBox(g_game->font22,ScrollBox::SB_LIST,BUYLIST_X+BUYLIST_WIDTH-BUYLIST_VALUE_WIDTH-BUYLIST_NUMITEMS_WIDTH,BUYLIST_Y,BUYLIST_NUMITEMS_WIDTH,BUYLIST_HEIGHT,BUYLIST_EVENT);
+   m_buyListNumItems = new ScrollBox::ScrollBox(g_game->font24,ScrollBox::SB_LIST,BUYLIST_X+BUYLIST_WIDTH-BUYLIST_VALUE_WIDTH-BUYLIST_NUMITEMS_WIDTH,BUYLIST_Y,BUYLIST_NUMITEMS_WIDTH,BUYLIST_HEIGHT,BUYLIST_EVENT);
    if (m_buyListNumItems == NULL)
       return false;
 
-   m_buyList = new ScrollBox::ScrollBox(g_game->font22,ScrollBox::SB_LIST,BUYLIST_X,BUYLIST_Y,BUYLIST_WIDTH,BUYLIST_HEIGHT,BUYLIST_EVENT);
+   m_buyList = new ScrollBox::ScrollBox(g_game->font24,ScrollBox::SB_LIST,BUYLIST_X,BUYLIST_Y,BUYLIST_WIDTH,BUYLIST_HEIGHT,BUYLIST_EVENT);
    if (m_buyList == NULL)
       return false;
 
@@ -301,12 +275,8 @@ bool ModuleTradeDepot::Init()
    m_buyListValue->LinkBox(m_buyListNumItems);
 
 	//create exit button
-	imgNormal = (BITMAP*)tddata[GENERIC_EXIT_BTN_NORM_BMP].dat;
-	imgMO = (BITMAP*)tddata[GENERIC_EXIT_BTN_OVER_BMP].dat;
-	if (!imgNormal || !imgMO) {
-		g_game->message("TradeDepot: Trade depot images are missing");
-		return false;
-	}
+	imgNormal = m_resources[GENERIC_EXIT_BTN_NORM];
+	imgMO = m_resources[GENERIC_EXIT_BTN_OVER];
    m_exitBtn = new Button(imgNormal,imgMO,NULL,EXITBTN_X, EXITBTN_Y, 0, BTNEVENT_EXIT, g_game->font24, "Exit", BLACK);
    if (m_exitBtn == NULL)
       return false;
@@ -316,12 +286,9 @@ bool ModuleTradeDepot::Init()
    m_modeBtnMap[m_exitBtn] = TM_TRADING;
 
 	//create buy/sell button
-	imgNormal = (BITMAP*)tddata[TRADEDEPOT_BTN_BMP].dat;
-	imgMO = (BITMAP*)tddata[TRADEDEPOT_BTN_MO_BMP].dat;
-	if (!imgNormal || !imgMO) {
-		g_game->message("TradeDepot: Trade depot images are missing");
-		return false;
-	}
+	imgNormal = m_resources[TRADEDEPOT_BTN];
+	imgMO = m_resources[TRADEDEPOT_BTN_MO];
+
    m_sellbuyBtn = new Button(imgNormal,imgMO,NULL,BUTTONS_X,SELLBUYBTN_Y,0,BTNEVENT_SELLBUY,g_game->font24,"SellBuy",BTNTEXTCOLOR);
    if (m_sellbuyBtn == NULL)
       return false;
@@ -350,12 +317,8 @@ bool ModuleTradeDepot::Init()
 
 
 	//create shared filter buttons
-	imgNormal = (BITMAP*)tddata[TRADEDEPOT_FILTERBTN_BMP].dat;
-	imgMO = (BITMAP*)tddata[TRADEDEPOT_FILTERBTN_MO_BMP].dat;
-	if (!imgNormal || !imgMO) {
-		g_game->message("TradeDepot: Trade depot images are missing");
-		return false;
-	}
+	imgNormal = m_resources[TRADEDEPOT_FILTERBTN];
+	imgMO = m_resources[TRADEDEPOT_FILTERBTN_MO];
 
 	//create all button
    int x = FILTERBTN_START_X;
@@ -436,19 +399,13 @@ bool ModuleTradeDepot::Init()
    m_modeBtnMap[m_filterShipUpgradeBtn] = TM_TRADING;
 
 
-	//load quantity prompt bitmap
-   m_promptBackground = (BITMAP*)tddata[TRADEDEPOT_QUANTITY_PROMPT_BMP].dat;
-   if (m_promptBackground == NULL)
-      return false;
-
+	//load quantity prompt ALLEGRO_BITMAP
+   m_promptBackground = m_resources[TRADEDEPOT_QUANTITY_PROMPT];
 
 	//create spinup buttons
-	imgNormal = (BITMAP*)tddata[TRADEDEPOT_SPINUPBTN_BMP].dat;
-	imgMO = (BITMAP*)tddata[TRADEDEPOT_SPINUPBTN_MO_BMP].dat;
-	if (!imgNormal || !imgMO) {
-		g_game->message("TradeDepot: Trade depot images are missing");
-		return false;
-	}
+	imgNormal = m_resources[TRADEDEPOT_SPINUPBTN];
+	imgMO = m_resources[TRADEDEPOT_SPINUPBTN_MO];
+
    m_spinUpBtn = new Button(imgNormal,imgMO,NULL,SPINUPBTN_X+PROMPTBG_X,SPINUPBTN_Y+PROMPTBG_Y,0,BTNEVENT_SPINUP);
    if (m_spinUpBtn == NULL)
       return false;
@@ -458,12 +415,9 @@ bool ModuleTradeDepot::Init()
    m_modeBtnMap[m_spinUpBtn] = TM_PROMPTING;
 
 	//create spindown buttons
-	imgNormal = (BITMAP*)tddata[TRADEDEPOT_SPINDOWNBTN_BMP].dat;
-	imgMO = (BITMAP*)tddata[TRADEDEPOT_SPINDOWNBTN_MO_BMP].dat;
-	if (!imgNormal || !imgMO) {
-		g_game->message("TradeDepot: Trade depot images are missing");
-		return false;
-	}
+	imgNormal = m_resources[TRADEDEPOT_SPINDOWNBTN];
+	imgMO = m_resources[TRADEDEPOT_SPINDOWNBTN_MO];
+
    m_spinDownBtn = new Button(imgNormal,imgMO,NULL,SPINDOWNBTN_X+PROMPTBG_X,SPINDOWNBTN_Y+PROMPTBG_Y,0,BTNEVENT_SPINDOWN);
    if (m_spinDownBtn == NULL)
       return false;
@@ -474,12 +428,8 @@ bool ModuleTradeDepot::Init()
 
 
 	//create shared prompt buttons
-	imgNormal = (BITMAP*)tddata[TRADEDEPOT_PROMPTBTN_BMP].dat;
-	imgMO = (BITMAP*)tddata[TRADEDEPOT_PROMPTBTN_MO_BMP].dat;
-	if (!imgNormal || !imgMO) {
-		g_game->message("TradeDepot: Trade depot images are missing");
-		return false;
-	}
+	imgNormal = m_resources[TRADEDEPOT_PROMPTBTN];
+	imgMO = m_resources[TRADEDEPOT_PROMPTBTN_MO];
 
 	//create all button
    m_allBtn = new Button(imgNormal,imgMO,NULL,ALLBTN_X+PROMPTBG_X,ALLBTN_Y+PROMPTBG_Y,0,BTNEVENT_ALL,g_game->font24,"All",PROMPTBTN_TEXT_COLOR);
@@ -509,13 +459,8 @@ bool ModuleTradeDepot::Init()
    m_modeBtnMap[m_cancelBtn] = TM_PROMPTING;
 
 
-	m_cursor[0] = (BITMAP*)tddata[TRADEDEPOT_CURSOR0_BMP].dat;
-	if (m_cursor[0] == NULL)
-		return false;
-
-	m_cursor[1] = (BITMAP*)tddata[TRADEDEPOT_CURSOR1_BMP].dat;
-	if (m_cursor[1] == NULL)
-		return false;
+	m_cursor[0] = m_resources[TRADEDEPOT_CURSOR0];
+	m_cursor[1] = m_resources[TRADEDEPOT_CURSOR1];
 
    m_sellTotal = 0;
    m_buyTotal = 0;
@@ -529,8 +474,6 @@ bool ModuleTradeDepot::Init()
 			return false;
 		}
 	}
-	//buttonclick = g_game->audioSystem->Load("data/tradedepot/buttonclick.ogg");
-
 
     //reset transactions
     m_sellItems.Reset();
@@ -576,45 +519,43 @@ void ModuleTradeDepot::Draw()
 {
 	Module::Draw();
 
-   BITMAP* canvas = g_game->GetBackBuffer();
+   ALLEGRO_BITMAP* canvas = g_game->GetBackBuffer();
 
-	blit(m_background,canvas,0,0,0,0,screen->w,screen->h);
+	al_set_target_bitmap(canvas);
+        al_draw_bitmap(m_background,0,0,0);
 
-   alfont_set_font_size(g_game->font10,LIST_TEXTHEIGHT);
    m_playerListValue->Draw(canvas);
    m_sellListValue->Draw(canvas);
    m_depotListValue->Draw(canvas);
    m_buyListValue->Draw(canvas);
 
-   alfont_set_font_size(g_game->font10,PLAYER_BALANCE_TEXTHEIGHT);
    ostringstream balStr;
    balStr << g_game->gameState->getCredits();
-   alfont_textout_right(canvas,g_game->font10,balStr.str().c_str(),PLAYER_BALANCE_X,PLAYER_BALANCE_Y,PLAYER_BALANCE_TEXTCOL);
+   al_draw_text(g_game->font48,PLAYER_BALANCE_TEXTCOL,PLAYER_BALANCE_X,PLAYER_BALANCE_Y, ALLEGRO_ALIGN_RIGHT, balStr.str().c_str());
 
    if (m_sellTotal > 0)
    {
-      alfont_set_font_size(g_game->font10,SELLTOTAL_TEXTHEIGHT);
       ostringstream sellStr;
       sellStr << m_sellTotal;
-      alfont_textout_right(canvas,g_game->font10,sellStr.str().c_str(),SELLTOTAL_X,SELLTOTAL_Y,SELLTOTAL_TEXTCOL);
+      al_draw_text(g_game->font48,SELLTOTAL_TEXTCOL,SELLTOTAL_X,SELLTOTAL_Y,ALLEGRO_ALIGN_RIGHT, sellStr.str().c_str());
    }
 
    if (m_buyTotal > 0)
    {
-      alfont_set_font_size(g_game->font10,BUYTOTAL_TEXTHEIGHT);
       ostringstream buyStr;
       buyStr << m_buyTotal;
-      alfont_textout(canvas,g_game->font10,buyStr.str().c_str(),BUYTOTAL_X,BUYTOTAL_Y,BUYTOTAL_TEXTCOL);
+      al_draw_text(g_game->font48,BUYTOTAL_TEXTCOL,BUYTOTAL_X,BUYTOTAL_Y,0,buyStr.str().c_str());
    }
 
    if (m_tradeMode == TM_PROMPTING)
    {
-      blit(m_promptBackground,canvas,0,0,PROMPTBG_X,PROMPTBG_Y,m_promptBackground->w,m_promptBackground->h);
-      alfont_set_font_size(g_game->font10,PROMPT_VAL_TEXTHEIGHT);
-      alfont_textout(canvas,g_game->font10,m_promptText.c_str(),QTYTEXT_X+PROMPTBG_X,QTYTEXT_Y+PROMPTBG_Y,PROMPT_TEXT_COLOR);
+       al_draw_bitmap(m_promptBackground, PROMPTBG_X, PROMPTBG_Y, 0);
 
-		int nlen = alfont_text_length(g_game->font10,m_promptText.c_str());
-      blit(m_cursor[m_cursorIdx],canvas,0,0,QTYTEXT_X+PROMPTBG_X+nlen+2,CURSOR_Y+PROMPTBG_Y,m_cursor[m_cursorIdx]->w,m_cursor[m_cursorIdx]->h);
+      al_draw_bitmap(m_promptBackground,PROMPTBG_X,PROMPTBG_Y,0);
+      al_draw_text(g_game->font24,PROMPT_TEXT_COLOR,QTYTEXT_X+PROMPTBG_X,QTYTEXT_Y+PROMPTBG_Y,0, m_promptText.c_str());
+
+		int nlen = al_get_text_width(g_game->font10,m_promptText.c_str());
+      al_draw_bitmap(m_cursor[m_cursorIdx],QTYTEXT_X+PROMPTBG_X+nlen+2,CURSOR_Y+PROMPTBG_Y, 0);
 
 		if (++m_cursorIdxDelay > CURSOR_DELAY)
 		{
@@ -627,16 +568,11 @@ void ModuleTradeDepot::Draw()
       int qty = atoi(m_promptText.c_str());
       ostringstream str;
       str << "Price " << (qty * m_promptItem.value);
-      alfont_textout(canvas,g_game->font10,str.str().c_str(),PRICE_X+PROMPTBG_X,PRICE_Y+PROMPTBG_Y,PROMPTBTN_TEXT_COLOR);
+      al_draw_text(g_game->font10,PROMPTBTN_TEXT_COLOR,PRICE_X+PROMPTBG_X,PRICE_Y+PROMPTBG_Y, 0, str.str().c_str());
    }
 
    for (int i = 0; i < TRADEDEPOT_NUMBUTTONS; i++)
    {
-      if (m_filterBtnMap.find(m_buttons[i]) != m_filterBtnMap.end())
-         alfont_set_font_size(g_game->font10,FILTERBTN_TEXTHEIGHT);
-      else
-         alfont_set_font_size(g_game->font10,BTN_TEXTHEIGHT);
-
       if (m_modeBtnMap[m_buttons[i]] == m_tradeMode)
          m_buttons[i]->Run(canvas);
    }
@@ -647,46 +583,38 @@ void ModuleTradeDepot::Draw()
    if(portrait_string == ""){
 	switch(item_to_display){
 		case IT_ARTIFACT:
-			blit(item_portrait[0],canvas,0,0,447,443,128,128);
+			al_draw_bitmap(item_portrait[0],447,443,0);
 			break;
-		//case IT_SPECIALTYGOOD:
-		//	blit(item_portrait[1],canvas,0,0,447,443,128,128);
-		//	break;
 		case IT_MINERAL:
-			blit(item_portrait[2],canvas,0,0,447,443,128,128);
+			al_draw_bitmap(item_portrait[2],447,443,0);
 			break;
 		case IT_LIFEFORM:
-			blit(item_portrait[3],canvas,0,0,447,443,128,128);
+			al_draw_bitmap(item_portrait[3],447,443,0);
 			break;
 		case IT_TRADEITEM:
-			blit(item_portrait[4],canvas,0,0,447,443,128,128);
+			al_draw_bitmap(item_portrait[4],447,443,0);
 			break;
-		//case IT_SHIPUPGRADE:
-		//	blit(item_portrait[5],canvas,0,0,447,443,128,128);
-		//	break;
 		case IT_INVALID:
 		default:
 		   break;
    }
    }else{
-	   BITMAP* temp_bmp;
+	   ALLEGRO_BITMAP* temp_bmp;
 	   std::string temp_string = "data/tradedepot/" + portrait_string;
-	   temp_bmp = load_bitmap(temp_string.c_str(),NULL);
+	   temp_bmp = al_load_bitmap(temp_string.c_str());
 	   if (temp_bmp) {
-		blit(temp_bmp,canvas,0,0,447,443,128,128);
-		destroy_bitmap(temp_bmp);
+		al_draw_bitmap(temp_bmp,447,443,0);
+		al_destroy_bitmap(temp_bmp);
 	   }
 	   else {
 		   string s = "TradeDepot: ERROR! " + temp_string + " not found!";
-		   TRACE(s.c_str());
+		   ALLEGRO_DEBUG("%s\n", s.c_str());
 	   }
    }
 }
 
 void ModuleTradeDepot::Close()
 {
-	//Module::Close();
-
 	try {
 	   if (m_playerListValue != NULL)
 	   {
@@ -712,11 +640,6 @@ void ModuleTradeDepot::Close()
 		  m_buyListValue = NULL;
 	   }
 
-		//if (buttonclick != NULL)		//pointer no longer needed.
-		//{
-		//	buttonclick = NULL;
-		//}
-
 	   for (int i = 0; i < TRADEDEPOT_NUMBUTTONS; i++)
 	   {
 		  m_buttons[i]->Destroy();
@@ -730,20 +653,19 @@ void ModuleTradeDepot::Close()
            //new NULL setting in Init makes this work now
            if (item_portrait[i]) 
            {
-		        destroy_bitmap(item_portrait[i]);
+		        al_destroy_bitmap(item_portrait[i]);
                 item_portrait[i] = NULL;
            }
 	   }
 
 		//unload the data file (thus freeing all resources at once)
-		unload_datafile(tddata);
-		tddata = NULL;
+		m_resources.unload();
 	}
 	catch(std::exception e) {
-		TRACE(e.what());
+		ALLEGRO_DEBUG("%s\n", e.what());
 	}
 	catch(...) {
-		TRACE("Unhandled exception in TradeDepot::Close\n");
+		ALLEGRO_DEBUG("Unhandled exception in TradeDepot::Close\n");
 	}
 
 }
@@ -759,14 +681,21 @@ void ModuleTradeDepot::OnKeyPressed(int keyCode)
 
    if (m_tradeMode == TM_PROMPTING)
    {
-      if ((keyCode >= KEY_0) && (keyCode <= KEY_9_PAD))
+      if ((keyCode >= ALLEGRO_KEY_0) && (keyCode <= ALLEGRO_KEY_9))
       {
-   		char c = (char)scancode_to_ascii(keyCode);
+   		char c = (char) (keyCode - ALLEGRO_KEY_0) + '0';
 
          if (m_promptText.size() < PROMPT_MAX_CHARS)
             m_promptText += c;
       }
-      else if (keyCode == KEY_BACKSPACE)
+      if ((keyCode >= ALLEGRO_KEY_PAD_0) && (keyCode <= ALLEGRO_KEY_PAD_9))
+      {
+   		char c = (char) (keyCode - ALLEGRO_KEY_PAD_0) + '0';
+
+         if (m_promptText.size() < PROMPT_MAX_CHARS)
+            m_promptText += c;
+      }
+      else if (keyCode == ALLEGRO_KEY_BACKSPACE)
       {
          if (m_promptText.size() > 0)
          {
@@ -779,9 +708,7 @@ void ModuleTradeDepot::OnKeyPressed(int keyCode)
 
 void ModuleTradeDepot::OnKeyReleased(int keyCode)
 {
-   if (keyCode == KEY_ESC) {
-      //g_game->modeMgr->LoadModule(MODULE_STARPORT);
-      //return;
+   if (keyCode == ALLEGRO_KEY_ESCAPE) {
     }
 }
 
@@ -850,29 +777,11 @@ void ModuleTradeDepot::OnMouseReleased(int button, int x, int y)
 void ModuleTradeDepot::OnMouseWheelUp(int x, int y)
 {
 	Module::OnMouseWheelUp(x, y);
-
-	//Commenting out till the scrollbox gets this fixed for the List Type
-   //if (m_tradeMode == TM_TRADING)
-   //{
-   //   m_playerListValue->OnMouseWheelUp(x,y);
-   //   m_sellListValue->OnMouseWheelUp(x,y);
-   //   m_depotListValue->OnMouseWheelUp(x,y);
-   //   m_buyListValue->OnMouseWheelUp(x,y);
-   //}
 }
 
 void ModuleTradeDepot::OnMouseWheelDown(int x, int y)
 {
 	Module::OnMouseWheelDown(x, y);
-
-	//Commenting out till the scrollbox gets this fixed for the List Type
-   //if (m_tradeMode == TM_TRADING)
-   //{
-   //   m_playerListValue->OnMouseWheelDown(x,y);
-   //   m_sellListValue->OnMouseWheelDown(x,y);
-   //   m_depotListValue->OnMouseWheelDown(x,y);
-   //   m_buyListValue->OnMouseWheelDown(x,y);
-   //}
 }
 
 void ModuleTradeDepot::OnEvent(Event *event)
@@ -980,14 +889,6 @@ void ModuleTradeDepot::OnEvent(Event *event)
       m_playerListValue->ScrollToTop();
       m_depotListValue->ScrollToTop();
    }
-   //else if (eventType == FILTEREVENT_SPECIALTYGOOD)
-   //{
-   //   m_filterType = IT_SPECIALTYGOOD;
-   //   playBtnClick = true;
-   //   UpdateLists();
-   //   m_playerListValue->ScrollToTop();
-   //   m_depotListValue->ScrollToTop();
-   //}
    else if (eventType == FILTEREVENT_MINERAL)
    {
       m_filterType = IT_MINERAL;
@@ -1012,14 +913,6 @@ void ModuleTradeDepot::OnEvent(Event *event)
       m_playerListValue->ScrollToTop();
       m_depotListValue->ScrollToTop();
    }
-   //else if (eventType == FILTEREVENT_SHIPUPGRADE)
-   //{
-   //   m_filterType = IT_SHIPUPGRADE;
-   //   playBtnClick = true;
-   //   UpdateLists();
-   //   m_playerListValue->ScrollToTop();
-   //   m_depotListValue->ScrollToTop();
-   //}
    else if (eventType == BTNEVENT_SPINUP)
    {
       int val = atoi(m_promptText.c_str());
@@ -1192,21 +1085,15 @@ void ModuleTradeDepot::UpdateButtonStates()
    }
 
    m_filterAllBtn->SetHighlight(false);
-//   m_filterArtifactBtn->SetHighlight(false);
    m_filterSpecialtyGoodBtn->SetHighlight(false);
    m_filterMineralBtn->SetHighlight(false);
    m_filterLifeformBtn->SetHighlight(false);
    m_filterTradeItemBtn->SetHighlight(false);
-//   m_filterShipUpgradeBtn->SetHighlight(false);
 
    switch (m_filterType)
    {
    case IT_ARTIFACT:
-//      m_filterArtifactBtn->SetHighlight(true);
       break;
-   //case IT_SPECIALTYGOOD:
-   //   m_filterSpecialtyGoodBtn->SetHighlight(true);
-   //   break;
    case IT_MINERAL:
       m_filterMineralBtn->SetHighlight(true);
       break;
@@ -1216,9 +1103,6 @@ void ModuleTradeDepot::UpdateButtonStates()
    case IT_TRADEITEM:
       m_filterTradeItemBtn->SetHighlight(true);
       break;
-//   case IT_SHIPUPGRADE:
-////      m_filterShipUpgradeBtn->SetHighlight(true);
-//      break;
    case IT_INVALID:
    default:
       m_filterAllBtn->SetHighlight(true);

@@ -11,7 +11,9 @@
 #pragma once
 
 #include <vector>
-#include <lua.hpp>
+#include <string>
+
+#include "lua.hpp"
 
 class Script
 {
@@ -31,7 +33,6 @@ class Script
 		void setGlobalNumber(std::string name, double value);
 
 		bool getGlobalBoolean(std::string name);
-		void setGlobalBoolean(std::string name, bool value);
 
 		bool runFunction(std::string name);
 

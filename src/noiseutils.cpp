@@ -25,6 +25,10 @@
 #include "noise/interp.h"
 #include "noise/mathconsts.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wreorder-ctor"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+
 #include "noiseutils.h"
 
 using namespace noise;
@@ -33,17 +37,6 @@ using namespace noise::module;
 
 // Bitmap header size.
 const int BMP_HEADER_SIZE = 54;
-
-// Direction of the light source, in compass degrees (0 = north, 90 = east,
-// 180 = south, 270 = east)
-const double DEFAULT_LIGHT_AZIMUTH = 45.0;
-
-// Amount of contrast between light and dark areas.
-const double DEFAULT_LIGHT_CONTRAST  =  1.0;
-
-// Elevation of the light source above the horizon, in degrees (0 = on
-// horizon, 90 = directly overhead)
-const double DEFAULT_LIGHT_ELEVATION = 45.0;
 
 //////////////////////////////////////////////////////////////////////////////
 // Miscellaneous functions
@@ -316,26 +309,6 @@ void NoiseMap::InitObj ()
   m_borderValue = 0.0;
 }
 
-void NoiseMap::ReclaimMem ()
-{
-  size_t newMemUsage = CalcMinMemUsage (m_width, m_height);
-  if (m_memUsed > newMemUsage) {
-    // There is wasted memory.  Create the smallest buffer that can fit the
-    // data and copy the data to it.
-    float* pNewNoiseMap = NULL;
-    try {
-      pNewNoiseMap = new float[newMemUsage];
-    }
-    catch (...) {
-      throw noise::ExceptionOutOfMemory ();
-    }
-    memcpy (pNewNoiseMap, m_pNoiseMap, newMemUsage * sizeof (float));
-    delete[] m_pNoiseMap;
-    m_pNoiseMap = pNewNoiseMap;
-    m_memUsed = newMemUsage;
-  }
-}
-
 void NoiseMap::SetSize (int width, int height)
 {
   if (width < 0 || height < 0
@@ -376,22 +349,6 @@ void NoiseMap::SetValue (int x, int y, float value)
       *(GetSlabPtr (x, y)) = value;
     }
   }
-}
-
-void NoiseMap::TakeOwnership (NoiseMap& source)
-{
-  // Copy the values and the noise map buffer from the source noise map to
-  // this noise map.  Now this noise map pwnz the source buffer.
-  delete[] m_pNoiseMap;
-  m_memUsed   = source.m_memUsed;
-  m_height    = source.m_height;
-  m_pNoiseMap = source.m_pNoiseMap;
-  m_stride    = source.m_stride;
-  m_width     = source.m_width;
-
-  // Now that the source buffer is assigned to this noise map, reset the
-  // source noise map object.
-  source.InitObj ();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -481,26 +438,6 @@ void Image::InitObj ()
   m_borderValue = Color (0, 0, 0, 0);
 }
 
-void Image::ReclaimMem ()
-{
-  size_t newMemUsage = CalcMinMemUsage (m_width, m_height);
-  if (m_memUsed > newMemUsage) {
-    // There is wasted memory.  Create the smallest buffer that can fit the
-    // data and copy the data to it.
-    Color* pNewImage = NULL;
-    try {
-      pNewImage = new Color[newMemUsage];
-    }
-    catch (...) {
-      throw noise::ExceptionOutOfMemory ();
-    }
-    memcpy (pNewImage, m_pImage, newMemUsage * sizeof (float));
-    delete[] m_pImage;
-    m_pImage = pNewImage;
-    m_memUsed = newMemUsage;
-  }
-}
-
 void Image::SetSize (int width, int height)
 {
   if (width < 0 || height < 0
@@ -541,22 +478,6 @@ void Image::SetValue (int x, int y, const Color& value)
       *(GetSlabPtr (x, y)) = value;
     }
   }
-}
-
-void Image::TakeOwnership (Image& source)
-{
-  // Copy the values and the image buffer from the source image to this image.
-  // Now this image pwnz the source buffer.
-  delete[] m_pImage;
-  m_memUsed = source.m_memUsed;
-  m_height  = source.m_height;
-  m_pImage  = source.m_pImage;
-  m_stride  = source.m_stride;
-  m_width   = source.m_width;
-
-  // Now that the source buffer is assigned to this image, reset the source
-  // image object.
-  source.InitObj ();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -799,13 +720,12 @@ void NoiseMapBuilderCylinder::Build ()
   double heightExtent = m_upperHeightBound - m_lowerHeightBound;
   double xDelta = angleExtent  / (double)m_destWidth ;
   double yDelta = heightExtent / (double)m_destHeight;
-  double curAngle  = m_lowerAngleBound ;
   double curHeight = m_lowerHeightBound;
 
   // Fill every point in the noise map with the output values from the model.
   for (int y = 0; y < m_destHeight; y++) {
     float* pDest = m_pDestNoiseMap->GetSlabPtr (y);
-    curAngle = m_lowerAngleBound;
+    double curAngle = m_lowerAngleBound;
     for (int x = 0; x < m_destWidth; x++) {
       float curValue = (float)cylinderModel.GetValue (curAngle, curHeight);
       *pDest++ = curValue;
@@ -853,13 +773,12 @@ void NoiseMapBuilderPlane::Build ()
   double zExtent = m_upperZBound - m_lowerZBound;
   double xDelta  = xExtent / (double)m_destWidth ;
   double zDelta  = zExtent / (double)m_destHeight;
-  double xCur    = m_lowerXBound;
   double zCur    = m_lowerZBound;
 
   // Fill every point in the noise map with the output values from the model.
   for (int z = 0; z < m_destHeight; z++) {
     float* pDest = m_pDestNoiseMap->GetSlabPtr (z);
-    xCur = m_lowerXBound;
+    double xCur = m_lowerXBound;
     for (int x = 0; x < m_destWidth; x++) {
       float finalValue;
       if (!m_isSeamlessEnabled) {
@@ -920,13 +839,12 @@ void NoiseMapBuilderSphere::Build ()
   double latExtent = m_northLatBound - m_southLatBound;
   double xDelta = lonExtent / (double)m_destWidth ;
   double yDelta = latExtent / (double)m_destHeight;
-  double curLon = m_westLonBound ;
   double curLat = m_southLatBound;
 
   // Fill every point in the noise map with the output values from the model.
   for (int y = 0; y < m_destHeight; y++) {
     float* pDest = m_pDestNoiseMap->GetSlabPtr (y);
-    curLon = m_westLonBound;
+    double curLon = m_westLonBound;
     for (int x = 0; x < m_destWidth; x++) {
       float curValue = (float)sphereModel.GetValue (curLat, curLon);
       *pDest++ = curValue;
@@ -970,20 +888,6 @@ void RendererImage::BuildGrayscaleGradient ()
   ClearGradient ();
   m_gradient.AddGradientPoint (-1.0, Color (  0,   0,   0, 255));
   m_gradient.AddGradientPoint ( 1.0, Color (255, 255, 255, 255));
-}
-
-void RendererImage::BuildTerrainGradient ()
-{
-  ClearGradient ();
-  m_gradient.AddGradientPoint (-1.00, Color (  0,   0, 128, 255));
-  m_gradient.AddGradientPoint (-0.20, Color ( 32,  64, 128, 255));
-  m_gradient.AddGradientPoint (-0.04, Color ( 64,  96, 192, 255));
-  m_gradient.AddGradientPoint (-0.02, Color (192, 192, 128, 255));
-  m_gradient.AddGradientPoint ( 0.00, Color (  0, 192,   0, 255));
-  m_gradient.AddGradientPoint ( 0.25, Color (192, 192,   0, 255));
-  m_gradient.AddGradientPoint ( 0.50, Color (160,  96,  64, 255));
-  m_gradient.AddGradientPoint ( 0.75, Color (128, 255, 255, 255));
-  m_gradient.AddGradientPoint ( 1.00, Color (255, 255, 255, 255));
 }
 
 Color RendererImage::CalcDestColor (const Color& sourceColor,
@@ -1182,7 +1086,7 @@ void RendererImage::Render ()
 
       // Get the current background color from the background image.
       Color backgroundColor (255, 255, 255, 255);
-      if (m_pBackgroundImage != NULL) {
+      if (pBackground != nullptr) {
         backgroundColor = *pBackground;
       }
 
@@ -1296,3 +1200,5 @@ void RendererNormalMap::Render ()
     }
   }
 }
+
+#pragma GCC diagnostic pop

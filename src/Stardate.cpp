@@ -5,7 +5,6 @@
 	Date: Jan-29-2007
 */
 
-#include "env.h"
 #include "Stardate.h"
 #include "Util.h"
 #include "Archive.h"
@@ -38,16 +37,22 @@ using namespace std;
 int daysPassedByMonth[] = { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
 
 
-Stardate::Stardate()
+Stardate::Stardate() :
+    m_day(DEFAULT_DAY),
+    m_hour(DEFAULT_HOUR),
+    m_month(DEFAULT_MONTH),
+    m_year(DEFAULT_YEAR)
 {
-	SetDate( DEFAULT_DAY, DEFAULT_HOUR, DEFAULT_MONTH, DEFAULT_YEAR );
 	initHours();
 }
 
-Stardate::Stardate( int day, int hour, int month, int year )
+Stardate::Stardate( const Stardate &stardate ) :
+    m_day(stardate.m_day),
+    m_hour(stardate.m_hour),
+    m_month(stardate.m_month),
+    m_year(stardate.m_year)
 {
-	SetDate( day, hour, month, year );
-	initHours();
+    initHours();
 }
 
 void Stardate::initHours()
@@ -62,9 +67,6 @@ void Stardate::initHours()
 
 void Stardate::Update( double gameTimeInSecs, double update_interval )
 {
-	// number of days that should be added based on which month it is
-	//static int daysPassedByMonth[12] = { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
-
 	//calculate year
 	int newHours = totalHours + (int)(gameTimeInSecs / update_interval);
 	int year = newHours / 8760;
@@ -84,22 +86,6 @@ void Stardate::Update( double gameTimeInSecs, double update_interval )
 	//set new date
 	SetDate( day, hour, month, year );
 }
-
-
-//Stardate::Stardate( const Stardate &stardate ) :
-//m_day(stardate.m_day),
-//m_hour(stardate.m_hour),
-//m_month(stardate.m_month),
-//m_year(stardate.m_year)
-//{
-//	paused = true;
-//}
-//
-//
-//Stardate::Stardate( const std::string &fullDateString )
-//{
-//	SetFullDateString( fullDateString );
-//}
 
 Stardate & Stardate::operator =( const Stardate &stardate )
 {
@@ -166,25 +152,6 @@ void Stardate::SetDate( int day, int hour, int month, int year )
 	SetDay( day );
 }
 
-void Stardate::SetDateString( const std::string &dateString )
-{
-	Stardate s = DateStringToStardate( dateString );
-
-	SetYear( s.GetYear() );
-	SetMonth( s.GetMonth() );
-	SetHour( 0 );
-	SetDay( s.GetDay() );
-}
-void Stardate::SetFullDateString( const std::string &fullDateString )
-{
-	Stardate s = FullDateStringToStardate( fullDateString );
-
-	SetYear( s.GetYear() );
-	SetMonth( s.GetMonth() );
-	SetHour( s.GetHour() );
-	SetDay( s.GetDay() );
-}
-
 std::string Stardate::GetDateString() const
 {
 	ostringstream str;
@@ -206,12 +173,6 @@ std::string Stardate::GetFullDateString() const
 		<< right << setw(2) << setfill('0') << GetMonth() << '-'
 		<< right << setw(2) << setfill('0') << GetDay() << '-'
 		<< right << setw(4) << setfill('0') << GetYear();
-
-	// yyyy-mm-dd.hh
-	//str << right << setw(4) << setfill('0') << GetYear() << '-'
-	//	<< right << setw(2) << setfill('0') << GetMonth() << '-'
-	//	<< right << setw(2) << setfill('0') << GetDay() << '.'
-	//	<< right << setw(2) << setfill('0') << GetHour();
 
 	return str.str();
 }
@@ -275,99 +236,6 @@ bool Stardate::operator>=( const Stardate &stardate ) const
 		return true;
 
 	return false;
-}
-
-bool Stardate::IsSameDay( const Stardate &stardate )
-{
-	// returns true if all stardate properties are equal
-	// except for the hour (and of course delta)
-
-	if (GetDay() == stardate.GetDay() &&
-		GetMonth() == stardate.GetMonth() &&
-		GetYear() == stardate.GetYear())
-		return true;
-
-	return false;
-}
-
-Stardate Stardate::DateStringToStardate( const std::string &dateString )
-{
-	Stardate sd( DEFAULT_DAY, DEFAULT_HOUR, DEFAULT_MONTH, DEFAULT_YEAR );
-
-	if (dateString.length() != 10)
-		return sd;
-
-	// check for dd-mm-yyyy format
-	if (dateString.at(2) != '-' || dateString.at(5) != '-')
-		return sd;
-
-	string dayStr = dateString.substr( 0, 2 );
-	string monthStr = dateString.substr( 3, 2 );
-	string yearStr = dateString.substr( 6, 4 );
-
-	if (!IsNumber( dayStr ) || !IsNumber( monthStr ) || !IsNumber( yearStr ))
-		return sd;
-
-	// convert to integer representations
-	int day = atoi( dayStr.c_str() );
-	int month = atoi( monthStr.c_str() );
-	int year = atoi( yearStr.c_str() );
-
-	if (!IsValidDate( day, month, year ))
-		return sd;
-
-	sd.SetDate( day, 0, month, year );
-
-	return sd;
-}
-
-Stardate Stardate::FullDateStringToStardate( const std::string &fullDateString )
-{
-	Stardate sd( DEFAULT_DAY, DEFAULT_HOUR, DEFAULT_MONTH, DEFAULT_YEAR );
-
-	if (fullDateString.length() != 13)
-		return sd;
-
-	// check for dd.hh-mm-yyyy format
-	if (fullDateString.at(2) != '.' || fullDateString.at(5) != '-' ||
-		fullDateString.at(8) != '-')
-		return sd;
-
-	string dayStr = fullDateString.substr( 0, 2 );
-	string hourStr = fullDateString.substr( 3, 2 );
-	string monthStr = fullDateString.substr( 6, 2 );
-	string yearStr = fullDateString.substr( 9, 4 );
-
-	if (!IsNumber( dayStr ) || !IsNumber( monthStr ) || !IsNumber( yearStr ) ||
-		!IsNumber( hourStr))
-		return sd;
-
-	// convert to integer representations
-	int day = atoi( dayStr.c_str() );
-	int hour = atoi( hourStr.c_str() );
-	int month = atoi( monthStr.c_str() );
-	int year = atoi( yearStr.c_str() );
-
-	if (hour < 0 || hour > 23)
-		return sd;
-
-	if (!IsValidDate( day, month, year ))
-		return sd;
-
-	sd.SetDate( day, hour, month, year );
-
-	return sd;
-}
-
-// Returns true if the string is a number
-bool Stardate::IsNumber( const std::string &str )
-{
-	for (int i = 0; (unsigned)i < str.length(); i++) {
-		if (!isdigit(str.at(i)))
-			return false;
-	}
-
-	return true;
 }
 
 // Based on the traditional, current day calendar, calculate
@@ -446,9 +314,9 @@ bool Stardate::Serialize(Archive& ar)
 
 int Stardate::get_current_date_in_days(void)
 {
-	int i_current_year = m_year;//m_gameState->stardate.GetYear();
-	int i_current_month = m_month;// m_gameState->stardate.GetMonth();
-	int i_current_day = m_day;//m_gameState->stardate.GetDay();
+	int i_current_year = m_year;
+	int i_current_month = m_month;
+	int i_current_day = m_day;
 	int i_days_in_month = 0;
 	for(int i = 1; i < i_current_month; i++)
 	{
@@ -493,7 +361,6 @@ void Stardate::add_days(int days){
 					m_month++;
 					if(m_month > 12){m_year++; m_month = m_month-12;}
 					days -= i_days_in_month;
-					//add_days(days);
 				}
 			}
 		}

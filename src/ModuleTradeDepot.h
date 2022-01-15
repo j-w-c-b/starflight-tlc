@@ -2,13 +2,13 @@
 #define MODULETRADEDEPOT_H
 //#pragma once
 
-#include "env.h"
-#include <allegro.h>
-#include <alfont.h>
+#include <allegro5/allegro.h>
+#include <allegro5/allegro_font.h>
 #include <map>
 #include "Module.h"
 #include "DataMgr.h"
 #include "AudioSystem.h"
+#include "ResourceManager.h"
 
 
 #define TRADEDEPOT_NUMBUTTONS 16
@@ -22,26 +22,26 @@ class ModuleTradeDepot : public Module{
 public:
 	ModuleTradeDepot(void);
 	virtual ~ModuleTradeDepot(void);
-	virtual bool Init();
-	void Update();
-	virtual void Draw();
-	virtual void OnKeyPress(int keyCode);
-	virtual void OnKeyPressed(int keyCode);
-	virtual void OnKeyReleased(int keyCode);
-	virtual void OnMouseMove(int x, int y);
-	virtual void OnMouseClick(int button, int x, int y);
-	virtual void OnMousePressed(int button, int x, int y);
-	virtual void OnMouseReleased(int button, int x, int y);
-	virtual void OnMouseWheelUp(int x, int y);
-	virtual void OnMouseWheelDown(int x, int y);
-	virtual void OnEvent(Event *event);
-	virtual void Close();
+	virtual bool Init() override;
+	virtual void Update() override;
+	virtual void Draw() override;
+	virtual void OnKeyPress(int keyCode) override;
+	virtual void OnKeyPressed(int keyCode) override;
+	virtual void OnKeyReleased(int keyCode) override;
+	virtual void OnMouseMove(int x, int y) override;
+	virtual void OnMouseClick(int button, int x, int y) override;
+	virtual void OnMousePressed(int button, int x, int y) override;
+	virtual void OnMouseReleased(int button, int x, int y) override;
+	virtual void OnMouseWheelUp(int x, int y) override;
+	virtual void OnMouseWheelDown(int x, int y) override;
+	virtual void OnEvent(Event *event) override;
+	virtual void Close() override;
 
 private:
 	ItemType item_to_display;
 
     //bug fix: needs 0-5, was capped at 5
-	BITMAP* item_portrait[6];
+	ALLEGRO_BITMAP* item_portrait[6];
 	std::string portrait_string;
 
    typedef enum
@@ -68,7 +68,7 @@ private:
    void DoBuySell();
    void DoFinalizeTransaction();
 
-	BITMAP						*m_background;
+	ALLEGRO_BITMAP						*m_background;
 
    ScrollBox::ScrollBox    *m_playerList;
    ScrollBox::ScrollBox    *m_playerListNumItems;
@@ -108,14 +108,14 @@ private:
    Items                    m_sellItems;
    Items                    m_buyItems;
 
-   BITMAP                  *m_promptBackground;
+   ALLEGRO_BITMAP                  *m_promptBackground;
    Button                  *m_spinUpBtn;
    Button                  *m_spinDownBtn;
    Button                  *m_allBtn;
    Button                  *m_okBtn;
    Button                  *m_cancelBtn;
 
-   BITMAP			         *m_cursor[2];
+   ALLEGRO_BITMAP			         *m_cursor[2];
 	int				          m_cursorIdx;
 	int				          m_cursorIdxDelay;
 
@@ -125,7 +125,7 @@ private:
    int                      m_sellTotal;
    int                      m_buyTotal;
 
-   //Sample *buttonclick;		//switched to named sound: see debug log.
+    ResourceManager<ALLEGRO_BITMAP> m_resources;
 };
 
 #endif

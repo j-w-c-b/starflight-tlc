@@ -10,6 +10,7 @@
 
 #include "Module.h"
 #include "TileScroller.h"
+#include "ResourceManager.h"
 
 class ModuleAuxiliaryDisplay : public Module
 {
@@ -18,32 +19,24 @@ private:
 
 	int cargoFillPercent;
 
-	BITMAP *ship_icon_image;
+	ALLEGRO_BITMAP *ship_icon_image;
 	Sprite *ship_icon_sprite;
-	BITMAP *img_aux;
-	BITMAP *canvas;
+	ALLEGRO_BITMAP *img_aux;
+	ALLEGRO_BITMAP *canvas;
 	TileScroller* scroller;
-	void medical_display(Officer* officer_data, int x, int y, std::string additional_data);
+	ResourceManager<ALLEGRO_BITMAP> resources;
+
+	void medical_display(Officer* officer_data, int x, int y, const std::string &additional_data);
 	void DrawBackground();
 	void DrawContent();
 
 public:
 	ModuleAuxiliaryDisplay();
-	~ModuleAuxiliaryDisplay();
-	bool Init();
-	void Update();
-	void Draw();
-	void OnKeyPress( int keyCode );
-	void OnKeyPressed(int keyCode);
-	void OnKeyReleased(int keyCode);
-	void OnMouseMove(int x, int y);
-	void OnMouseClick(int button, int x, int y);
-	void OnMousePressed(int button, int x, int y);
-	void OnMouseReleased(int button, int x, int y);
-	void OnMouseWheelUp(int x, int y);
-	void OnMouseWheelDown(int x, int y);
-	void OnEvent(Event *event);
-	void Close();
+	virtual ~ModuleAuxiliaryDisplay();
+	virtual bool Init() override;
+	virtual void Draw() override;
+	virtual void OnEvent(Event *event) override;
+	virtual void Close() override;
 
 	void init_nav();
 	void updateCrew();
@@ -59,7 +52,7 @@ public:
 	void place_flux_tile(bool visible, int tile);
     void PrintSystemStatus(int x,int y,int value);
 
-   	int HEADING_COLOR;
+   	ALLEGRO_COLOR HEADING_COLOR;
 
 
 };

@@ -5,8 +5,7 @@
 	Date: April 2008
 */
 
-#include "env.h"
-#include <allegro.h>
+#include <allegro5/allegro.h>
 #include "Util.h"
 #include "GameState.h"
 #include "Game.h"
@@ -19,23 +18,22 @@
 int ggx = 0;
 int ggy = 0;
 
+ALLEGRO_DEBUG_CHANNEL("ModuleTopGUI")
 
 ModuleTopGUI::ModuleTopGUI() {}
 ModuleTopGUI::~ModuleTopGUI(){}
 
 bool ModuleTopGUI::Init()
 {
-	//canvas = g_game->GetBackBuffer();
-
 	ggx = (int)g_game->getGlobalNumber("GUI_GAUGES_POS_X");
 	ggy = (int)g_game->getGlobalNumber("GUI_GAUGES_POS_Y");
 
 	//load the gauges gui
-	img_gauges = load_bitmap("data/topgui/topgauge.tga", NULL);
-	img_fuel_gauge = load_bitmap("data/topgui/Element_Gauge_Orange.bmp", NULL);
-	img_hull_gauge = load_bitmap("data/topgui/Element_Gauge_Green.bmp", NULL);
-	img_shield_gauge = load_bitmap("data/topgui/Element_Gauge_Blue.bmp", NULL);
-	img_armor_gauge = load_bitmap("data/topgui/Element_Gauge_Red.bmp", NULL);
+	img_gauges = al_load_bitmap("data/topgui/topgauge.tga");
+	img_fuel_gauge = al_load_bitmap("data/topgui/Element_Gauge_Orange.bmp");
+	img_hull_gauge = al_load_bitmap("data/topgui/Element_Gauge_Green.bmp");
+	img_shield_gauge = al_load_bitmap("data/topgui/Element_Gauge_Blue.bmp");
+	img_armor_gauge = al_load_bitmap("data/topgui/Element_Gauge_Red.bmp");
 
 	return true;
 }
@@ -43,17 +41,17 @@ bool ModuleTopGUI::Init()
 void ModuleTopGUI::Close()
 {
 	try {
-		destroy_bitmap(img_gauges);
-		destroy_bitmap(img_fuel_gauge);
-		destroy_bitmap(img_armor_gauge);
-		destroy_bitmap(img_hull_gauge);
-		destroy_bitmap(img_shield_gauge);
+		al_destroy_bitmap(img_gauges);
+		al_destroy_bitmap(img_fuel_gauge);
+		al_destroy_bitmap(img_armor_gauge);
+		al_destroy_bitmap(img_hull_gauge);
+		al_destroy_bitmap(img_shield_gauge);
 	}
 	catch(std::exception e) {
-		TRACE(e.what());
+		ALLEGRO_DEBUG("%s\n", e.what());
 	}
 	catch(...) {
-		TRACE("Unhandled exception in ModuleTopGUI::Close\n");
+		ALLEGRO_DEBUG("Unhandled exception in ModuleTopGUI::Close\n");
 	}
 }
 	
@@ -65,6 +63,7 @@ void ModuleTopGUI::Draw()
 	float hull_percent = g_game->gameState->getShip().getHullIntegrity() / 100;
 	float armor_percent = 0; 
 	float shield_percent = 0;
+        al_set_target_bitmap(g_game->GetBackBuffer());
 	
 	if(g_game->gameState->getShip().getMaxArmorIntegrity() <= 0)
 	{
@@ -84,22 +83,10 @@ void ModuleTopGUI::Draw()
 	/*
 	 * draw top gauge gui
 	 */
-	draw_trans_sprite(g_game->GetBackBuffer(), img_gauges, ggx, ggy);
-	//masked_blit(img_gauges, g_game->GetBackBuffer(), 0, 0, ggx, ggy, img_gauges->w, img_gauges->h);
-	masked_blit(img_hull_gauge, g_game->GetBackBuffer(), 0, 0, ggx+89, ggy+15, img_hull_gauge->w * hull_percent, img_hull_gauge->h);
-	masked_blit(img_armor_gauge, g_game->GetBackBuffer(), 0, 0, ggx+273, ggy+15, img_armor_gauge->w * armor_percent, img_armor_gauge->h);
-	masked_blit(img_shield_gauge, g_game->GetBackBuffer(), 0, 0, ggx+464, ggy+15, img_shield_gauge->w * shield_percent, img_shield_gauge->h);
-	masked_blit(img_fuel_gauge, g_game->GetBackBuffer(), 0, 0, ggx+630, ggy+14, img_fuel_gauge->w * fuel_percent, img_fuel_gauge->h);
+	al_draw_bitmap(img_gauges, ggx, ggy, 0);
+	al_draw_bitmap_region(img_hull_gauge, 0, 0, al_get_bitmap_width(img_hull_gauge) * hull_percent, al_get_bitmap_height(img_hull_gauge), ggx+89, ggy+15, 0);
+	al_draw_bitmap_region(img_armor_gauge, 0, 0, al_get_bitmap_width(img_armor_gauge) * armor_percent, al_get_bitmap_height(img_armor_gauge),  ggx+273, ggy+15, 0);
+	al_draw_bitmap_region(img_shield_gauge, 0, 0, al_get_bitmap_width(img_shield_gauge) * shield_percent, al_get_bitmap_height(img_shield_gauge), ggx+464, ggy+15, 0);
+	al_draw_bitmap_region(img_fuel_gauge, 0, 0, al_get_bitmap_width(img_fuel_gauge) * fuel_percent, al_get_bitmap_height(img_fuel_gauge), ggx+630, ggy+14, 0);
 
 }
-
-void ModuleTopGUI::OnKeyPressed(int keyCode){}
-void ModuleTopGUI::OnKeyPress( int keyCode ){}
-void ModuleTopGUI::OnKeyReleased(int keyCode){}
-void ModuleTopGUI::OnMouseMove(int x, int y){}
-void ModuleTopGUI::OnMouseClick(int button, int x, int y){}
-void ModuleTopGUI::OnMousePressed(int button, int x, int y){}
-void ModuleTopGUI::OnMouseReleased(int button, int x, int y){}
-void ModuleTopGUI::OnMouseWheelUp(int x, int y){}
-void ModuleTopGUI::OnMouseWheelDown(int x, int y){}
-void ModuleTopGUI::OnEvent(Event *event){}

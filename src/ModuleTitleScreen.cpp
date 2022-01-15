@@ -7,9 +7,8 @@
     menu: 311,461
 */
 
-#include "env.h"
 #include <exception>
-#include <allegro.h>
+#include <allegro5/allegro.h>
 #include "Util.h"
 #include "ModuleTitleScreen.h"
 #include "GameState.h"
@@ -20,6 +19,8 @@
 #include "Events.h"
 //#include "TexturedSphere.h"
 using namespace std;
+
+ALLEGRO_DEBUG_CHANNEL("ModuleTitleScreen")
 
 ModuleTitleScreen::ModuleTitleScreen()
 {
@@ -45,18 +46,18 @@ bool ModuleTitleScreen::Init()
 	//to this module in the game:
 	g_game->SetTimePaused(true);
 
-    m_background = (BITMAP*)load_bitmap("data/titlescreen/TITLE_BACKGROUND.BMP",NULL);
+    m_background = al_load_bitmap("data/titlescreen/title_background.bmp");
 	if (!m_background) {
 		g_game->fatalerror("Titlescreen: Error loading background");
 		return 0;
 	}
 
 	//create buttons
-	BITMAP *imgNormal=NULL, *imgMouseOver=NULL;
+	ALLEGRO_BITMAP *imgNormal=NULL, *imgMouseOver=NULL;
 
 	//create title button
-	imgNormal = (BITMAP*)load_bitmap("data/titlescreen/title_normal.tga",NULL);
-    imgMouseOver = (BITMAP*)load_bitmap("data/titlescreen/title_over.tga",NULL);
+	imgNormal = al_load_bitmap("data/titlescreen/title_normal.tga");
+    imgMouseOver = al_load_bitmap("data/titlescreen/title_over.tga");
 	if (!imgNormal || !imgMouseOver) {
 		g_game->message("TitleScreen: error loading button images");
 		return false;
@@ -64,8 +65,8 @@ bool ModuleTitleScreen::Init()
 	btnTitle = new Button(imgNormal,imgMouseOver,NULL,0,100,0,0);
 
 	//create new game button
-    imgNormal = (BITMAP*)load_bitmap("data/titlescreen/title_newgame_normal.tga",NULL);
-    imgMouseOver = (BITMAP*)load_bitmap("data/titlescreen/title_newgame_over.tga",NULL);
+    imgNormal = al_load_bitmap("data/titlescreen/title_newgame_normal.tga");
+    imgMouseOver = al_load_bitmap("data/titlescreen/title_newgame_over.tga");
 	if (!imgNormal || !imgMouseOver) {
 		g_game->message("TitleScreen: error loading button images");
 		return false;
@@ -73,8 +74,8 @@ bool ModuleTitleScreen::Init()
 	btnNewGame = new Button(imgNormal,imgMouseOver,NULL,mainmenu_x,mainmenu_y,0,700);
 
 	//create load button
-	imgNormal = (BITMAP*)load_bitmap("data/titlescreen/title_loadgame_normal.tga",NULL);
-	imgMouseOver = (BITMAP*)load_bitmap("data/titlescreen/title_loadgame_over.tga",NULL);
+	imgNormal = al_load_bitmap("data/titlescreen/title_loadgame_normal.tga");
+	imgMouseOver = al_load_bitmap("data/titlescreen/title_loadgame_over.tga");
 	if (!imgNormal || !imgMouseOver) {
 		g_game->message("TitleScreen: error loading button images");
 		return false;
@@ -82,8 +83,8 @@ bool ModuleTitleScreen::Init()
 	btnLoadGame = new Button(imgNormal, imgMouseOver,NULL,mainmenu_x,mainmenu_y+60,0,701);
 
 	//create settings button
-	imgNormal = (BITMAP*)load_bitmap("data/titlescreen/title_settings_normal.tga",NULL);
-	imgMouseOver = (BITMAP*)load_bitmap("data/titlescreen/title_settings_over.tga",NULL);
+	imgNormal = al_load_bitmap("data/titlescreen/title_settings_normal.tga");
+	imgMouseOver = al_load_bitmap("data/titlescreen/title_settings_over.tga");
 	if (!imgNormal || !imgMouseOver) {
 		g_game->message("TitleScreen: error loading button images");
 		return false;
@@ -91,8 +92,8 @@ bool ModuleTitleScreen::Init()
 	btnSettings = new Button(imgNormal,imgMouseOver,NULL,mainmenu_x,mainmenu_y+120,0,702);
 
 	//create credits button
-	imgNormal = (BITMAP*)load_bitmap("data/titlescreen/title_credits_normal.tga",NULL);
-	imgMouseOver = (BITMAP*)load_bitmap("data/titlescreen/title_credits_over.tga",NULL);
+	imgNormal = al_load_bitmap("data/titlescreen/title_credits_normal.tga");
+	imgMouseOver = al_load_bitmap("data/titlescreen/title_credits_over.tga");
 	if (!imgNormal || !imgMouseOver) {
 		g_game->message("TitleScreen: error loading button images");
 		return false;
@@ -100,8 +101,8 @@ bool ModuleTitleScreen::Init()
 	btnCredits = new Button(imgNormal,imgMouseOver,NULL,mainmenu_x,mainmenu_y+180,0,703);
 
 	//create quit button
-	imgNormal = (BITMAP*)load_bitmap("data/titlescreen/title_quit_normal.tga",NULL);
-	imgMouseOver = (BITMAP*)load_bitmap("data/titlescreen/title_quit_over.tga",NULL);
+	imgNormal = al_load_bitmap("data/titlescreen/title_quit_normal.tga");
+	imgMouseOver = al_load_bitmap("data/titlescreen/title_quit_over.tga");
 	if (!imgNormal || !imgMouseOver) {
 		g_game->message("TitleScreen: error loading button images");
 		return false;
@@ -115,19 +116,18 @@ void ModuleTitleScreen::Update(){}
 
 void ModuleTitleScreen::Draw()
 {
-	string text;
-	stretch_blit( m_background, g_game->GetBackBuffer(), 0, 0, m_background->w, m_background->h, 0, 0, g_game->GetBackBuffer()->w, g_game->GetBackBuffer()->h );
-	btnTitle->Run(g_game->GetBackBuffer(),true);
-	btnNewGame->Run(g_game->GetBackBuffer(),true);
-	btnLoadGame->Run(g_game->GetBackBuffer(),true);
-	btnSettings->Run(g_game->GetBackBuffer(),true);
-	btnCredits->Run(g_game->GetBackBuffer(),true);
-	btnQuit->Run(g_game->GetBackBuffer(),true);
+	al_set_target_bitmap(g_game->GetBackBuffer());
+	al_draw_scaled_bitmap(m_background, 0, 0, al_get_bitmap_width(m_background), al_get_bitmap_height(m_background), 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
+	btnTitle->Run(g_game->GetBackBuffer());
+	btnNewGame->Run(g_game->GetBackBuffer());
+	btnLoadGame->Run(g_game->GetBackBuffer());
+	btnSettings->Run(g_game->GetBackBuffer());
+	btnCredits->Run(g_game->GetBackBuffer());
+	btnQuit->Run(g_game->GetBackBuffer());
 
 	switch(title_mode)
 	{
 		case 690:	//welcome message if needed
-			//g_game->ShowMessageBoxWindow(text, 500, 300, YELLOW);
 			title_mode = 1;
 		break;
 
@@ -166,17 +166,9 @@ void ModuleTitleScreen::Draw()
 	}
 }
 
-void ModuleTitleScreen::OnKeyPress(int keyCode)
-{
-}
-
-void ModuleTitleScreen::OnKeyPressed(int keyCode)
-{
-}
-
 void ModuleTitleScreen::OnKeyReleased(int keyCode)
 {
-	if (keyCode == KEY_ESC)
+	if (keyCode == ALLEGRO_KEY_ESCAPE)
 		title_mode = 704;
 }
 
@@ -188,14 +180,6 @@ void ModuleTitleScreen::OnMouseMove(int x, int y)
 	btnSettings->OnMouseMove(x,y);
 	btnCredits->OnMouseMove(x,y);
 	btnQuit->OnMouseMove(x,y);
-}
-
-void ModuleTitleScreen::OnMouseClick(int button, int x, int y)
-{
-}
-
-void ModuleTitleScreen::OnMousePressed(int button, int x, int y)
-{
 }
 
 void ModuleTitleScreen::OnMouseReleased(int button, int x, int y)
@@ -243,10 +227,10 @@ void ModuleTitleScreen::Close()
 
 	}
 	catch(std::exception e) {
-		TRACE(e.what());
+		ALLEGRO_DEBUG("%s\n", e.what());
 	}
 	catch(...) {
-		TRACE("Unhandled exception in TitleScreen::Close\n");
+		ALLEGRO_DEBUG("Unhandled exception in TitleScreen::Close\n");
 	}
 }
 

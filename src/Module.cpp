@@ -5,8 +5,7 @@
 	Date: ?
 */
 
-#include "env.h"
-#include <allegro.h>
+#include <allegro5/allegro.h>
 
 #include "Module.h"
 #include "Game.h"
@@ -17,7 +16,7 @@ using namespace std;
 int Module::m_totalNumModules = 0;
 int Module::m_numModulesInitialized = 0;
 
-Module::Module() : m_x(0), m_y(0), _functional(true) {}
+Module::Module() : m_x(0), m_y(0) {}
 
 Module::~Module()
 {
@@ -33,44 +32,6 @@ void Module::AddChildModule(Module *m)
 	++m_totalNumModules;
 	m_modules.push_back(m);
 }
-
-//void Module::BlitToParent(BITMAP *parent)
-//void Module::Draw(BITMAP *target)
-//{
-//	if (m_canvas == NULL)
-//		return;
-//
-//	vector<Module*>::iterator i;
-//	for (i = m_modules.begin(); i != m_modules.end(); ++i)
-//	{
-//		if ((*i)->IsFunctional())  //jh
-//			//(*i)->BlitToParent(m_canvas);
-//			(*i)->Draw(target);
-//	}
-//
-//	//draw canvas onto the back buffer
-//	if (IsTransparent())
-//		masked_blit(m_canvas,target,0,0,m_x,m_y,m_canvas->w,m_canvas->h);
-//	else
-//		blit(m_canvas,target,0,0,m_x,m_y,m_canvas->w,m_canvas->h);
-//}
-
-// by default this function creates a canvas the size of the whole screen
-// when overridden by sub-classes, the canvas size can be changed
-//bool Module::InitCanvas(int x, int y, int w, int h)
-//{
-//	m_x = x;
-//	m_y = y;
-//	
-//	if (m_canvas != NULL)
-//		destroy_bitmap(m_canvas);
-//
-//	m_canvas = create_bitmap(w,h);
-//
-//	clear_to_color(m_canvas, makecol(0,0,0));
-//
-//	return (m_canvas != NULL);
-//}
 
 bool Module::Init()
 {

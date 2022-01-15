@@ -1,69 +1,24 @@
 /*
 	STARFLIGHT - THE LOST COLONY
-	ModuleControlPabel.cpp
+	ModuleControlPanel.cpp
 	Author: coder1024
 	Date: April, 07
 */
 
-#include "env.h"
+#include <allegro5/allegro.h>
+#include <allegro5/allegro_primitives.h>
+
 #include "ModuleControlPanel.h"
 #include "AudioSystem.h"
 #include "Events.h"
 #include "ModeMgr.h"
 #include "GameState.h"
 #include "Game.h"
+#include "controlpanel_resources.h"
 
 using namespace std;
 
-#define COMMAND_BUTTON_BG_BMP            0        /* BMP  */
-#define COMMAND_BUTTON_BG_DISABLED_BMP   1        /* BMP  */
-#define COMMAND_BUTTON_BG_MO_BMP         2        /* BMP  */
-#define COMMAND_BUTTON_BG_SELECT_BMP     3        /* BMP  */
-#define COMMANDICON_CAPTAIN_CARGO_BMP    4        /* BMP  */
-#define COMMANDICON_CAPTAIN_DESCEND_BMP  5        /* BMP  */
-#define COMMANDICON_CAPTAIN_DISEMBARK_BMP 6        /* BMP  */
-#define COMMANDICON_CAPTAIN_LAUNCH_BMP   7        /* BMP  */
-#define COMMANDICON_CAPTAIN_LOGPLANET_BMP 8        /* BMP  */
-#define COMMANDICON_COM_DISTRESS_BMP     9        /* BMP  */
-#define COMMANDICON_COM_HAIL_BMP         10       /* BMP  */
-#define COMMANDICON_COM_POSTURE_BMP      11       /* BMP  */
-#define COMMANDICON_COM_QUESTION_BMP     12       /* BMP  */
-#define COMMANDICON_COM_QUESTLOG_BMP     13       /* BMP  */
-#define COMMANDICON_COM_RESPOND_BMP      14       /* BMP  */
-#define COMMANDICON_COM_STATEMENT_BMP    15       /* BMP  */
-#define COMMANDICON_COM_TERMINATE_BMP    16       /* BMP  */
-#define COMMANDICON_ENG_DAMAGE_BMP       17       /* BMP  */
-#define COMMANDICON_ENG_REPAIR_BMP       18       /* BMP  */
-#define COMMANDICON_MED_EXAMINE_BMP      19       /* BMP  */
-#define COMMANDICON_MED_TREAT_BMP        20       /* BMP  */
-#define COMMANDICON_NAV_DOCK_BMP         21       /* BMP  */
-#define COMMANDICON_NAV_HYPERSPACE_BMP   22       /* BMP  */
-#define COMMANDICON_NAV_MANEUVER_BMP     23       /* BMP  */
-#define COMMANDICON_NAV_ORBIT_BMP        24       /* BMP  */
-#define COMMANDICON_NAV_STARMAP_BMP      25       /* BMP  */
-#define COMMANDICON_SCIENCE_ANALYSIS_BMP 26       /* BMP  */
-#define COMMANDICON_SCIENCE_SCAN_BMP     27       /* BMP  */
-#define COMMANDICON_TAC_COMBAT_BMP       28       /* BMP  */
-#define COMMANDICON_TAC_SHIELDS_BMP      29       /* BMP  */
-#define COMMANDICON_TAC_WEAPONS_BMP      30       /* BMP  */
-#define CP_CAPTAIN_MO_BMP                31       /* BMP  */
-#define CP_CAPTAIN_SELECT_BMP            32       /* BMP  */
-#define CP_COMM_MO_BMP                   33       /* BMP  */
-#define CP_COMM_SELECT_BMP               34       /* BMP  */
-#define CP_ENGINEER_MO_BMP               35       /* BMP  */
-#define CP_ENGINEER_SELECT_BMP           36       /* BMP  */
-#define CP_MEDICAL_MO_BMP                37       /* BMP  */
-#define CP_MEDICAL_SELECT_BMP            38       /* BMP  */
-#define CP_NAVIGATION_MO_BMP             39       /* BMP  */
-#define CP_NAVIGATION_SELECT_BMP         40       /* BMP  */
-#define CP_SCIENCE_MO_BMP                41       /* BMP  */
-#define CP_SCIENCE_SELECT_BMP            42       /* BMP  */
-#define CP_TACTICAL_MO_BMP               43       /* BMP  */
-#define CP_TACTICAL_SELECT_BMP           44       /* BMP  */
-//#define GUI_CONTROLPANEL_BMP             45       /* BMP  */
-
-DATAFILE *cpdata = NULL;
-
+ALLEGRO_DEBUG_CHANNEL("ModuleControlPanel")
 
 int CMDBUTTONS_UL_X;
 int CMDBUTTONS_UL_Y;
@@ -71,11 +26,10 @@ int OFFICERICON_UL_X;
 int OFFICERICON_UL_Y;
 
 
-
-#define TRANSPARENTCLR makecol(255,0,255)
+#define TRANSPARENTCLR al_map_rgb(255,0,255)
 #define CMDBUTTON_SPACING 0
 
-ModuleControlPanel::ModuleControlPanel(void)
+ModuleControlPanel::ModuleControlPanel(void) : resources(CONTROLPANEL_IMAGES)
 {
 	controlPanelBackgroundImg = NULL;
 	mouseOverOfficer = NULL;
@@ -90,8 +44,7 @@ ModuleControlPanel::~ModuleControlPanel(void){}
 bool ModuleControlPanel::Init()
 {
 	//load the control panel datafile
-	cpdata = load_datafile("data/controlpanel/controlpanel.dat");
-	if (!cpdata) {
+	if (!resources.load()) {
 		g_game->message("ControlPanel: Error loading datafile");
 		return false;
 	}
@@ -106,19 +59,14 @@ bool ModuleControlPanel::Init()
 	
 
 	//load background image
-	//controlPanelBackgroundImg = load_bitmap(CONTROLPANELBACKGROUNDIMG_FILE,NULL);
-	controlPanelBackgroundImg = (BITMAP *)load_bitmap("data/controlpanel/GUI_CONTROLPANEL.BMP",NULL);
-	if (controlPanelBackgroundImg == NULL) {
-		g_game->message("Error loading controlpanel background");
-		return false;
-	}
+	controlPanelBackgroundImg = resources[GUI_CONTROLPANEL];
 
 	const int officerIconWidth = 40;
 	const int officerIconHeight = 40;
 	int officerIconX = OFFICERICON_UL_X;
 	int officerIconY = OFFICERICON_UL_Y;
 
-	if (!CommandButton::InitCommon())
+	if (!CommandButton::InitCommon(*this))
 		return false;
 
 	if (!OfficerButton::InitCommon())
@@ -131,7 +79,7 @@ bool ModuleControlPanel::Init()
 	* CAPTAIN
 	*/
 	OfficerButton *captainBtn;
-	captainBtn = new OfficerButton(*this,OFFICER_CAPTAIN,CP_CAPTAIN_MO_BMP,CP_CAPTAIN_SELECT_BMP,officerIconX,officerIconY);
+	captainBtn = new OfficerButton(*this,OFFICER_CAPTAIN,CP_CAPTAIN_MO,CP_CAPTAIN_SELECT,officerIconX,officerIconY);
 
 		selectedOfficer = captainBtn;
 		officerButtons.push_back(captainBtn);
@@ -140,32 +88,26 @@ bool ModuleControlPanel::Init()
 		int ciy = CMDBUTTONS_UL_Y;
 
 		//LAUNCH BUTTON
-		cbtn = new CommandButton(*this, COMMANDICON_CAPTAIN_LAUNCH_BMP, "Break orbit", cix,ciy);
+		cbtn = new CommandButton(*this, COMMANDICON_CAPTAIN_LAUNCH, "Break orbit", cix,ciy);
 		cbtn->setEventID(EVENT_CAPTAIN_LAUNCH);
 		captainBtn->commandButtons.push_back(cbtn);
 
 		//DESCEND BUTTON
 		cix += CommandButton::GetCommonWidth() + CMDBUTTON_SPACING;
-		cbtn = new CommandButton(*this, COMMANDICON_CAPTAIN_DESCEND_BMP, "Descend to surface", cix,ciy);
+		cbtn = new CommandButton(*this, COMMANDICON_CAPTAIN_DESCEND, "Descend to surface", cix,ciy);
 		cbtn->setEventID(EVENT_CAPTAIN_DESCEND);
 		captainBtn->commandButtons.push_back(cbtn);
 
 		//CARGO HOLD BUTTON
 		cix += CommandButton::GetCommonWidth() + CMDBUTTON_SPACING;
-		cbtn = new CommandButton(*this, COMMANDICON_CAPTAIN_CARGO_BMP, "Cargo hold", cix,ciy);
+		cbtn = new CommandButton(*this, COMMANDICON_CAPTAIN_CARGO, "Cargo hold", cix,ciy);
 		cbtn->setEventID(EVENT_CAPTAIN_CARGO);
 		captainBtn->commandButtons.push_back(cbtn);
-
-		//LOG PLANET BUTTON
-		//cix += CommandButton::GetCommonWidth() + CMDBUTTON_SPACING;
-		//cbtn = new CommandButton(*this, COMMANDICON_CAPTAIN_LOGPLANET_BMP, "Log planet", cix,ciy);
-		//cbtn->setEventID(EVENT_CAPTAIN_LOG);
-		//captainBtn->commandButtons.push_back(cbtn);
 
 		//QUESTLOG BUTTON
 		cix = CMDBUTTONS_UL_X;
 		ciy += CommandButton::GetCommonHeight() + CMDBUTTON_SPACING;
-		cbtn = new CommandButton(*this, COMMANDICON_COM_QUESTLOG_BMP, "Quest log", cix,ciy);
+		cbtn = new CommandButton(*this, COMMANDICON_COM_QUESTLOG, "Quest log", cix,ciy);
 		cbtn->setEventID(EVENT_CAPTAIN_QUESTLOG);
 		captainBtn->commandButtons.push_back(cbtn);
 
@@ -173,20 +115,20 @@ bool ModuleControlPanel::Init()
 	* SCIENCE OFFICER
 	*/
 	officerIconX += officerIconWidth;
-	OfficerButton *scienceBtn = new OfficerButton(*this, OFFICER_SCIENCE,CP_SCIENCE_MO_BMP,CP_SCIENCE_SELECT_BMP,officerIconX,officerIconY);
+	OfficerButton *scienceBtn = new OfficerButton(*this, OFFICER_SCIENCE,CP_SCIENCE_MO,CP_SCIENCE_SELECT,officerIconX,officerIconY);
 	officerButtons.push_back(scienceBtn);
 
 		cix = CMDBUTTONS_UL_X;
 		ciy = CMDBUTTONS_UL_Y;
 
 		//SCAN BUTTON
-		cbtn = new CommandButton(*this, COMMANDICON_SCIENCE_SCAN_BMP, "Sensor scan", cix,ciy);
+		cbtn = new CommandButton(*this, COMMANDICON_SCIENCE_SCAN, "Sensor scan", cix,ciy);
 		cbtn->setEventID(EVENT_SCIENCE_SCAN);
 		scienceBtn->commandButtons.push_back(cbtn);
 
 		//ANALYSIS BUTTON
 		cix += CommandButton::GetCommonWidth() + CMDBUTTON_SPACING;
-		cbtn = new CommandButton(*this, COMMANDICON_SCIENCE_ANALYSIS_BMP, "Sensor analysis", cix,ciy);
+		cbtn = new CommandButton(*this, COMMANDICON_SCIENCE_ANALYSIS, "Sensor analysis", cix,ciy);
 		cbtn->setEventID(EVENT_SCIENCE_ANALYSIS);
 		scienceBtn->commandButtons.push_back(cbtn);
 
@@ -194,33 +136,33 @@ bool ModuleControlPanel::Init()
 	* NAVIGATOR
 	*/
 	officerIconX += officerIconWidth;
-	OfficerButton *navBtn = new OfficerButton(*this, OFFICER_NAVIGATION,CP_NAVIGATION_MO_BMP,CP_NAVIGATION_SELECT_BMP,officerIconX,officerIconY);
+	OfficerButton *navBtn = new OfficerButton(*this, OFFICER_NAVIGATION,CP_NAVIGATION_MO,CP_NAVIGATION_SELECT,officerIconX,officerIconY);
 	officerButtons.push_back(navBtn);
 
 		cix = CMDBUTTONS_UL_X;
 		ciy = CMDBUTTONS_UL_Y;
 
 		//ORBIT BUTTON
-		cbtn = new CommandButton(*this, COMMANDICON_NAV_ORBIT_BMP, "Orbit planet", cix,ciy);
+		cbtn = new CommandButton(*this, COMMANDICON_NAV_ORBIT, "Orbit planet", cix,ciy);
 		cbtn->setEventID(EVENT_NAVIGATOR_ORBIT);
 		navBtn->commandButtons.push_back(cbtn);
 
 		//STARPORT DOCK BUTTON
 		cix += CommandButton::GetCommonWidth() + CMDBUTTON_SPACING;
-		cbtn = new CommandButton(*this, COMMANDICON_NAV_DOCK_BMP, "Dock with Starport", cix,ciy);
+		cbtn = new CommandButton(*this, COMMANDICON_NAV_DOCK, "Dock with Starport", cix,ciy);
 		cbtn->setEventID(EVENT_NAVIGATOR_DOCK);
 		navBtn->commandButtons.push_back(cbtn);
 
 		//HYPERSPACE ENGINE BUTTON
 		cix += CommandButton::GetCommonWidth() + CMDBUTTON_SPACING;
-		cbtn = new CommandButton(*this, COMMANDICON_NAV_HYPERSPACE_BMP, "Hyperspace engine", cix,ciy);
+		cbtn = new CommandButton(*this, COMMANDICON_NAV_HYPERSPACE, "Hyperspace engine", cix,ciy);
 		cbtn->setEventID(EVENT_NAVIGATOR_HYPERSPACE);
 		navBtn->commandButtons.push_back(cbtn);
 
 		//STARMAP BUTTON
 		cix = CMDBUTTONS_UL_X;
 		ciy += CommandButton::GetCommonHeight() + CMDBUTTON_SPACING;
-		cbtn = new CommandButton(*this, COMMANDICON_NAV_STARMAP_BMP, "Starmap", cix,ciy);
+		cbtn = new CommandButton(*this, COMMANDICON_NAV_STARMAP, "Starmap", cix,ciy);
 		cbtn->setEventID(EVENT_NAVIGATOR_STARMAP);
 		navBtn->commandButtons.push_back(cbtn);
 
@@ -229,20 +171,20 @@ bool ModuleControlPanel::Init()
 	* TACTICAL
 	*/
 	officerIconX += officerIconWidth;
-	OfficerButton *tacBtn = new OfficerButton(*this,OFFICER_TACTICAL,CP_TACTICAL_MO_BMP,CP_TACTICAL_SELECT_BMP,officerIconX,officerIconY);
+	OfficerButton *tacBtn = new OfficerButton(*this,OFFICER_TACTICAL,CP_TACTICAL_MO,CP_TACTICAL_SELECT,officerIconX,officerIconY);
 	officerButtons.push_back(tacBtn);
 
 		cix = CMDBUTTONS_UL_X;
 		ciy = CMDBUTTONS_UL_Y;
 
 		//SHIELDS BUTTON
-		cbtn = new CommandButton(*this, COMMANDICON_TAC_SHIELDS_BMP, "Raise/Lower Shields", cix,ciy);
+		cbtn = new CommandButton(*this, COMMANDICON_TAC_SHIELDS, "Raise/Lower Shields", cix,ciy);
 		cbtn->setEventID(EVENT_TACTICAL_SHIELDS);
 		tacBtn->commandButtons.push_back(cbtn);
 
 		//WEAPONS BUTTON
 		cix += CommandButton::GetCommonWidth() + CMDBUTTON_SPACING;
-		cbtn = new CommandButton(*this, COMMANDICON_TAC_WEAPONS_BMP, "Arm/Disarm Weapons", cix,ciy);
+		cbtn = new CommandButton(*this, COMMANDICON_TAC_WEAPONS, "Arm/Disarm Weapons", cix,ciy);
 		cbtn->setEventID(EVENT_TACTICAL_WEAPONS);
 		tacBtn->commandButtons.push_back(cbtn);
 
@@ -251,21 +193,20 @@ bool ModuleControlPanel::Init()
 	*/
 	officerIconX = OFFICERICON_UL_X;
 	officerIconY = OFFICERICON_UL_Y + officerIconHeight;
-	OfficerButton *engBtn = new OfficerButton(*this,OFFICER_ENGINEER,CP_ENGINEER_MO_BMP,CP_ENGINEER_SELECT_BMP,officerIconX,officerIconY);
+	OfficerButton *engBtn = new OfficerButton(*this,OFFICER_ENGINEER,CP_ENGINEER_MO,CP_ENGINEER_SELECT,officerIconX,officerIconY);
 	officerButtons.push_back(engBtn);
 
 		cix = CMDBUTTONS_UL_X;
 		ciy = CMDBUTTONS_UL_Y;
 
 		//REPAIR BUTTON
-		//cix += CommandButton::GetCommonWidth() + CMDBUTTON_SPACING;
-		cbtn = new CommandButton(*this, COMMANDICON_ENG_REPAIR_BMP, "Repair systems", cix,ciy);
+		cbtn = new CommandButton(*this, COMMANDICON_ENG_REPAIR, "Repair systems", cix,ciy);
 		cbtn->setEventID(EVENT_ENGINEER_REPAIR);
 		engBtn->commandButtons.push_back(cbtn);
 
 		//INJECT FUEL BUTTON
 		cix += CommandButton::GetCommonWidth() + CMDBUTTON_SPACING;
-		cbtn = new CommandButton(*this, COMMANDICON_COM_RESPOND_BMP, "Inject fuel", cix, ciy);
+		cbtn = new CommandButton(*this, COMMANDICON_COM_RESPOND, "Inject fuel", cix, ciy);
 		cbtn->setEventID(EVENT_ENGINEER_INJECT);
 		engBtn->commandButtons.push_back(cbtn);
 
@@ -273,45 +214,39 @@ bool ModuleControlPanel::Init()
 	* COMMUNICATIONS
 	*/
 	officerIconX += officerIconWidth;
-	OfficerButton *comBtn = new OfficerButton(*this,OFFICER_COMMUNICATION,CP_COMM_MO_BMP,CP_COMM_SELECT_BMP,officerIconX,officerIconY);
+	OfficerButton *comBtn = new OfficerButton(*this,OFFICER_COMMUNICATION,CP_COMM_MO,CP_COMM_SELECT,officerIconX,officerIconY);
 	officerButtons.push_back(comBtn);
 
 		cix = CMDBUTTONS_UL_X;
 		ciy = CMDBUTTONS_UL_Y;
 
 		//HAIL BUTTON
-		cbtn = new CommandButton(*this, COMMANDICON_COM_HAIL_BMP, "Hail or respond", cix,ciy);
+		cbtn = new CommandButton(*this, COMMANDICON_COM_HAIL, "Hail or respond", cix,ciy);
 		cbtn->setEventID(EVENT_COMM_HAIL);
 		comBtn->commandButtons.push_back(cbtn);
 
 		//QUESTION BUTTON
 		cix += CommandButton::GetCommonWidth() + CMDBUTTON_SPACING;
-		cbtn = new CommandButton(*this, COMMANDICON_COM_QUESTION_BMP, "Ask a question", cix,ciy);
+		cbtn = new CommandButton(*this, COMMANDICON_COM_QUESTION, "Ask a question", cix,ciy);
 		cbtn->setEventID(EVENT_COMM_QUESTION);
 		comBtn->commandButtons.push_back(cbtn);
 
-		//STATEMENT BUTTON
-		//cix += CommandButton::GetCommonWidth() + CMDBUTTON_SPACING;
-		//cbtn = new CommandButton(*this, COMMANDICON_COM_STATEMENT_BMP, "Make a statement", cix,ciy);
-		//cbtn->setEventID(EVENT_COMM_STATEMENT);
-		//comBtn->commandButtons.push_back(cbtn);
-
 		//POSTURE BUTTON
 		cix += CommandButton::GetCommonWidth() + CMDBUTTON_SPACING;
-		cbtn = new CommandButton(*this, COMMANDICON_COM_POSTURE_BMP, "Change posture", cix,ciy);
+		cbtn = new CommandButton(*this, COMMANDICON_COM_POSTURE, "Change posture", cix,ciy);
 		cbtn->setEventID(EVENT_COMM_POSTURE);
 		comBtn->commandButtons.push_back(cbtn);
 
 		//TERMINATE BUTTON
 		cix = CMDBUTTONS_UL_X;
 		ciy += CommandButton::GetCommonHeight() + CMDBUTTON_SPACING;
-		cbtn = new CommandButton(*this, COMMANDICON_COM_TERMINATE_BMP, "End communication", cix,ciy);
+		cbtn = new CommandButton(*this, COMMANDICON_COM_TERMINATE, "End communication", cix,ciy);
 		cbtn->setEventID(EVENT_COMM_TERMINATE);
 		comBtn->commandButtons.push_back(cbtn);
 
 		//DISTRESS BUTTON
 		cix += CommandButton::GetCommonWidth() + CMDBUTTON_SPACING;
-		cbtn = new CommandButton(*this, COMMANDICON_COM_DISTRESS_BMP, "Send distress signal", cix,ciy);
+		cbtn = new CommandButton(*this, COMMANDICON_COM_DISTRESS, "Send distress signal", cix,ciy);
 		cbtn->setEventID(EVENT_COMM_DISTRESS);
 		comBtn->commandButtons.push_back(cbtn);
 
@@ -319,20 +254,20 @@ bool ModuleControlPanel::Init()
 	* MEDICAL
 	*/
 	officerIconX += officerIconWidth;
-	OfficerButton *medBtn = new OfficerButton(*this,OFFICER_MEDICAL,CP_MEDICAL_MO_BMP,CP_MEDICAL_SELECT_BMP,officerIconX,officerIconY);
+	OfficerButton *medBtn = new OfficerButton(*this,OFFICER_MEDICAL,CP_MEDICAL_MO,CP_MEDICAL_SELECT,officerIconX,officerIconY);
 	officerButtons.push_back(medBtn);
 
 		cix = CMDBUTTONS_UL_X;
 		ciy = CMDBUTTONS_UL_Y;
 
 		//EXAMINE BUTTON
-		cbtn = new CommandButton(*this, COMMANDICON_MED_EXAMINE_BMP, "Examine crew", cix,ciy);
+		cbtn = new CommandButton(*this, COMMANDICON_MED_EXAMINE, "Examine crew", cix,ciy);
 		cbtn->setEventID(EVENT_DOCTOR_EXAMINE);
 		medBtn->commandButtons.push_back(cbtn);
 
 		//TREAT BUTTON
 		cix += CommandButton::GetCommonWidth() + CMDBUTTON_SPACING;
-		cbtn = new CommandButton(*this, COMMANDICON_MED_TREAT_BMP, "Treat crew", cix,ciy);
+		cbtn = new CommandButton(*this, COMMANDICON_MED_TREAT, "Treat crew", cix,ciy);
 		cbtn->setEventID(EVENT_DOCTOR_TREAT);
 		medBtn->commandButtons.push_back(cbtn);
 
@@ -366,20 +301,6 @@ bool ModuleControlPanel::Init()
 	return true;
 }
 
-
-void ModuleControlPanel::SetButton(int ButtonID, bool enabled)
-{
-	for (vector<CommandButton*>::iterator i = selectedOfficer->commandButtons.begin(); i != selectedOfficer->commandButtons.end(); ++i)
-	{
-		CommandButton* button = *i;
-		if (button->getEventID() == ButtonID) 
-		{
-			button->SetEnabled(enabled);
-		}
-	}
-}
-
-
 void ModuleControlPanel::Update()
 {
 	Module::Update();
@@ -403,15 +324,15 @@ void ModuleControlPanel::Draw()
 	//set CP buttons when mode change takes place
 	if (g_game->gameState->player->controlPanelMode != lastMode) {
 		lastMode = g_game->gameState->player->controlPanelMode;
-		//this->ToggleButtons();
 	}	
 
 	// render CP background with transparency
 	static int gcpx = (int)g_game->getGlobalNumber("GUI_CONTROLPANEL_POS_X");
 	static int gcpy = (int)g_game->getGlobalNumber("GUI_CONTROLPANEL_POS_Y");
+	al_set_target_bitmap(g_game->GetBackBuffer());
+
 	if (controlPanelBackgroundImg)
-		masked_blit(controlPanelBackgroundImg, g_game->GetBackBuffer(), 0,0,
-			gcpx, gcpy, controlPanelBackgroundImg->w, controlPanelBackgroundImg->h);
+		al_draw_bitmap(controlPanelBackgroundImg, gcpx, gcpy, 0);
 
 	// render command buttons for the selected officer
 	if (selectedOfficer != NULL)
@@ -459,20 +380,14 @@ void ModuleControlPanel::Draw()
 		else
 		{
 		if (officerButton->imgMouseOver)
-			blit(officerButton->imgMouseOver,g_game->GetBackBuffer(),0,0,officerButton->posX, officerButton->posY, officerButton->imgMouseOver->w, officerButton->imgMouseOver->h);
+			al_draw_bitmap(officerButton->imgMouseOver, officerButton->posX, officerButton->posY, 0);
 		}
 	}
 }
 
 void ModuleControlPanel::Close()
 {
-	//Module::Close();
-
 	try {
-
-        destroy_bitmap(controlPanelBackgroundImg);
-
-
 		for (vector<OfficerButton*>::iterator i = officerButtons.begin(); i != officerButtons.end(); ++i)
 		{
 			if (*i != NULL)
@@ -500,26 +415,23 @@ void ModuleControlPanel::Close()
 		
 		
 		//unload the data file (thus freeing all resources at once)
-		unload_datafile(cpdata);
-		cpdata = NULL;	
+		resources.unload();
 	}
 	catch (std::exception e) {
-		TRACE(e.what());
+		ALLEGRO_DEBUG("%s\n", e.what());
 	}
 	catch(...) {
-		TRACE("Unhandled exception in ControlPanel::Close\n");
+		ALLEGRO_DEBUG("Unhandled exception in ControlPanel::Close\n");
 	}
 }
 
 #pragma region INPUT
-void ModuleControlPanel::OnKeyPress(int keyCode){}
-void ModuleControlPanel::OnKeyPressed(int keyCode){}
 
 void ModuleControlPanel::OnKeyReleased(int keyCode)
 {
 	Module::OnKeyReleased(keyCode);
 	switch (keyCode) {
-		case KEY_F1: //select the captain
+		case ALLEGRO_KEY_F1: //select the captain
 			g_game->gameState->setCurrentSelectedOfficer(OFFICER_CAPTAIN);
 			for (vector<OfficerButton*>::iterator i = officerButtons.begin(); i != officerButtons.end(); ++i){
 				OfficerButton *officerButton = *i;
@@ -530,7 +442,7 @@ void ModuleControlPanel::OnKeyReleased(int keyCode)
 				}	
 			}
 			break;
-		case KEY_F2: //select the science officer
+		case ALLEGRO_KEY_F2: //select the science officer
 			g_game->gameState->setCurrentSelectedOfficer(OFFICER_SCIENCE);
 			for (vector<OfficerButton*>::iterator i = officerButtons.begin(); i != officerButtons.end(); ++i){
 				OfficerButton *officerButton = *i;
@@ -541,7 +453,7 @@ void ModuleControlPanel::OnKeyReleased(int keyCode)
 				}	
 			}
 			break;
-		case KEY_F3: //select the navigator
+		case ALLEGRO_KEY_F3: //select the navigator
 			g_game->gameState->setCurrentSelectedOfficer(OFFICER_NAVIGATION);
 			for (vector<OfficerButton*>::iterator i = officerButtons.begin(); i != officerButtons.end(); ++i){
 				OfficerButton *officerButton = *i;
@@ -552,7 +464,7 @@ void ModuleControlPanel::OnKeyReleased(int keyCode)
 				}	
 			}
 			break;
-		case KEY_F4: //select the tactician
+		case ALLEGRO_KEY_F4: //select the tactician
 			g_game->gameState->setCurrentSelectedOfficer(OFFICER_TACTICAL);
 			for (vector<OfficerButton*>::iterator i = officerButtons.begin(); i != officerButtons.end(); ++i){
 				OfficerButton *officerButton = *i;
@@ -563,7 +475,7 @@ void ModuleControlPanel::OnKeyReleased(int keyCode)
 				}	
 			}
 			break;
-		case KEY_F5: //select the engineer
+		case ALLEGRO_KEY_F5: //select the engineer
 			g_game->gameState->setCurrentSelectedOfficer(OFFICER_ENGINEER);
 			for (vector<OfficerButton*>::iterator i = officerButtons.begin(); i != officerButtons.end(); ++i){
 				OfficerButton *officerButton = *i;
@@ -574,7 +486,7 @@ void ModuleControlPanel::OnKeyReleased(int keyCode)
 				}	
 			}
 			break;
-		case KEY_F6: //select the comms officer
+		case ALLEGRO_KEY_F6: //select the comms officer
 			g_game->gameState->setCurrentSelectedOfficer(OFFICER_COMMUNICATION);
 			for (vector<OfficerButton*>::iterator i = officerButtons.begin(); i != officerButtons.end(); ++i){
 				OfficerButton *officerButton = *i;
@@ -585,7 +497,7 @@ void ModuleControlPanel::OnKeyReleased(int keyCode)
 				}	
 			}
 			break;
-		case KEY_F7: //select the doctor
+		case ALLEGRO_KEY_F7: //select the doctor
 			g_game->gameState->setCurrentSelectedOfficer(OFFICER_MEDICAL);
 			for (vector<OfficerButton*>::iterator i = officerButtons.begin(); i != officerButtons.end(); ++i){
 				OfficerButton *officerButton = *i;
@@ -597,7 +509,7 @@ void ModuleControlPanel::OnKeyReleased(int keyCode)
 			}
 			break;
 
-		case KEY_M: // "map" button
+		case ALLEGRO_KEY_M: // "map" button
 			g_game->gameState->setCurrentSelectedOfficer(OFFICER_NAVIGATION);
 			for (vector<OfficerButton*>::iterator i = officerButtons.begin(); i != officerButtons.end(); ++i){
 				OfficerButton *officerButton = *i;
@@ -668,9 +580,6 @@ void ModuleControlPanel::OnMousePressed(int button, int x, int y)
 			//change the officer
 			selectedOfficer = officerButton;
 
-			//enable command buttons
-			//this->ToggleButtons();
-
 			//play sound
 			g_game->audioSystem->Play(sndOfficerSelected);
 
@@ -721,23 +630,19 @@ void ModuleControlPanel::OnMouseWheelDown(int x, int y)
 
 #pragma endregion
 
-
-void ModuleControlPanel::OnEvent(Event * event){}
-
-
 #pragma region COMMANDBUTTON
 //******************************************************************************
 // CommandButton
 //******************************************************************************
 
-#define CMDBUTTON_LABEL_CLR			makecol(0,0,0)
+#define CMDBUTTON_LABEL_CLR			al_map_rgb(0,0,0)
 
-BITMAP* ModuleControlPanel::CommandButton::imgBackground = NULL;
-BITMAP* ModuleControlPanel::CommandButton::imgBackgroundDisabled = NULL;
-BITMAP* ModuleControlPanel::CommandButton::imgBackgroundMouseOver = NULL;
-BITMAP* ModuleControlPanel::CommandButton::imgBackgroundSelected = NULL;
+ALLEGRO_BITMAP* ModuleControlPanel::CommandButton::imgBackground = NULL;
+ALLEGRO_BITMAP* ModuleControlPanel::CommandButton::imgBackgroundDisabled = NULL;
+ALLEGRO_BITMAP* ModuleControlPanel::CommandButton::imgBackgroundMouseOver = NULL;
+ALLEGRO_BITMAP* ModuleControlPanel::CommandButton::imgBackgroundSelected = NULL;
 
-ModuleControlPanel::CommandButton::CommandButton(ModuleControlPanel& outer, int datFileCmdIcon, std::string cmdName, int posX, int posY)
+ModuleControlPanel::CommandButton::CommandButton(ModuleControlPanel& outer, const std::string &datFileCmdIcon, const std::string &cmdName, int posX, int posY)
 : outer(outer)
 {
 	this->datFileCmdIcon = datFileCmdIcon;
@@ -752,57 +657,29 @@ ModuleControlPanel::CommandButton::~CommandButton()
 {
 }
 
-bool ModuleControlPanel::CommandButton::InitCommon()
+bool ModuleControlPanel::CommandButton::InitCommon(ModuleControlPanel &outer)
 {
-	//imgBackground = load_bitmap(CMDBUTTON_BGFILE,NULL);
-	imgBackground = (BITMAP*)cpdata[COMMAND_BUTTON_BG_BMP].dat;
-	if (imgBackground == NULL) {
-		g_game->message("Error in control panel");
-		return false;
-	}
-
-	//imgBackgroundDisabled = load_bitmap(CMDBUTTON_BGFILE_DISABLED,NULL);
-	imgBackgroundDisabled = (BITMAP*)cpdata[COMMAND_BUTTON_BG_DISABLED_BMP].dat;
-	if (imgBackgroundDisabled == NULL) {
-		g_game->message("Error in control panel");
-		return false;
-	}
-
-	//imgBackgroundMouseOver = load_bitmap(CMDBUTTON_BGFILE_MOUSEOVER,NULL);
-	imgBackgroundMouseOver = (BITMAP*)cpdata[COMMAND_BUTTON_BG_MO_BMP].dat;
-	if (imgBackgroundMouseOver == NULL) {
-		g_game->message("Error in control panel");
-		return false;
-	}
-
-	//imgBackgroundSelected = load_bitmap(CMDBUTTON_BGFILE_SELECT,NULL);
-	imgBackgroundSelected = (BITMAP*)cpdata[COMMAND_BUTTON_BG_SELECT_BMP].dat;
-	if (imgBackgroundSelected == NULL) {
-		g_game->message("Error in control panel");
-		return false;
-	}
+	imgBackground = outer.resources[COMMAND_BUTTON_BG];
+	imgBackgroundDisabled = outer.resources[COMMAND_BUTTON_BG_DISABLED];
+	imgBackgroundMouseOver = outer.resources[COMMAND_BUTTON_BG_MO];
+	imgBackgroundSelected = outer.resources[COMMAND_BUTTON_BG_SELECT];
 
 	return true;
 }
 
 int ModuleControlPanel::CommandButton::GetCommonWidth()
 {
-	return imgBackground->w;
+	return al_get_bitmap_width(imgBackground);
 }
 
 int ModuleControlPanel::CommandButton::GetCommonHeight()
 {
-	return imgBackground->h;
+	return al_get_bitmap_height(imgBackground);
 }
 
 bool ModuleControlPanel::CommandButton::InitButton()
 {
-	//imgCmdIcon = load_bitmap(imgFileCmdIcon.c_str(),NULL);
-	imgCmdIcon = (BITMAP*) cpdata[datFileCmdIcon].dat;
-	if (imgCmdIcon == NULL) {
-		g_game->message("Error in control panel");
-		return false;
-	}
+	imgCmdIcon = outer.resources[datFileCmdIcon];
 
 	return true;
 }
@@ -812,10 +689,6 @@ void ModuleControlPanel::CommandButton::DestroyButton()
 
 	if (imgCmdIcon != NULL)
 	{
-
-		//now handled by the datafile
-		//destroy_bitmap(imgCmdIcon);
-
 		imgCmdIcon = NULL;
 	}
 }
@@ -826,41 +699,41 @@ void ModuleControlPanel::CommandButton::DestroyCommon()
 	
 	/*if (imgBackground != NULL)
 	{
-		destroy_bitmap(imgBackground);
+		al_destroy_bitmap(imgBackground);
 		imgBackground = NULL;
 	}
 
 	if (imgBackgroundDisabled != NULL)
 	{
-		destroy_bitmap(imgBackgroundDisabled);
+		al_destroy_bitmap(imgBackgroundDisabled);
 		imgBackgroundDisabled = NULL;
 	}
 
 	if (imgBackgroundMouseOver != NULL)
 	{
-		destroy_bitmap(imgBackgroundMouseOver);
+		al_destroy_bitmap(imgBackgroundMouseOver);
 		imgBackgroundMouseOver = NULL;
 	}
 
 	if (imgBackgroundSelected != NULL)
 	{
-		destroy_bitmap(imgBackgroundSelected);
+		al_destroy_bitmap(imgBackgroundSelected);
 		imgBackgroundSelected = NULL;
 	}*/
 
 }
 
-void ModuleControlPanel::CommandButton::RenderPlain(BITMAP* canvas)
+void ModuleControlPanel::CommandButton::RenderPlain(ALLEGRO_BITMAP* canvas)
 {
 	Render(canvas,imgBackground);
 }
 
-void ModuleControlPanel::CommandButton::RenderDisabled(BITMAP* canvas)
+void ModuleControlPanel::CommandButton::RenderDisabled(ALLEGRO_BITMAP* canvas)
 {
 	Render(canvas,imgBackgroundDisabled);
 }
 
-void ModuleControlPanel::CommandButton::RenderMouseOver(BITMAP* canvas)
+void ModuleControlPanel::CommandButton::RenderMouseOver(ALLEGRO_BITMAP* canvas)
 {
 	Render(canvas,imgBackgroundMouseOver);
 
@@ -870,15 +743,15 @@ void ModuleControlPanel::CommandButton::RenderMouseOver(BITMAP* canvas)
 	
 }
 
-void ModuleControlPanel::CommandButton::RenderSelected(BITMAP* canvas)
+void ModuleControlPanel::CommandButton::RenderSelected(ALLEGRO_BITMAP* canvas)
 {
 	Render(canvas,imgBackgroundSelected, true);
 }
 
 bool ModuleControlPanel::CommandButton::IsInButton(int x, int y)
 {
-	if ((x >= posX) && (x < posX+imgBackground->w) &&
-		(y >= posY) && (y < posY+imgBackground->h))
+	if ((x >= posX) && (x < posX+al_get_bitmap_width(imgBackground)) &&
+		(y >= posY) && (y < posY+al_get_bitmap_height(imgBackground)))
 	{
 		return true;
 	}
@@ -896,15 +769,16 @@ bool ModuleControlPanel::CommandButton::GetEnabled()
 	return enabled;
 }
 
-void ModuleControlPanel::CommandButton::Render(BITMAP *canvas, BITMAP *imgBackground, bool down)
+void ModuleControlPanel::CommandButton::Render(ALLEGRO_BITMAP *canvas, ALLEGRO_BITMAP *imgBackground, bool down)
 {
+    al_set_target_bitmap(canvas);
 	// draw button background and command icon image
-	blit(imgBackground,canvas,0,0,posX,posY,imgBackground->w,imgBackground->h);
+	al_draw_bitmap(imgBackground,posX,posY,0);
 	
 	if (down)
-		masked_blit(imgCmdIcon,canvas,0,0,posX,posY,imgCmdIcon->w,imgCmdIcon->h);
+		al_draw_bitmap(imgCmdIcon, posX, posY, 0);
 	else
-		masked_blit(imgCmdIcon,canvas,0,2,posX,posY,imgCmdIcon->w,imgCmdIcon->h);
+		al_draw_bitmap_region(imgCmdIcon, 0, 2, al_get_bitmap_width(imgCmdIcon), al_get_bitmap_height(imgCmdIcon), posX, posY, 0);
 
 }
 
@@ -917,22 +791,20 @@ void ModuleControlPanel::CommandButton::Render(BITMAP *canvas, BITMAP *imgBackgr
 // OfficerButton
 //******************************************************************************
 
-//BITMAP *ModuleControlPanel::OfficerButton::imgTipWindowBackground = NULL;
-
 #define OFFICER_MOUSEOVERTIP_SPACEFROMBTN_X		3
 #define OFFICER_MOUSEOVERTIP_SPACEFROMBTN_Y		0
 #define OFFICER_MOUSEOVERTIP_BORDER_THICKNESS	2
-#define OFFICER_MOUSEOVERTIP_BORDER_CLR			makecol(0,0,0)
-#define OFFICER_MOUSEOVERTIP_BACKGROUND_CLR		makecol(200,200,200)
-#define OFFICER_MOUSEOVERTIP_TEXT_CLR			makecol(255,255,0)
+#define OFFICER_MOUSEOVERTIP_BORDER_CLR			al_map_rgb(0,0,0)
+#define OFFICER_MOUSEOVERTIP_BACKGROUND_CLR		al_map_rgb(200,200,200)
+#define OFFICER_MOUSEOVERTIP_TEXT_CLR			al_map_rgb(255,255,0)
 #define OFFICER_MOUSEOVERTIP_INNER_SPACING		5
 #define OFFICER_MOUSEOVERTIP_BAR_HEIGHT			10
-#define OFFICER_MOUSEOVERTIP_HEALTH_CLR			makecol(255,0,0)
-#define OFFICER_MOUSEOVERTIP_LABEL_CLR			makecol(255,255,255)
+#define OFFICER_MOUSEOVERTIP_HEALTH_CLR			al_map_rgb(255,0,0)
+#define OFFICER_MOUSEOVERTIP_LABEL_CLR			al_map_rgb(255,255,255)
 #define OFFICER_MOUSEOVERTIP_TEXTOFFSET_X		6
 #define OFFICER_MOUSEOVERTIP_TEXTOFFSET_Y		6
 
-ModuleControlPanel::OfficerButton::OfficerButton(ModuleControlPanel& outer, OfficerType officerType, int datFileMouseOver, int datFileSelected, int posX, int posY)
+ModuleControlPanel::OfficerButton::OfficerButton(ModuleControlPanel& outer, OfficerType officerType, const string &datFileMouseOver, const string &datFileSelected, int posX, int posY)
 : outer(outer)
 {
 	this->officerType = officerType;
@@ -950,28 +822,13 @@ ModuleControlPanel::OfficerButton::~OfficerButton()
 
 bool ModuleControlPanel::OfficerButton::InitCommon()
 {
-	//imgTipWindowBackground = load_bitmap(OFFICER_MOUSEOVERTIP_BACKGROUNDIMG,NULL);
-	//if (imgTipWindowBackground == NULL)
-	//	return false;
-
 	return true;
 }
 
 bool ModuleControlPanel::OfficerButton::InitButton()
 {
-	//imgMouseOver = load_bitmap(imgFileMouseOver.c_str(),NULL);
-	imgMouseOver = (BITMAP*)cpdata[datFileMouseOver].dat;
-	if (imgMouseOver == NULL) {
-		g_game->message("Error in control panel");
-		return false;
-	}
-
-	//imgSelected = load_bitmap(imgFileSelected.c_str(),NULL);
-	imgSelected = (BITMAP*)cpdata[datFileSelected].dat;
-	if (imgSelected == NULL) {
-		g_game->message("Error in control panel");
-		return false;
-	}
+	imgMouseOver = outer.resources[datFileMouseOver];
+	imgSelected = outer.resources[datFileSelected];
 
 	for (vector<CommandButton*>::iterator i = commandButtons.begin(); i != commandButtons.end(); ++i)
 	{
@@ -987,18 +844,18 @@ bool ModuleControlPanel::OfficerButton::InitButton()
 	return true;
 }
 
-void ModuleControlPanel::OfficerButton::RenderMouseOver(BITMAP *canvas)
+void ModuleControlPanel::OfficerButton::RenderMouseOver(ALLEGRO_BITMAP *canvas)
 {
 	std::string name = "Unknown Officer";
 	std::string title = "Unknown Title";
 	Officer* officer = NULL;
 
 	// mouse-over button image
-	blit(imgMouseOver,canvas,0,0,posX,posY,imgMouseOver->w,imgMouseOver->h);
+        al_set_target_bitmap(canvas);
+	al_draw_bitmap(imgMouseOver,posX,posY,0);
 
 	try {
 		// get the officer associated with this button
-		//officer = g_game->gameState->m_officers[this->officerType];
 		officer = g_game->gameState->getOfficer(this->officerType);
 		name = officer->name;
 		title = officer->GetTitle();
@@ -1012,25 +869,24 @@ void ModuleControlPanel::OfficerButton::RenderMouseOver(BITMAP *canvas)
 	static int y = cpy + 115; 
 
 	// background image
-	//blit(imgTipWindowBackground,canvas,0,0,x,y,imgTipWindowBackground->w,imgTipWindowBackground->h);
-	rectfill(canvas, x, y, x+165, y+32, makecol(57,59,134));
+	al_draw_filled_rectangle(x, y, x+165, y+32, al_map_rgb(57,59,134));
 
 	// draw tooltip of crew position/name
-	//g_game->setFontSize(18);
 	g_game->Print18(canvas, x + 5, y, officer->GetTitle().c_str(), OFFICER_MOUSEOVERTIP_TEXT_CLR);
 	g_game->Print18(canvas, x + 5, y + 13, name.c_str(), OFFICER_MOUSEOVERTIP_LABEL_CLR);
 
 }
 
-void ModuleControlPanel::OfficerButton::RenderSelected(BITMAP *canvas)
+void ModuleControlPanel::OfficerButton::RenderSelected(ALLEGRO_BITMAP *canvas)
 {
-	blit(imgSelected,canvas,0,0,posX,posY,imgMouseOver->w,imgMouseOver->h);
+    al_set_target_bitmap(canvas);
+	al_draw_bitmap(imgSelected,posX,posY,0);
 }
 
 bool ModuleControlPanel::OfficerButton::IsInButton(int x, int y)
 {
-	if ((x >= posX) && (x < posX+imgMouseOver->w) &&
-		(y >= posY) && (y < posY+imgMouseOver->h))
+	if ((x >= posX) && (x < posX+al_get_bitmap_width(imgMouseOver)) &&
+		(y >= posY) && (y < posY+al_get_bitmap_height(imgMouseOver)))
 	{
 		return true;
 	}
@@ -1040,25 +896,8 @@ bool ModuleControlPanel::OfficerButton::IsInButton(int x, int y)
 
 void ModuleControlPanel::OfficerButton::DestroyButton()
 {
-	//these are now stored in the data file
-	
-	//if (imgMouseOver != NULL)
-	//{
-	//	destroy_bitmap(imgMouseOver);
-	//	imgMouseOver = NULL;
-	//}
-
-	//if (imgSelected != NULL)
-	//{
-	//	destroy_bitmap(imgSelected);
-	//	imgSelected = NULL;
-	//}
-
 	for (vector<CommandButton*>::iterator i = commandButtons.begin(); i != commandButtons.end(); ++i)
 	{
-		//handled by the datafile
-		//(*i)->DestroyButton();
-		
 		delete *i;
 	}
 	commandButtons.clear();
@@ -1066,12 +905,6 @@ void ModuleControlPanel::OfficerButton::DestroyButton()
 
 void ModuleControlPanel::OfficerButton::DestroyCommon()
 {
-	//if (imgTipWindowBackground != NULL)
-	//{
-	//	destroy_bitmap(imgTipWindowBackground);
-	//	imgTipWindowBackground = NULL;
-	//}
-
 }
 
 #pragma endregion

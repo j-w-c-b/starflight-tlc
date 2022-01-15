@@ -12,14 +12,12 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <alfont.h>
+#include <allegro5/allegro_font.h>
 #include "ScrollBox.h"
 #include "Timer.h"
 #include "Sprite.h"
 
-#ifdef MSVC10_DEBUG
-	#include "GameState.h"
-#endif
+#include "GameState.h"
 ///////////////////////////////////////////
 // global constants
 ///////////////////////////////////////////
@@ -30,38 +28,38 @@
 
 //COMMON RGB COLORS
 //here's a good source of rgb colors: http://www.pitt.edu/~nisg/cis/web/cgi/rgb.html
-#define BLACK			makecol(0,0,0)
-#define GRAY1			makecol(232,232,232)
-#define DGRAY           makecol(120,120,120)
-#define WHITE			makecol(255,255,255)
-#define BLUE			makecol(0,0,255)
-#define LTBLUE			makecol(150,150,255)
-#define SKYBLUE			makecol(0,216,255)
-#define DODGERBLUE		makecol(30,144,255)
-#define ROYALBLUE		makecol(39,64,139)
-#define PURPLE			makecol(212, 72,255)
-#define RED				makecol(255,0,0)
-#define LTRED			makecol(255,150,150)
-#define ORANGE			makecol(255,165,0)
-#define DKORANGE		makecol(255,140,0)
-#define BRTORANGE		makecol(255,120,0)
-#define YELLOW			makecol(250,250,0)
-#define LTYELLOW		makecol(255,255,0)
-#define GREEN			makecol(0,255,0)
-#define LTGREEN			makecol(150,255,150)
-#define PINEGREEN		makecol(80,170,80)
-#define STEEL			makecol(159,182,205)
-#define KHAKI			makecol(238,230,133)
-#define DKKHAKI			makecol(139,134,78)
+#define BLACK			al_map_rgb(0,0,0)
+#define GRAY1			al_map_rgb(232,232,232)
+#define DGRAY           al_map_rgb(120,120,120)
+#define WHITE			al_map_rgb(255,255,255)
+#define BLUE			al_map_rgb(0,0,255)
+#define LTBLUE			al_map_rgb(150,150,255)
+#define SKYBLUE			al_map_rgb(0,216,255)
+#define DODGERBLUE		al_map_rgb(30,144,255)
+#define ROYALBLUE		al_map_rgb(39,64,139)
+#define PURPLE			al_map_rgb(212, 72,255)
+#define RED				al_map_rgb(255,0,0)
+#define LTRED			al_map_rgb(255,150,150)
+#define ORANGE			al_map_rgb(255,165,0)
+#define DKORANGE		al_map_rgb(255,140,0)
+#define BRTORANGE		al_map_rgb(255,120,0)
+#define YELLOW			al_map_rgb(250,250,0)
+#define LTYELLOW		al_map_rgb(255,255,0)
+#define GREEN			al_map_rgb(0,255,0)
+#define LTGREEN			al_map_rgb(150,255,150)
+#define PINEGREEN		al_map_rgb(80,170,80)
+#define STEEL			al_map_rgb(159,182,205)
+#define KHAKI			al_map_rgb(238,230,133)
+#define DKKHAKI			al_map_rgb(139,134,78)
 
-#define GREEN2			makecol(71,161,91)
-#define RED2			makecol(110,26,15)
-#define YELLOW2			makecol(232,238,106)
-#define GOLD			makecol(255,216,0)
+#define GREEN2			al_map_rgb(71,161,91)
+#define RED2			al_map_rgb(110,26,15)
+#define YELLOW2			al_map_rgb(232,238,106)
+#define GOLD			al_map_rgb(255,216,0)
+#define MASK_COLOR		al_map_rgb(255,0,255)
 
 #define FLUX_SCANNER_ID 2
 
-struct BITMAP;
 class Module;
 class GameState;
 class ModeMgr;
@@ -95,9 +93,9 @@ public:
 	virtual ~Game();
 	void Run();
 	void shutdown();
-	void fatalerror(std::string error);
-	void message(std::string msg);
-	BITMAP *GetBackBuffer() { return m_backbuffer; }
+	void fatalerror(const std::string &error);
+	void message(const std::string &msg);
+	ALLEGRO_BITMAP *GetBackBuffer() { return m_backbuffer; }
 	void setVibration(int value) { vibration = value; }
 	int getVibration() { return vibration; }
 
@@ -107,11 +105,11 @@ public:
 	float CrossModuleAngle;	//Holds entry angle for systems
 
 	void ShowMessageBoxWindow(
-        std::string initHeading = "",
-		std::string initText = "",
+        	const std::string &initHeading = "",
+		const std::string &initText = "",
 		int initWidth = 400,
 		int initHeight = 300,
-		int initTextColor = WHITE,
+		ALLEGRO_COLOR initTextColor = WHITE,
 		int initX = SCREEN_WIDTH/2,
 		int initY = SCREEN_HEIGHT/2,
 		bool initCentered = true,
@@ -121,7 +119,6 @@ public:
 	void TogglePauseMenu();
 	void setPaused(bool value) { m_pause = value; }
 	void SetTimePaused(bool v);
-	void SetTimeRateDivisor(int v);
 	bool getTimePaused() 	  {return timePause;}
 	int  getTimeRateDivisor() {return timeRateDivisor;}
 
@@ -133,43 +130,43 @@ public:
 
 	ModulePlanetSurface *PlanetSurfaceHolder;
 
-	ALFONT_FONT *font10;
-	ALFONT_FONT *font12;
-	ALFONT_FONT *font18;
-	ALFONT_FONT *font20;
-	ALFONT_FONT *font22;
-	ALFONT_FONT *font24;
-	ALFONT_FONT *font32;
+	ALLEGRO_FONT *font10;
+	ALLEGRO_FONT *font12;
+	ALLEGRO_FONT *font18;
+	ALLEGRO_FONT *font20;
+	ALLEGRO_FONT *font22;
+	ALLEGRO_FONT *font24;
+	ALLEGRO_FONT *font32;
+	ALLEGRO_FONT *font48;
+	ALLEGRO_FONT *font60;
 
-	void PrintDefault(BITMAP *dest,int x,int y, std::string text,int color = WHITE);
-	void Print(BITMAP *dest,ALFONT_FONT *_font, int x,int y,std::string text, int color = makecol(255,255,255), bool shadow = false);
-	void Print12(BITMAP *dest, int x,int y,std::string text, int color = makecol(255,255,255), bool shadow=false);
-	void Print18(BITMAP *dest, int x,int y,std::string text, int color = makecol(255,255,255), bool shadow=false);
-	void Print20(BITMAP *dest, int x,int y,std::string text, int color = makecol(255,255,255), bool shadow=false);
-	void Print22(BITMAP *dest, int x,int y,std::string text, int color = makecol(255,255,255), bool shadow=false);
-	void Print24(BITMAP *dest, int x,int y,std::string text, int color = makecol(255,255,255), bool shadow=false);
-	void Print32(BITMAP *dest, int x,int y,std::string text, int color = makecol(255,255,255), bool shadow=false);
+	void PrintDefault(ALLEGRO_BITMAP *dest,int x,int y, const std::string &text,ALLEGRO_COLOR color = WHITE);
+	void Print(ALLEGRO_BITMAP *dest,ALLEGRO_FONT *_font, int x,int y, const std::string &text, ALLEGRO_COLOR color = al_map_rgb(255,255,255), bool shadow = false);
+	void Print12(ALLEGRO_BITMAP *dest, int x,int y, const std::string &text, ALLEGRO_COLOR color = al_map_rgb(255,255,255), bool shadow=false);
+	void Print18(ALLEGRO_BITMAP *dest, int x,int y, const std::string &text, ALLEGRO_COLOR color = al_map_rgb(255,255,255), bool shadow=false);
+	void Print20(ALLEGRO_BITMAP *dest, int x,int y, const std::string &text, ALLEGRO_COLOR color = al_map_rgb(255,255,255), bool shadow=false);
+	void Print22(ALLEGRO_BITMAP *dest, int x,int y, const std::string &text, ALLEGRO_COLOR color = al_map_rgb(255,255,255), bool shadow=false);
+	void Print24(ALLEGRO_BITMAP *dest, int x,int y, const std::string &text, ALLEGRO_COLOR color = al_map_rgb(255,255,255), bool shadow=false);
+	void Print32(ALLEGRO_BITMAP *dest, int x,int y, const std::string &text, ALLEGRO_COLOR color = al_map_rgb(255,255,255), bool shadow=false);
 
 	//shared print to ScrollBox in GUI modules
 	struct TimedText
 	{
 		std::string text;
-		int color;
+		ALLEGRO_COLOR color;
 		long delay;
 	};
 	std::vector<TimedText> messages;
     ScrollBox::ScrollBox *g_scrollbox;
-	void printout(ScrollBox::ScrollBox *scroll, std::string text, int color=WHITE, long delay=0);
-	int MsgColors[NUM_MSGTYPES];
-	void PrintMsg(MsgType msgtype, OfficerType officertype, std::string msg, int delay);
+	void printout(ScrollBox::ScrollBox *scroll, const std::string &text, ALLEGRO_COLOR color=WHITE, long delay=0);
+	ALLEGRO_COLOR MsgColors[NUM_MSGTYPES];
 
    //used to retrieve global values from script file globals.lua
-	void runGlobalFunction(std::string name);
-	std::string getGlobalString(std::string name);
-    void setGlobalString(std::string name, std::string value);
-	double getGlobalNumber(std::string name);
-	void setGlobalNumber(std::string name, double value);
-	bool getGlobalBoolean(std::string name);
+	std::string getGlobalString(const std::string &name);
+    void setGlobalString(const std::string &name, const std::string &value);
+	double getGlobalNumber(const std::string &name);
+	void setGlobalNumber(const std::string &name, double value);
+	bool getGlobalBoolean(const std::string &name);
 
 	int getFrameRate() { return frameRate; }
 	Timer globalTimer;
@@ -187,10 +184,9 @@ public:
     //used to itemize detected video modes reported by the DirectX driver for use in Settings
     struct VideoMode
     {
-        int bpp,width,height;
+        int width,height;
     };
-    std::vector<VideoMode> videomodes;
-    typedef std::vector<VideoMode>::iterator VideoModeIterator;
+    std::list<VideoMode> videomodes;
     int desktop_width, desktop_height, desktop_colordepth;
     int actual_width, actual_height;
     bool Initialize_Graphics();
@@ -222,12 +218,12 @@ private:
 	int  timeRateDivisor;	//was (static) 'update_interval' in Game::RunGame.
 	int vibration;
 
+	ALLEGRO_DISPLAY *m_display;
 	//primary drawing surface for all modules
-	BITMAP *m_backbuffer;
+	ALLEGRO_BITMAP *m_backbuffer;
 
 	//the same as the primary surface, except it doesn't have a mouse on it
     //not to be rude but who is the idiot who came up with this solution?
-	//BITMAP *m_backbufferWithoutMouse;
 
 	//vars used for framerate calculation
 	int frameCount, startTime, frameRate;
@@ -255,7 +251,7 @@ private:
 	int m_prevMouseZ;
 
 	// holds the state of the keys in the previous loop; used to detect kb events
-	char m_prevKeyState[256];
+	ALLEGRO_KEYBOARD_STATE m_prevKeyState;
 
 	void CalculateFramerate();
 	void UpdateKeyboard();

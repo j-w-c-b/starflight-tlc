@@ -10,7 +10,7 @@
 
 #include <list>
 #include <algorithm>
-//using namespace std;
+
 
 //////////////////
 // Generic event manager. Holds list of client objects. Template class

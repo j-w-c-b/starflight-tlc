@@ -6,45 +6,11 @@
     {
         return radians * PI_under_180;
     }
-    
-    double Math::toRadians(double degrees)
-    {
-        return degrees * PI_over_180;
-    }
-    
     double Math::wrapAngleDegs(double degs)
     {
         double result = fmod(degs, 360.0);
         if (result < 0) result += 360.0f;
         return result;
-    }
-    
-    double Math::wrapAngleRads(double rads)
-    {
-        double result = fmod(rads, PI);
-        if (result < 0) result += PI;
-        return result;
-    }
-
-    double Math::LinearVelocityX(double angle)
-    {
-        angle -= 90;
-        if (angle < 0) angle = 360 + angle;    
-        return cos( angle * PI_over_180);
-    }
-    
-    double Math::LinearVelocityY(double angle)
-    {
-        angle -= 90;
-        if (angle < 0) angle = 360 + angle;    
-        return sin( angle * PI_over_180);
-    }
-    
-    Vector3 Math::LinearVelocity(double angle)
-    {
-        double vx = LinearVelocityX(angle);
-        double vy = LinearVelocityY(angle);
-        return Vector3(vx,vy,0.0f);
     }
     
     double Math::AngleToTarget(double x1,double y1,double x2,double y2)

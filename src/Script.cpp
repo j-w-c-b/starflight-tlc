@@ -3,20 +3,22 @@
 	Note: LUA does not throw exceptions.
 */
 
-#include "env.h"		//for TRACE calls.
 #include <exception>
 #include <iostream>
 #include <string>
-#include <allegro.h>
+#include <csetjmp>
+#include <allegro5/allegro.h>
 #include "Script.h"
 #include "Game.h"
 using namespace std;
 
+ALLEGRO_DEBUG_CHANNEL("Script")
+
 static jmp_buf custom_lua_panic_jump;
 
-static int custom_lua_atpanic(lua_State *lua)
+static int custom_lua_atpanic(lua_State * /*lua*/)
 {
-    TRACE("custom_lua_atpanic\n");
+    ALLEGRO_DEBUG("custom_lua_atpanic\n");
     longjmp(custom_lua_panic_jump, 1);
     return 0;
 }
@@ -43,7 +45,7 @@ bool Script::load(std::string scriptfile)
 		string luaError = lua_tostring(luaState, -1);
 		lua_pop(luaState, 1);
 		errorMessage = luaError.c_str();
-		TRACE("Script load error: return= %d, message= %s.\n", ret, errorMessage.c_str());
+		ALLEGRO_DEBUG("Script load error: return= %d, message= %s.\n", ret, errorMessage.c_str());
 		return false;
 	}
 
@@ -102,12 +104,6 @@ bool Script::getGlobalBoolean(std::string name)
 	return value;
 }
 
-void Script::setGlobalBoolean(std::string name, bool value)
-{
-	lua_pushboolean(luaState, (int)value);
-	lua_setglobal(luaState, name.c_str());
-}
-
 bool Script::runFunction(std::string name)
 {
 	//call script function, 0 args, 0 retvals
@@ -116,7 +112,7 @@ bool Script::runFunction(std::string name)
 	int result = lua_pcall(luaState, 0, 0, 0);
 	if (result != 0) {
 		luaError = lua_tostring(luaState, -1);
-		TRACE("Script run error:  Lua error message= %s\n", errorMessage.c_str());
+		ALLEGRO_DEBUG("Script run error:  Lua error message= %s\n", errorMessage.c_str());
 		lua_pop(luaState, 1);
 		errorMessage = luaError;
 		return false;

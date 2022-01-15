@@ -12,7 +12,9 @@
 #include <string>
 #include <iostream>
 #include <iomanip>
-#include "env.h"
+
+#include <allegro5/allegro_primitives.h>
+
 #include "ModuleEncounter.h"
 #include "Button.h"
 #include "AudioSystem.h"
@@ -28,10 +30,12 @@
 #include "Sprite.h"
 #include "PlayerShipSprite.h"
 #include "CombatObject.h"
-#include "CombatPlayerVessel.h"
 #include "TileScroller.h"
 #include "PauseMenu.h"
 #include "Timer.h"
+#include "ResourceManager.h"
+
+#include "encounter_resources.h"
 
 using namespace std;
 
@@ -64,58 +68,7 @@ const int ENCOUNTER_ALIENATTACK_EVENT      = 8002;
 #define TILESACROSS		64
 #define TILESDOWN		64
 
-
-/*
- * Paste defs here from dat_encounter.h after running dat_encounter.bat to build the data file
- */
-//#define BIGASTEROID_BMP                  0        /* BMP  */
-//#define EXPLOSION_30_128_TGA             1        /* BMP  */
-//#define EXPLOSION_30_48_TGA              2        /* BMP  */
-//#define EXPLOSION_30_64_TGA              3        /* BMP  */
-//#define GUI_AUX_BMP                      4        /* BMP  */
-//#define GUI_MESSAGEWINDOW_BMP            5        /* BMP  */
-//#define GUI_SOCKET_BMP                   6        /* BMP  */
-//#define GUI_VIEWER_BMP                   7        /* BMP  */
-//#define GUI_VIEWER_RIGHT_BMP             8        /* BMP  */
-//#define IP_TILES_BMP                     9        /* BMP  */
-//#define LASER_BEAM_BMP                   10       /* BMP  */
-//#define PORTRAIT_BARZHON_BMP             11       /* BMP  */
-//#define PORTRAIT_COALITION_BMP           12       /* BMP  */
-//#define PORTRAIT_ELOWAN_BMP              13       /* BMP  */
-//#define PORTRAIT_MINEX_BMP               14       /* BMP  */
-//#define PORTRAIT_NYSSIAN_BMP             15       /* BMP  */
-//#define PORTRAIT_PIRATE_BMP              16       /* BMP  */
-//#define PORTRAIT_SPEMIN_BMP              17       /* BMP  */
-//#define PORTRAIT_TAFEL_BMP               18       /* BMP  */
-//#define PORTRAIT_THRYNN_BMP              19       /* BMP  */
-//#define POWERUP_ARMOR_TGA                20       /* BMP  */
-//#define POWERUP_HEALTH_TGA               21       /* BMP  */
-//#define POWERUP_MINERAL_TGA              22       /* BMP  */
-//#define POWERUP_SHIELD_TGA               23       /* BMP  */
-//#define RED_BOLT_BMP                     24       /* BMP  */
-//#define SCHEMATIC_BARZHON_BMP            25       /* BMP  */
-//#define SCHEMATIC_COALITION_BMP          26       /* BMP  */
-//#define SCHEMATIC_ELOWAN_BMP             27       /* BMP  */
-//#define SCHEMATIC_MINEX_BMP              28       /* BMP  */
-//#define SCHEMATIC_NYSSIAN_BMP            29       /* BMP  */
-//#define SCHEMATIC_PIRATE_BMP             30       /* BMP  */
-//#define SCHEMATIC_SPEMIN_BMP             31       /* BMP  */
-//#define SCHEMATIC_TAFEL_BMP              32       /* BMP  */
-//#define SCHEMATIC_THRYNN_BMP             33       /* BMP  */
-//#define SHIELD_TGA                       34       /* BMP  */
-//#define SHIP_BARZHON_BMP                 35       /* BMP  */
-//#define SHIP_COALITION_BMP               36       /* BMP  */
-//#define SHIP_ELOWAN_BMP                  37       /* BMP  */
-//#define SHIP_MINEX_BMP                   38       /* BMP  */
-//#define SHIP_NYSSIAN_BMP                 39       /* BMP  */
-//#define SHIP_PIRATE_BMP                  40       /* BMP  */
-//#define SHIP_SPEMIN_BMP                  41       /* BMP  */
-//#define SHIP_TAFEL_BMP                   42       /* BMP  */
-//#define SHIP_THRYNN_BMP                  43       /* BMP  */
-//#define SMLASTEROID_BMP                  44       /* BMP  */
-//#define WEAPON_PLASMA_32_TGA             45       /* BMP  */
-
-
+ALLEGRO_DEBUG_CHANNEL("ModuleEncounter")
 
 /*
  * This function tracks all printed messages, each containing a timestamp to prevent
@@ -124,18 +77,15 @@ const int ENCOUNTER_ALIENATTACK_EVENT      = 8002;
  * delay =-1 means print only once.
  * otherwise delay is number of millisecond to wait between same message.
  */
-void ModuleEncounter::Print(string str, int color, long delay)
+void ModuleEncounter::Print(string str, ALLEGRO_COLOR color, long delay)
 {
 	g_game->printout(text, str, color, delay);
 }
 
 ModuleEncounter::ModuleEncounter(void) :
+        resources(ENCOUNTER_IMAGES),
 	shield(NULL),
 	spr_statusbar_shield(NULL),
-	snd_player_laser(NULL),
-	snd_player_missile(NULL),
-	snd_explosion(NULL),
-	snd_laserhit(NULL),
 	script(NULL),
 	text(NULL),
 	dialogue(NULL)
@@ -154,44 +104,44 @@ void ModuleEncounter::OnKeyPress(int keyCode)
 	{
 		switch (keyCode)
 		{
-			case KEY_RIGHT:		
+			case ALLEGRO_KEY_RIGHT:		
                 playerShip->turnright();	
                 break;
 
-			case KEY_LEFT:		
+			case ALLEGRO_KEY_LEFT:		
                 playerShip->turnleft();		
                 break;
 
-			case KEY_DOWN:		
+			case ALLEGRO_KEY_DOWN:		
                 playerShip->applybraking();	
 				break;
 
-			case KEY_UP:			
+			case ALLEGRO_KEY_UP:			
                 playerShip->applythrust();	
                 flag_thrusting = true;
                 break;
 
-			case KEY_Q:	
+			case ALLEGRO_KEY_Q:	
                 if (!flag_thrusting) playerShip->applybraking();
                 playerShip->starboard();	
                 break;
 
-			case KEY_E:	
+			case ALLEGRO_KEY_E:	
                 if (!flag_thrusting) playerShip->applybraking();
                 playerShip->port();			
                 break;
 
-			case KEY_ALT:
-			case KEY_X:
+			case ALLEGRO_KEY_ALT:
+			case ALLEGRO_KEY_X:
 				if (!firingMissile) {
 					firingLaser = true;
 					fireLaser();
 				}
 				break;
 
-			case KEY_LCONTROL:
-            case KEY_RCONTROL:
-            case KEY_Z:
+			case ALLEGRO_KEY_LCTRL:
+            case ALLEGRO_KEY_RCTRL:
+            case ALLEGRO_KEY_Z:
 				if (!firingLaser) {
 					firingMissile = true,
 					fireMissile();
@@ -205,7 +155,6 @@ void ModuleEncounter::OnKeyPress(int keyCode)
    g_game->CrossModuleAngle = playerShip->getRotationAngle();	//JJH
 }
 
-void ModuleEncounter::OnKeyPressed(int keyCode){}
 void ModuleEncounter::OnKeyReleased(int keyCode)
 {
 	//AlienRaces alien;
@@ -214,41 +163,39 @@ void ModuleEncounter::OnKeyReleased(int keyCode)
 	{
 		//reset ship anim frame when key released
 		
-		case KEY_LEFT:
-		case KEY_RIGHT:
-		case KEY_DOWN:
+		case ALLEGRO_KEY_LEFT:
+		case ALLEGRO_KEY_RIGHT:
+		case ALLEGRO_KEY_DOWN:
 			playerShip->cruise();
 			break;
 
-		case KEY_UP:
+		case ALLEGRO_KEY_UP:
             flag_thrusting = false;
 			playerShip->applybraking();
 			playerShip->cruise();
 			break;
 
-		case KEY_Q:
-		case KEY_E:
+		case ALLEGRO_KEY_Q:
+		case ALLEGRO_KEY_E:
             playerShip->applybraking();
 			playerShip->cruise();
 			break;
 
-		case KEY_PGUP:		
+		case ALLEGRO_KEY_PGUP:		
 			shieldStatus = !g_game->gameState->getShieldStatus();	//jjh - added back shields/weapons toggles
 			g_game->gameState->setShieldStatus(shieldStatus);
 			break;
-		case KEY_PGDN:
+		case ALLEGRO_KEY_PGDN:
 			weaponStatus = !g_game->gameState->getWeaponStatus();
 			g_game->gameState->setWeaponStatus(weaponStatus);
 			break;
-		case KEY_ESC:		//escape key opens pause menu
-			//g_game->ShowPauseMenu();
-			//return;
+		case ALLEGRO_KEY_ESCAPE:		//escape key opens pause menu
 			break;
 
-		case KEY_ALT:
+		case ALLEGRO_KEY_ALT:
 			firingLaser = false;
 			break;
-		case KEY_LCONTROL:
+		case ALLEGRO_KEY_LCTRL:
 			firingMissile = false;
 			break;
 
@@ -279,7 +226,7 @@ void ModuleEncounter::OnKeyReleased(int keyCode)
 			int questnum = g_game->gameState->getActiveQuest();
 			g_game->gameState->setActiveQuest( questnum - 1 );
 		}
-		case KEY_F:
+		case ALLEGRO_KEY_F:
 			g_game->toggleShowControls();
 			break;
 #endif
@@ -329,7 +276,7 @@ void ModuleEncounter::OnMouseWheelDown(int x, int y)
 
 bool ModuleEncounter::Init()
 {
-	TRACE("  Encounter Initialize\n");
+	ALLEGRO_DEBUG("  Encounter Initialize\n");
 
 	// 0=encounter; 1=combat
 	module_mode = 1;
@@ -352,13 +299,6 @@ bool ModuleEncounter::Init()
 	//enable the Pause Menu
 	g_game->pauseMenu->setEnabled(true);
 
-	//load the datafile
-	/*encdata = load_datafile("data/encounter/encounter.dat");
-	if (!encdata) {
-		g_game->message("Encounter: Error loading datafile");
-		return false;
-	}*/
-
 	scroller = new TileScroller();
 	scroller->setTileSize(TILESIZE,TILESIZE);
 	scroller->setTileImageColumns(5);
@@ -372,36 +312,8 @@ bool ModuleEncounter::Init()
 	}
 
 	//re-load images used in scroller
-	scroller->loadTileImage("data/encounter/IP_TILES.bmp");
+	scroller->setTileImage(resources[IP_TILES]);
     
-    //load the message gui
-	img_messages = (BITMAP*)load_bitmap("data/encounter/GUI_MESSAGEWINDOW.bmp",NULL);
-	if (!img_messages) {
-		g_game->message("Encounter: error loading img_messages");
-		return false;
-	}
-
-	//load the socket gui
-	img_socket = (BITMAP*)load_bitmap("data/encounter/GUI_SOCKET.bmp",NULL);
-	if (!img_socket) {
-		g_game->message("Encounter: error loading img_socket");
-		return false;
-	}
-
-	//load the aux gui
-	img_aux = (BITMAP*)load_bitmap("data/encounter/GUI_AUX.bmp",NULL);
-	if (!img_aux) {
-		g_game->message("error loading img_aux");
-		return false;
-	}
-
-	//load the gui viewer screen
-	img_viewer = (BITMAP*)load_bitmap("data/encounter/GUI_VIEWER.bmp",NULL);
-	if (!img_viewer) {
-		g_game->message("error loading gui_viewer");
-		return false;
-	}
-
 	//create the ScrollBar for messages
 	static int gmx = (int)g_game->getGlobalNumber("GUI_MESSAGE_POS_X");
 	static int gmy = (int)g_game->getGlobalNumber("GUI_MESSAGE_POS_Y");
@@ -434,7 +346,7 @@ bool ModuleEncounter::Init()
 	}
 
 	//clear screen
-	clear_to_color(g_game->GetBackBuffer(), BLACK);
+	al_clear_to_color(BLACK);
 
 	//shortcuts to crew last names to simplify code
 	//FIXME: these will get stale when someone get killed
@@ -457,7 +369,7 @@ bool ModuleEncounter::Init()
 
 void ModuleEncounter::Close()
 {
-	TRACE("*** Encounter Close\n\n");
+	ALLEGRO_DEBUG("*** Encounter Close\n\n");
 
 	//force weapons and shield off
 	g_game->gameState->setWeaponStatus(false);
@@ -468,21 +380,15 @@ void ModuleEncounter::Close()
 	Encounter_Close();
 	Combat_Close();
 
-	//unload the data file - causes Unhandled exception at 0x0f35b3aa
-	//unload_datafile(encdata); 
-	encdata = NULL;
+	resources.unload();
 
 	if (scroller != NULL) {	delete scroller; scroller = NULL; }
 }
 
 bool ModuleEncounter::Encounter_Init()
 {
-	TRACE("  Encounter_Init\n");
-	ostringstream os;
+	ALLEGRO_DEBUG("  Encounter_Init\n");
 	string scriptFile = "";
-	string portraitFile  = "";
-	string schematicFile = "";
-	string spriteFile    = "";
 	bFlagDialogue = false;
 	commMode = COMM_NONE;
 	bFlagChatting = false;
@@ -500,94 +406,70 @@ bool ModuleEncounter::Encounter_Init()
 	dialogCensor.insert( make_pair("[SHIPNAME]", g_game->gameState->getShip().getName() ) );
 	dialogCensor.insert( make_pair("[ALIEN]", alienName) );
 
-	//load the right gui viewer
-	img_rightviewer = (BITMAP*)load_bitmap("data/encounter/GUI_VIEWER_RIGHT.bmp",NULL);
-	if (!img_rightviewer) {
-		g_game->message("Encounter: error loading gui_viewer_right");
-		return false;
-	}
-
-	/*
-	 * The alien in this encounter should be pre-determined before we reach this point.
-	 */
-
-	//get the current plot stage and create an append string
-	/*string stage = "";
-	switch(g_game->gameState->getPlotStage()) {
-		case 1: stage = "initial"; break;
-		case 2: stage = "virus"; break;
-		case 3: stage = "war"; break;
-		case 4: stage = "ancients"; break;
-	}*/
-
-
 	AlienRaces region = g_game->gameState->getCurrentAlien();
 	switch(region)
 	{
 		case ALIEN_ELOWAN:
 			scriptFile = "encounter_elowan";
-			portraitFile = "PORTRAIT_ELOWAN.bmp";
-			schematicFile = "SCHEMATIC_ELOWAN.bmp";
-			spriteFile = "SHIP_ELOWAN.bmp";
+			portraitName = PORTRAIT_ELOWAN;
+			schematicName = SCHEMATIC_ELOWAN;
+			shipName = SHIP_ELOWAN;
 			break;
 		case ALIEN_SPEMIN:
 			scriptFile = "encounter_spemin";
-			portraitFile = "PORTRAIT_SPEMIN.bmp";
-			schematicFile = "SCHEMATIC_SPEMIN.bmp";
-			spriteFile = "SHIP_SPEMIN.bmp";
+			portraitName = PORTRAIT_SPEMIN;
+			schematicName = SCHEMATIC_SPEMIN;
+			shipName = SHIP_SPEMIN;
 			break;
 		case ALIEN_THRYNN:
 			scriptFile = "encounter_thrynn";
-			portraitFile = "PORTRAIT_THRYNN.bmp";
-			schematicFile = "SCHEMATIC_THRYNN.bmp";
-			spriteFile = "SHIP_THRYNN.bmp";
+			portraitName = PORTRAIT_THRYNN;
+			schematicName = SCHEMATIC_THRYNN;
+			shipName = SHIP_THRYNN;
 			break;
 		case ALIEN_BARZHON:
 			scriptFile = "encounter_barzhon";
-			portraitFile = "PORTRAIT_BARZHON.bmp";
-			schematicFile = "SCHEMATIC_BARZHON.bmp";
-			spriteFile = "SHIP_BARZHON.bmp";
+			portraitName = PORTRAIT_BARZHON;
+			schematicName = SCHEMATIC_BARZHON;
+			shipName = SHIP_BARZHON;
 			break;
 		case ALIEN_NYSSIAN:
 			scriptFile = "encounter_nyssian";
-			portraitFile = "PORTRAIT_NYSSIAN.bmp";
-			schematicFile = "SCHEMATIC_NYSSIAN.bmp";
-			spriteFile = "SHIP_NYSSIAN.bmp";
+			portraitName = PORTRAIT_NYSSIAN;
+			schematicName = SCHEMATIC_NYSSIAN;
+			shipName = SHIP_NYSSIAN;
 			break;
 		case ALIEN_TAFEL:
 			scriptFile = "encounter_tafel";
-			portraitFile = "PORTRAIT_TAFEL.bmp";
-			schematicFile = "SCHEMATIC_TAFEL.bmp";
-			spriteFile = "SHIP_TAFEL.bmp";
+			portraitName = PORTRAIT_TAFEL;
+			schematicName = SCHEMATIC_TAFEL;
+			shipName = SHIP_TAFEL;
 			break;
 		case ALIEN_MINEX:
 			scriptFile = "encounter_minex";
-			portraitFile = "PORTRAIT_MINEX.bmp";
-			schematicFile = "SCHEMATIC_MINEX.bmp";
-			spriteFile = "SHIP_MINEX.bmp";
+			portraitName = PORTRAIT_MINEX;
+			schematicName = SCHEMATIC_MINEX;
+			shipName = SHIP_MINEX;
 			break;
 		case ALIEN_COALITION:
 			scriptFile = "encounter_coalition";
-			portraitFile = "PORTRAIT_COALITION.bmp";
-			schematicFile = "SCHEMATIC_COALITION.bmp";
-			spriteFile = "SHIP_COALITION.bmp";
+			portraitName = PORTRAIT_COALITION;
+			schematicName = SCHEMATIC_COALITION;
+			shipName = SHIP_COALITION;
 			break;
 		case ALIEN_PIRATE:
 			scriptFile = "encounter_pirate";
-			portraitFile = "PORTRAIT_PIRATE.bmp";
-			schematicFile = "SCHEMATIC_PIRATE.bmp";
-			spriteFile = "SHIP_PIRATE.bmp";
+			portraitName = PORTRAIT_PIRATE;
+			schematicName = SCHEMATIC_PIRATE;
+			shipName = SHIP_PIRATE;
 			break;
 		default:
 			break;
 	}
 
-//append stage to alien script file
-//	scriptFile += "_" + stage + ".lua";  Disabled loading multiple communication files
-
 	scriptFile = "data/encounter/" + scriptFile + ".lua";
 
-	TRACE("  Loading encounter script: %s\n", scriptFile.c_str());
+	ALLEGRO_DEBUG("  Loading encounter script: %s\n", scriptFile.c_str());
 
 	//load the script for this encounter
 	script = new Script();
@@ -607,34 +489,6 @@ bool ModuleEncounter::Encounter_Init()
 	Print("Posture: " + g_game->gameState->playerPosture,WHITE,5000);      
 #endif
 	
-    ostringstream filename;
-    ostringstream filename2;
-    ostringstream filename3;
-
-	//load the alien's portrait image
-    filename << "data/encounter/" << portraitFile;
-	img_alien_portrait = (BITMAP*)load_bitmap(filename.str().c_str(),NULL);
-	if (!img_alien_portrait) {
-		g_game->message("Encounter: Error loading portrait " + portraitFile);
-		return false;
-	}
-
-	//load the alien ship's schematic image
-    filename2 << "data/encounter/" << schematicFile;
-	img_alien_schematic = (BITMAP*)load_bitmap(filename2.str().c_str(),NULL);
-	if (!img_alien_schematic) {
-		g_game->message("Encounter: Error loading schematic " + schematicFile);
-		return false;
-	}
-
-	//load the alien ship's animated sprite image
-    filename3 << "data/encounter/" << spriteFile;
-	img_alien_ship = (BITMAP*)load_bitmap(filename3.str().c_str(),NULL);
-	if (!img_alien_ship) {
-		g_game->message("Encounter: Error loading ship sprite " + spriteFile);
-		return false;
-	}
-
 	//statements and questions are reused until player chooses them
 	//to prevent cycling to the next item in the script when CANCEL is pressed
 	bFlagLastStatementSuccess = true;
@@ -662,81 +516,13 @@ bool ModuleEncounter::Combat_Init()
 	ash = (int)g_game->getGlobalNumber("AUX_SCREEN_HEIGHT");
 	asx = (int)g_game->getGlobalNumber("AUX_SCREEN_X");
 	asy = (int)g_game->getGlobalNumber("AUX_SCREEN_Y");
-	minimap = create_bitmap(asw, ash);
-
-	//load small asteroids
-	img_smlasteroid = (BITMAP*)load_bitmap("data/encounter/SMLASTEROID.bmp",NULL);
-	if (!img_smlasteroid) {
-		g_game->message("error loading img_smlasteroid");
-		return false;
-	}
-	img_bigasteroid = (BITMAP*)load_bitmap("data/encounter/BIGASTEROID.bmp",NULL);
-	if (!img_bigasteroid) {
-		g_game->message("error loading img_bigasteroid");
-		return false;
-	}
-
-	//load weapon images
-	img_laserbeam = (BITMAP*)load_bitmap("data/encounter/LASER_BEAM.bmp",NULL);
-	if (!img_laserbeam) {
-		g_game->message("error loading img_laserbeam");
-		return false;
-	}
-	img_plasma = (BITMAP*)load_bitmap("data/encounter/WEAPON_PLASMA_32.tga",NULL);
-	if (!img_plasma) {
-		g_game->message("error loading weapon_player_primary");
-		return false;
-	}
-	img_redbolt = (BITMAP*)load_bitmap("data/encounter/RED_BOLT.bmp",NULL);
-	if (!img_redbolt) {
-		g_game->message("error loading img_redbolt");
-		return false;
-	}
-
-	//load explosions
-	img_bigexplosion = (BITMAP*)load_bitmap("data/encounter/EXPLOSION_30_128.tga",NULL);
-	if (!img_bigexplosion) {
-		g_game->message("error loading img_bigexplosion");
-		return false;
-	}
-	img_medexplosion = (BITMAP*)load_bitmap("data/encounter/EXPLOSION_30_64.tga",NULL);
-	if (!img_medexplosion) {
-		g_game->message("error loading img_medexplosion");
-		return false;
-	}
-	img_smlexplosion = (BITMAP*)load_bitmap("data/encounter/EXPLOSION_30_48.tga",NULL);
-	if (!img_smlexplosion) {
-		g_game->message("error loading img_smlexplosion");
-		return false;
-	}
+	minimap = al_create_bitmap(asw, ash);
 
 	//load sound effects
 	snd_player_laser = g_game->audioSystem->Load("data/encounter/fire1.wav");
 	snd_laserhit = g_game->audioSystem->Load("data/encounter/hit1.wav");
 	snd_player_missile = g_game->audioSystem->Load("data/encounter/fire2.wav");
 	snd_explosion = g_game->audioSystem->Load("data/encounter/hit2.wav");
-
-	//load powerups
-	img_powerup_health = (BITMAP*)load_bitmap("data/encounter/POWERUP_HEALTH.tga",NULL);
-	if (!img_powerup_health) {
-		g_game->message("error loading img_powerup_health");
-		return false;
-	}
-	img_powerup_shield = (BITMAP*)load_bitmap("data/encounter/POWERUP_SHIELD.tga",NULL);
-	if (!img_powerup_shield) {
-		g_game->message("error loading img_powerup_shield");
-		return false;
-	}
-	img_powerup_armor = (BITMAP*)load_bitmap("data/encounter/POWERUP_ARMOR.tga",NULL);
-	if (!img_powerup_armor) {
-		g_game->message("error loading img_powerup_armor");
-		return false;
-	}
-	img_powerup_mineral = (BITMAP*)load_bitmap("data/encounter/POWERUP_MINERAL.tga",NULL);
-	if (!img_powerup_mineral) {
-		g_game->message("error loading img_powerup_mineral");
-		return false;
-	}
 
 	//radius is center of battle arena
 	int radius = TILESACROSS/2 * TILESIZE;
@@ -747,7 +533,7 @@ bool ModuleEncounter::Combat_Init()
 	for (int n=0; n < fleetSize; n++)
 	{
 		CombatObject *temp = new CombatObject();
-		temp->setImage(img_alien_ship);
+		temp->setImage(resources[shipName]);
 		temp->setObjectType(OBJ_ALIENSHIP);
 		temp->setTotalFrames(1);
 		temp->setDamage(0);
@@ -755,82 +541,82 @@ bool ModuleEncounter::Combat_Init()
 		//get health property from script
 		int health = script->getGlobalNumber("health");
 		if (health < 1 || health > 10000) {
-			TRACE("***Error in Combat_Init: health property is invalid\n");
+			ALLEGRO_DEBUG("***Error in Combat_Init: health property is invalid\n");
 			health = 100;
 		}
-		TRACE("Combat_Init: health=%d\n", health);
+		ALLEGRO_DEBUG("Combat_Init: health=%d\n", health);
 		temp->setHealth( health );
 
 		//get mass property from script
 		int mass = script->getGlobalNumber("mass");
 		if (mass < 1 || mass > 100) {
-			TRACE("***Error in Combat_Init: mass property is invalid\n");
+			ALLEGRO_DEBUG("***Error in Combat_Init: mass property is invalid\n");
 			mass = 1;
 		}
-		TRACE("Combat_Init: mass=%d\n", mass);
+		ALLEGRO_DEBUG("Combat_Init: mass=%d\n", mass);
 		temp->setMass( mass );
 
 		//get engine class property
 		int engine = script->getGlobalNumber("engineclass");
 		if (engine < 1 || engine > 6) {
-			TRACE("***Error in Combat_Init: engineclass is invalid\n");
+			ALLEGRO_DEBUG("***Error in Combat_Init: engineclass is invalid\n");
 			engine = 1;
 		}
-		TRACE("Combat_Init: engineclass=%d\n", engine);
+		ALLEGRO_DEBUG("Combat_Init: engineclass=%d\n", engine);
 		setEngineProperties(temp, engine);
 
 		//get shield props from script
 		int shield = script->getGlobalNumber("shieldclass");
 		if (shield < 0 || shield > 8) {
-			TRACE("***Error in Combat_Init: shieldclass is invalid\n");
+			ALLEGRO_DEBUG("***Error in Combat_Init: shieldclass is invalid\n");
 			shield = 0;
 		}
-		TRACE("Combat_Init: shieldclass=%d\n", shield);
+		ALLEGRO_DEBUG("Combat_Init: shieldclass=%d\n", shield);
 		setShieldProperties(temp, shield);
 
 		//get armor props from script
 		int armor = script->getGlobalNumber("armorclass");
 		if (armor < 0 || armor > 6) {
-			TRACE("***Error in Combat_Init: armorclass is invalid\n");
+			ALLEGRO_DEBUG("***Error in Combat_Init: armorclass is invalid\n");
 			armor = 0;
 		}
-		TRACE("Combat_Init: armorclass=%d\n", armor);
+		ALLEGRO_DEBUG("Combat_Init: armorclass=%d\n", armor);
 		setArmorProperties(temp, armor);
 
 		//get laser props from script
 		int laser = script->getGlobalNumber("laserclass");
 		if (laser < 0 || laser > 9) {
-			TRACE("***Error in Combat_Init: laserclass is invalid\n");
+			ALLEGRO_DEBUG("***Error in Combat_Init: laserclass is invalid\n");
 			laser = 0;
 		}
-		TRACE("Combat_Init: laserclass=%d\n", laser);
+		ALLEGRO_DEBUG("Combat_Init: laserclass=%d\n", laser);
 		setLaserProperties(temp, laser);
 
 		//get laser modifier from script
 		int laserModifier = script->getGlobalNumber("laser_modifier");
 		if (laserModifier < 0 || laserModifier > 100) {
-			TRACE("***Error in Combat_Init: laser_modifier is invalid\n");
+			ALLEGRO_DEBUG("***Error in Combat_Init: laser_modifier is invalid\n");
 			laserModifier = 100;
 		}
-		TRACE("Combat_Init: laser modifier=%d\n", laserModifier);
+		ALLEGRO_DEBUG("Combat_Init: laser modifier=%d\n", laserModifier);
 		temp->setLaserModifier(laserModifier);
 
 		//get missile props from script
 		int missile = script->getGlobalNumber("missileclass");
 		if (missile < 0 || missile > 9) {
-			TRACE("***Error in Combat_Init: laserclass is invalid\n");
+			ALLEGRO_DEBUG("***Error in Combat_Init: laserclass is invalid\n");
 			missile = 0;
 		}
-		TRACE("Combat_Init: missileclass=%d\n", missile);
+		ALLEGRO_DEBUG("Combat_Init: missileclass=%d\n", missile);
 		setMissileProperties(temp, missile);
 
 		//get missile modifier from script
 		int missileModifier = script->getGlobalNumber("missile_modifier");
 		if (missileModifier < 0 || missileModifier > 100) {
-			TRACE("***Error in Combat_Init: missile_modifier is invalid\n");
+			ALLEGRO_DEBUG("***Error in Combat_Init: missile_modifier is invalid\n");
 			missileModifier = 100;
 		}
-		TRACE("Combat_Init: missile modifier=%d\n", missileModifier);
+		ALLEGRO_DEBUG("Combat_Init: missile modifier=%d\n", missileModifier);
 		temp->setMissileModifier(missileModifier);
 
 		//set object to random location in battlespace (somewhat close to player)
@@ -845,7 +631,7 @@ bool ModuleEncounter::Combat_Init()
 	for (int a = 0; a < num; ++a)
 	{
 		CombatObject *temp = new CombatObject();
-		temp->setImage(img_bigasteroid);
+		temp->setImage(resources[BIGASTEROID]);
 		temp->setObjectType(OBJ_ASTEROID_BIG);
 		temp->setTotalFrames(1);
 		temp->setDamage(0);
@@ -910,10 +696,10 @@ void ModuleEncounter::Combat_Close()
 
 	if (shield)             delete shield;
 
-	if (snd_player_laser)   delete snd_player_laser;
-	if (snd_laserhit)       delete snd_laserhit;
-	if (snd_player_missile) delete snd_player_missile;
-	if (snd_explosion)      delete snd_explosion;
+	snd_player_laser.reset();
+	snd_laserhit.reset();
+	snd_player_missile.reset();
+	snd_explosion.reset();
 
 	//fully regenerate shield
 	g_game->gameState->m_ship.setShieldCapacity(g_game->gameState->m_ship.getMaxShieldCapacity());
@@ -1094,9 +880,6 @@ void ModuleEncounter::commDoAlienResponse()			//jjh
 	std::string out;
 	static int randomDelay = 0;
 
-	//update engine with globals from script
-	//readGlobalsFromScript();		//wait until response is displayed.
-
 	//alien response is delayed 1-4 sec
 	if (randomDelay == 0) randomDelay = Util::Random(1000, 4000);
 	if (!Util::ReentrantDelay(randomDelay))
@@ -1128,7 +911,6 @@ void ModuleEncounter::commDoAlienResponse()			//jjh
 
 void ModuleEncounter::commDoAlienAttack()
 {
-	std::string out;
 	static int mode = 0;
 	static int randomDelay = 0;
 
@@ -1221,7 +1003,7 @@ void ModuleEncounter::commDoPosture(int index)
 	//set script global and run the update function:
 	script->setGlobalString("POSTURE", g_game->gameState->playerPosture);
 	if (!script->runFunction("UpdatePosture")) {
-		TRACE("ModuleEncounter::commDoPosture\tProblem updating script globals- exiting!\n");
+		ALLEGRO_DEBUG("ModuleEncounter::commDoPosture\tProblem updating script globals- exiting!\n");
 		return;
 	}
 }
@@ -1515,15 +1297,13 @@ void ModuleEncounter::OnEvent(Event *event)
 		case EVENT_HIDE_CONTROLS: adjustVerticalCoords(
 			(SCREEN_HEIGHT-NormalScreenHeight)/2 );  break; // +128
 		//Pause Screen events
-		case 0xDEADBEEF + 2: //save game
-			//g_game->gameState->AutoSave();
+		case EVENT_SAVE_GAME: //save game
 			Print("<Game Save is not available during encounters>", WHITE, -1);
 			break;
-		case 0xDEADBEEF + 3: //load game
+		case EVENT_LOAD_GAME: //load game
 			g_game->gameState->AutoLoad();
-			//Print("<Game Load is not available during encounters>", WHITE, -1);
 			break;
-		case 0xDEADBEEF + 4: //quit game
+		case EVENT_QUIT_GAME: //quit game
 			g_game->setVibration(0);
 			escape = g_game->getGlobalString("ESCAPEMODULE");
 			g_game->modeMgr->LoadModule(escape);
@@ -1577,11 +1357,6 @@ void ModuleEncounter::OnEvent(Event *event)
 				module_mode = 1;
 				bFlagDialogue = false;
 				bFlagChatting = false;
-
-				//since communication ended from player decision, we consider it a success
-				//and therefore award one skill point for it.
-				//if ( currentCom->SkillUp(SKILL_COMMUNICATION) )
-				//	Print(com + "I think I'm getting better at this.", PURPLE,5000);
 			}
 			break;
 
@@ -1599,7 +1374,7 @@ void ModuleEncounter::OnEvent(Event *event)
 					commDoPosture(index);
 					break;
 
-				default: ASSERT(0);
+				default: ALLEGRO_ASSERT(0);
 			}
 			break;
 		}
@@ -1724,16 +1499,6 @@ void ModuleEncounter::Update()
 
 	//update globals in script regularly
 	if (update.stopwatch(1000)) {
-		//set script globals and run the update function, if not in the middle of processing a
-		//greeting, statement or question (when it might interfere):
-	/*	if ((!bFlagDialogue) && (!bFlagDoResponse)) {
-			sendGlobalsToScript();
-			if (!script->runFunction("Update")) {
-				TRACE("ModuleEncounter::Update\tProblem updating script globals- exiting!\n");
-				return;
-			}
-			readGlobalsFromScript();
-		}*/
 	}
 
 	//refresh text list
@@ -1743,8 +1508,7 @@ void ModuleEncounter::Update()
 
 void ModuleEncounter::Draw()
 {
-	//Module::Draw();
-	std::ostringstream os;
+	Module::Draw();
 
 	//draw space background
 	scroller->drawScrollWindow(g_game->GetBackBuffer(), 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -1758,14 +1522,14 @@ void ModuleEncounter::Draw()
 	//draw minimap
 	DrawMinimap();
 
+        al_set_target_bitmap(g_game->GetBackBuffer());
 	if (g_game->doShowControls()){
 		//draw message window gui
 		static int gmx = (int)g_game->getGlobalNumber("GUI_MESSAGE_POS_X");
 		static int gmy = (int)g_game->getGlobalNumber("GUI_MESSAGE_POS_Y");
 		static int gmw = (int)g_game->getGlobalNumber("GUI_MESSAGE_WIDTH");
 		static int gmh = (int)g_game->getGlobalNumber("GUI_MESSAGE_HEIGHT");
-		masked_blit(img_messages, g_game->GetBackBuffer(), 0, 0, gmx, gmy, gmw,  
-gmh);
+		al_draw_bitmap_region(resources[GUI_MESSAGEWINDOW], 0, 0, gmw, gmh, gmx, gmy, 0);
 
 		//draw message and list boxes
 		(bFlagDialogue)? dialogue->Draw(g_game->GetBackBuffer()) :  
@@ -1774,14 +1538,12 @@ text->Draw(g_game->GetBackBuffer());
 		//draw socket gui
 		static int gsx = (int)g_game->getGlobalNumber("GUI_SOCKET_POS_X");
 		static int gsy = (int)g_game->getGlobalNumber("GUI_SOCKET_POS_Y");
-		masked_blit(img_socket, g_game->GetBackBuffer(), 0, 0, gsx, gsy,  
-img_socket->w, img_socket->h);
+		al_draw_bitmap(resources[GUI_SOCKET], gsx, gsy,  0);
 
 		// draw the aux gui
 		static int gax = (int)g_game->getGlobalNumber("GUI_AUX_POS_X");
 		static int gay = (int)g_game->getGlobalNumber("GUI_AUX_POS_Y");
-		masked_blit(img_aux, g_game->GetBackBuffer(), 0, 0, gax, gay,  
-img_aux->w, img_aux->h);
+		al_draw_bitmap(resources[GUI_AUX], gax, gay, 0);
 	}
 
     if (g_game->getGlobalBoolean("DEBUG_OUTPUT") == true)
@@ -1838,19 +1600,21 @@ void ModuleEncounter::Encounter_Update()
  */
 void ModuleEncounter::Encounter_Draw()
 {
+    al_set_target_bitmap(g_game->GetBackBuffer());
+
 	//even when module_mode = 0, bFlagChatting determines whether communication is taking place
 	if (bFlagChatting)
 	{
 		static int gvx = (int)g_game->getGlobalNumber("GUI_VIEWER_POS_X");
 		static int gvy = (int)g_game->getGlobalNumber("GUI_VIEWER_POS_Y");
-		masked_blit(img_viewer, g_game->GetBackBuffer(), 0, 0, gvx, gvy, img_viewer->w, img_viewer->h);
-		blit(img_alien_portrait, g_game->GetBackBuffer(), 0, 0, gvx+108, gvy+34, img_alien_portrait->w, img_alien_portrait->h);
+		al_draw_bitmap(resources[GUI_VIEWER], gvx, gvy, 0);
+                al_draw_bitmap(resources[portraitName], gvx+108, gvy+34, 0);
 
 		//draw gui schematic window with ship schematic
 		static int gvrx = (int)g_game->getGlobalNumber("GUI_RIGHT_VIEWER_POS_X");
 		static int gvry = (int)g_game->getGlobalNumber("GUI_RIGHT_VIEWER_POS_Y");
-		masked_blit(img_rightviewer, g_game->GetBackBuffer(), 0, 0, gvrx, gvry, img_rightviewer->w, img_rightviewer->h);
-		blit(img_alien_schematic, g_game->GetBackBuffer(), 0, 0, gvrx+34, gvry+34, img_alien_schematic->w, img_alien_schematic->h);
+		al_draw_bitmap(resources[GUI_VIEWER_RIGHT], gvrx, gvry, 0);
+                al_draw_bitmap(resources[schematicName], gvrx+34, gvry+34, 0);
 	}
 }
 
@@ -1948,7 +1712,7 @@ void ModuleEncounter::pickupRandomDropItem()
 	numitems = Util::Random(1,4);
 	Item *item = g_game->dataMgr->GetItemByID( itemid );
 	if (item == NULL) {
-		TRACE("*** Error: pickupRandomDropItem generated invalid item id\n");
+		ALLEGRO_DEBUG("*** Error: pickupRandomDropItem generated invalid item id\n");
 		return;
 	}
 
@@ -2030,7 +1794,7 @@ void ModuleEncounter::pickupAsteroidMineral()
 	numitems = Util::Random(1,4);
 	Item *item = g_game->dataMgr->GetItemByID( itemid );
 	if (item == NULL) {
-		TRACE("*** Error: pickupAsteroidMineral generated invalid item id\n");
+		ALLEGRO_DEBUG("*** Error: pickupAsteroidMineral generated invalid item id\n");
 		return;
 	}
 
@@ -2122,7 +1886,7 @@ void ModuleEncounter::applyDamageToShip(int damage, bool hullonly)
 
 void ModuleEncounter::combatTestPlayerCollision(CombatObject *other)
 {
-	float shield,armor;//,hull;
+	float shield,armor;
 	Ship ship;
 
 	//create scratch object for player ship
@@ -2178,8 +1942,6 @@ void ModuleEncounter::combatTestPlayerCollision(CombatObject *other)
 				Print(eng + "We got a Hull Powerup!", GREEN, 1000);
 				other->setAlive(false);
 				ship = g_game->gameState->getShip();
-				//hull = ship.getHullIntegrity() + 20;
-				//ship.setHullIntegrity(hull);
                 ship.augHullIntegrity(20);
 				g_game->gameState->setShip(ship);
 				break;
@@ -2261,7 +2023,6 @@ void ModuleEncounter::damageAlienAttitude()
 void ModuleEncounter::combatDoCollision(CombatObject *first, CombatObject *second)
 {
 	int h,d,a,s;
-//	int attitude;
 	double damage_modifier;
 
 	switch(first->getObjectType())
@@ -2298,8 +2059,6 @@ void ModuleEncounter::combatDoCollision(CombatObject *first, CombatObject *secon
 						damage_modifier = second->getLaserModifier()/100.0 :
 						damage_modifier = second->getMissileModifier()/100.0 ;
 					d = (int) ( first->getDamage() * damage_modifier ); 
-
-					//TRACE("Encounter: unmodified damage=%.2f, modifier=%.2f, modified damage=%d\n", first->getDamage(), damage_modifier, d);
 
                     //hit their shield
 					if (d > 0 && s > 0) {
@@ -2413,7 +2172,7 @@ void ModuleEncounter::combatDoCollision(CombatObject *first, CombatObject *secon
 void ModuleEncounter::DoAlienShipCombat(CombatObject *ship)
 {
 	double dist;
-	double targetAngle;//,behindAngle;
+	double targetAngle;
 	double x,y,pgx,pgy;
 
 	//keep ship inside the arena
@@ -2446,10 +2205,6 @@ void ModuleEncounter::DoAlienShipCombat(CombatObject *ship)
 
 	//if alien is really angry or player starts attacking...
 	if (attitude < 31 || bFlagDoAttack) {
-		//flee if in danger
-		//if (ship->getHealth() < 15)
-		//	ship->setBehavior(BEHAVIOR_FLEE);
-		//else
 			ship->setBehavior(BEHAVIOR_ATTACK);
 	}
 	else {
@@ -2466,7 +2221,6 @@ void ModuleEncounter::DoAlienShipCombat(CombatObject *ship)
 
 	int missileRange = (int)g_game->getGlobalNumber("ALIEN_MISSILE_RANGE");     
 	int laserRange   = (int)g_game->getGlobalNumber("ALIEN_LASER_RANGE");       
-	int safetyDistance = (int)g_game->getGlobalNumber("ALIEN_SAFETY_DISTANCE"); 
 
 	bool missileIsGreaterRange = missileRange > laserRange;						//jjh
 	int longRange = missileIsGreaterRange? missileRange : laserRange;
@@ -2833,15 +2587,9 @@ void ModuleEncounter::Combat_Update()
 //Combat_Draw functions as a timed update and draw routine
 void ModuleEncounter::Combat_Draw()
 {
-	std::ostringstream ostr;
-//	int x,y;
 	double tx,ty;
 	double rx,ry;
 	float angle;
-
-	//draw box around player
-	//rect(g_game->GetBackBuffer(), playerScreen.x, playerScreen.y, playerScreen.x + 64, playerScreen.y + 64, BLUE);
-	//textprintf_ex(g_game->GetBackBuffer(), font, playerScreen.x, playerScreen.y, WHITE, -1, "%i,%i", (int)playerGlobal.x, (int)playerGlobal.y);
 
 	//Loop through all combat objects
 	for (int i=0; i < (int)combatObjects.size(); ++i)
@@ -2888,12 +2636,12 @@ void ModuleEncounter::Combat_Draw()
 					case OBJ_POWERUP_ARMOR:
 					case OBJ_POWERUP_MINERAL_FROM_SHIP:
 					case OBJ_POWERUP_MINERAL_FROM_ASTEROID:
-						combatObjects[i]->drawframe(g_game->GetBackBuffer(), true);
+						combatObjects[i]->drawframe(g_game->GetBackBuffer());
 						break;
 
 					//special case explosion only animates once
 					case OBJ_EXPLOSION:
-						combatObjects[i]->drawframe(g_game->GetBackBuffer(), true);
+						combatObjects[i]->drawframe(g_game->GetBackBuffer());
 
 						//delete explosion when it reaches last frame
 						if (combatObjects[i]->getCurrFrame() == combatObjects[i]->getTotalFrames()-1)
@@ -2914,7 +2662,7 @@ void ModuleEncounter::Combat_Draw()
 	{
 		if (g_game->gameState->getShip().getShieldCapacity() > 0.0) {
 			shield->animate();
-			shield->drawframe(g_game->GetBackBuffer(), true);
+			shield->drawframe(g_game->GetBackBuffer());
 		}
 		else {
 			g_game->gameState->setShieldStatus( false );
@@ -2944,49 +2692,50 @@ void ModuleEncounter::adjustVerticalCoords(int delta)
 
 void ModuleEncounter::DrawMinimap()
 {
-	clear_to_color(minimap, BLACK);
+    al_set_target_bitmap(minimap);
+    al_clear_to_color(BLACK);
 
 	for (int i=0; i < (int)combatObjects.size(); i++)
 	{
-		int x = (int)(combatObjects[i]->getX() ) / 78;// 39;
-		int y = (int)(combatObjects[i]->getY() ) / 76;// 38;
+		int x = (int)(combatObjects[i]->getX() ) / 78;
+		int y = (int)(combatObjects[i]->getY() ) / 76;
 
 		switch (combatObjects[i]->getObjectType())
 		{
 			case OBJ_ALIENSHIP:
-				rect(minimap, x-1, y-1, x+1, y+1, STEEL);
+				al_draw_rectangle( x-1, y-1, x+1, y+1, STEEL, 1);
 				break;
 			case OBJ_ASTEROID_BIG:
-				circle(minimap, x, y, 3, KHAKI);
+				al_draw_circle(x, y, 3, KHAKI, 1);
 				break;
 			case OBJ_ASTEROID_MED:
-				circle(minimap, x, y, 2, DKKHAKI);
+				al_draw_circle(x, y, 2, DKKHAKI, 1);
 				break;
-			//case OBJ_PLAYERLASER:
 			case OBJ_PLAYERMISSILE:
 			case OBJ_ENEMYFIRE:
-				putpixel(minimap, x, y, RED);
+				al_put_pixel(x, y, RED);
 				break;
 			case OBJ_POWERUP_HEALTH:
 			case OBJ_POWERUP_SHIELD:
 			case OBJ_POWERUP_ARMOR:
-				triangle(minimap, x, y-2, x-2,y+2, x+2,y+2, GREEN);
+				al_draw_triangle(x, y-2, x-2,y+2, x+2,y+2, GREEN, 1);
 				break;
 			case OBJ_POWERUP_MINERAL_FROM_SHIP:
 			case OBJ_POWERUP_MINERAL_FROM_ASTEROID:
-				triangle(minimap, x, y-2, x-2,y+2, x+2,y+2, YELLOW);
+				al_draw_triangle(x, y-2, x-2,y+2, x+2,y+2, YELLOW, 1);
 				break;
 		}
 	}
 
 	//show player on minimap
-	int px = (int)((g_game->gameState->player->posCombat.x + SCREEN_WIDTH/2 ) / 78);// 39);
-	int py = (int)((g_game->gameState->player->posCombat.y + effectiveScreenHeight()/2 ) / 76);// 38);
-	circle(minimap, px, py, 2, GREEN);
+	int px = (int)((g_game->gameState->player->posCombat.x + SCREEN_WIDTH/2 ) / 78);
+	int py = (int)((g_game->gameState->player->posCombat.y + effectiveScreenHeight()/2 ) / 76);
+	al_draw_circle(px, py, 2, GREEN, 1);
 
 
 	//draw minimap
-	blit(minimap, g_game->GetBackBuffer(), 0, 0, asx, asy, asw, ash);
+        al_set_target_bitmap(g_game->GetBackBuffer()); 
+	al_draw_bitmap(minimap, asx, asy, 0);
 }
 
 
@@ -3159,7 +2908,7 @@ void ModuleEncounter::createLaser(CombatObject *laser, double x, double y, float
 	double duration = g_game->getGlobalNumber("LASER_DURATION");
 	double speed = g_game->getGlobalNumber("LASER_SPEED");
 	
-	laser->setImage(img_laserbeam);
+	laser->setImage(resources[LASER_BEAM]);
 	laser->setTotalFrames(1); //was 4--too fast for animation
 	laser->setAnimColumns(1); //was 4
 	laser->setFrameWidth(16);
@@ -3189,7 +2938,7 @@ void ModuleEncounter::createMissile(CombatObject *missile, double x, double y, f
 	double duration = g_game->getGlobalNumber("MISSILE_DURATION");
 	double speed = g_game->getGlobalNumber("MISSILE_SPEED");
 
-	missile->setImage(img_redbolt);
+	missile->setImage(resources[RED_BOLT]);
 	missile->setTotalFrames(30);
 	missile->setAnimColumns(10);
 	missile->setFrameWidth(16);
@@ -3225,7 +2974,7 @@ void ModuleEncounter::combatDoBigExplosion(CombatObject *victim)
 
 	//create explosion sprite
 	CombatObject *exp = new CombatObject();
-	exp->setImage(img_bigexplosion);
+	exp->setImage(resources[EXPLOSION_30_128]);
 	exp->setAlpha(true);
 	exp->setObjectType(OBJ_EXPLOSION);
 	exp->setTotalFrames(30);
@@ -3260,7 +3009,7 @@ void ModuleEncounter::combatDoMedExplosion(CombatObject *victim)
 
 	//create explosion sprite
 	CombatObject *exp = new CombatObject();
-	exp->setImage(img_medexplosion);
+	exp->setImage(resources[EXPLOSION_30_64]);
 	exp->setAlpha(true);
 	exp->setObjectType(OBJ_EXPLOSION);
 	exp->setTotalFrames(30);
@@ -3295,7 +3044,7 @@ void ModuleEncounter::combatDoSmlExplosion(CombatObject *victim,CombatObject *so
 
 	//create explosion sprite
 	CombatObject *exp = new CombatObject();
-	exp->setImage(img_smlexplosion);
+	exp->setImage(resources[EXPLOSION_30_48]);
 	exp->setAlpha(true);
 	exp->setObjectType(OBJ_EXPLOSION);
 	exp->setTotalFrames(30);
@@ -3334,7 +3083,7 @@ void ModuleEncounter::combatDoBreakAsteroid(CombatObject *victim)
 
 		//create explosion sprite
 		CombatObject *exp = new CombatObject();
-		exp->setImage(img_smlasteroid);
+		exp->setImage(resources[SMLASTEROID]);
 		exp->setObjectType(21); //sub-asteroids
 		exp->setAnimColumns(8);
 		exp->setTotalFrames(64);
@@ -3371,7 +3120,7 @@ void ModuleEncounter::combatDoPowerup(CombatObject *victim)
 	switch( r )
 	{
 		case 1: //health
-			pow->setImage(img_powerup_health);
+			pow->setImage(resources[POWERUP_HEALTH]);
 			pow->setObjectType(OBJ_POWERUP_HEALTH);
 			pow->setAlpha(true);
 			pow->setTotalFrames(9);
@@ -3380,7 +3129,7 @@ void ModuleEncounter::combatDoPowerup(CombatObject *victim)
 			pow->setFrameHeight(32);
 			break;
 		case 2: //shield
-			pow->setImage(img_powerup_shield);
+			pow->setImage(resources[POWERUP_SHIELD]);
 			pow->setObjectType(OBJ_POWERUP_SHIELD);
 			pow->setAlpha(true);
 			pow->setTotalFrames(9);
@@ -3389,7 +3138,7 @@ void ModuleEncounter::combatDoPowerup(CombatObject *victim)
 			pow->setFrameHeight(32);
 			break;
 		case 3: //armor
-			pow->setImage(img_powerup_armor);
+			pow->setImage(resources[POWERUP_ARMOR]);
 			pow->setObjectType(OBJ_POWERUP_ARMOR);
 			pow->setAlpha(true);
 			pow->setTotalFrames(9);
@@ -3401,7 +3150,7 @@ void ModuleEncounter::combatDoPowerup(CombatObject *victim)
         case 5:
         case 6:
         case 7:
-			pow->setImage(img_powerup_mineral);
+			pow->setImage(resources[POWERUP_MINERAL]);
 			(victim->getObjectType() == OBJ_ALIENSHIP)?
 				pow->setObjectType(OBJ_POWERUP_MINERAL_FROM_SHIP) :
 				pow->setObjectType(OBJ_POWERUP_MINERAL_FROM_ASTEROID);
@@ -3473,7 +3222,6 @@ void ModuleEncounter::sendGlobalsToScript()
 		//get number of that item currently in hold
 		g_game->gameState->m_items.Get_Item_By_ID(pItem->id, itemInHold, numInHold);
 
-		//TRACE("Encounter: Sending variable `%s' with value %d to lua\n", luaName.c_str(), numInHold);
 		script->setGlobalNumber(luaName, numInHold);
 	}
 }
@@ -3532,35 +3280,23 @@ void ModuleEncounter::readGlobalsFromScript()
 
 	int laser = script->getGlobalNumber("ship_laser_class");
 	if (laser > ship.getLaserClass()){
-		//if (laser <= ship.getMaxLaserClass()) { // Enforced in scripts, need for special class 9 weapons Quest #56
 			Print("Lasers upgraded to class " + Util::ToString(laser) + "!", YELLOW, 1000);
 			ship.setLaserClass( laser );
-		//}
-		//else Print("Lasers already at maximum level!", RED, 1000);
 	}
 	if (laser < ship.getLaserClass()){
-		//        if (laser <= ship.getMaxLaserClass()) {
             Print("Lasers downgraded to class " + Util::ToString(laser) + "!", YELLOW, 1000);
             ship.setLaserClass( laser ); 
 	}
 	int missile = script->getGlobalNumber("ship_missile_class");
 	if (missile > ship.getMissileLauncherClass()){
-		//if (missile <= ship.getMaxMissileLauncherClass()) {
 			Print("Missile launcher upgraded to class " + Util::ToString(missile) + "!", YELLOW, 1000);
 			ship.setMissileLauncherClass( missile );
-		//}
-	//	else Print("Missile launcher already at maximum level!", RED, 1000);
 	}
 	if (missile < ship.getMissileLauncherClass()){
-		//if (missile <= ship.getMaxMissileLauncherClass()) {
 			Print("Missile launcher downgraded to class " + Util::ToString(missile) + "!", YELLOW, 1000);
 			ship.setMissileLauncherClass( missile );
-		//}
-	//	else Print("Missile launcher already at maximum level!", RED, 1000);
 	}
 	g_game->gameState->setShip( ship );
-
-
 
 	//get artifact cargo updates, other ship items (endurium, etc.)
 	for (int n=0; n<g_game->dataMgr->GetNumItems(); n++){
@@ -3580,7 +3316,6 @@ void ModuleEncounter::readGlobalsFromScript()
                              luaName = "player_" + pItem->name;
 
 		newcount = script->getGlobalNumber(luaName);
-		//TRACE("Encounter: Getting variable `%s' with value %d from lua\n", luaName.c_str(), newcount);
 
 		//nothing changed for this item; next!
 		if (newcount == numInHold) continue;
@@ -3661,7 +3396,7 @@ void ModuleEncounter::readGlobalsFromScript()
 
 //Alien will close the communication channel.
 //usage: L_Terminate()
-int L_Terminate(lua_State* luaVM)
+int L_Terminate(lua_State* /*luaVM*/)
 {
 	Event e(ENCOUNTER_CLOSECOMM_EVENT);
 	g_game->modeMgr->BroadcastEvent(&e);
@@ -3671,7 +3406,7 @@ int L_Terminate(lua_State* luaVM)
 
 //Alien will close the communication channel and attack.
 //usage: L_Attack()
-int L_Attack(lua_State* luaVM)
+int L_Attack(lua_State* /*luaVM*/)
 {
 	Event e(ENCOUNTER_ALIENATTACK_EVENT);
 	g_game->modeMgr->BroadcastEvent(&e);

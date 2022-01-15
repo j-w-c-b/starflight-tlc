@@ -1,4 +1,3 @@
-#include "env.h"	//added for TRACE support.
 #include <string>
 #include "Game.h"
 #include "QuestMgr.h"
@@ -8,13 +7,8 @@
 using namespace std;
 
 
-QuestMgr::QuestMgr()
+QuestMgr::QuestMgr() : script(), questId(-1), questName(""), questShort(""), questLong("")
 {
-	script = 0;
-	questId = -1;
-	questName = "";
-	questShort = "";
-	questLong = "";
 }
 
 
@@ -65,10 +59,6 @@ void QuestMgr::getScriptGlobals()
 	g_game->gameState->setPlotStage( plot_stage );
 }
 
-void QuestMgr::setScriptGlobals()
-{
-}
-
 bool QuestMgr::getQuestByID(int id)
 {
     script->setGlobalNumber("active_quest", id);
@@ -105,7 +95,6 @@ bool QuestMgr::getActiveQuest()
 void QuestMgr::setStoredValue(int value)
 {
 	g_game->gameState->setStoredValue(value);
-	//storedValue = value;
 }
 
 void QuestMgr::raiseEvent(int eventid, int param1, int param2)
@@ -122,10 +111,8 @@ void QuestMgr::raiseEvent(int eventid, int param1, int param2)
 			if (param1 == -1)  {
 				param1 = eventid;
 				g_game->gameState->setStoredValue(param1);
-				//setStoredValue( param1 );
 			} else
 				g_game->gameState->setStoredValue(questReqType);
-				//setStoredValue( questReqType );
 
 			//test the quest conditions
 			VerifyRequirements( eventid, param1, param2 );
@@ -252,5 +239,4 @@ void QuestMgr::giveReward()
         completion status of the current quest.
     **/
 	g_game->gameState->setStoredValue(-1);
-	//storedValue = -1;
 }
