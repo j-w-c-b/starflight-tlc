@@ -1035,6 +1035,8 @@ void Game::RunGame()
         bool change_module = false;
         string new_module;
         ALLEGRO_EVENT event;
+        bool hide_cursor = false;
+        bool show_cursor = false;
 
         do
         {
@@ -1065,6 +1067,16 @@ void Game::RunGame()
                     break;
                 case ALLEGRO_EVENT_MOUSE_AXES:
                     OnMouseMove(event.mouse.x, event.mouse.y);
+                    break;
+                case ALLEGRO_EVENT_MOUSE_ENTER_DISPLAY:
+                case ALLEGRO_EVENT_DISPLAY_SWITCH_IN:
+                    hide_cursor = true;
+                    show_cursor = false;
+                    break;
+                case ALLEGRO_EVENT_DISPLAY_SWITCH_OUT:
+                case ALLEGRO_EVENT_MOUSE_LEAVE_DISPLAY:
+                    hide_cursor = false;
+                    show_cursor = true;
                     break;
                 case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
                     m_last_button_downs[event.mouse.button-1] = make_pair(event.mouse.x, event.mouse.y);
@@ -1097,6 +1109,14 @@ void Game::RunGame()
         {
             modeMgr->LoadModule(new_module);
         }
+        if (hide_cursor)
+        {
+            al_hide_mouse_cursor(m_display);
+        }
+        else if (show_cursor)
+        {
+            al_show_mouse_cursor(m_display);
+        }
 
         if (need_resize) {
             if (ResizeDisplay(resize_x, resize_y)) {
@@ -1113,8 +1133,6 @@ void Game::RunGame()
 		gameState->setGameTimeSecs(newTime);
 		gameState->stardate.Update(newTime, timeRateDivisor);
 	}
-        al_set_target_bitmap(m_backbuffer);
-        al_clear_to_color(BLACK);
 
 	if (!m_pause)
 	{
@@ -1209,14 +1227,24 @@ void Game::RunGame()
 
 
 
-	//vibrate the screen if needed (occurs near a star or flux)
-	if (vibration) v = Util::Random(0, vibration); else v = 0;
+    //vibrate the screen if needed (occurs near a star or flux)
+    if (vibration) v = Util::Random(-vibration/2, vibration/2); else v = 0;
 
-    //***restore vibration effect after testing resolution independence***
     ALLEGRO_BITMAP *display_buffer = al_get_backbuffer(m_display);
   
     al_set_target_bitmap(display_buffer);
-    al_draw_scaled_bitmap(m_backbuffer, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, m_backbuffer_x_offset, m_backbuffer_y_offset, SCREEN_WIDTH * m_backbuffer_scale, SCREEN_HEIGHT * m_backbuffer_scale, 0);
+    if (m_backbuffer_x_offset || m_backbuffer_y_offset) {
+        /* Letterbox */
+        al_clear_to_color(BLACK);
+    }
+
+    al_draw_scaled_bitmap(
+            m_backbuffer,
+            0, 0,
+            SCREEN_WIDTH, SCREEN_HEIGHT,
+            m_backbuffer_x_offset + v, m_backbuffer_y_offset,
+            SCREEN_WIDTH * m_backbuffer_scale - v, SCREEN_HEIGHT * m_backbuffer_scale - v,
+            0);
 
     al_flip_display();
 }
@@ -1504,6 +1532,11 @@ void Game::Print(ALLEGRO_BITMAP *dest, ALLEGRO_FONT *_font, int x,int y,const st
 		al_draw_text(_font, BLACK, x+2, y+2, 0, text.c_str());
 	}
 	al_draw_text(_font, color, x, y, 0, text.c_str());
+}
+
+void Game::Print12(ALLEGRO_BITMAP *dest, int x,int y,const std::string &text, ALLEGRO_COLOR color, bool shadow)
+{
+	Print(dest, font12, x, y, text, color, shadow);
 }
 
 void Game::Print18(ALLEGRO_BITMAP *dest, int x,int y,const std::string &text, ALLEGRO_COLOR color, bool shadow)

@@ -63,6 +63,7 @@ private:
 	Label* planet_label;
 	bool flag_nav;
 	bool flag_thrusting;
+	int flag_rotation;
 
 	//shortcuts to crew last names to simplify code
 	std::string com;

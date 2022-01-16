@@ -18,7 +18,6 @@
 		double getY() { return y; }
 		void setY(double v) { y = v; }
 		double getZ() { return z; }
-		void setZ(double v) { z = v; }
 		void Move( double mx,double my,double mz);
 		void operator+=(const Vector3& v);
 		void operator-=(const Vector3& v);

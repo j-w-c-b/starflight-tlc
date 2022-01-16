@@ -349,7 +349,6 @@ class PlayerInfo {
 			m_previous_scanner_state,
 			m_bHasHyperspacePermit,
 			m_bHasOverdueLoan;
-		void set_prev_scanner_state(bool state){m_previous_scanner_state = state;}
 		bool m_is_lost;
 		Stardate m_date_lost;
 	public:
@@ -406,10 +405,6 @@ class PlayerInfo {
 
 		double getCurrentSpeed() { return currentSpeed; }
 		void setCurrentSpeed(double value) { currentSpeed = value; }
-
-		bool has_flux_scanner(){return m_scanner;}
-		void set_flux_scanner(bool status){set_prev_scanner_state(m_scanner); m_scanner = status;}
-		bool prev_scanner_state(){return m_previous_scanner_state;}
 
 		bool hasHyperspacePermit(){return m_bHasHyperspacePermit;}
 		void set_HyperspacePermit(bool status){m_bHasHyperspacePermit = status;}
@@ -502,7 +497,6 @@ public:
 
 	ProfessionType	getProfession()			const;
 	int				getCredits()			const;
-	int				get_fluxSeed()			const	{return fluxSeed;}
 
 	//mutators
 	void setCaptainSelected(bool initCaptainSelected);
@@ -511,7 +505,6 @@ public:
 	void setCredits(int initCredits);
 	void augCredits(int amount);
 	void setShip(const Ship &initShip);
-	void set_fluxSeed(int seed)									{fluxSeed = seed;}
 
 	OfficerType getCurrentSelectedOfficer() { return m_currentSelectedOfficer; }
 	void setCurrentSelectedOfficer(OfficerType value) { m_currentSelectedOfficer = value; }
@@ -552,8 +545,6 @@ public:
 
 	//navigation status
 	bool navigateStatus;
-	bool getNavigating() { return navigateStatus; }
-	void setNavigating(bool value) { navigateStatus = value; }
 
 	//tactical shield up/down status
 	bool shieldStatus;

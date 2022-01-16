@@ -9,7 +9,6 @@ ALLEGRO_DEBUG_CHANNEL("AudioSystem")
 
 Sample::Sample(const string &filename, float volume):
 	loop(false),
-	paused(false),
 	sample(al_load_sample(filename.c_str())),
 	sample_instance(al_create_sample_instance(sample))
 {

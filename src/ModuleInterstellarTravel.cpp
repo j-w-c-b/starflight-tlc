@@ -132,33 +132,32 @@ void ModuleInterstellarTravel::Draw()
 
 void ModuleInterstellarTravel::OnKeyPress(int keyCode)
 {
+	if (g_game->gameState->m_ship.getFuel() == 0) {
+		ship->cruise();
+		return;
+	}
 	switch (keyCode) {
-        case ALLEGRO_KEY_D:
+		case ALLEGRO_KEY_D:
 		case ALLEGRO_KEY_RIGHT:
-			flag_nav = false;
+			flag_rotation = 1;
 			ship->turnright();
-			if (!flag_thrusting) ship->applybraking();
 			break;
 
-        case ALLEGRO_KEY_A:
+		case ALLEGRO_KEY_A:
 		case ALLEGRO_KEY_LEFT:
-			flag_nav = false;
+			flag_rotation = -1;
 			ship->turnleft();
-			if (!flag_thrusting) ship->applybraking();
 			break;
 
-        case ALLEGRO_KEY_S:
+        	case ALLEGRO_KEY_S:
 		case ALLEGRO_KEY_DOWN:
 			flag_nav = false;
 			ship->applybraking();
-        	g_game->gameState->m_ship.ConsumeFuel(2);
 			break;
 
-        case ALLEGRO_KEY_W:
+		case ALLEGRO_KEY_W:
 		case ALLEGRO_KEY_UP:
 			flag_nav = flag_thrusting = true;
-			ship->applythrust();
-			g_game->gameState->m_ship.ConsumeFuel(4);
 			break;
 
 		case ALLEGRO_KEY_Q:
@@ -180,6 +179,10 @@ void ModuleInterstellarTravel::OnKeyPress(int keyCode)
 
 void ModuleInterstellarTravel::OnKeyReleased(int keyCode)
 {
+	if (g_game->gameState->m_ship.getFuel() == 0) {
+		ship->cruise();
+		return;
+	}
 	switch (keyCode) {
 
 #ifdef DEBUGMODE		
@@ -232,6 +235,8 @@ void ModuleInterstellarTravel::OnKeyReleased(int keyCode)
         case ALLEGRO_KEY_LEFT:
         case ALLEGRO_KEY_D:
         case ALLEGRO_KEY_RIGHT:
+			flag_rotation = 0;
+			break;
         case ALLEGRO_KEY_S:
         case ALLEGRO_KEY_DOWN:
 			flag_nav = false;
@@ -784,7 +789,6 @@ int ModuleInterstellarTravel::getFleetSizeByRace(bool small_fleet)
 
 void ModuleInterstellarTravel::Update()
 {
-	static Timer timerHelp;
 	static bool flag_MiscComment = false;
 	static string miscComment = "";
 	ostringstream os;
@@ -936,8 +940,24 @@ void ModuleInterstellarTravel::Update()
 		}
 	}
 
+	if (g_game->gameState->m_ship.getFuel() == 0)
+	{
+		flag_thrusting = flag_nav = false;
+		flag_rotation = 0;
+	}
 	//slow ship down automatically
 	if (!flag_nav) ship->applybraking();
+ 	if (flag_thrusting) {
+		ship->applythrust();
+		g_game->gameState->m_ship.ConsumeFuel(4);
+        }
+	if (flag_rotation == 1)
+	{
+			ship->turnright();
+	} else if (flag_rotation == -1)
+	{
+			ship->turnleft();
+	}
 
 	//refresh text list
 	text->ScrollToBottom();
@@ -966,7 +986,6 @@ void ModuleInterstellarTravel::identify_flux()
 					g_game->gameState->player->set_galactic_pos((*i)->TILE_EXIT().X * scroller->getTileWidth(), (*i)->TILE_EXIT().Y * scroller->getTileHeight());
 					flux = (*i);
 					tempOfficer->SkillUp(SKILL_NAVIGATION, 10);
-					(*i)->rTRAVELED() = true;
 					if(g_game->gameState->SkillCheck(SKILL_NAVIGATION)){//if #5
 						(*i)->rPATH_VISIBLE() = true;
 					}else{

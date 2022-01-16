@@ -205,18 +205,18 @@ bool ModuleStarmap::Init()
 	flux_sprite.setFrameHeight(8);
 
 	//load star tile image
-	stars = new Sprite();
+	Sprite stars;
 	
-	stars->setImage(resources[IS_TILES_TRANS]);
-	if (!stars->getImage()) {
+	stars.setImage(resources[IS_TILES_TRANS]);
+	if (!stars.getImage()) {
 		g_game->message("Starmap: Error loading stars");
 		return false;
 	}
 
-	stars->setAnimColumns(8);
-	stars->setTotalFrames(8);
-	stars->setFrameWidth(8);
-	stars->setFrameHeight(8);
+	stars.setAnimColumns(8);
+	stars.setTotalFrames(8);
+	stars.setFrameWidth(8);
+	stars.setFrameHeight(8);
 	int spectral = -1;
 	Star *star;
 
@@ -235,12 +235,11 @@ bool ModuleStarmap::Init()
 			default: ALLEGRO_ASSERT(0);
 		}
 		//draw star image on starmap
-		stars->setCurrFrame(spectral);
-		stars->setX(star->x * ratioX - 3);//-4 due to the star's width, and +1 for compensation reasons
-		stars->setY(star->y * ratioY - 3);//-4 due to the star's width, and +1 for compensation reasons
-		stars->drawframe(starview); 
+		stars.setCurrFrame(spectral);
+		stars.setX(star->x * ratioX - 3);//-4 due to the star's width, and +1 for compensation reasons
+		stars.setY(star->y * ratioY - 3);//-4 due to the star's width, and +1 for compensation reasons
+		stars.drawframe(starview); 
 	}
-	delete stars;
 	return true;
 }
 
@@ -360,8 +359,10 @@ void ModuleStarmap::Draw()
 			al_draw_textf(g_game->font10, fontColor, 620, text_y, ALLEGRO_ALIGN_CENTER, "%.2f", fuel );
 		
 
+                	al_set_target_bitmap(g_game->GetBackBuffer());
 			al_draw_circle((int)(playerPos.x * ratioX + new_x_offset), 
 			 (int)(new_y_offset + (playerPos.y) * ratioY), 4, al_map_rgb(0,255,0), 1);
+                	al_set_target_bitmap(text);
 		}
 
 		// destination
@@ -370,8 +371,10 @@ void ModuleStarmap::Draw()
 		if (dest_active){
 			al_draw_textf(g_game->font10, fontColor, 310, text_y, ALLEGRO_ALIGN_CENTER, "%.0f", m_destPos.x );
 			al_draw_textf(g_game->font10, fontColor, 380, text_y, ALLEGRO_ALIGN_CENTER, "%.0f", m_destPos.y );
+                	al_set_target_bitmap(g_game->GetBackBuffer());
 			al_draw_circle((int)(m_destPos.x * ratioX + new_x_offset), 
 			(int)(new_y_offset + (m_destPos.y) * ratioY), 4, al_map_rgb(255,0,0), 1);
+                	al_set_target_bitmap(text);
 		}
 		//else if the mouse cursor is near a starsystem, we want to print the coordinates 
 		//of that starsystem instead of the actual coordinates under the mouse pointer

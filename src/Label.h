@@ -22,13 +22,10 @@ public:
 	int GetWidth()						const { return width; }
 	int GetHeight()						const { return height; }
 	ALLEGRO_COLOR GetColor()						const { return color; }
-	std::string GetText()				const { return text; }
-	ALLEGRO_FONT* GetFont()				const { return alFont; }
 	
 	//mutators
 	void SetX(int X)					{ xPos = X; }
 	void SetY(int Y)					{ yPos = Y; }
-	void Append(const std::string &Text)		{ text += Text; }
 
 	//These are in the cpp so they may be easily changed to automatically call the Refresh function when used
 	void SetText(const std::string &Text);

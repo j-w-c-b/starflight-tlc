@@ -12,7 +12,6 @@
 #include "Util.h"
 #include "GameState.h"
 #include "Archive.h"
-#include "sfitems.h"
 #include "Point2D.h"
 #include "Game.h"
 #include "DataMgr.h"
@@ -868,7 +867,9 @@ void Ship::setMaxMissileLauncherClass(int missileLauncherClass)
 void Ship::SendDistressSignal()
 {
     //calculate cost of rescue
-	Point2D starport_pos(15553,13244);
+    int starport_x = g_game->getGlobalNumber("PLAYER_HYPERSPACE_START_X");
+    int starport_y = g_game->getGlobalNumber("PLAYER_HYPERSPACE_START_Y");
+    Point2D starport_pos(starport_x, starport_y);
     double distance = Point2D::Distance( g_game->gameState->player->posHyperspace, starport_pos );
     double cost = ( 5000 + (distance * 10.0) );
 
@@ -1268,6 +1269,7 @@ GameState::GameState():
 	officerCom(NULL),
 	officerDoc(NULL)
 {
+    Reset();
 }
 
 ALLEGRO_PATH *

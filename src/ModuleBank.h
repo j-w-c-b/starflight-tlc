@@ -49,7 +49,6 @@ public:
 
 	void take_loan(); 
 	void pay_loan();
-	bool init_images();
 	bool init_buttons();
 	void render_images();
 	void render_text();
@@ -70,8 +69,6 @@ public:
 	bool				b_has_loan,				//does the player have a loan?
 						b_considering_pay,		//does the player wish to pay the loan?
 						b_considering_take;		//does the player wish to pay the loan;
-	ALLEGRO_BITMAP				*bmp_bank_background,	//background image
-						*bmp_bank_banner;
 	Stardate			date_taken,				//date that the loan was taken
 						m_due_date;				//when is the next payment due
 	float				f_interest_rate;		//interest rate of loan
@@ -84,7 +81,6 @@ public:
 	std::list<int>		digit_list;
 
 	ScrollBox::ScrollBox    *m_help_window;
-	ALLEGRO_BITMAP					*bmp_help_window;
 	bool					b_help_visible;
 	bool m_bWarned;
 };

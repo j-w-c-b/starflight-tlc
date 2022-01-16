@@ -53,7 +53,7 @@ ALLEGRO_DEBUG_CHANNEL("ModuleCantina")
 #define EVENT_TURNIN_CLICK 7
 
 
-ModuleCantina::ModuleCantina(void) : resources(CANTINA_IMAGES) {}
+ModuleCantina::ModuleCantina(void) : m_background(nullptr), resources(CANTINA_IMAGES) {}
 
 ModuleCantina::~ModuleCantina(void) 
 {

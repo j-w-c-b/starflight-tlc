@@ -66,19 +66,6 @@ Flux & Flux::operator=(const Flux &rhs){
 }
 
 bool Flux::distance_check(double d_other_x, double d_other_y, double d_distance){
-	/*if(d_distance < sqrt(SQUARE(d_other_x - this->tile.X) + SQUARE(d_other_y - this->tile.Y))){
-		return true;
-	}else{
-		return false;
-	}*/
-
-	/*if(abs(this->m_tile.X - d_other_x) < d_distance && abs(this->m_tile.X - d_other_y) < d_distance){
-		return true;
-	}else{
-		return false;
-	}*/
-
-
 	double dx = this->m_tile.X - d_other_x;
 	double dy =this->m_tile.Y - d_other_y;
 	if(dx*dx + dy*dy < d_distance){

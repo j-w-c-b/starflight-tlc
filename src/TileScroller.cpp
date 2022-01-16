@@ -17,26 +17,14 @@ TileScroller::TileScroller()
    columns = 1;
    rows = 1;
    this->resetTiles();
-   bLoaded = false;
 }
 
 TileScroller::~TileScroller()
-{
-	this->destroy();
-}
-
-void TileScroller::destroy()
 {
 	if (scrollbuffer) 
 	{
 		al_destroy_bitmap(scrollbuffer);
 		scrollbuffer = NULL;
-	}
-
-	if (bLoaded && tiles) 
-	{
-		al_destroy_bitmap(tiles);
-		tiles = NULL;
 	}
 }
 
@@ -62,17 +50,10 @@ void TileScroller::setTileImage(ALLEGRO_BITMAP *image)
 { 
 	if (!image) return;
 	
-	//if tile image was previously loaded, free it's memory
-	if (bLoaded && tiles) {
-		al_destroy_bitmap(tiles);
-	}
-	
     this->tiles = image; 
-    //image is now a pointer, not loaded
-    bLoaded = false;
 }
 
-int TileScroller::createScrollBuffer(int width,int height)
+bool TileScroller::createScrollBuffer(int width,int height)
 {
    this->windowwidth = width;
    this->windowheight = height;

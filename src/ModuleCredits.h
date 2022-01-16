@@ -10,7 +10,6 @@
 
 #include "Module.h"
 #include "GameState.h"
-#include "EventMgr.h"
 #include "ResourceManager.h"
 
 class ModuleCredits : public Module

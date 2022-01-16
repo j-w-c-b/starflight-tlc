@@ -88,7 +88,10 @@ ModuleEncounter::ModuleEncounter(void) :
 	spr_statusbar_shield(NULL),
 	script(NULL),
 	text(NULL),
-	dialogue(NULL)
+	dialogue(NULL),
+	flag_thrusting(false),
+	flag_nav(false),
+	flag_rotation(0)
 {}
 
 ModuleEncounter::~ModuleEncounter(void){}
@@ -102,54 +105,71 @@ void ModuleEncounter::OnKeyPress(int keyCode)
 {
 	if (module_mode == 1)  //if module_mode == combat
 	{
-		switch (keyCode)
-		{
+		if (g_game->gameState->m_ship.getFuel() == 0) {
+			playerShip->cruise();
+		} else {
+			switch (keyCode)
+			{
+			case ALLEGRO_KEY_D:
 			case ALLEGRO_KEY_RIGHT:		
-                playerShip->turnright();	
-                break;
-
+				flag_rotation = 1;
+				playerShip->turnright();	
+				break;
+	
+			case ALLEGRO_KEY_A:
 			case ALLEGRO_KEY_LEFT:		
-                playerShip->turnleft();		
-                break;
-
+				flag_rotation = -1;
+				playerShip->turnleft();		
+				break;
+	
+	       		case ALLEGRO_KEY_S:
 			case ALLEGRO_KEY_DOWN:		
-                playerShip->applybraking();	
+				flag_nav = false;
+				playerShip->applybraking();	
 				break;
-
+	
+			case ALLEGRO_KEY_W:
 			case ALLEGRO_KEY_UP:			
-                playerShip->applythrust();	
-                flag_thrusting = true;
-                break;
-
+				flag_nav = flag_thrusting = true;
+				playerShip->applythrust();	
+				flag_thrusting = true;
+				break;
+	
 			case ALLEGRO_KEY_Q:	
-                if (!flag_thrusting) playerShip->applybraking();
-                playerShip->starboard();	
-                break;
-
+				flag_nav = true;
+				if (!flag_thrusting) playerShip->applybraking();
+				playerShip->starboard();	
+				break;
+	
 			case ALLEGRO_KEY_E:	
-                if (!flag_thrusting) playerShip->applybraking();
-                playerShip->port();			
-                break;
-
-			case ALLEGRO_KEY_ALT:
-			case ALLEGRO_KEY_X:
-				if (!firingMissile) {
-					firingLaser = true;
-					fireLaser();
-				}
+				flag_nav = true;
+				if (!flag_thrusting) playerShip->applybraking();
+				playerShip->port();			
 				break;
-
-			case ALLEGRO_KEY_LCTRL:
-            case ALLEGRO_KEY_RCTRL:
-            case ALLEGRO_KEY_Z:
-				if (!firingLaser) {
-					firingMissile = true,
-					fireMissile();
-				}
-				break;
-			
+	
 			default:
 				break;
+			}
+		}
+		switch (keyCode)
+		{
+		case ALLEGRO_KEY_ALT:
+		case ALLEGRO_KEY_X:
+			if (!firingMissile) {
+				firingLaser = true;
+			}
+			break;
+
+		case ALLEGRO_KEY_LCTRL:
+            	case ALLEGRO_KEY_RCTRL:
+            	case ALLEGRO_KEY_Z:
+			if (!firingLaser) {
+				firingMissile = true;
+			}
+			break;
+			
+		default:
+			break;
 		}
 	}
    g_game->CrossModuleAngle = playerShip->getRotationAngle();	//JJH
@@ -163,21 +183,26 @@ void ModuleEncounter::OnKeyReleased(int keyCode)
 	{
 		//reset ship anim frame when key released
 		
+		case ALLEGRO_KEY_D:
+		case ALLEGRO_KEY_A:
 		case ALLEGRO_KEY_LEFT:
 		case ALLEGRO_KEY_RIGHT:
+			flag_rotation = 0;
+			break;
 		case ALLEGRO_KEY_DOWN:
 			playerShip->cruise();
 			break;
 
 		case ALLEGRO_KEY_UP:
-            flag_thrusting = false;
+			flag_nav = flag_thrusting = false;
 			playerShip->applybraking();
 			playerShip->cruise();
 			break;
 
 		case ALLEGRO_KEY_Q:
 		case ALLEGRO_KEY_E:
-            playerShip->applybraking();
+			flag_nav = false;
+            		playerShip->applybraking();
 			playerShip->cruise();
 			break;
 
@@ -193,9 +218,12 @@ void ModuleEncounter::OnKeyReleased(int keyCode)
 			break;
 
 		case ALLEGRO_KEY_ALT:
+		case ALLEGRO_KEY_X:
 			firingLaser = false;
 			break;
 		case ALLEGRO_KEY_LCTRL:
+            	case ALLEGRO_KEY_RCTRL:
+            	case ALLEGRO_KEY_Z:
 			firingMissile = false;
 			break;
 
@@ -2386,7 +2414,27 @@ void ModuleEncounter::Combat_Update()
 		playerShip->allstop();
 	}
 
+	if (g_game->gameState->m_ship.getFuel() == 0) {
+		flag_thrusting = flag_nav = false;
+		flag_rotation = 0;
+	}
+	//slow down the ship automatically
+	if (!flag_nav)	playerShip->applybraking();
 
+	if (flag_thrusting) {
+		playerShip->applythrust();
+	}
+	if (flag_rotation == 1) {
+		playerShip->turnright();
+	} else if (flag_rotation == -1) {
+		playerShip->turnleft();
+	}
+	if (firingLaser) {
+		fireLaser();
+	}
+	if (firingMissile) {
+		fireMissile();
+	}
 	//update all combat objects
 	for (int i=0; i < (int)combatObjects.size(); i++)
 	{
@@ -2860,7 +2908,7 @@ void ModuleEncounter::fireLaser()
 	double y = g_game->gameState->player->posCombat.y + effectiveScreenHeight()/2 - 8;
 	float velx = playerShip->getVelocityX();
 	float vely = playerShip->getVelocityY();
-	int angle = (int)playerShip->getSprite()->getFaceAngle();
+	int angle = (int)playerShip->getRotationAngle();
 	createLaser(laser, x, y, velx, vely, angle, laserDamage);
 }
 
@@ -2899,7 +2947,7 @@ void ModuleEncounter::fireMissile()
 	double y = (int)g_game->gameState->player->posCombat.y + effectiveScreenHeight()/2 - 8;
 	float velx = playerShip->getVelocityX();
 	float vely = playerShip->getVelocityY();
-	int angle = (int)playerShip->getSprite()->getFaceAngle();
+	int angle = (int)playerShip->getRotationAngle();
 	createMissile(missile, x, y, velx, vely, angle, missileDamage);
 }
 

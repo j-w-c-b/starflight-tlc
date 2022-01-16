@@ -23,7 +23,6 @@ public:
 
 	void raiseEvent(int eventid, int param1=-1, int param2=-1);
 
-	int getId() { return questId; }
 	std::string getName() { return questName; }
 	std::string getShort() { return questShort; }
 	std::string getLong() { return questLong; }
@@ -43,7 +42,6 @@ public:
 private:
 	Script *script;
 
-	int questId;
 	std::string questName;
 	std::string questShort;
 	std::string questLong;

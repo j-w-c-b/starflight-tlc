@@ -7,7 +7,7 @@
 using namespace std;
 
 
-QuestMgr::QuestMgr() : script(), questId(-1), questName(""), questShort(""), questLong("")
+QuestMgr::QuestMgr() : script(), questName(""), questShort(""), questLong("")
 {
 }
 

@@ -74,7 +74,6 @@ public:
 
    bool IsArtifact() {return itemType == IT_ARTIFACT;};
    bool IsMineral()  {return itemType == IT_MINERAL;};
-   bool IsLifeForm() {return itemType == IT_LIFEFORM;};
 
    ID id;                   // the ID of this item
    ItemType itemType;       // the type of item

@@ -215,7 +215,9 @@ void ModuleShipConfig::OnEvent(Event *event)
             {
 				ID starid = 2;
 				g_game->gameState->player->currentStar = starid;
-				g_game->gameState->player->set_galactic_pos(15553, 13244);
+                                int start_pos_x = g_game->getGlobalNumber("PLAYER_HYPERSPACE_START_X");
+                                int start_pos_y = g_game->getGlobalNumber("PLAYER_HYPERSPACE_START_Y");
+				g_game->gameState->player->set_galactic_pos(start_pos_x, start_pos_y);
 
 				//compute myrrdan position
 				int orbitalpos = 3;

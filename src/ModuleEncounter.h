@@ -150,7 +150,9 @@ private:
 	int goto_question; // if not 0, jump to this question number overriding other logic
 
 	bool firingLaser, firingMissile;
-    bool flag_thrusting;
+	bool flag_thrusting;
+	bool flag_nav;
+	int flag_rotation;
 
 public:
 	ModuleEncounter(void);

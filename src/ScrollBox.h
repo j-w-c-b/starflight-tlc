@@ -111,8 +111,6 @@ public:
 	void ScrollToBottom();
 	void ScrollToTop();
 	void LinkBox(ScrollBox *scrollBox);
-	void SetLeftPad(int pad) {sbLeftPad = pad;};
-	void SetTopPad(int pad) {sbTopPad = pad;};
 	void DrawScrollBar(bool TrueOrFalse) {sbDrawBar = TrueOrFalse;};
 	void setLines(int lines);
 	int getLines() { return sbLines; }
@@ -134,7 +132,6 @@ public:
 	void SetColorSelectedBackground(ALLEGRO_COLOR color) { ColorSelectedBackground = color; };
 	void SetColorSelectedHighlight(ALLEGRO_COLOR color) { ColorSelectedHighlight = color; };
 	void SetColorItemBorder(ALLEGRO_COLOR color) { ColorItemBorder = color; };
-	void SetColorSelectedText(ALLEGRO_COLOR color) { ColorSelectedText = color; };
 	void PaintNormalImage();
 	void PaintHoverImage();
 	void PaintSelectedImage();

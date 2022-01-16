@@ -11,7 +11,7 @@
 
 ModuleGameOver::ModuleGameOver(void)
 {
-	bQuickShutdown = true;
+	bQuickShutdown = false;
 }
 
 ModuleGameOver::~ModuleGameOver(void)

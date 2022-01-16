@@ -103,10 +103,7 @@ bool ModuleBank::Init()
 	}
 
 
-	{//images
-		if(!init_images()){return false;}
-		if(!init_buttons()){return false;}
-	}
+	if(!init_buttons()){return false;}
 
 	{
 		b_help_visible = false;
@@ -137,17 +134,6 @@ bool ModuleBank::Init()
 
 	//tell questmgr that this module has been entered
 	g_game->questMgr->raiseEvent(24);
-
-	return true;
-}
-
-bool ModuleBank::init_images()
-{
-        // resources.load() will fail if these are nullptr, so we can just look
-        // them up here.
-	bmp_bank_background = resources[BANK_BACKGROUND];
-	bmp_bank_banner = resources[BANK_BANNER];
-	bmp_help_window = resources[BANK_HELP_WINDOW];
 
 	return true;
 }
@@ -343,15 +329,15 @@ void ModuleBank::Draw()
 	}
 	{//help window
 		if(b_help_visible){
-			al_draw_bitmap(bmp_help_window, HELP_WINDOW_X, HELP_WINDOW_Y, 0);
+			al_draw_bitmap(resources[BANK_HELP_WINDOW], HELP_WINDOW_X, HELP_WINDOW_Y, 0);
 			m_help_window->Draw(g_game->GetBackBuffer());
 		}
 	}
 }
 
 void ModuleBank::render_images(){
-		al_draw_bitmap(bmp_bank_background,0,0,0);
-		al_draw_bitmap(bmp_bank_banner, BANK_BANNER_X, BANK_BANNER_Y, 0); //render background
+		al_draw_bitmap(resources[BANK_BACKGROUND],0,0,0);
+		al_draw_bitmap(resources[BANK_BANNER], BANK_BANNER_X, BANK_BANNER_Y, 0); //render background
 		exit_button->Run(g_game->GetBackBuffer());
 		help_button->Run(g_game->GetBackBuffer());
 		confirm_button->Run(g_game->GetBackBuffer());

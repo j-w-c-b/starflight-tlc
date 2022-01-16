@@ -71,8 +71,6 @@ public:
 		this->y = ny;
 	}
 
-	void Zero() { x = y = 0.0; }
-
 	bool operator==( const Point2D& p ) const {
 		const double EPSILON = 0.0001;
 

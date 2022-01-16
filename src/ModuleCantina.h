@@ -13,7 +13,6 @@
 #include "GameState.h"
 #include "Button.h"
 #include "ScrollBox.h"
-#include "EventMgr.h"
 #include "Label.h"
 #include "ResourceManager.h"
 

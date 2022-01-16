@@ -16,7 +16,7 @@
 
 class PlayerShipSprite {
 private:
-	Sprite	*ship;
+	Sprite	ship;
 	double maximum_velocity;
 	double	forward_thrust;
 	double	reverse_thrust;
@@ -28,7 +28,6 @@ private:
 public:
 	~PlayerShipSprite();
 	PlayerShipSprite();
-	void destroy();
 	void applythrust();
 	void limitvelocity();
 	void cruise();
@@ -40,12 +39,12 @@ public:
 	void applybraking();
 
 	void draw(ALLEGRO_BITMAP *dest);
-	double getX() { return ship->getX(); }
-	double getY() { return ship->getY(); }
-	void setX(double value) { ship->setX(value); }
-	void setX(int value)    { ship->setX(value); }
-	void setY(double value) { ship->setY(value); }
-	void setY(int value)    { ship->setY(value); }
+	double getX() { return ship.getX(); }
+	double getY() { return ship.getY(); }
+	void setX(double value) { ship.setX(value); }
+	void setX(int value)    { ship.setX(value); }
+	void setY(double value) { ship.setY(value); }
+	void setY(int value)    { ship.setY(value); }
 	float getVelocityX();
 	float getVelocityY();
 	void setVelocityX(float value);
@@ -60,9 +59,6 @@ public:
 	double getReverseThrust();
 	double getLateralThrust();
 	double getTurnRate();
-	
-	Sprite *getSprite() { return ship; }
-
 };
 
 

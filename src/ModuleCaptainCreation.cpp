@@ -190,19 +190,19 @@ bool ModuleCaptainCreation::Init()
 	m_militaryBtnMouseOver = m_resources[CAPTAINCREATION_MILITARY_MOUSEOVER];
 
 	m_profInfoScientific = new Label("Even though the universe regresses towards smaller and smaller components, it is still plenty large to hide a few mysteries. The Scientific Officer represents the pinnacle of Myrrdanian brainpower. Armed with wit, cunning, intelligence... and a stun gun these brave souls explore the edges of the galaxy documenting planets and capturing life forms for study. Not to mention, the ability to recommend a planet for colonization comes with monetary and retirement perks. Mostly monetary seeing as distant planet construction usually takes some time to kick start.",
-		150, 420, 750, 400, WHITE, g_game->font24);
+		150, 420, 750, 400, WHITE, g_game->font18);
 	if (m_profInfoScientific == NULL)
 		return false;
 	m_profInfoScientific->Refresh();
 
 	m_profInfoFreelance = new Label("There is a lot of money to be made in the Gamma Sector and the Freelancer's job is to get his hands on some. This jack of all trades profession is easily the most versatile Captain type in the galaxy. Capable of interstellar combat and properly equipped with modern scanning and exploring technology there is ample opportunity for the Freelancer to respond to most situations. One distinguishing feature is the greatly expanded cargo room which, of course, makes all those lowly Glush Cola shipments that much more profitable.",
-		150, 420, 750, 400, WHITE, g_game->font24);
+		150, 420, 750, 400, WHITE, g_game->font18);
 	if (m_profInfoFreelance == NULL)
 		return false;
 	m_profInfoFreelance->Refresh();
 
 	m_profInfoMilitary =  new Label("The galaxy is a rough and tumble place where there is hardly ever a shortage of conflict. The Military Officer is the spear point of Myrrdan's influence and is often called upon to serve 'for the greater good.' Trained in tactical combat and given access to some of the highest class weaponry in the sector, it is never a bad time to be at the helm of a Wraith class warship. Being in front of it, however, is another scenario entirely.",
-		150, 420, 750, 400, WHITE, g_game->font24);
+		150, 420, 750, 400, WHITE, g_game->font18);
 	if (m_profInfoMilitary == NULL)
 		return false;
 	m_profInfoMilitary->Refresh();

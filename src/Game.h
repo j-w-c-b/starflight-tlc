@@ -98,7 +98,6 @@ public:
 	void message(const std::string &msg);
 	ALLEGRO_BITMAP *GetBackBuffer() { return m_backbuffer; }
 	void setVibration(int value) { vibration = value; }
-	int getVibration() { return vibration; }
 
     MessageBoxWindow *messageBox;
 	PauseMenu *pauseMenu;
@@ -118,10 +117,8 @@ public:
 	void KillMessageBoxWindow();
 
 	void TogglePauseMenu();
-	void setPaused(bool value) { m_pause = value; }
 	void SetTimePaused(bool v);
 	bool getTimePaused() 	  {return timePause;}
-	int  getTimeRateDivisor() {return timeRateDivisor;}
         bool ResizeDisplay(int x, int w);
 
 	static QuestMgr		*questMgr;
@@ -170,7 +167,6 @@ public:
 	void setGlobalNumber(const std::string &name, double value);
 	bool getGlobalBoolean(const std::string &name);
 
-	int getFrameRate() { return frameRate; }
 	Timer globalTimer;
 
 	//used to enable/disable the control panel (when in use)

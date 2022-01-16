@@ -10,7 +10,6 @@ class Sample
 {
 private:
 	bool loop;
-	bool paused;
 	ALLEGRO_SAMPLE	*sample;
 
 public:
@@ -22,9 +21,7 @@ public:
         bool IsInitialized() const;
 	bool SetVolume(float volume);
 	bool SetLoop(bool doLoop);
-	bool GetLoop(){ return loop; }
 	bool SetPaused(bool doPause);
-	bool GetPaused(){ return paused; }
         bool IsPlaying() const;
 };
 

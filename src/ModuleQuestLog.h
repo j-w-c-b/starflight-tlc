@@ -11,7 +11,6 @@
 #include "Module.h"
 #include <allegro5/allegro.h>
 #include "GameState.h"
-#include "EventMgr.h"
 #include "Label.h"
 #include "ResourceManager.h"
 

@@ -53,23 +53,29 @@ void ModuleInterPlanetaryTravel::OnKeyPress(int keyCode)
 {
     //Note: fuel consumption in a star system should be negligible since its the impulse engine
     //whereas we're using the hyperspace engine outside the system
+	if (g_game->gameState->m_ship.getFuel() == 0) {
+		ship->cruise();
+		return;
+	}
 	switch (keyCode) {
+		case ALLEGRO_KEY_D:
 		case ALLEGRO_KEY_RIGHT:
-			flag_nav = false;
+			flag_rotation = 1;
 			ship->turnright();
 			break;
+		case ALLEGRO_KEY_A:
 		case ALLEGRO_KEY_LEFT:
-			flag_nav = false;
+			flag_rotation = -1;
 			ship->turnleft();
 			break;
+        	case ALLEGRO_KEY_S:
 		case ALLEGRO_KEY_DOWN:
 			flag_nav = false;
 			ship->applybraking();
 			break;
+		case ALLEGRO_KEY_W:
 		case ALLEGRO_KEY_UP:
 			flag_nav = flag_thrusting = true;
-			ship->applythrust();
-			g_game->gameState->m_ship.ConsumeFuel();
 			break;
 		case ALLEGRO_KEY_Q:
 			flag_nav = true;
@@ -90,15 +96,21 @@ void ModuleInterPlanetaryTravel::OnKeyPress(int keyCode)
 void ModuleInterPlanetaryTravel::OnKeyReleased(int keyCode)
 {
 	Module::OnKeyReleased(keyCode);
+	if (g_game->gameState->m_ship.getFuel() == 0) {
+		ship->cruise();
+		return;
+	}
 
 	switch (keyCode) {
 
-		//reset ship anim frame when key released
+		case ALLEGRO_KEY_D:
+		case ALLEGRO_KEY_A:
 		case ALLEGRO_KEY_LEFT:
 		case ALLEGRO_KEY_RIGHT:
+			flag_rotation = 0;
+			break;
 		case ALLEGRO_KEY_DOWN:
-			flag_nav = false;
-            ship->cruise();
+			ship->cruise();
 			break;
 
 		case ALLEGRO_KEY_UP:
@@ -301,6 +313,7 @@ bool ModuleInterPlanetaryTravel::Init()
 
 	//reset flags
 	flag_nav = flag_thrusting = false;
+	flag_rotation = 0;
 
 	planetFound = 0;
 	distance = 0.0f;
@@ -393,7 +406,6 @@ bool ModuleInterPlanetaryTravel::checkSystemBoundary(int x,int y)
 
 void ModuleInterPlanetaryTravel::Update()
 {
-	static Timer timerHelp;
 	std::ostringstream s;
 
 	//update the ship's position based on velocity
@@ -585,8 +597,27 @@ void ModuleInterPlanetaryTravel::Update()
 		}
 	}
 
+	if (g_game->gameState->m_ship.getFuel() == 0)
+	{
+		flag_thrusting = flag_nav = false;
+		flag_rotation = 0;
+	}
 	//slow down the ship automatically
 	if (!flag_nav)	ship->applybraking();
+
+	if (flag_thrusting)
+	{
+			ship->applythrust();
+			g_game->gameState->m_ship.ConsumeFuel();
+	}
+	if (flag_rotation == 1)
+	{
+			ship->turnright();
+	} else if (flag_rotation == -1)
+	{
+			ship->turnleft();
+	}
+
 
 	//refresh messages
 	text->ScrollToBottom();
@@ -718,7 +749,7 @@ void ModuleInterPlanetaryTravel::updateMiniMap()
 			cy = asy + ash / 2;
 			rx = (int)( (2 + i) * 8.7 );
 			ry = (int)( (2 + i) * 8.7 );
-			al_draw_ellipse(cx, cy, rx, ry, al_map_rgb(12,12,24), 1);
+			al_draw_ellipse(cx, cy, rx, ry, al_map_rgb(12,12,24), 2);
 		}
 	}
 

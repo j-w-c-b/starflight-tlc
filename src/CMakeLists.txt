@@ -90,7 +90,6 @@ add_executable(
     CombatObject.h
     DataMgr.cpp
     DataMgr.h
-    EventMgr.h
     Events.h
     Flux.cpp
     Flux.h
@@ -201,7 +200,6 @@ add_executable(
     main.cpp
     noiseutils.cpp
     noiseutils.h
-    sfitems.h
     tinyxml/tinystr.cpp
     tinyxml/tinystr.h
     tinyxml/tinyxml.cpp

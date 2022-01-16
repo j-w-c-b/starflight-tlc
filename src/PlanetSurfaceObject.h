@@ -71,7 +71,6 @@ public:
 
 	//accessors
 	int getID()									const { return id; }
-	ItemType getItemType()						const { return itemType; }
 	std::string getName()						const { return name; }
 	double getValue()							const { return value; }
 	double getSize()							const { return size; }
@@ -79,12 +78,10 @@ public:
 	double getDamage()							const { return damage; }
 	int getHealth()								const { return health; }
 	int getMaxHealth()							const { return maxHealth; }
-	ItemAge getItemAge()						const { return itemAge; }
 	bool IsShipRepairMetal()					const { return shipRepairMetal; }
 	bool IsBlackMarketItem()					const { return blackMarketItem; }
 	std::string GetScriptName()					const { return scriptName; }
 	bool IsScanned()							const { return scanned; }
-	bool IsSelected()							const { return selected; }
 	int getStunCount()							const { return stunCount; }
 	double getX()								const { return x; }
 	double getY()								const { return y; }
@@ -95,30 +92,16 @@ public:
 	double getVelY()							const { return velY; }
 	float getFaceAngle()						const { return faceAngle; }
 	float getMoveAngle()						const { return moveAngle; }
-	double getAngleOffset()						const { return angleOffset; }
 	int isAlive()								const { return alive; }
 	int getState()								const { return state; }
 	int getObjectType()							const { return objectType; }
-	int getDirection()							const { return direction; }
-	int getWidth()								const { return (int)(width * scale); }
-	int getHeight()								const { return (int)(height * scale); }
 	int getColHalfWidth()						const { return (int)(colHalfWidth * scale); }
 	int getColHalfHeight()						const { return (int)(colHalfHeight * scale); }
 	double getScale()							const { return scale; }
-	int getDelayX()								const { return delayX; }
-	int getDelayY()								const { return delayY; }
-	int getCountX()								const { return countX; }
-	int getCountY()								const { return countY; }
 	int getCurrFrame()							const { return currFrame; }
 	int getTotalFrames()						const { return totalFrames; }
-	int getAnimDir()							const { return animDir; }
-	int getFrameCount()							const { return frameCount; }
-	int getFrameDelay()							const { return frameDelay; }
 	int getFrameWidth()							const { return frameWidth; }
 	int getFrameHeight()						const { return frameHeight; }
-	int getAnimColumns()						const { return animColumns; }
-	int getAnimStartX()							const { return animStartX; }
-	int getAnimStartY()							const { return animStartY; }
 	int getCounter1()							const { return counter1; }
 	int getCounter2()							const { return counter2; }
 	int getCounter3()							const { return counter3; }
@@ -161,26 +144,17 @@ public:
 	void setAlive(int initAlive)					{ alive = initAlive; }
 	void setState(int initState)					{ state = initState; }
 	void setObjectType(int initObjectType)			{ objectType = initObjectType; }
-	void setDirection(int initDirection)			{ direction = initDirection; }
 	void setWidth(int initWidth)					{ width = initWidth; }
 	void setHeight(int initHeight)					{ height = initHeight; }
 	void setColHalfWidth(int initHalfWidth)			{ colHalfWidth = initHalfWidth; }
 	void setColHalfHeight(int initHalfHeight)		{ colHalfHeight = initHalfHeight; }
 	void setScale(double initScale)					{ scale = initScale; }
-	void setDelayX(int initDelayX)					{ delayX = initDelayX; }
-	void setDelayY(int initDelayY)					{ delayY = initDelayY; }
-	void setCountX(int initCountX)					{ countX = initCountX; }
-	void setCountY(int initCountY)					{ countY = initCountY; }
 	void setCurrFrame(int initCurrFrame)			{ currFrame = initCurrFrame; }
 	void setTotalFrames(int initTotalFrames)		{ totalFrames = initTotalFrames; }
-	void setAnimDir(int initAnimDir)				{ animDir = initAnimDir; }
-	void setFrameCount(int initFrameCount)			{ frameCount = initFrameCount; }
 	void setFrameDelay(int initFrameDelay)			{ frameDelay = initFrameDelay; }
 	void setFrameWidth(int initFrameWidth)			{ frameWidth = initFrameWidth; }
 	void setFrameHeight(int initFrameHeight)		{ frameHeight = initFrameHeight; }
 	void setAnimColumns(int initAnimColumns)		{ animColumns = initAnimColumns; }
-	void setAnimStartX(int initAnimStartX)			{ animStartX = initAnimStartX; }
-	void setAnimStartY(int initAnimStartY)			{ animStartY = initAnimStartY; }
 	void setCounter1(int initCounter1)				{ counter1 = initCounter1; }
 	void setCounter2(int initCounter2)				{ counter2 = initCounter2; }
 	void setCounter3(int initCounter3)				{ counter3 = initCounter3; }

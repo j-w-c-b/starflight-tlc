@@ -63,6 +63,7 @@ private:
 	bool flag_FoundFlux;
 	bool flag_nav;
 	bool flag_thrusting;
+	int flag_rotation;
 	bool flag_launchEncounter;
 
 

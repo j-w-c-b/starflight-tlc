@@ -34,13 +34,8 @@ public:
 	std::string getName()		const { return name; }
 	double getDamage()			const { return damage; }
 	int getHealth()				const { return health; }
-	bool UsesAlpha()			const { return UseAlpha; }
-	int getExpireDuration()		{ return expireDuration; }
 	double getMass()			{ return mass; }
-	double getRotation()		{ return rotation; }
-	double getAngle()			{ return rotateAngle; }
 	double getMaxVelocity()		{ return maxVelocity; }
-	double getCollisionRadius()	{ return collisionRadius; }
 	double getTurnRate()		{ return turnrate; }
 	double getAcceleration()	{ return accel; }
 	int getBehavior()			{ return behavior; }
@@ -64,9 +59,7 @@ public:
 	void setExpireDuration(int time)		{ expireDuration = time; }
 	void setMass(double value)				{ mass = value; }
 	void setRotation(double value)			{ rotation = value; }
-	void setAngle(double value)				{ rotateAngle = value; }
 	void setMaxVelocity(double value)		{ maxVelocity = value; }
-	void setCollisionRadius(double value)	{ collisionRadius = value; }
 	void setTurnRate(double value)			{ turnrate = value; }
 	void setAcceleration(double value)		{ accel = value; }
 	void setBehavior(int value)				{ behavior = value; }

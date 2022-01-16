@@ -50,7 +50,6 @@ private:
 		 VIEWER_MOVE_RATE,
 		 viewer_offset_y;
 
-	Sprite *stars;
 	ALLEGRO_BITMAP *starview;
 	ALLEGRO_BITMAP *gui_starmap;
 	ALLEGRO_BITMAP *text;

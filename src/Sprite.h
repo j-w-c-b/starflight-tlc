@@ -67,23 +67,10 @@ public:
 	int isAlive()			 { return alive; }
 	int getState()			 { return state; }
 	int getObjectType()		 { return objectType; }
-	int getDirection()		 { return direction; }
-	int getWidth()			 { return width; }
-	int getHeight()			 { return height; }
-	int getDelayX()			 { return delayX; }
-	int getDelayY()			 { return delayY; }
-	int getCountX()			 { return countX; }
-	int getCountY()			 { return countY; }
 	int getCurrFrame()		 { return currFrame; }
 	int getTotalFrames()	 { return totalFrames; }
-	int getAnimDir()		 { return animDir; }
-	int getFrameCount()		 { return frameCount; }
-	int getFrameDelay()		 { return frameDelay; }
 	int getFrameWidth()		 { return frameWidth; }
 	int getFrameHeight()	 { return frameHeight; }
-	int getAnimColumns()	 { return animColumns; }
-	int getAnimStartX()		 { return animStartX; }
-	int getAnimStartY()		 { return animStartY; }
 	int getCounter1()		 { return counter1; }
 	int getCounter2()		 { return counter2; }
 	int getCounter3()		 { return counter3; }
@@ -106,23 +93,14 @@ public:
 	void setAlive(bool value)			{ alive = value; }
 	void setState(int value)			{ state = value; }
 	void setObjectType(int value)		{ objectType = value; }
-	void setDirection(int value)		{ direction = value; }
 	void setWidth(int value)			{ width = value; }
 	void setHeight(int value)			{ height = value; }
-	void setDelayX(int value)			{ delayX = value; }
-	void setDelayY(int value)			{ delayY = value; }
-	void setCountX(int value)			{ countX = value; }
-	void setCountY(int value)			{ countY = value; }
 	void setCurrFrame(int value)		{ currFrame = value; }
 	void setTotalFrames(int value)		{ totalFrames = value; }
-	void setAnimDir(int value)			{ animDir = value; }
-	void setFrameCount(int value)		{ frameCount = value; }
 	void setFrameDelay(int value)		{ frameDelay = value; }
 	void setFrameWidth(int value)		{ frameWidth = value; }
 	void setFrameHeight(int value)		{ frameHeight = value; }
 	void setAnimColumns(int value)		{ animColumns = value; }
-	void setAnimStartX(int value)		{ animStartX = value; }
-	void setAnimStartY(int value)		{ animStartY = value; }
 	void setCounter1(int value)			{ counter1 = value; }
 	void setCounter2(int value)			{ counter2 = value; }
 	void setCounter3(int value)			{ counter3 = value; }

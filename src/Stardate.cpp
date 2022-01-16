@@ -93,6 +93,7 @@ Stardate & Stardate::operator =( const Stardate &stardate )
 	m_hour = stardate.m_hour;
 	m_month = stardate.m_month;
 	m_year = stardate.m_year;
+        totalHours = stardate.totalHours;
 
 	return *this;
 }

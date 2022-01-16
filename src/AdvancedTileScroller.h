@@ -77,29 +77,19 @@ public:
 
 
    //Accessors
-   int getNumofTileSets()								const { return (int)tiles.size(); }
-   int getNumofTileSetVariations(int index)				const { return tiles[index]->getVariations(); }
    int getTileWidth()									const { return tileWidth; }
    int getTileHeight()									const { return tileHeight; }
    int getTilesAcross()									const { return tilesAcross; }
    int getTilesDown()									const { return tilesDown; }
-   int getWindowWidth()									const { return windowWidth; }
-   int getWindowHeight()								const { return windowHeight; }
    short getPointData(int Column, int Row)				const { return pointData[pdIndex(Column, Row)]; }
-   TileSet *getTileSet(int index)						const { return tiles[index]; }
    float getScrollX()									const { return scrollX; }
    float getScrollY()									const { return scrollY; }
 
    //Mutators
    void setTileSize(int Width,int Height)				{ tileWidth = Width; tileHeight = Height; }
-   void setTileWidth(int Width)							{ tileWidth = Width; }
-   void setTileHeight(int Height)						{ tileHeight = Height; }
-   void setWindowSize(int Width, int Height)			{ windowWidth = Width; windowHeight = Height; }
    void setScrollPosition(float X, float Y)				{ scrollX = X; scrollY = Y; }
    void setTileImage(ALLEGRO_BITMAP *image, int Column, int Row){ tileData[tdIndex(Column, Row)] = image; }
    void setPointData(int Column, int Row, short Value)	{ pointData[pdIndex(Column, Row)] = Value; }
-   void setScrollX(int X)								{ scrollX = X; }
-   void setScrollY(int Y)								{ scrollY = Y; }
    void setRegionSize(int Width, int Height) {
         if (Width >= 0 && Width <= 2500) tilesAcross = Width;
         if (Height >= 0 && Height <= 2500) tilesDown = Height;
