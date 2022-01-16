@@ -931,6 +931,9 @@ bool Game::InitGame()
 	//hide the default mouse cursor
 	al_hide_mouse_cursor(m_display);
 
+        // warp to center
+        al_set_mouse_xy(m_display, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+
 	ALLEGRO_DEBUG("Initialization succeeded\n");
 	return true;
 }
