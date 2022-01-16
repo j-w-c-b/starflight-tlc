@@ -7,19 +7,13 @@ In 2015, I opened the sources again and then in 2017, began a major revision in 
 
 Rendering is 100% software. During the 2017 revision, I removed OpenGL via AllegroGL for rendering planets as it required a second frame buffer and interfered with the rest of the game. A software planet renderer does a decent enough job using the same textures (generated with Perlin and buffered for future use). A 256x256 texture is used for planet orbit, and a 500x500 is generated for the planet surface tilemap system (which is very fragile and divided between C++ and LUA, so be careful when working on planet surface code). In summary, no 3D hardware is used at all.
 
-Project requires Visual C++ 2010 (web installer located in \misc). To upgrade this to the latest Visual Studio, someone will have to build all of the libraries, and I do not believe the "latest" versions of libraries are compatible with the game. If you rebuild libs, get the same versions and just build them with the latest compiler, don't try to upgrade the libs. This is a very old game. I recommend not updating the libs until you have it building with the latest VS. For the time being, 2010 is required. Smarter people than myself will be able to update it. :) Speaking of which, would some *very* experienced and talented programmer please volunteer to manage the repo? I'm too busy. 
-
-
 Major dependencies (included):
 * LUA 5.1
-* Allegro 4.2
-* AllegroGL
-* ALFont
-* FMOD
 * Perlin (libnoise)
 
+It also depends on Allegro 5.2 (font, ttf, image, audio, acodec, dialog addons)
 
-Note about assets (.\bin\data):
-The game does not load the individual asset files under bin\data despite these files being present. I extracted them from the Allegro datafiles before uploading to the repo. We need to revise the game modules to load these assets directly and do away with the .dat files. Use the Allegro dat tool to manage them. I've gone down this road before and it's messy. Allegro de-allocates the assets when you close a datafile, so ALL of the allocation/deallocation code has to be written to load assets and destroy them. This should be done carefully, one module at a time, with testing to ensure no memory leaks are introduced. I've had to scrap weeks of work due to this very issue. Recommend caution.
+It uses CMake to generate the build configuration, and has been built
+successfully on macos, ubuntu linux, and windows 10.
 
 Feel free to edit.
