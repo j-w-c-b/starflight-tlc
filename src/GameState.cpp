@@ -884,7 +884,7 @@ void Ship::SendDistressSignal()
 
     //return to starport
     g_game->setVibration(0);
-	g_game->modeMgr->LoadModule(MODULE_PORT);
+	g_game->LoadModule(MODULE_PORT);
 }
 
 //specials

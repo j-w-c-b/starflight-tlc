@@ -70,13 +70,13 @@ ModuleCredits::~ModuleCredits(void) {}
 
 void ModuleCredits::OnKeyReleased(int /*keyCode*/)
 {
-	g_game->modeMgr->LoadModule(MODULE_TITLESCREEN);
+	g_game->LoadModule(MODULE_TITLESCREEN);
 	return;
 }
 
 void ModuleCredits::OnMouseReleased(int /*button*/, int /*x*/, int /*y*/)
 {
-	g_game->modeMgr->LoadModule(MODULE_TITLESCREEN);
+	g_game->LoadModule(MODULE_TITLESCREEN);
 	return;
 }
 

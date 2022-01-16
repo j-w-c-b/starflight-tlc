@@ -249,7 +249,7 @@ void ModuleCrewHire::OnEvent(Event *event)
 		case EVENT_QUIT_GAME: //quit game
 			g_game->setVibration(0);
 			escape = g_game->getGlobalString("ESCAPEMODULE");
-			g_game->modeMgr->LoadModule(escape);
+			g_game->LoadModule(escape);
 			break;
 
     case EVENT_EXIT_CLICK:
@@ -511,7 +511,7 @@ void ModuleCrewHire::OnEvent(Event *event)
 	}
 
 	if (exitToStarportCommons) {
-		g_game->modeMgr->LoadModule(MODULE_STARPORT);
+		g_game->LoadModule(MODULE_STARPORT);
 		return;
 	}
 }

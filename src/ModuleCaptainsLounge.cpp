@@ -763,9 +763,9 @@ void ModuleCaptainsLounge::OnEvent(Event *event)
         {
 			g_game->gameState->dirty = true;
 			if (g_game->gameState->getSavedModule() == MODULE_CAPTAINSLOUNGE)
-				g_game->modeMgr->LoadModule(MODULE_STARPORT);
+				g_game->LoadModule(MODULE_STARPORT);
 			else
-				g_game->modeMgr->LoadModule(g_game->gameState->getSavedModule());
+				g_game->LoadModule(g_game->gameState->getSavedModule());
 		}
     }
 
@@ -776,15 +776,15 @@ void ModuleCaptainsLounge::OnEvent(Event *event)
 		if (g_game->gameState->m_captainSelected == true) 
         {
 			g_game->gameState->dirty = true;
-            g_game->modeMgr->LoadModule(MODULE_STARPORT);
+            g_game->LoadModule(MODULE_STARPORT);
         }
 		else 
-			g_game->modeMgr->LoadModule(MODULE_TITLESCREEN);
+			g_game->LoadModule(MODULE_TITLESCREEN);
 
 		return;
 	}
 	else if (exitToCaptCreation) {
-		g_game->modeMgr->LoadModule(MODULE_CAPTAINCREATION);
+		g_game->LoadModule(MODULE_CAPTAINCREATION);
 		return;
 	}
 }

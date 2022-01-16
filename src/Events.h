@@ -26,9 +26,10 @@ enum
     EVENT_MOUSEOVER,
     EVENT_HIDE_CONTROLS,
     EVENT_SHOW_CONTROLS,
+    EVENT_CHANGE_MODULE,
+
     CARGO_EVENT_UPDATE,
 };
-
 
 /**
  * Event class

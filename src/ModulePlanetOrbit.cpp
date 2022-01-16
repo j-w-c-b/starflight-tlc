@@ -110,13 +110,13 @@ void ModulePlanetOrbit::OnEvent(Event *event)
 		case EVENT_QUIT_GAME: //quit game
 			g_game->setVibration(0);
 			escape = g_game->getGlobalString("ESCAPEMODULE");
-			g_game->modeMgr->LoadModule(escape);
+			g_game->LoadModule(escape);
 			return;//this must come after any LoadModule call
 			break;
 
 		case EVENT_CAPTAIN_LAUNCH:
 			g_game->printout(text, nav + "Yes, sir, leaving planet orbit...", ORANGE);
-			g_game->modeMgr->LoadModule(MODULE_INTERPLANETARY);
+			g_game->LoadModule(MODULE_INTERPLANETARY);
 			return;//this must come after any LoadModule call
 			break;
 
@@ -135,7 +135,7 @@ void ModulePlanetOrbit::OnEvent(Event *event)
 				if (g_game->gameState->m_ship.getFuel() >= 0.1f)
 				{
                     g_game->gameState->m_ship.ConsumeFuel(100);
-					g_game->modeMgr->LoadModule(MODULE_SURFACE);
+					g_game->LoadModule(MODULE_SURFACE);
 					return;//this must come after any LoadModule call
 				}
                 else{
@@ -724,7 +724,7 @@ void ModulePlanetOrbit::Update()
 	//trying to dock with starport
 	if (flag_DoDock) {
 		if (Util::ReentrantDelay(2000)) {
-			g_game->modeMgr->LoadModule(MODULE_STARPORT);
+			g_game->LoadModule(MODULE_STARPORT);
 			return;
 		}
 	}

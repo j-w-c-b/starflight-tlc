@@ -285,7 +285,7 @@ void ModuleInterstellarTravel::OnEvent(Event *event)
 		case EVENT_QUIT_GAME:
 			g_game->setVibration(0);
 			escape = g_game->getGlobalString("ESCAPEMODULE");
-			g_game->modeMgr->LoadModule(escape);
+			g_game->LoadModule(escape);
 			return;
 			break;
 
@@ -794,7 +794,7 @@ void ModuleInterstellarTravel::Update()
 	{
 		//pause for encounter sound clip
 		al_rest(2500 * 0.001);
-		g_game->modeMgr->LoadModule(MODULE_ENCOUNTER);
+		g_game->LoadModule(MODULE_ENCOUNTER);
 		return;
 	}
 
@@ -1222,7 +1222,7 @@ void ModuleInterstellarTravel::identifyStar()
     //that star system without sufficient fuel
     g_game->gameState->m_ship.ConsumeFuel(20); 
 
-	g_game->modeMgr->LoadModule(MODULE_INTERPLANETARY);
+	g_game->LoadModule(MODULE_INTERPLANETARY);
 
 }
 

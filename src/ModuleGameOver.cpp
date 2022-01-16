@@ -23,7 +23,7 @@ void ModuleGameOver::OnKeyReleased(int keyCode)
 {
 	if (keyCode == ALLEGRO_KEY_ESCAPE) {
 		al_rest(500 * 0.001);
-		g_game->modeMgr->LoadModule(MODULE_TITLESCREEN);
+		g_game->LoadModule(MODULE_TITLESCREEN);
 		return;
 	}
 }

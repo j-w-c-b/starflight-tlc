@@ -9,10 +9,11 @@
 #ifndef GAME_H
 #define GAME_H 1
 
+#include <allegro5/allegro.h>
+#include <allegro5/allegro_font.h>
 #include <iostream>
 #include <string>
 #include <vector>
-#include <allegro5/allegro_font.h>
 #include "ScrollBox.h"
 #include "Timer.h"
 #include "Sprite.h"
@@ -121,6 +122,7 @@ public:
 	void SetTimePaused(bool v);
 	bool getTimePaused() 	  {return timePause;}
 	int  getTimeRateDivisor() {return timeRateDivisor;}
+        bool ResizeDisplay(int x, int w);
 
 	static QuestMgr		*questMgr;
 	static GameState	*gameState;
@@ -190,7 +192,7 @@ public:
     int desktop_width, desktop_height, desktop_colordepth;
     int actual_width, actual_height;
     bool Initialize_Graphics();
-
+    void LoadModule(const std::string &new_module);
 
 protected:
 	void Stop();
@@ -221,6 +223,9 @@ private:
 	ALLEGRO_DISPLAY *m_display;
 	//primary drawing surface for all modules
 	ALLEGRO_BITMAP *m_backbuffer;
+	float m_backbuffer_scale;
+	int m_backbuffer_x_offset;
+	int m_backbuffer_y_offset;
 
 	//the same as the primary surface, except it doesn't have a mouse on it
     //not to be rude but who is the idiot who came up with this solution?
@@ -229,33 +234,7 @@ private:
 	int frameCount, startTime, frameRate;
     double screen_scaling, scale_width, scale_height;
 
-	int m_numMouseButtons;
-	// array of bools which are true for pressed buttons, false otherwise
-	bool *m_mouseButtons;
-
-	// same as m_mouseButtons, but used to indicate the prior state
-	bool *m_prevMouseButtons;
-
-	// used to record the position at which a mouse button was pressed; used
-	// to detect clicks (mouse pressed and released at the same location
-	struct MousePos
-	{
-		int x;
-		int y;
-	};
-	MousePos *m_mousePressedLocs;
-
-	// previous mouse position
-	int m_prevMouseX;
-	int m_prevMouseY;
-	int m_prevMouseZ;
-
-	// holds the state of the keys in the previous loop; used to detect kb events
-	ALLEGRO_KEYBOARD_STATE m_prevKeyState;
-
 	void CalculateFramerate();
-	void UpdateKeyboard();
-	void UpdateMouse();
 	bool InitializeModules();
 
 	//LUA state object used to read global settings
@@ -264,6 +243,11 @@ private:
 	std::string p_title;
 	std::string p_version;
 
+        ALLEGRO_TIMER *m_fps_timer;
+        ALLEGRO_EVENT_QUEUE *m_event_queue;
+        ALLEGRO_EVENT_SOURCE m_user_event_source;
+
+        std::vector<std::pair<int, int>> m_last_button_downs;
 };
 
 

@@ -133,25 +133,25 @@ void ModuleTitleScreen::Draw()
 
 		case 700: //clicked New Game
 			title_mode = 1;
-			g_game->modeMgr->LoadModule(MODULE_CAPTAINCREATION);
+			g_game->LoadModule(MODULE_CAPTAINCREATION);
 			return;
 			break;
 
 		case 701: //clicked Load Game
 			title_mode = 1;
-			g_game->modeMgr->LoadModule(MODULE_CAPTAINSLOUNGE);
+			g_game->LoadModule(MODULE_CAPTAINSLOUNGE);
 			return;
 			break;
 
 		case 702: //clicked Settings
 			title_mode = 1;
-			g_game->modeMgr->LoadModule(MODULE_SETTINGS);
+			g_game->LoadModule(MODULE_SETTINGS);
 			return;
 			break;
 
 		case 703: //clicked Credits
 			title_mode = 1;
-			g_game->modeMgr->LoadModule(MODULE_CREDITS);
+			g_game->LoadModule(MODULE_CREDITS);
 			return;
 			break;
 

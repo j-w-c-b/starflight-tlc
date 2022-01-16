@@ -232,7 +232,7 @@ void ModuleShipConfig::OnEvent(Event *event)
 				//set player position to start near myrrdan
 				g_game->gameState->player->posSystem.SetPosition( (starX+rx)*tileswidth -256, (starY+ry)*tilesheight -135);
 
-				g_game->modeMgr->LoadModule(MODULE_INTERPLANETARY);
+				g_game->LoadModule(MODULE_INTERPLANETARY);
 			}else{
 				g_game->ShowMessageBoxWindow("Not prepared to launch! Make sure you have an engine and a crew.");
 			}
@@ -303,7 +303,7 @@ void ModuleShipConfig::OnEvent(Event *event)
 			break;
 
 		case Exit:
-			g_game->modeMgr->LoadModule(MODULE_STARPORT);
+			g_game->LoadModule(MODULE_STARPORT);
 			return;
 			break;
 

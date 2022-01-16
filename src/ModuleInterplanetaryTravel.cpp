@@ -215,7 +215,7 @@ void ModuleInterPlanetaryTravel::OnEvent(Event * event)
 		case EVENT_QUIT_GAME: //quit game
 			g_game->setVibration(0);
 			escape = g_game->getGlobalString("ESCAPEMODULE");
-			g_game->modeMgr->LoadModule(escape);
+			g_game->LoadModule(escape);
 			break;
 
 		case EVENT_CAPTAIN_LAUNCH:   g_game->printout(text, nav + "Sir, we are not on a planet.",       BLUE,8000); break;
@@ -442,7 +442,7 @@ void ModuleInterPlanetaryTravel::Update()
 			ship->allstop();
 			if ( Util::ReentrantDelay(2000)) {
 				g_game->setVibration(0);
-				g_game->modeMgr->LoadModule(MODULE_GAMEOVER);
+				g_game->LoadModule(MODULE_GAMEOVER);
 				return;
 			}
 		}
@@ -484,7 +484,7 @@ void ModuleInterPlanetaryTravel::Update()
 		   text->ScrollToBottom();
 		   if ( Util::ReentrantDelay(2000)) {
 			   g_game->printout(text, nav + "Entering orbital trajectory.", ORANGE,2000);
-			   g_game->modeMgr->LoadModule(MODULE_ORBIT);
+			   g_game->LoadModule(MODULE_ORBIT);
 				return;
 		   }
       }
@@ -522,7 +522,7 @@ void ModuleInterPlanetaryTravel::Update()
                 if (g_game->gameState->getShip().getFuel() >= 0.01f) //1% of fuel required
                 {
 				    g_game->gameState->m_ship.ConsumeFuel(20); //hyperspace engine consumes 20 units    
-				    g_game->modeMgr->LoadModule(MODULE_HYPERSPACE);
+				    g_game->LoadModule(MODULE_HYPERSPACE);
 				    return;
                 }
                 else
@@ -544,7 +544,7 @@ void ModuleInterPlanetaryTravel::Update()
 				text->ScrollToBottom();
 				if (Util::ReentrantDelay(1000)) 
 				{
-					g_game->modeMgr->LoadModule(MODULE_STARPORT);
+					g_game->LoadModule(MODULE_STARPORT);
 					return;
 				}
 			}

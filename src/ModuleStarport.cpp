@@ -282,7 +282,7 @@ void ModuleStarport::OnEvent(Event *event)
 			break;
 		case EVENT_QUIT_GAME: //quit game
 			escape = g_game->getGlobalString("ESCAPEMODULE");
-			g_game->modeMgr->LoadModule(escape);
+			g_game->LoadModule(escape);
 			return;
 			break;
 	}
@@ -450,35 +450,35 @@ void ModuleStarport::enterDoor()
 				switch(destinationDoor)
 				{
 				case 0:
-					g_game->modeMgr->LoadModule(MODULE_RESEARCHLAB);
+					g_game->LoadModule(MODULE_RESEARCHLAB);
 					return;
 					break;
 				case 1:
-					g_game->modeMgr->LoadModule(MODULE_CREWBUY);
+					g_game->LoadModule(MODULE_CREWBUY);
 					return;
 					break;
 				case 2:
-					g_game->modeMgr->LoadModule(MODULE_CAPTAINSLOUNGE);
+					g_game->LoadModule(MODULE_CAPTAINSLOUNGE);
 					return;
 					break;
 				case 3:
-					g_game->modeMgr->LoadModule(MODULE_SHIPCONFIG);
+					g_game->LoadModule(MODULE_SHIPCONFIG);
 					return;
 					break;
 				case 4:
-					g_game->modeMgr->LoadModule(MODULE_TRADEDEPOT);
+					g_game->LoadModule(MODULE_TRADEDEPOT);
 					return;
 					break;
 				case 5:
-					g_game->modeMgr->LoadModule(MODULE_BANK);
+					g_game->LoadModule(MODULE_BANK);
 					return;
 					break;
 				case 6:
-					g_game->modeMgr->LoadModule(MODULE_CANTINA);
+					g_game->LoadModule(MODULE_CANTINA);
 					return;
 					break;
 				case 7:
-					g_game->modeMgr->LoadModule(MODULE_MILITARYOPS);
+					g_game->LoadModule(MODULE_MILITARYOPS);
 					return;
 					break;
 				}

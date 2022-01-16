@@ -145,7 +145,7 @@ void ModuleStartup::Draw()
 	case 100: //done, transition to TitleScreen
 		if (Util::ReentrantDelay(1000))
         {
-		    g_game->modeMgr->LoadModule(MODULE_TITLESCREEN);
+		    g_game->LoadModule(MODULE_TITLESCREEN);
 		    return;
         }
 		break;

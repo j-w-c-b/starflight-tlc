@@ -509,7 +509,7 @@ void ModuleTradeDepot::Update()
    if (exitToStarportCommons)
    {
       if (g_game->audioSystem->IsPlaying("buttonclick") == false) {		//switched to named sound: see debug log.
-         g_game->modeMgr->LoadModule(MODULE_STARPORT);
+         g_game->LoadModule(MODULE_STARPORT);
          return;
       }
    }

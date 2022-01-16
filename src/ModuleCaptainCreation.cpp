@@ -1011,7 +1011,7 @@ void ModuleCaptainCreation::OnMouseReleased(int button, int x, int y)
 				m_mouseOverImg = NULL;
 
 				//return player to previous screen
-				g_game->modeMgr->LoadModule(g_game->modeMgr->GetPrevModuleName());
+				g_game->LoadModule(g_game->modeMgr->GetPrevModuleName());
 				return;
 			}
 		}
@@ -1310,7 +1310,7 @@ void ModuleCaptainCreation::OnEvent(Event *event)
 	if (creationComplete)
 	{
 		g_game->gameState->m_captainSelected = true;
-		g_game->modeMgr->LoadModule(MODULE_CAPTAINSLOUNGE);
+		g_game->LoadModule(MODULE_CAPTAINSLOUNGE);
 		return;
 	}
 }

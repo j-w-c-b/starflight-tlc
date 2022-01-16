@@ -256,7 +256,7 @@ void ModulePlanetSurface::OnEvent(Event *event)
             {
 				g_game->setVibration(0);
 				string escape = g_game->getGlobalString("ESCAPEMODULE");
-				g_game->modeMgr->LoadModule(escape);
+				g_game->LoadModule(escape);
 				return;
             }
 			break;
@@ -1113,11 +1113,11 @@ bool ModulePlanetSurface::fabTilemap()
 		case PT_ACIDIC:		fabAcidic();	break;
 		case PT_GASGIANT:
 			g_game->message("PlanetSurface: Error, cannot land on a gas giant planet.");
-			g_game->modeMgr->LoadModule(MODULE_ORBIT);
+			g_game->LoadModule(MODULE_ORBIT);
 			break;
 		default:
 			g_game->message("PlanetSurface: Invalid planet type");
-			g_game->modeMgr->LoadModule(MODULE_ORBIT);
+			g_game->LoadModule(MODULE_ORBIT);
 			return false;
 	}
 
@@ -1724,7 +1724,7 @@ void ModulePlanetSurface::Draw()
 		{
 			introCinematicRunning = false;
             g_game->gameState->m_ship.ConsumeFuel(100);
-			g_game->modeMgr->LoadModule(MODULE_ORBIT);
+			g_game->LoadModule(MODULE_ORBIT);
 			return;
 		}
 	}

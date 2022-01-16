@@ -16,7 +16,7 @@ int main(int, char *[])
 {
 	g_game = new Game();
 	g_game->Run();
-	g_game = NULL;
+        delete g_game;
 
    return 0;
 }

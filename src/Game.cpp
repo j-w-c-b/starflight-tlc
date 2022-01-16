@@ -15,6 +15,7 @@
 #include <memory.h>
 #include <cstdio>
 #include <sstream>
+#include <algorithm>
 
 #include "Game.h"
 #include "GameState.h"
@@ -85,13 +86,6 @@ Game::Game()
 	frameCount = 0;
     startTime = 0;
     frameRate = 0;
-	m_numMouseButtons = 0;
-	m_mouseButtons = NULL;
-	m_prevMouseX = -1;
-    m_prevMouseY = -1;
-	m_prevMouseZ = 0;
-	m_prevMouseButtons = NULL;
-	m_mousePressedLocs = NULL;
 	vibration = 0;
 	globals = NULL;
 	messageBox = NULL;
@@ -122,6 +116,8 @@ Game::Game()
 	MsgColors[MSG_TASK_COMPLETED] = BLUE;
 	MsgColors[MSG_SKILLUP] = PURPLE;
 
+        m_fps_timer = NULL;
+        m_event_queue = NULL;
 }
 
 Game::~Game()
@@ -705,7 +701,7 @@ bool Game::Initialize_Graphics()
 
     //try to get user-selected fullscreen toggle from settings screen
     bool fullscreen = g_game->getGlobalBoolean("FULLSCREEN");
-    int flags = fullscreen ? (ALLEGRO_FULLSCREEN) : ALLEGRO_WINDOWED;
+    int flags = fullscreen ? (ALLEGRO_FULLSCREEN) : (ALLEGRO_WINDOWED | ALLEGRO_RESIZABLE);
 
     if (!m_display)
     {
@@ -724,29 +720,9 @@ bool Game::Initialize_Graphics()
             }
         }
     }
-    else
-    {
-        al_resize_display(m_display, actual_width, actual_height);
-    }
+    ResizeDisplay(actual_width, actual_height);
+
     ALLEGRO_DEBUG("Refresh rate: %d\n", al_get_display_refresh_rate(m_display));
-
-    //Create the backbuffer surface based on internal fixed resolution.
-    //The frame buffer is SCALED to the output of the desired resolution!
-    //Since this func can be called repeatedly from Settings, we need to destroy and 
-    //recreate the back buffer each time.
-    if (m_backbuffer) 
-    {
-        ALLEGRO_DEBUG("Destroying old backbuffer (%d,%d)...\n", al_get_bitmap_width(m_backbuffer), al_get_bitmap_height(m_backbuffer));
-        al_destroy_bitmap(m_backbuffer);
-        m_backbuffer = NULL;
-    }
-
-    ALLEGRO_DEBUG("Creating back buffer (%d,%d)...\n", SCREEN_WIDTH, SCREEN_HEIGHT);
-	m_backbuffer = al_create_bitmap(SCREEN_WIDTH,SCREEN_HEIGHT);
-    if (!m_backbuffer) {
-        ALLEGRO_DEBUG("Error creating back buffer\n");
-        return false;
-    }
     
    /*
      * Retrieve complete list of resolutions supported by the display driver and
@@ -787,6 +763,65 @@ bool Game::Initialize_Graphics()
     }
 
     return true;
+}
+
+bool
+Game::ResizeDisplay(int x, int y)
+{
+    float scalex, scaley;
+
+    if (x < 1024)
+    {
+        x = 1024;
+    }
+    if (y < 768)
+    {
+        y = 1024;
+    }
+    scalex = float(x) / SCREEN_WIDTH;
+    scaley = float(y) / SCREEN_HEIGHT;
+
+    if (scalex > scaley)
+    {
+        m_backbuffer_scale = scaley;
+        m_backbuffer_x_offset = int((x - SCREEN_WIDTH * scaley) / 2.0);
+        m_backbuffer_y_offset = 0;
+    }
+    else
+    {
+        m_backbuffer_scale = scalex;
+        m_backbuffer_x_offset = 0;
+        m_backbuffer_y_offset = int((y - SCREEN_HEIGHT * scalex) / 2.0);
+    }
+
+    if (x != actual_width || y != actual_height)
+    {
+        al_resize_display(m_display, x, y);
+        actual_width = x;
+        actual_height = y;
+    }
+
+    ALLEGRO_DEBUG("Creating back buffer (%d,%d)...\n", SCREEN_WIDTH, SCREEN_HEIGHT);
+    if (!m_backbuffer)
+    {
+	m_backbuffer = al_create_bitmap(SCREEN_WIDTH,SCREEN_HEIGHT);
+    }
+    if (!m_backbuffer) {
+        ALLEGRO_DEBUG("Error creating back buffer\n");
+        return false;
+    }
+    return true;
+}
+
+void
+Game::LoadModule(const string &mod) {
+	ALLEGRO_EVENT event;
+	event.user.type = EVENT_CHANGE_MODULE;
+	event.user.data1 = reinterpret_cast<intptr_t>(new string(mod));
+	al_emit_user_event(&m_user_event_source, &event, [](ALLEGRO_USER_EVENT *e){
+            string *s = reinterpret_cast<string *>(e->data1);
+            delete s;
+        });
 }
 
 /*
@@ -836,25 +871,14 @@ bool Game::InitGame()
 		g_game->message("Error initializing keyboard\n");
 		return false;
 	}
-        al_get_keyboard_state(&m_prevKeyState);
 	if (!al_install_mouse()) {
 		g_game->message("Error initializing mouse\n");
 		return false;
 	}
-	m_numMouseButtons = al_get_mouse_num_buttons();
-	if (m_numMouseButtons < 0) {
-		g_game->message("Error initializing mouse\n");
-		return false;
-	}
-	m_mouseButtons = new bool[m_numMouseButtons+1];
-	m_prevMouseButtons = new bool[m_numMouseButtons+1];
-	m_mousePressedLocs = new MousePos[m_numMouseButtons+1];
-	for (int button = 0; button < m_numMouseButtons+1; button++)
+	int num_buttons = al_get_mouse_num_buttons();
+	for (int i = 0; i < num_buttons; i++)
 	{
-		m_mouseButtons[button] = false;
-		m_prevMouseButtons[button] = false;
-		m_mousePressedLocs[button].x = -1;
-		m_mousePressedLocs[button].y = -1;
+		m_last_button_downs.push_back(make_pair(-1, -1));
 	}
 
 	ALLEGRO_DEBUG("Firing up sound system...\n");
@@ -863,6 +887,26 @@ bool Game::InitGame()
 		g_game->message("Error initializing the sound system\n");
 		return false;
 	}
+        // Create event queue
+        m_event_queue = al_create_event_queue();
+
+	// Add event listeners
+	m_fps_timer = al_create_timer(1.0 / 60.0);
+        al_start_timer(m_fps_timer);
+        ALLEGRO_EVENT_SOURCE *es = al_get_timer_event_source(m_fps_timer);
+        al_register_event_source(m_event_queue, es);
+
+        es = al_get_display_event_source(m_display);
+        al_register_event_source(m_event_queue, es);
+
+        es = al_get_keyboard_event_source();
+        al_register_event_source(m_event_queue, es);
+
+        es = al_get_mouse_event_source();
+        al_register_event_source(m_event_queue, es);
+
+        al_init_user_event_source(&m_user_event_source);
+        al_register_event_source(m_event_queue, &m_user_event_source);
 
 	//load up default fonts
     string fontfile = "data/gui/Xolonium-Regular.ttf";
@@ -942,24 +986,6 @@ void Game::DestroyGame()
 		m_backbuffer = NULL;
 	}
 
-	if (m_mouseButtons != NULL)
-	{
-		delete [] m_mouseButtons;
-		m_mouseButtons = NULL;
-	}
-
-	if (m_prevMouseButtons != NULL)
-	{
-		delete [] m_prevMouseButtons;
-		m_prevMouseButtons = NULL;
-	}
-
-	if (m_mousePressedLocs != NULL)
-	{
-		delete [] m_mousePressedLocs;
-		m_mousePressedLocs = NULL;
-	}
-
 	ALLEGRO_DEBUG("\nShutdown completed.\n");
 
         /* Don't uninstall system until the modules using the ResourceManager
@@ -998,24 +1024,85 @@ OpenGL has been REMOVED from the project.
 */
 void Game::RunGame()
 {
-	static int timeStart = globalTimer.getTimer();
 	static int v;
-	static int fps_delay = 1000 / 60;
-	static int coreStartTime = 0;
-	static int coreCounter = 0;
+        bool need_redraw = false;
+        bool need_resize = false;
+        int resize_x = -1;
+        int resize_y = -1;
+        bool change_module = false;
+        string new_module;
+        ALLEGRO_EVENT event;
 
-	if (globalTimer.getTimer() < timeStart + fps_delay)
-	{
-		//slow down core loop
-		al_rest(0.001);
-		return;
-	}
-	else
-		timeStart = globalTimer.getTimer();
+        do
+        {
+            al_wait_for_event(m_event_queue, &event);
 
-	//update input
-	UpdateKeyboard();
-	UpdateMouse();
+            /* handle input events until our timer clicks */
+            switch (event.type)
+            {
+                case ALLEGRO_EVENT_DISPLAY_RESIZE:
+                    need_resize = true;
+                    resize_x = event.display.width;
+                    resize_y = event.display.height;
+                    break;
+                case ALLEGRO_EVENT_DISPLAY_CLOSE:
+                    m_keepRunning = false;
+                    return;
+                case ALLEGRO_EVENT_TIMER:
+                    need_redraw = true;
+                    break;
+                case ALLEGRO_EVENT_KEY_DOWN:
+                    OnKeyPress(event.keyboard.keycode);
+                    break;
+                case ALLEGRO_EVENT_KEY_CHAR:
+                    OnKeyPressed(event.keyboard.keycode);
+                    break;
+                case ALLEGRO_EVENT_KEY_UP:
+                    OnKeyReleased(event.keyboard.keycode);
+                    break;
+                case ALLEGRO_EVENT_MOUSE_AXES:
+                    OnMouseMove(event.mouse.x, event.mouse.y);
+                    break;
+                case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
+                    m_last_button_downs[event.mouse.button-1] = make_pair(event.mouse.x, event.mouse.y);
+                    OnMousePressed(event.mouse.button-1, event.mouse.x, event.mouse.y);
+                    break;
+                case ALLEGRO_EVENT_MOUSE_BUTTON_UP:
+                    OnMouseReleased(event.mouse.button-1, event.mouse.x, event.mouse.y);
+                   {
+                           pair<int, int> &last_down = m_last_button_downs[event.mouse.button-1];
+                           int last_x = last_down.first;
+                           int last_y = last_down.second;
+                           if (last_x == event.mouse.x && last_y == event.mouse.y)
+                           {
+                                   OnMouseClick(event.mouse.button-1, event.mouse.x, event.mouse.y);
+                           }
+                           last_down.first = -1;
+                           last_down.second = -1;
+                   }
+                   break;
+           case EVENT_CHANGE_MODULE:
+                   need_redraw = true;
+                   change_module = true;
+                   new_module = *reinterpret_cast<string *>(event.user.data1);
+                   al_flush_event_queue(m_event_queue);
+                   break;
+            }
+        } while (!(need_redraw && al_is_event_queue_empty(m_event_queue)));
+  
+        if (change_module)
+        {
+            modeMgr->LoadModule(new_module);
+        }
+
+        if (need_resize) {
+            if (ResizeDisplay(resize_x, resize_y)) {
+                al_acknowledge_resize(m_display);
+            }
+        }
+
+        al_set_target_bitmap(m_backbuffer);
+        al_clear_to_color(BLACK);
 
 	if (!timePause) {		//Update the current stardate:
 		//base game time is needed to properly restore the date from a savegame file
@@ -1028,27 +1115,17 @@ void Game::RunGame()
 
 	if (!m_pause)
 	{
-		//calculate core framerate
-		coreCounter++;
-		if (globalTimer.getTimer() > coreStartTime + 999)
-		{
-			coreStartTime = globalTimer.getTimer();
-			frameRate = coreCounter;
-			coreCounter = 0;
-		}
-        
-		//call update on all modules
-		modeMgr->Update();
+	    //call update on all modules
+	    modeMgr->Update();
 
-		//global abort flag to end game
-		if (!m_keepRunning) return;
+	    //global abort flag to end game
+	    if (!m_keepRunning) return;
 
-		//tell active module to draw
-		modeMgr->Draw();
+	    //tell active module to draw
+	    modeMgr->Draw();
 
-		//perform generic updates to time-sensitive game data
-
-        UpdateAlienRaceAttitudes();
+            //perform generic updates to time-sensitive game data
+            UpdateAlienRaceAttitudes();
 
 
 	} //mpause
@@ -1103,14 +1180,12 @@ void Game::RunGame()
 	}
 
 
-#ifdef DEBUGMODE
         //display debug info on the upper-left corner of screen
-        if (g_game->getGlobalBoolean("DEBUG_OUTPUT") == true)
+        //if (g_game->getGlobalBoolean("DEBUG_OUTPUT") == true)
         {
             ALLEGRO_COLOR GRAY = al_map_rgb(160,160,160);
 		    int y = 3;  int x = 3;
 		// x == 0 doesn't quite work on the Trade Depot Screen - made it a 3 - jjh
-		    g_game->PrintDefault(m_backbuffer,x,y,"Core: " + Util::ToString( frameRate ), GRAY);
             y+=10; g_game->PrintDefault(m_backbuffer,x,y,"Screen: " + Util::ToString((int)scale_width) + "," + Util::ToString((int)scale_height) + " (" + Util::ToString(screen_scaling) + "x)" , GRAY);
 		    y+=10; g_game->PrintDefault(m_backbuffer,x,y,"Quest: " + Util::ToString( g_game->gameState->getActiveQuest() ) + " (" + Util::ToString( g_game->gameState->getQuestCompleted()) + ")" , GREEN);
 		    y+=10; g_game->PrintDefault(m_backbuffer,x,y,"Stage: " + Util::ToString(g_game->gameState->getPlotStage()), GREEN);
@@ -1128,7 +1203,6 @@ void Game::RunGame()
 				    + Util::ToString( gameState->alienAttitudes[n] ));
 		    }*/
         }
-#endif
 
 
 
@@ -1136,110 +1210,16 @@ void Game::RunGame()
 	if (vibration) v = Util::Random(0, vibration); else v = 0;
 
     //***restore vibration effect after testing resolution independence***
-    ALLEGRO_BITMAP * screen = al_get_backbuffer(m_display);
-    screen_scaling = (double)al_get_bitmap_height(screen) / (double)SCREEN_HEIGHT;
-    scale_height = (int)( (double)al_get_bitmap_height(m_backbuffer) * screen_scaling );
-    scale_width = (int)( (double)al_get_bitmap_width(m_backbuffer) * screen_scaling );
-    int cx=0;
-    cx = (actual_width-scale_width)/2;
-    al_set_target_bitmap(screen);
-    al_clear_to_color(BLACK);
-    al_draw_scaled_bitmap(m_backbuffer, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, cx, 0, scale_width, scale_height, 0);
+    ALLEGRO_BITMAP *display_buffer = al_get_backbuffer(m_display);
+  
+    al_set_target_bitmap(display_buffer);
+    al_draw_scaled_bitmap(m_backbuffer, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, m_backbuffer_x_offset, m_backbuffer_y_offset, SCREEN_WIDTH * m_backbuffer_scale, SCREEN_HEIGHT * m_backbuffer_scale, 0);
 
     al_flip_display();
 }
 
 
 #pragma region "UI events"
-
-void Game::UpdateKeyboard()
-{
-    ALLEGRO_KEYBOARD_STATE state;
-    al_get_keyboard_state(&state);
-	for (int k = 0; k < 256; k++)
-	{
-        if (al_key_down(&state, k))
-        {
-	        OnKeyPress(k);
-
-            if (!al_key_down(&m_prevKeyState, k))
-	        {
-	            OnKeyPressed(k);
-	        }
-        }
-        else if (!al_key_down(&state, k))
-        {
-	        if (al_key_down(&m_prevKeyState, k))
-	        {
-		        OnKeyReleased(k);
-	        }
-        }
-	}
-
-	//save key states for release detection
-	memcpy(&m_prevKeyState, &state, sizeof(ALLEGRO_KEYBOARD_STATE));
-}
-
-void Game::UpdateMouse()
-{
-    ALLEGRO_MOUSE_STATE state;
-    al_get_mouse_state(&state);
-
-	for (int button = 0; button < (m_numMouseButtons); button++)
-	{
-      if (al_mouse_button_down(&state, button+1))
-      {
-			m_mouseButtons[button] = true;
-		}
-		else
-		{
-			m_mouseButtons[button] = false;
-		}
-
-		if (m_mouseButtons[button] && (!m_prevMouseButtons[button]))
-		{
-			OnMousePressed(button, state.x, state.y);
-
-			m_mousePressedLocs[button].x = state.x;
-			m_mousePressedLocs[button].y = state.y;
-		}
-		else if ((!m_mouseButtons[button]) && m_prevMouseButtons[button])
-		{
-			OnMouseReleased(button, state.x, state.y);
-
-			if ((m_mousePressedLocs[button].x == state.x) &&
-				 (m_mousePressedLocs[button].y == state.y))
-			{
-				OnMouseClick(button,state.x,state.y);
-			}
-		}
-	}
-
-	//save mouse button states for release detection
-	memcpy(m_prevMouseButtons,m_mouseButtons,sizeof(bool)*(m_numMouseButtons+1));
-
-	if ((state.x != m_prevMouseX) || (state.y != m_prevMouseY))
-	{
-		OnMouseMove(state.x,state.y);
-
-		m_prevMouseX = state.x;
-		m_prevMouseY = state.y;
-	}
-
-	// mouse wheel
-	if (state.z > m_prevMouseZ)
-	{
-		OnMouseWheelUp( state.x, state.y );
-		m_prevMouseZ = state.z;
-	}
-	else
-	if (state.z < m_prevMouseZ)
-	{
-		OnMouseWheelDown( state.x, state.y );
-		m_prevMouseZ = state.z;
-	}
-
-}
 
 void Game::OnKeyPress(int keyCode)
 {

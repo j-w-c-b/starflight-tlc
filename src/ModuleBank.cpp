@@ -454,7 +454,7 @@ void ModuleBank::OnEvent(Event *event)
 		case EVENT_NONE:
 			break;
 		case EVENT_EXIT:
-			g_game->modeMgr->LoadModule(MODULE_STARPORT);
+			g_game->LoadModule(MODULE_STARPORT);
 			return;
 			break;
 		case CALC_ZERO:

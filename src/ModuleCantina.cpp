@@ -87,7 +87,7 @@ void ModuleCantina::OnEvent(Event *event)
 	switch (event->getEventType())
 	{
 		case EVENT_EXIT_CLICK:
-			g_game->modeMgr->LoadModule(MODULE_STARPORT); return;
+			g_game->LoadModule(MODULE_STARPORT); return;
 			break;
 
 		case EVENT_TURNIN_CLICK:

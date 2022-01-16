@@ -251,7 +251,7 @@ void ModuleSettings::OnKeyReleased(int keyCode)
 {
 	if (keyCode == ALLEGRO_KEY_ESCAPE)
     { 
-		g_game->modeMgr->LoadModule(MODULE_TITLESCREEN);
+		g_game->LoadModule(MODULE_TITLESCREEN);
 		return;
 	}
 
@@ -372,9 +372,8 @@ void ModuleSettings::OnEvent(Event *event)
 			break;
 
         case EVENT_EXIT:
-			g_game->modeMgr->LoadModule(MODULE_TITLESCREEN);
-			break;
-
+            g_game->LoadModule(MODULE_TITLESCREEN);
+            break;
 	}
 }
 

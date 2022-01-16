@@ -1306,7 +1306,7 @@ void ModuleEncounter::OnEvent(Event *event)
 		case EVENT_QUIT_GAME: //quit game
 			g_game->setVibration(0);
 			escape = g_game->getGlobalString("ESCAPEMODULE");
-			g_game->modeMgr->LoadModule(escape);
+			g_game->LoadModule(escape);
 			break;
 
 		case EVENT_NAVIGATOR_HYPERSPACE:
@@ -1447,9 +1447,9 @@ void ModuleEncounter::Update()
 			if (hyperspaceCountdown == 0)
 			{
 				g_game->gameState->m_ship.ConsumeFuel();
-				//g_game->modeMgr->LoadModule(MODULE_HYPERSPACE);
+				//g_game->LoadModule(MODULE_HYPERSPACE);
                 string prev = g_game->modeMgr->GetPrevModuleName();
-                g_game->modeMgr->LoadModule( prev );
+                g_game->LoadModule( prev );
 				return;
 			}
 		}
