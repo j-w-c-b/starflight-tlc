@@ -107,7 +107,7 @@ bool ModuleBank::Init()
 
 	{
 		b_help_visible = false;
-		m_help_window = new ScrollBox::ScrollBox(g_game->font22,
+		m_help_window = new ScrollBox::ScrollBox(g_game->font18,
 												 ScrollBox::SB_TEXT,
 												 HELP_WINDOW_X+27,
 												 HELP_WINDOW_Y+15,
@@ -124,9 +124,9 @@ bool ModuleBank::Init()
 		m_help_window->Write("Use the button, labeled 'confirm', to pay or take the value listed on the keypad screen.", al_map_rgb(255,255,255));
 		m_help_window->Write("", al_map_rgb(255,255,255));
 		m_help_window->Write("A word of caution:", al_map_rgb(255,0,0));
-		m_help_window->Write(" High bank loans have high interest rates. Be wary of taking loans larger than you need.", al_map_rgb(255,255,255));
+		m_help_window->Write("High bank loans have high interest rates. Be wary of taking loans larger than you need.", al_map_rgb(255,255,255));
 		m_help_window->Write("A minimum payment must be payed every 7 days. By paying in excess you can cover additional payments ahead of time.", al_map_rgb(255,255,255));
-		m_help_window->Write("Failure to pay the loan will result in severe punishment. It is not recommended that you test the banks generosity.", al_map_rgb(255,255,255));
+		m_help_window->Write("Failure to pay the loan will result in severe punishment. It is not recommended that you test the bank's generosity.", al_map_rgb(255,255,255));
 	}
 	m_bWarned = false;
 	digit_list.clear();
@@ -383,40 +383,40 @@ void ModuleBank::render_text(){
 	al_draw_text(g_game->font12, al_map_rgb(255,255,255), INFO_OUTPUT_X, INFO_OUTPUT_Y, 0, c_output);
 
 	sprintf(c_output,"Credits: %i", g_game->gameState->getCredits()); //display credits
-	al_draw_text(g_game->font12, al_map_rgb(255,255,255),INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE, 0, c_output);
+	al_draw_text(g_game->font18, al_map_rgb(255,255,255),INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE, 0, c_output);
 
 	if(this->b_has_loan == true){ //does the player have a loan?
 		sprintf(c_output,"Date Taken: %s", date_taken.GetDateString().c_str());
-		al_draw_text(g_game->font22, al_map_rgb(255,255,255),INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*2, 0, c_output);
+		al_draw_text(g_game->font12, al_map_rgb(255,255,255),INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*2, 0, c_output);
 		
 		sprintf(c_output,"Amount Owed: %i", i_amount_owed);
-		al_draw_text(g_game->font22, al_map_rgb(255,255,255),INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*3, 0, c_output);
+		al_draw_text(g_game->font12, al_map_rgb(255,255,255),INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*3, 0, c_output);
 		
 		if( is_overdue() ){
 			sprintf(c_output,"Payment: %i", i_minimum_payment);
-			al_draw_text(g_game->font22, ORANGE, INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*6, 0,c_output);
+			al_draw_text(g_game->font12, ORANGE, INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*6, 0,c_output);
 
 			sprintf(c_output,"Due: %s", m_due_date.GetDateString().c_str());
-			al_draw_text(g_game->font22, ORANGE, INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*7, 0,c_output);
+			al_draw_text(g_game->font12, ORANGE, INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*7, 0,c_output);
 
 			sprintf(c_output,"PAYMENT OVERDUE!");
-			al_draw_text(g_game->font22, ORANGE, INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*8, 0, c_output);
+			al_draw_text(g_game->font12, ORANGE, INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*8, 0, c_output);
 		
 			if(!m_bWarned){
-				g_game->ShowMessageBoxWindow("", " - Your payment is overdue! - ", 400, 150);
+				g_game->ShowMessageBoxWindow("", " - Your payment is overdue! - ", 400, 200);
 				m_bWarned = true;
 			}
 
 		}else{
 			sprintf(c_output,"Payment: %i", i_minimum_payment);
-			al_draw_text(g_game->font22, al_map_rgb(255,255,255), INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*6, 0, c_output);
+			al_draw_text(g_game->font12, al_map_rgb(255,255,255), INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*6, 0, c_output);
 
 			sprintf(c_output,"Due: %s", m_due_date.GetDateString().c_str());
-			al_draw_text(g_game->font22, al_map_rgb(255,255,255),INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*7, 0, c_output);
+			al_draw_text(g_game->font12, al_map_rgb(255,255,255),INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*7, 0, c_output);
 		}
 		
 		sprintf(c_output,"Interest Rate: %.2f", f_interest_rate);
-		al_draw_text(g_game->font22, al_map_rgb(255,255,255),INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*4, 0, c_output);
+		al_draw_text(g_game->font12, al_map_rgb(255,255,255),INFO_OUTPUT_X, INFO_OUTPUT_Y + INFO_FONT_SIZE*4, 0, c_output);
 
 	}
 }

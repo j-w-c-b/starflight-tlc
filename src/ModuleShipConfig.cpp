@@ -54,7 +54,7 @@ bool ModuleShipConfig::Init()
 		if(i < NUMBER_OF_BUTTONS)
 		{
 			buttons[i] = new Button(btnNorm, btnOver, btnDeact, 
-				BUTTON_X_START, BUTTON_Y_START+i*(BUTTON_HEIGHT+PIXEL_BUFFER), 0, 0, g_game->font32, "def", al_map_rgb(0,255,0));
+				BUTTON_X_START, BUTTON_Y_START+i*(BUTTON_HEIGHT+PIXEL_BUFFER), 0, 0, g_game->font22, "def", al_map_rgb(0,255,0));
 		}
 		if(buttons[i])
 		{
@@ -472,7 +472,7 @@ void ModuleShipConfig::OnEvent(Event *event)
 		case BuyTV:
 			if (g_game->gameState->m_ship.getHasTV())
 			{
-				g_game->ShowMessageBoxWindow("", "You already own a Terrain Vehicle!", 400, 150);
+				g_game->ShowMessageBoxWindow("", "You already own a Terrain Vehicle!", 400, 200);
 			}
 			else
 			{
@@ -488,7 +488,7 @@ void ModuleShipConfig::OnEvent(Event *event)
 				}
 				else
 				{
-					g_game->ShowMessageBoxWindow("", "A new Terrain Vehicle costs 2,000 credits.", 400, 200);
+					g_game->ShowMessageBoxWindow("", "A new Terrain Vehicle costs 2000 credits.", 400, 200);
 				}
 			}
 			break;
@@ -564,7 +564,7 @@ std::string ModuleShipConfig::convertButtonTypeToString(ButtonType btnType) cons
 	case Nevermind:		return "Cancel";		break;
 	case SaveName:		return "Save Name";		break;
 	case TVConfig:		return "Terrain Vehicle";		break;
-	case BuyTV:	    	return "Buy T.V. (2,000)";		break;
+	case BuyTV:	    	return "Buy T.V. (2000)";		break;
 	}
 	return "";
 }
@@ -1105,14 +1105,16 @@ void ModuleShipConfig::display() const
 	}
 	else if (menuPath.back() == Name)		
 	{
+        int nlen;
 		//print "MSS"
-		al_draw_text(g_game->font32, WHITE, MENU_PATH_X, MENU_PATH_Y, 0, "MSS");
+		al_draw_text(g_game->font22, WHITE, MENU_PATH_X, MENU_PATH_Y, 0, "MSS ");
+        nlen = al_get_text_width(g_game->font22, "MSS ");
 
 		//print ship name
-		al_draw_text(g_game->font32, WHITE, MENU_PATH_X+80, MENU_PATH_Y, 0, shipName.c_str());
+		al_draw_text(g_game->font22, WHITE, MENU_PATH_X+nlen, MENU_PATH_Y, 0, shipName.c_str());
+        nlen += al_get_text_width(g_game->font22, shipName.c_str());
 
-		int nlen = al_get_text_width(g_game->font32, shipName.c_str());
-		al_draw_bitmap(m_cursor,MENU_PATH_X+80+nlen+2,MENU_PATH_Y,0);
+		al_draw_bitmap(m_cursor,MENU_PATH_X+nlen+2,MENU_PATH_Y,0);
 		
 	}
 	else
@@ -1126,7 +1128,7 @@ void ModuleShipConfig::display() const
 
 	//static
 	int i=0;
-	al_draw_text(g_game->font32, WHITE, STATIC_SHIPNAME_X-10, SHIPNAME_Y, 0, "Ship Name: MSS");	
+	al_draw_textf(g_game->font22, WHITE, STATIC_SHIPNAME_X-10, SHIPNAME_Y, 0, "Ship Name: MSS %s", g_game->gameState->m_ship.getName().c_str());	
 	al_draw_text(g_game->font32, WHITE, STATIC_READOUT_X, READOUT_Y+(i++)*READOUT_SPACING, 0, "Cargo Pods");
 	al_draw_text(g_game->font32, WHITE, STATIC_READOUT_X, READOUT_Y+(i++)*READOUT_SPACING, 0, "Engine");
 	al_draw_text(g_game->font32, WHITE, STATIC_READOUT_X, READOUT_Y+(i++)*READOUT_SPACING, 0, "Shield");
@@ -1138,7 +1140,6 @@ void ModuleShipConfig::display() const
 
 	//dynamic
 	int j=0;
-	al_draw_text(g_game->font32, WHITE, DYNAMIC_SHIPNAME_X+90, SHIPNAME_Y, 0, g_game->gameState->m_ship.getName().c_str()); 
 	al_draw_textf(g_game->font32, WHITE, DYNAMIC_READOUT_X, READOUT_Y+(j++)*READOUT_SPACING, ALLEGRO_ALIGN_RIGHT, "%d", g_game->gameState->m_ship.getCargoPodCount());
 
     //display class level of engine

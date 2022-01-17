@@ -58,15 +58,15 @@ MessageBoxWindow::MessageBoxWindow(
 	{
 		button1->SetX(x - button1->GetWidth()/2);
 		button1->SetY((y + height/2) - (button1->GetHeight() + 7));
-		labelText = new Label(text, (x - width/2) + 20, top + 60, width - 34, height - 20, initTextColor, g_game->font24);
-	    labelHeading = new Label(heading, (x - width/2) + 20, top + 20, width - 34, height - 20, initTextColor, g_game->font24);
+		labelText = new Label(text, (x - width/2) + 20, top + 60, width - 34, height - 20, initTextColor, g_game->font20);
+	    labelHeading = new Label(heading, (x - width/2) + 20, top + 20, width - 34, height - 20, initTextColor, g_game->font20);
 	}
 	else
 	{
 		button1->SetX((x + width/2) - (button1->GetWidth()/2));
 		button1->SetY((y + height) - (button1->GetHeight() + 7));
-		labelText = new Label(text, x + 20, y + 30, width - 34, height - 20, initTextColor, g_game->font24);
-	    labelHeading = new Label(heading, x + 20, y + 10, width - 34, height - 20, initTextColor, g_game->font24);
+		labelText = new Label(text, x + 20, y + 30, width - 34, height - 20, initTextColor, g_game->font20);
+	    labelHeading = new Label(heading, x + 20, y + 10, width - 34, height - 20, initTextColor, g_game->font20);
 	}
 
     labelText->Refresh();

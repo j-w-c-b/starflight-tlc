@@ -28,6 +28,16 @@ ALLEGRO_DEBUG_CHANNEL("ModuleCaptainCreation")
 #define FINISHBTN_X 860
 #define FINISHBTN_Y 585
 
+#define PROFESSION_BOX_X 72
+#define PROFESSION_BOX_WIDTH 880
+#define PROFESSION_BOX_Y 390
+#define PROFESSION_BOX_HEIGHT 260
+
+#define DETAILS_BOX_X 72
+#define DETAILS_BOX_WIDTH 880
+#define DETAILS_BOX_Y 170
+#define DETAILS_BOX_HEIGHT 480
+
 #define EVENT_NONE 0
 #define EVENT_FINISH 101
 
@@ -40,8 +50,9 @@ ALLEGRO_DEBUG_CHANNEL("ModuleCaptainCreation")
 
 #define PROFESSIONAMES_VERT_SPACE 10
 
-#define NAME_X 287
-#define NAME_Y 184
+#define DETAILS_FONT_SIZE 32
+#define NAME_X DETAILS_BOX_X + DETAILS_FONT_SIZE
+#define NAME_Y DETAILS_BOX_Y + DETAILS_FONT_SIZE
 #define NAME_MAXLEN 15
 
 #define CURSOR_Y NAME_Y
@@ -50,20 +61,19 @@ ALLEGRO_DEBUG_CHANNEL("ModuleCaptainCreation")
 #define ATTS_X 287
 #define ATTS_Y 144
 
-#define ATTS_COMMON_X			287
-#define ATTS_VALS_COMMON_X		487
-#define ATTS_PLUS_COMMON_X		547
-#define ATTS_MAX_COMMON_X		627
-#define ATTS_AVAILPTS_COMMON_X  740
-#define ATTS_Y_BASE			224
-#define ATTS_Y_SPACING			50
+#define ATTS_COMMON_X			NAME_X
+// NOTE: VALS are right aligned
+#define ATTS_VALS_COMMON_X		DETAILS_BOX_X + 380
+#define ATTS_PLUS_COMMON_X		ATTS_VALS_COMMON_X + DETAILS_FONT_SIZE
+#define ATTS_MAX_COMMON_X		ATTS_PLUS_COMMON_X + 42 * 2 + DETAILS_FONT_SIZE
+// NOTE: right aligned
+#define ATTS_AVAILPTS_COMMON_X          DETAILS_BOX_X + 700
+#define ATTS_Y_BASE			NAME_Y + 2 * DETAILS_FONT_SIZE
+#define ATTS_Y_SPACING			40
 #define ATTS_PLUS_Y_BASE		(ATTS_Y_BASE - 7)
 
 #define RESET_X 868
 #define RESET_Y 542
-
-#define PROFINFO_X 200
-#define PROFINFO_Y 400
 
 #define DURABILITY_X		ATTS_COMMON_X
 #define DURABILITY_Y		(ATTS_Y_BASE + (ATTS_Y_SPACING*0))
@@ -190,19 +200,19 @@ bool ModuleCaptainCreation::Init()
 	m_militaryBtnMouseOver = m_resources[CAPTAINCREATION_MILITARY_MOUSEOVER];
 
 	m_profInfoScientific = new Label("Even though the universe regresses towards smaller and smaller components, it is still plenty large to hide a few mysteries. The Scientific Officer represents the pinnacle of Myrrdanian brainpower. Armed with wit, cunning, intelligence... and a stun gun these brave souls explore the edges of the galaxy documenting planets and capturing life forms for study. Not to mention, the ability to recommend a planet for colonization comes with monetary and retirement perks. Mostly monetary seeing as distant planet construction usually takes some time to kick start.",
-		150, 420, 750, 400, WHITE, g_game->font18);
+		PROFESSION_BOX_X + 22, PROFESSION_BOX_Y + 22, PROFESSION_BOX_WIDTH - 44, PROFESSION_BOX_HEIGHT-44, WHITE, g_game->font22);
 	if (m_profInfoScientific == NULL)
 		return false;
 	m_profInfoScientific->Refresh();
 
 	m_profInfoFreelance = new Label("There is a lot of money to be made in the Gamma Sector and the Freelancer's job is to get his hands on some. This jack of all trades profession is easily the most versatile Captain type in the galaxy. Capable of interstellar combat and properly equipped with modern scanning and exploring technology there is ample opportunity for the Freelancer to respond to most situations. One distinguishing feature is the greatly expanded cargo room which, of course, makes all those lowly Glush Cola shipments that much more profitable.",
-		150, 420, 750, 400, WHITE, g_game->font18);
+		PROFESSION_BOX_X + 22, PROFESSION_BOX_Y + 22, PROFESSION_BOX_WIDTH - 44, PROFESSION_BOX_HEIGHT - 44, WHITE, g_game->font22);
 	if (m_profInfoFreelance == NULL)
 		return false;
 	m_profInfoFreelance->Refresh();
 
 	m_profInfoMilitary =  new Label("The galaxy is a rough and tumble place where there is hardly ever a shortage of conflict. The Military Officer is the spear point of Myrrdan's influence and is often called upon to serve 'for the greater good.' Trained in tactical combat and given access to some of the highest class weaponry in the sector, it is never a bad time to be at the helm of a Wraith class warship. Being in front of it, however, is another scenario entirely.",
-		150, 420, 750, 400, WHITE, g_game->font18);
+		PROFESSION_BOX_X + 22, PROFESSION_BOX_Y + 22, PROFESSION_BOX_WIDTH - 44, PROFESSION_BOX_HEIGHT - 44, WHITE, g_game->font22);
 	if (m_profInfoMilitary == NULL)
 		return false;
 	m_profInfoMilitary->Refresh();
@@ -338,11 +348,10 @@ void ModuleCaptainCreation::Draw()
 
 			al_draw_text(g_game->font60, TEXTCOL, SCREEN_WIDTH/2,30,ALLEGRO_ALIGN_CENTER,"Captain Details");
 
-			char n[128];
-			sprintf(n,"Name: %s", m_name.c_str());
-			al_draw_text(g_game->font32,TEXTCOL,NAME_X,NAME_Y,0,n);
+			string name = "Name: " + m_name;
+			al_draw_text(g_game->font32, TEXTCOL, NAME_X, NAME_Y, 0, name.c_str());
 
-			int nlen = al_get_text_width(g_game->font32,n);
+			int nlen = al_get_text_width(g_game->font32, name.c_str());
 			al_draw_bitmap(m_cursor[m_cursorIdx],NAME_X+nlen+2,CURSOR_Y, 0);
 
 			if (++m_cursorIdxDelay > CURSOR_DELAY)
@@ -363,25 +372,16 @@ void ModuleCaptainCreation::Draw()
 			al_draw_text(g_game->font32,TEXTCOL,COMMUNICATION_X,COMMUNICATION_Y,0,"Communication");
 			al_draw_text(g_game->font32,TEXTCOL,MEDICAL_X,MEDICAL_Y,0,"Medical");
 
-			al_draw_textf(g_game->font32,TEXTCOL,ATTS_AVAILPTS_COMMON_X+20,DURABILITY_Y,0,"%d available",m_availPts);
-			al_draw_textf(g_game->font32,TEXTCOL,ATTS_VALS_COMMON_X,DURABILITY_Y,0,"%d",m_attributes.durability);
-			al_draw_textf(g_game->font32,TEXTCOL,ATTS_VALS_COMMON_X,LEARNRATE_Y,0,"%d",m_attributes.learnRate);
-			al_draw_textf(g_game->font32,TEXTCOL,ATTS_AVAILPTS_COMMON_X+20,SCIENCE_Y,0,"%d available",m_availProfPts);
-			al_draw_textf(g_game->font32,TEXTCOL,ATTS_VALS_COMMON_X,SCIENCE_Y,0,"%d",m_attributes.science);
-			al_draw_textf(g_game->font32,TEXTCOL,ATTS_VALS_COMMON_X,NAVIGATION_Y,0,"%d",m_attributes.navigation);
-			al_draw_textf(g_game->font32,TEXTCOL,ATTS_VALS_COMMON_X,TACTICS_Y,0,"%d",m_attributes.tactics);
-			al_draw_textf(g_game->font32,TEXTCOL,ATTS_VALS_COMMON_X,ENGINEERING_Y,0,"%d",m_attributes.engineering);
-			al_draw_textf(g_game->font32,TEXTCOL,ATTS_VALS_COMMON_X,COMMUNICATION_Y,0,"%d",m_attributes.communication);
-			al_draw_textf(g_game->font32,TEXTCOL,ATTS_VALS_COMMON_X,MEDICAL_Y,0,"%d",m_attributes.medical);
-
-			al_draw_textf(g_game->font32,TEXTCOL,ATTS_MAX_COMMON_X,DURABILITY_Y,0," (%d max)",m_attributesMax.durability);
-			al_draw_textf(g_game->font32,TEXTCOL,ATTS_MAX_COMMON_X,LEARNRATE_Y,0," (%d max)",m_attributesMax.learnRate);
-			al_draw_textf(g_game->font32,TEXTCOL,ATTS_MAX_COMMON_X,SCIENCE_Y,0," (%d max)",m_attributesMax.science);
-			al_draw_textf(g_game->font32,TEXTCOL,ATTS_MAX_COMMON_X,NAVIGATION_Y,0," (%d max)",m_attributesMax.navigation);
-			al_draw_textf(g_game->font32,TEXTCOL,ATTS_MAX_COMMON_X,TACTICS_Y,0," (%d max)",m_attributesMax.tactics);
-			al_draw_textf(g_game->font32,TEXTCOL,ATTS_MAX_COMMON_X,ENGINEERING_Y,0," (%d max)",m_attributesMax.engineering);
-			al_draw_textf(g_game->font32,TEXTCOL,ATTS_MAX_COMMON_X,COMMUNICATION_Y,0," (%d max)",m_attributesMax.communication);
-			al_draw_textf(g_game->font32,TEXTCOL,ATTS_MAX_COMMON_X,MEDICAL_Y,0," (%d max)",m_attributesMax.medical);
+			al_draw_textf(g_game->font32,TEXTCOL,ATTS_AVAILPTS_COMMON_X+20,DURABILITY_Y,ALLEGRO_ALIGN_RIGHT,"%d available",m_availPts);
+			al_draw_textf(g_game->font32,TEXTCOL,ATTS_VALS_COMMON_X,DURABILITY_Y,ALLEGRO_ALIGN_RIGHT,"%d",m_attributes.durability);
+			al_draw_textf(g_game->font32,TEXTCOL,ATTS_VALS_COMMON_X,LEARNRATE_Y,ALLEGRO_ALIGN_RIGHT,"%d",m_attributes.learnRate);
+			al_draw_textf(g_game->font32,TEXTCOL,ATTS_AVAILPTS_COMMON_X+20,SCIENCE_Y,ALLEGRO_ALIGN_RIGHT,"%d available",m_availProfPts);
+			al_draw_textf(g_game->font32,TEXTCOL,ATTS_VALS_COMMON_X,SCIENCE_Y,ALLEGRO_ALIGN_RIGHT,"%d",m_attributes.science);
+			al_draw_textf(g_game->font32,TEXTCOL,ATTS_VALS_COMMON_X,NAVIGATION_Y,ALLEGRO_ALIGN_RIGHT,"%d",m_attributes.navigation);
+			al_draw_textf(g_game->font32,TEXTCOL,ATTS_VALS_COMMON_X,TACTICS_Y,ALLEGRO_ALIGN_RIGHT,"%d",m_attributes.tactics);
+			al_draw_textf(g_game->font32,TEXTCOL,ATTS_VALS_COMMON_X,ENGINEERING_Y,ALLEGRO_ALIGN_RIGHT,"%d",m_attributes.engineering);
+			al_draw_textf(g_game->font32,TEXTCOL,ATTS_VALS_COMMON_X,COMMUNICATION_Y,ALLEGRO_ALIGN_RIGHT,"%d",m_attributes.communication);
+			al_draw_textf(g_game->font32,TEXTCOL,ATTS_VALS_COMMON_X,MEDICAL_Y,ALLEGRO_ALIGN_RIGHT,"%d",m_attributes.medical);
 
 			al_draw_bitmap(m_plusBtn,PLUS_DURABILITY_X,PLUS_DURABILITY_Y,0);
 			al_draw_bitmap(m_plusBtn,PLUS_LEARNRATE_X,PLUS_LEARNRATE_Y,0);

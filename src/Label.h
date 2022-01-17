@@ -1,10 +1,9 @@
 #pragma once
 
-#include <allegro5/allegro.h>
 #include <string>
+
+#include <allegro5/allegro.h>
 #include <allegro5/allegro_font.h>
-#include <vector>
-#include <list>
 
 class Label
 {

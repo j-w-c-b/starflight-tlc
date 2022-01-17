@@ -247,13 +247,7 @@ void ModuleCantina::Update()
 	int len = (int)desc.length();
 
 	//dynamically change font size for long descriptions
-
-	//1175 chars is absolute limit for this font
-	if (len > 1175) {
-		desc = desc.substr(0, 1172) + "...";
-	}
-
-	if (len > 1000) {
+	if (len > 600) {
 		questLong->SetFont( g_game->font18 );
 	}
 	else if (len > 800) {
@@ -326,7 +320,7 @@ void ModuleCantina::Draw()
 	//title
 	g_game->Print24(g_game->GetBackBuffer(), TITLE_X, TITLE_Y, label1, labelcolor);
 	questTitle->Draw(g_game->GetBackBuffer());
-	g_game->Print24(g_game->GetBackBuffer(), TITLE_X + 470, TITLE_Y, requirementLabel, requirementColor);
+    al_draw_text(g_game->font24, requirementColor, TITLE_X + 625, TITLE_Y, ALLEGRO_ALIGN_RIGHT, requirementLabel.c_str());
 
 	//description
 	g_game->Print24(g_game->GetBackBuffer(), LONG_X, LONG_Y, label2, labelcolor);

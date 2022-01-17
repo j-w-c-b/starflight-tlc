@@ -27,8 +27,7 @@ ALLEGRO_DEBUG_CHANNEL("ModuleCrewHire")
 #define UNEMPLOYEED_SCREEN 1
 
 #define CREW_X 561
-#define CREW_Y 538
-//#define CREW_HEIGHT 145
+#define CREW_Y 509
 #define CREW_HEIGHT 174
 #define CREW_WIDTH 465
 
@@ -44,13 +43,13 @@ ALLEGRO_DEBUG_CHANNEL("ModuleCrewHire")
 #define HIREMOREBTN_Y 698
 
 #define FIREBTN_X 815
-#define FIREBTN_Y 688
+#define FIREBTN_Y 698
 
 #define HIREBTN_X 815
-#define HIREBTN_Y 688
+#define HIREBTN_Y 698
 
 #define UNASSIGNBTN_X 606
-#define UNASSIGNBTN_Y 688
+#define UNASSIGNBTN_Y 698
 
 #define CATBTN_X 531
 #define CATBTN_Y 65
@@ -521,11 +520,6 @@ void ModuleCrewHire::Close()
 	ALLEGRO_DEBUG("CrewHire Close\n");
 
 	//We must save all the officers to the game state class before closing
-	//NOTE: code modified to use gameState objects directly
-	//NOTE ON YOUR NOTE: doesn't work that way, you still have to update the officers in case they made any changes to their positions.
-	//					 If we were making any changes to the officers stats they would change but we are repositioning them,
-	//					 so we have to save them into their new proper places.
-	
 	g_game->gameState->officerSci = NULL;
 	g_game->gameState->officerNav = NULL;
 	g_game->gameState->officerEng = NULL;
@@ -649,17 +643,17 @@ bool ModuleCrewHire::Init()
 	title->Refresh();
 
 	//Load label for slogan
-	slogan = new Label("Where you can hire the finest galatic crew!", 28, 200, 456, 40, al_map_rgb(0,255,255), g_game->font22);
+	slogan = new Label("Where you can hire the finest galactic crew!", 28, 200, 456, 80, al_map_rgb(0,255,255), g_game->font22);
 	slogan->Refresh();
  
 	//Load label for directions
-	directions = new Label("Click on your crew members to the right to reassign or fire them. You can also browse for future employees by clicking on the Hire More Crew Members button",
-		28, 240, 456, 408, al_map_rgb(0,255,255), g_game->font18);
+	directions = new Label("Click on your crew members to the right to reassign or fire them. You can also browse for future employees by clicking on the Hire Crew button",
+		28, 280, 456, 408, al_map_rgb(0,255,255), g_game->font18);
 	directions->Refresh();
 
 	//Load label for hiremoreDirections
-	hiremoreDirections = new Label("On the right is a list potential galatic faring employees. You can view their statistics by clicking on them.",
-		28, 240, 456, 408, al_map_rgb(0,255,255), g_game->font18);
+	hiremoreDirections = new Label("On the right is a list potential galactic faring employees. You can view their statistics by clicking on them.",
+		28, 280, 456, 408, al_map_rgb(0,255,255), g_game->font18);
 	hiremoreDirections->Refresh();
 
 	//Load label for stats
@@ -790,7 +784,7 @@ bool ModuleCrewHire::Init()
 	btnNorm = resources[PERSONEL_BTN2];
 	btnOver = resources[PERSONEL_BTN2_HOV];
 	btnDis = resources[PERSONEL_BTN2_DIS];
-	m_hiremoreBtn = new Button(btnNorm,btnOver,btnDis,HIREMOREBTN_X,HIREMOREBTN_Y,EVENT_NONE,EVENT_HIREMORE_CLICK, g_game->font24, "Hire More Crew Members", al_map_rgb(0,255,255),"click");
+	m_hiremoreBtn = new Button(btnNorm,btnOver,btnDis,HIREMOREBTN_X,HIREMOREBTN_Y,EVENT_NONE,EVENT_HIREMORE_CLICK, g_game->font24, "Hire Crew", al_map_rgb(0,255,255),"click");
 	if (m_hiremoreBtn == NULL)
 		return false;
 	if (!m_hiremoreBtn->IsInitialized())
@@ -799,7 +793,7 @@ bool ModuleCrewHire::Init()
 	//Create and initialize the Hire button for the module
 	btnNorm = resources[PERSONEL_BTN];
 	btnOver = resources[PERSONEL_BTN_HOV];
-	btnDis = resources[PERSONEL_BTN2_DIS];
+	btnDis = resources[PERSONEL_BTN_DIS];
 	m_hireBtn = new Button(btnNorm,btnOver,btnDis,HIREBTN_X,HIREBTN_Y,EVENT_NONE,EVENT_HIRE_CLICK, g_game->font24, "Hire", al_map_rgb(0,255,255),"click");
 	if (m_hireBtn == NULL)	return false;
 	if (!m_hireBtn->IsInitialized()) return false;
@@ -840,8 +834,8 @@ bool ModuleCrewHire::Init()
                 al_draw_bitmap(btnOver, 0, 0, 0);
 		//create a disabled image for each crew position button
 		posDisImages[i] = al_create_bitmap(al_get_bitmap_width(btnDis), al_get_bitmap_height(btnDis));
-                al_clear_to_color(al_map_rgba(0, 0, 0, 0));
                 al_set_target_bitmap(posDisImages[i]);
+                al_clear_to_color(al_map_rgba(0, 0, 0, 0));
                 al_draw_bitmap(btnDis, 0, 0, 0);
 
 		//Create and initialize the new button
@@ -851,13 +845,15 @@ bool ModuleCrewHire::Init()
 		if (m_PositionBtns[i] == NULL)	return false;
 		if (!m_PositionBtns[i]->IsInitialized())	return false;
 		
-                al_set_target_bitmap(m_PositionBtns[i]->GetImgNormal());
+		al_set_target_bitmap(m_PositionBtns[i]->GetImgNormal());
 		al_draw_bitmap_region(blackIcons, 30 * i, 0, 30, 30, 0, 0, 0);
 		
 		al_set_target_bitmap(m_PositionBtns[i]->GetImgMouseOver());
 		al_draw_bitmap_region(greenIcons, 30 * i, 0, 30, 30, 0, 0, 0);
+		al_draw_bitmap_region(blackIcons, 30 * i, 0, 30, 30, 1, 1, 0);
 
 		al_set_target_bitmap(m_PositionBtns[i]->GetImgDisabled());
+		al_draw_bitmap_region(blackIcons, 30 * i, 0, 30, 30, 1, 1, 0);
 		al_draw_bitmap_region(redIcons, 30 * i, 0, 30, 30, 0, 0, 0);
 
 		al_set_target_bitmap(m_PositionBtns[i]->GetImgNormal());

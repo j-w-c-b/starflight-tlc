@@ -322,7 +322,7 @@ bool ModuleTradeDepot::Init()
 
 	//create all button
    int x = FILTERBTN_START_X;
-   m_filterAllBtn = new Button(imgNormal,imgMO,NULL,x,FILTERBTN_Y,0,FILTEREVENT_ALL,g_game->font24,"All",BTNTEXTCOLOR);
+   m_filterAllBtn = new Button(imgNormal,imgMO,NULL,x,FILTERBTN_Y,0,FILTEREVENT_ALL,g_game->font18,"All",BTNTEXTCOLOR);
    if (m_filterAllBtn == NULL)
       return false;
    if (!m_filterAllBtn->IsInitialized())
@@ -334,7 +334,7 @@ bool ModuleTradeDepot::Init()
 
 	//create artifacts button
    x += FILTERBTN_DELTA_X;
-   m_filterArtifactBtn = new Button(imgNormal,imgMO,NULL,x,FILTERBTN_Y,0,FILTEREVENT_ARTIFACT,g_game->font24,"Artifacts",BTNTEXTCOLOR);
+   m_filterArtifactBtn = new Button(imgNormal,imgMO,NULL,x,FILTERBTN_Y,0,FILTEREVENT_ARTIFACT,g_game->font18,"Artifacts",BTNTEXTCOLOR);
    if (m_filterArtifactBtn == NULL)
       return false;
    if (!m_filterArtifactBtn->IsInitialized())
@@ -345,7 +345,7 @@ bool ModuleTradeDepot::Init()
 
 	//create spec goods button
    x += FILTERBTN_DELTA_X;
-   m_filterSpecialtyGoodBtn = new Button(imgNormal,imgMO,NULL,x,FILTERBTN_Y,0,FILTEREVENT_SPECIALTYGOOD,g_game->font24,"Spec Goods",BTNTEXTCOLOR);
+   m_filterSpecialtyGoodBtn = new Button(imgNormal,imgMO,NULL,x,FILTERBTN_Y,0,FILTEREVENT_SPECIALTYGOOD,g_game->font18,"Spec Goods",BTNTEXTCOLOR);
    if (m_filterSpecialtyGoodBtn == NULL)
       return false;
    if (!m_filterSpecialtyGoodBtn->IsInitialized())
@@ -356,7 +356,7 @@ bool ModuleTradeDepot::Init()
 
 	//create minerals button
    x += FILTERBTN_DELTA_X;
-   m_filterMineralBtn = new Button(imgNormal,imgMO,NULL,x,FILTERBTN_Y,0,FILTEREVENT_MINERAL,g_game->font24,"Minerals",BTNTEXTCOLOR);
+   m_filterMineralBtn = new Button(imgNormal,imgMO,NULL,x,FILTERBTN_Y,0,FILTEREVENT_MINERAL,g_game->font18,"Minerals",BTNTEXTCOLOR);
    if (m_filterMineralBtn == NULL)
       return false;
    if (!m_filterMineralBtn->IsInitialized())
@@ -367,7 +367,7 @@ bool ModuleTradeDepot::Init()
 
 	//create lifeforms button
    x += FILTERBTN_DELTA_X;
-   m_filterLifeformBtn = new Button(imgNormal,imgMO,NULL,x,FILTERBTN_Y,0,FILTEREVENT_LIFEFORM,g_game->font24,"Lifeforms",BTNTEXTCOLOR);
+   m_filterLifeformBtn = new Button(imgNormal,imgMO,NULL,x,FILTERBTN_Y,0,FILTEREVENT_LIFEFORM,g_game->font18,"Lifeforms",BTNTEXTCOLOR);
    if (m_filterLifeformBtn == NULL)
       return false;
    if (!m_filterLifeformBtn->IsInitialized())
@@ -554,7 +554,7 @@ void ModuleTradeDepot::Draw()
       al_draw_bitmap(m_promptBackground,PROMPTBG_X,PROMPTBG_Y,0);
       al_draw_text(g_game->font24,PROMPT_TEXT_COLOR,QTYTEXT_X+PROMPTBG_X,QTYTEXT_Y+PROMPTBG_Y,0, m_promptText.c_str());
 
-		int nlen = al_get_text_width(g_game->font10,m_promptText.c_str());
+		int nlen = al_get_text_width(g_game->font24,m_promptText.c_str());
       al_draw_bitmap(m_cursor[m_cursorIdx],QTYTEXT_X+PROMPTBG_X+nlen+2,CURSOR_Y+PROMPTBG_Y, 0);
 
 		if (++m_cursorIdxDelay > CURSOR_DELAY)
@@ -566,9 +566,7 @@ void ModuleTradeDepot::Draw()
 		}
 
       int qty = atoi(m_promptText.c_str());
-      ostringstream str;
-      str << "Price " << (qty * m_promptItem.value);
-      al_draw_text(g_game->font10,PROMPTBTN_TEXT_COLOR,PRICE_X+PROMPTBG_X,PRICE_Y+PROMPTBG_Y, 0, str.str().c_str());
+      al_draw_textf(g_game->font24,PROMPTBTN_TEXT_COLOR,PRICE_X+PROMPTBG_X,PRICE_Y+PROMPTBG_Y, 0, "Price: %d", static_cast<int>(qty * m_promptItem.value));
    }
 
    for (int i = 0; i < TRADEDEPOT_NUMBUTTONS; i++)

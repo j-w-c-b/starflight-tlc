@@ -41,13 +41,14 @@ using namespace std;
 
 #define BTN_BASE_Y 200
 #define BTN_DELTA_Y 96
+#
+#define TEXT_BOX_X_LEFT 580
+#define TEXT_BOX_WIDTH  440
 
 #define BTN_NEWCAPTAIN_X 361
 #define BTN_DELCAPTAIN_X 425
 #define BTN_SELCAPTAIN_X 489
-#define BTN_SAVECAPTAIN_X 577
-
-#define SAVEFILE_FMT_STRING "saves/savegame-%d.dat"
+#define BTN_SAVECAPTAIN_X TEXT_BOX_X_LEFT + 20
 
 #define GAME_BASE_Y 192
 #define GAME_DELTA_Y 97
@@ -57,8 +58,8 @@ using namespace std;
 #define GAMES_TITLE_Y 100
 #define TEXTHEIGHT_GAMES_TITLE 50
 
-#define CURGAME_TITLE_X 690
-#define CURGAME_TITLE_Y 192
+#define CURGAME_TITLE_X BTN_SAVECAPTAIN_X + 37 + 20
+#define CURGAME_TITLE_Y 182
 
 #define YES_X 317
 #define YES_Y 533
@@ -308,11 +309,9 @@ void ModuleCaptainsLounge::Draw()
 
 	int x= CURGAME_TITLE_X, y= CURGAME_TITLE_Y;
 
-	g_game->Print24(g_game->GetBackBuffer(), x,y-40,"SELECTED CAPTAIN",TEXTCOL);
-
 	if ( g_game->gameState->m_captainSelected)
 	{
-		g_game->Print32(g_game->GetBackBuffer(), x,y, g_game->gameState->officerCap->name.c_str(),TEXTCOL);
+		g_game->Print24(g_game->GetBackBuffer(), x,y, g_game->gameState->officerCap->name.c_str(),TEXTCOL);
 
 		ostringstream str;
 		str << "Profession: ";
@@ -325,12 +324,12 @@ void ModuleCaptainsLounge::Draw()
 			str << "Military";
 
 		y += TEXTHEIGHT_GAME_NAME + 2;
-		g_game->Print20(g_game->GetBackBuffer(),x,y,str.str().c_str(),TEXTCOL);
+		g_game->Print18(g_game->GetBackBuffer(),x,y,str.str().c_str(),TEXTCOL);
 
 		y += TEXTHEIGHT_GAME_PROFESSION + 2;
 		{
 			y += TEXTHEIGHT_GAME_PROFESSION + 2;
-			g_game->Print20(g_game->GetBackBuffer(),x,y,
+			g_game->Print18(g_game->GetBackBuffer(),x,y,
 							"Stardate: " + g_game->gameState->stardate.GetFullDateString(), TEXTCOL);
 		}
 
@@ -338,7 +337,7 @@ void ModuleCaptainsLounge::Draw()
 			ostringstream str;
 			str << "Credits: " << g_game->gameState->m_credits;
 			y += TEXTHEIGHT_GAME_PROFESSION + 2;
-			g_game->Print20(g_game->GetBackBuffer(),x,y,str.str().c_str(),TEXTCOL);
+			g_game->Print18(g_game->GetBackBuffer(),x,y,str.str().c_str(),TEXTCOL);
 		}
 
 		{
@@ -353,7 +352,7 @@ void ModuleCaptainsLounge::Draw()
 			else if (str == MODULE_STARPORT)		str= "Starport";
 
 			str= "Current location: " +str;			y+= TEXTHEIGHT_GAME_PROFESSION +2;
-			g_game->Print20(g_game->GetBackBuffer(), x,y, str.c_str(), TEXTCOL);
+			g_game->Print18(g_game->GetBackBuffer(), x,y, str.c_str(), TEXTCOL);
 		}
 
 		y += TEXTHEIGHT_GAME_PROFESSION + 4;
@@ -361,99 +360,95 @@ void ModuleCaptainsLounge::Draw()
 			ostringstream str;
 			str << "Ship: " << "MSS " << g_game->gameState->m_ship.getName();
 			y += TEXTHEIGHT_GAME_PROFESSION + 2;
-			g_game->Print20(g_game->GetBackBuffer(),x,y,str.str().c_str(),TEXTCOL);
+			g_game->Print18(g_game->GetBackBuffer(),x,y,str.str().c_str(),TEXTCOL);
 		}
 
 		{
 			ostringstream str;
 			str << "Cargo Pods: " << Util::ToString( g_game->gameState->m_ship.getCargoPodCount() );
 			y += TEXTHEIGHT_GAME_PROFESSION + 2;
-			g_game->Print20(g_game->GetBackBuffer(),x,y, str.str().c_str(),TEXTCOL);
+			g_game->Print18(g_game->GetBackBuffer(),x,y, str.str().c_str(),TEXTCOL);
 		}
 
 		{
 			ostringstream str;
 			str << "Engine: " << g_game->gameState->m_ship.getEngineClassString();
-			g_game->Print20(g_game->GetBackBuffer(),x+150,y,str.str().c_str(),TEXTCOL);
+			g_game->Print18(g_game->GetBackBuffer(),x+150,y,str.str().c_str(),TEXTCOL);
 		}
 
 		{
 			ostringstream str;
 			str << "Armor: " << g_game->gameState->m_ship.getArmorClassString();
 			y += TEXTHEIGHT_GAME_PROFESSION + 2;
-			g_game->Print20(g_game->GetBackBuffer(),x,y,str.str().c_str(),TEXTCOL);
+			g_game->Print18(g_game->GetBackBuffer(),x,y,str.str().c_str(),TEXTCOL);
 		}
 
 		{
 			ostringstream str;
 			str << "Shields: " << g_game->gameState->m_ship.getShieldClassString();
-			g_game->Print20(g_game->GetBackBuffer(),x+150,y,str.str().c_str(),TEXTCOL);
+			g_game->Print18(g_game->GetBackBuffer(),x+150,y,str.str().c_str(),TEXTCOL);
 		}
 
 		{
 			ostringstream str;
 			str << "Laser: " << g_game->gameState->m_ship.getLaserClassString();
 			y += TEXTHEIGHT_GAME_PROFESSION + 2;
-			g_game->Print20(g_game->GetBackBuffer(),x,y,str.str().c_str(),TEXTCOL);
+			g_game->Print18(g_game->GetBackBuffer(),x,y,str.str().c_str(),TEXTCOL);
 		}
 
 		{
 			ostringstream str;
 			str << "Missile: " << g_game->gameState->m_ship.getMissileLauncherClassString();
-			g_game->Print20(g_game->GetBackBuffer(),x+150,y,str.str().c_str(),TEXTCOL);
+			g_game->Print18(g_game->GetBackBuffer(),x+150,y,str.str().c_str(),TEXTCOL);
 		}
 
+		y += 2 * TEXTHEIGHT_GAME_PROFESSION;
+		g_game->Print20(g_game->GetBackBuffer(), x, y, "CREW:", TEXTCOL);
 		{
 			int dy= TEXTHEIGHT_GAME_PROFESSION +2;
 			string str= g_game->gameState->officerSci->name;	y+= 2*dy;
-			g_game->Print20(g_game->GetBackBuffer(), x,y, "Science: ", TEXTCOL);
-			g_game->Print20(g_game->GetBackBuffer(), x+140,y, str.c_str(), TEXTCOL);
+			g_game->Print12(g_game->GetBackBuffer(), x,y, "Science: ", TEXTCOL);
+			g_game->Print12(g_game->GetBackBuffer(), x+140,y, str.c_str(), TEXTCOL);
 
 			str= g_game->gameState->officerNav->name;			y+= dy;
-			g_game->Print20(g_game->GetBackBuffer(), x,y, "Navigation: ", TEXTCOL);
-			g_game->Print20(g_game->GetBackBuffer(), x+140,y, str.c_str(), TEXTCOL);
+			g_game->Print12(g_game->GetBackBuffer(), x,y, "Navigation: ", TEXTCOL);
+			g_game->Print12(g_game->GetBackBuffer(), x+140,y, str.c_str(), TEXTCOL);
 
 			str= g_game->gameState->officerTac->name;			y+= dy;
-			g_game->Print20(g_game->GetBackBuffer(), x,y, "Tactical: ", TEXTCOL);
-			g_game->Print20(g_game->GetBackBuffer(), x+140,y, str.c_str(), TEXTCOL);
+			g_game->Print12(g_game->GetBackBuffer(), x,y, "Tactical: ", TEXTCOL);
+			g_game->Print12(g_game->GetBackBuffer(), x+140,y, str.c_str(), TEXTCOL);
 
 			str= g_game->gameState->officerEng->name;			y+= dy;
-			g_game->Print20(g_game->GetBackBuffer(), x,y, "Engineering: ", TEXTCOL);
-			g_game->Print20(g_game->GetBackBuffer(), x+140,y, str.c_str(), TEXTCOL);
+			g_game->Print12(g_game->GetBackBuffer(), x,y, "Engineering: ", TEXTCOL);
+			g_game->Print12(g_game->GetBackBuffer(), x+140,y, str.c_str(), TEXTCOL);
 
 			str= g_game->gameState->officerCom->name;			y+= dy;
-			g_game->Print20(g_game->GetBackBuffer(), x,y, "Communications: ", TEXTCOL);
-			g_game->Print20(g_game->GetBackBuffer(), x+140,y, str.c_str(), TEXTCOL);
+			g_game->Print12(g_game->GetBackBuffer(), x,y, "Communications: ", TEXTCOL);
+			g_game->Print12(g_game->GetBackBuffer(), x+140,y, str.c_str(), TEXTCOL);
 
 			str= g_game->gameState->officerDoc->name;			y+= dy;
-			g_game->Print20(g_game->GetBackBuffer(), x,y, "Medical: ", TEXTCOL);
-			g_game->Print20(g_game->GetBackBuffer(), x+140,y, str.c_str(), TEXTCOL);
+			g_game->Print12(g_game->GetBackBuffer(), x,y, "Medical: ", TEXTCOL);
+			g_game->Print12(g_game->GetBackBuffer(), x+140,y, str.c_str(), TEXTCOL);
 		}
 
-		al_draw_text(g_game->font24,TEXTCOL,BTN_SAVECAPTAIN_X+(m_selCaptBtns[0]->GetWidth()/2),BTN_BASE_Y-TEXTHEIGHT_BTN_TITLES-18,ALLEGRO_ALIGN_CENTER,"SAVE");
+		al_draw_text(g_game->font20,TEXTCOL,BTN_SAVECAPTAIN_X+(m_selCaptBtns[0]->GetWidth()/2),CURGAME_TITLE_Y-40, ALLEGRO_ALIGN_CENTER,"SAVE");
 	}
 	else
 	{
-		g_game->Print32(g_game->GetBackBuffer(),x+62,y,"( None )",TEXTCOL);
+		string none_selected = "You may load an existing captain by "
+                "clicking on the target (load) button beside a slot which "
+                "contains an existing captain.\n\n"
+		"Or, you may create a new captain by "
+		"clicking on the + (new) button beside "
+		"an empty slot.";
 
-		y += TEXTHEIGHT_GAME_NAME + 2;
-
-		y += TEXTHEIGHT_GAME_PROFESSION + 2;
-		g_game->Print20(g_game->GetBackBuffer(),x-33,y,"You may load an existing captain by",TEXTCOL);
-		y += TEXTHEIGHT_GAME_PROFESSION + 2;
-		g_game->Print20(g_game->GetBackBuffer(),x-33,y,"clicking on the target (load) button",TEXTCOL);
-		y += TEXTHEIGHT_GAME_PROFESSION + 2;
-		g_game->Print20(g_game->GetBackBuffer(),x-33,y,"beside a slot which contains an",TEXTCOL);
-		y += TEXTHEIGHT_GAME_PROFESSION + 2;
-		g_game->Print20(g_game->GetBackBuffer(),x-33,y,"existing captain.",TEXTCOL);
-
-		y += TEXTHEIGHT_GAME_PROFESSION + 2;
-		y += TEXTHEIGHT_GAME_PROFESSION + 2;
-		g_game->Print20(g_game->GetBackBuffer(),x-33,y,"Or, you may create a new captain by",TEXTCOL);
-		y += TEXTHEIGHT_GAME_PROFESSION + 2;
-		g_game->Print20(g_game->GetBackBuffer(),x-33,y,"clicking on the + (new) button beside",TEXTCOL);
-		y += TEXTHEIGHT_GAME_PROFESSION + 2;
-		g_game->Print20(g_game->GetBackBuffer(),x-33,y,"an empty slot.",TEXTCOL);
+		al_draw_multiline_text(
+                    g_game->font24,
+                    TEXTCOL,
+                    TEXT_BOX_X_LEFT + 20, y,
+                    TEXT_BOX_WIDTH - 40,
+                    0,
+                    0, none_selected.c_str());
 	}
 
 	y = GAME_BASE_Y;
@@ -478,19 +473,14 @@ void ModuleCaptainsLounge::Draw()
 
 			g_game->Print20(g_game->GetBackBuffer(),GAME_X,y + TEXTHEIGHT_GAME_NAME + 2,profName.c_str(),TEXTCOL);
 		}
-		else
-		{
-			g_game->Print32(g_game->GetBackBuffer(),GAME_X,y,"( EMPTY )",TEXTCOL);
-		}
-
 		y += GAME_DELTA_Y;
 	}
 
 	//modules should not be calling alfont functions directly--use the engine
 
-	al_draw_text(g_game->font24,TEXTCOL,BTN_NEWCAPTAIN_X+(m_newCaptBtns[0]->GetWidth()/2),BTN_BASE_Y-TEXTHEIGHT_BTN_TITLES-18,ALLEGRO_ALIGN_CENTER,"NEW");
-	al_draw_text(g_game->font24,TEXTCOL,BTN_DELCAPTAIN_X+(m_delCaptBtns[0]->GetWidth()/2),BTN_BASE_Y-TEXTHEIGHT_BTN_TITLES-18,ALLEGRO_ALIGN_CENTER,"DEL");
-	al_draw_text(g_game->font24,TEXTCOL,BTN_SELCAPTAIN_X+(m_selCaptBtns[0]->GetWidth()/2),BTN_BASE_Y-TEXTHEIGHT_BTN_TITLES-18,ALLEGRO_ALIGN_CENTER,"LOAD");
+	al_draw_text(g_game->font20,TEXTCOL,BTN_NEWCAPTAIN_X+(m_newCaptBtns[0]->GetWidth()/2),CURGAME_TITLE_Y-40,ALLEGRO_ALIGN_CENTER,"NEW");
+	al_draw_text(g_game->font20,TEXTCOL,BTN_DELCAPTAIN_X+(m_delCaptBtns[0]->GetWidth()/2),CURGAME_TITLE_Y-40,ALLEGRO_ALIGN_CENTER,"DEL");
+	al_draw_text(g_game->font20,TEXTCOL,BTN_SELCAPTAIN_X+(m_selCaptBtns[0]->GetWidth()/2),CURGAME_TITLE_Y-40,ALLEGRO_ALIGN_CENTER,"LOAD");
 
 	if (m_modalPromptActive)
 	{
@@ -654,11 +644,7 @@ void ModuleCaptainsLounge::OnEvent(Event *event)
 
 	if (event->getEventType() == EVENT_CONFIRMDELCAPTAIN_YES)
 	{
-		char buf[1024];
-		sprintf(buf,SAVEFILE_FMT_STRING,m_modalPromptSlotNum);
-		ALLEGRO_FS_ENTRY *oldsave = al_create_fs_entry(buf);
-		al_remove_fs_entry(oldsave);
-		al_destroy_fs_entry(oldsave);
+		GameState::DeleteGame(m_modalPromptSlotNum);
 		LoadGames();
 	}
 
@@ -716,25 +702,31 @@ void ModuleCaptainsLounge::OnEvent(Event *event)
 	}
 
 	if ((event->getEventType() >= EVENT_SAVECAPTAIN_SLOT0) &&
-		(event->getEventType() < (EVENT_SAVECAPTAIN_SLOT0 + 4 /*CAPTAINSLOUNGE_NUMSLOTS*/ )))
-        /* prevent saving to the auto-save slot at the 5th position */
+		(event->getEventType() < (EVENT_SAVECAPTAIN_SLOT0 + CAPTAINSLOUNGE_NUMSLOTS)))
 	{
+                playBtnClick = true;
+
 		// SEL captain
-		playBtnClick = true;
+		int slot = (event->getEventType() - EVENT_SAVECAPTAIN_SLOT0);
 
-		// activate the confirmation modal prompt
-		m_modalPromptActive = true;
-		m_modalPromptStrings.clear();
-		m_modalPromptStrings.push_back("Save this Captain?");
-		m_modalPromptStrings.push_back("Existing Captain will be overwritten");
-		m_modalPromptStrings.push_back("");
-		m_modalPromptStrings.push_back( g_game->gameState->officerCap->name);
-		m_modalPromptYesEvent = EVENT_CONFIRMSAVECAPTAIN_YES;
-		m_modalPromptNoEvent = EVENT_CONFIRMSAVECAPTAIN_NO;
-		m_modalPromptSlotNum = static_cast<GameState::GameSaveSlot>(event->getEventType() - EVENT_SAVECAPTAIN_SLOT0);
+                if (m_games[slot] == nullptr) {
+                    g_game->gameState->SaveGame(static_cast<GameState::GameSaveSlot>(slot));
+                    LoadGames();
+                } else {
+                    // activate the confirmation modal prompt
+                    m_modalPromptActive = true;
+                    m_modalPromptStrings.clear();
+                    m_modalPromptStrings.push_back("Save this Captain?");
+                    m_modalPromptStrings.push_back("Existing Captain will be overwritten");
+                    m_modalPromptStrings.push_back("");
+                    m_modalPromptStrings.push_back( g_game->gameState->officerCap->name);
+                    m_modalPromptYesEvent = EVENT_CONFIRMSAVECAPTAIN_YES;
+                    m_modalPromptNoEvent = EVENT_CONFIRMSAVECAPTAIN_NO;
+                    m_modalPromptSlotNum = static_cast<GameState::GameSaveSlot>(event->getEventType() - EVENT_SAVECAPTAIN_SLOT0);
 
-		m_yesBtn->OnMouseMove(0,0);
-		m_noBtn->OnMouseMove(0,0);
+                    m_yesBtn->OnMouseMove(0,0);
+                    m_noBtn->OnMouseMove(0,0);
+                }
 	}
 
 	if (event->getEventType() == EVENT_CONFIRMSAVECAPTAIN_YES)
