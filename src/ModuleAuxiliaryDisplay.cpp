@@ -207,70 +207,77 @@ void ModuleAuxiliaryDisplay::init_nav()
 
 void ModuleAuxiliaryDisplay::updateAll()
 {
-	std::ostringstream os;
+        string label;
 	Ship ship = g_game->gameState->getShip();
 	Stardate date = g_game->gameState->stardate;
 	int x = asx,y = asy;
 
 	if(g_game->gameState->getCurrentSelectedOfficer() != OFFICER_MEDICAL && g_game->gameState->getCurrentSelectedOfficer() != OFFICER_ENGINEER)
     {
+		int vx;
 		//stardate
-		g_game->Print20(canvas, x, y, "DATE:", HEADING_COLOR);
-		g_game->Print20(canvas, x+60, y, date.GetFullDateString(), SKYBLUE);
+                al_draw_text(g_game->font18, HEADING_COLOR, x, y, 0, "DATE: ");
+                vx = x + al_get_text_width(g_game->font18, "DATE: ");
+
+                al_draw_text(g_game->font18, SKYBLUE, vx, y, 0, date.GetFullDateString().c_str());
 
 		//damage status
-		os.str(""); y+=20;
-		g_game->Print20(canvas, x, y, "DAMAGE:", HEADING_COLOR);
-		os.str("");
+		y+=20;
+                al_draw_text(g_game->font12, HEADING_COLOR, x, y, 0, "DAMAGE: ");
+                vx = x + al_get_text_width(g_game->font12, "DAMAGE: ");
+
+                // FIXME: This is always 0
 		int damage = 0;
 		ALLEGRO_COLOR damage_color = SKYBLUE;
 		if (damage > 66) {
-			os << "HEAVY";
+			label = "HEAVY";
 			damage_color = al_map_rgb(240,0,0); //red
 		}
 		else if (damage > 33) {
-			os << "MODERATE";
+			label = "MODERATE";
 			damage_color = al_map_rgb(240,240,0); //yellow
 		}
 		else if (damage > 0) {
-			os << "LIGHT";
+			label = "LIGHT";
 			damage_color = al_map_rgb(0,200,0); //green
 		}
 		else {
-			os << "NONE";
+			label = "NONE";
 		}
-		g_game->Print20(canvas, x+84, y, os.str(), damage_color);
+                al_draw_text(g_game->font12, damage_color, vx, y, 0, label.c_str());
 
 		//cargo status
-		os.str(""); x+=75; y+=20;								
-		g_game->Print20(canvas, x, y, "CARGO:", HEADING_COLOR);
-		os << cargoFillPercent << "%%";
-		g_game->Print18(canvas, x+78, y, os.str(), SKYBLUE);
+		x+=75; y+=20;								
+                al_draw_text(g_game->font18, HEADING_COLOR, x, y, 0, "CARGO: ");
+                vx = x + al_get_text_width(g_game->font18, "CARGO: ");
+                al_draw_textf(g_game->font18, SKYBLUE, vx, y, 0, "%d%%", cargoFillPercent);
 
 		//fuel status
-		os.str(""); y+=20;
-		g_game->Print20(canvas, x, y, "ENERGY:", HEADING_COLOR);
-        int fuel = g_game->gameState->m_ship.getEnduriumOnBoard();
-        os << fuel;
-		g_game->Print18(canvas, x+78, y, os.str(), SKYBLUE);
+		y+=20;
+		al_draw_text(g_game->font18, HEADING_COLOR, x, y, 0, "ENERGY: ");
+		vx = x + al_get_text_width(g_game->font18, "ENERGY: ");
+		int fuel = g_game->gameState->m_ship.getEnduriumOnBoard();
+		al_draw_textf(g_game->font18, SKYBLUE, vx, y, 0, "%d", fuel);
 
 		//shield status
-		os.str(""); y+=20;
-		g_game->Print20(canvas, x, y, "SHLDS:", HEADING_COLOR);
+		y+=20;
+                al_draw_text(g_game->font18, HEADING_COLOR, x, y, 0, "SHLDS: ");
+                vx = x + al_get_text_width(g_game->font18, "SHLDS: ");
 		if (g_game->gameState->getShieldStatus())
-			os << "RAISED";
+			label = "RAISED";
 		else
-			os << "LOWERED";
-		g_game->Print18(canvas, x+72, y, os.str(), SKYBLUE);	//was Print20  JJH
+			label = "LOWERED";
+                al_draw_text(g_game->font12, SKYBLUE, vx, y+6, 0, label.c_str());
 
 		//weapon status
-		os.str(""); y+=20;
-		g_game->Print20(canvas, x, y, "WEAP:", HEADING_COLOR);
+		y+=20;
+                al_draw_text(g_game->font18, HEADING_COLOR, x, y, 0, "WPNS: ");
+                vx = x + al_get_text_width(g_game->font18, "WPNS: ");
 		if (g_game->gameState->getWeaponStatus())
-			os << "ARMED";
+			label = "ARMED";
 		else
-			os << "UNARMED";
-		g_game->Print18(canvas, x+72, y, os.str(), SKYBLUE);	//was Print20  JJH
+			label = "UNARMED";
+                al_draw_text(g_game->font12, SKYBLUE, vx, y+6, 0, label.c_str());
 
 		//ship icon image
 		ship_icon_sprite->setPos(asx+18,asy+45);
@@ -296,40 +303,47 @@ void ModuleAuxiliaryDisplay::updateCap()
 {
 	ALLEGRO_COLOR HEADING_COLOR = al_map_rgb(0,168,168);
 	Ship ship = g_game->gameState->getShip();
+        string label;
 	ProfessionType profession;
-	std::ostringstream os;
 	int x = asx,y = asy+130;
+        int dx;
 
 	//captain's name
-    g_game->Print18(canvas,x,y, "CAPTAIN:", HEADING_COLOR);
-    g_game->Print18(canvas, x+75, y, g_game->gameState->officerCap->getLastName(), SKYBLUE);
+	al_draw_textf(g_game->font18, SKYBLUE, x , y, 0, "Captain %s", g_game->gameState->officerCap->getLastName().c_str());
 
 	//ship name
-	os.str(""); y+=20;
-    g_game->Print18(canvas,x,y,"SHIP:", HEADING_COLOR);
-	g_game->Print18(canvas, x+75, y, "MSS " + ship.getName(), SKYBLUE);
+	y+=32;
+	g_game->Print18(canvas, x, y, "SHIP:", HEADING_COLOR);
+        dx = al_get_text_width(g_game->font18, "SHIP: ");
+	g_game->Print18(canvas, x + dx, y, "MSS " + ship.getName(), SKYBLUE);
 
 	//ship type
-	os.str(""); y += 20;
+	y += 20;
 	g_game->Print18(canvas, x, y, "TYPE:", HEADING_COLOR);
+        dx = al_get_text_width(g_game->font18, "TYPE: ");
 	profession = g_game->gameState->getProfession();
 	switch(profession)
 	{
-		case PROFESSION_SCIENTIFIC:	os << "SCIENTIFIC";	break;
-		case PROFESSION_FREELANCE:	os << "FREELANCE"; break;
-		case PROFESSION_MILITARY:	os << "MILITARY"; break;
-		default:					os << "UNKNOWN"; break;
+		case PROFESSION_SCIENTIFIC:
+			label = "SCIENTIFIC";
+			break;
+		case PROFESSION_FREELANCE:
+			label = "FREELANCE";
+			break;
+		case PROFESSION_MILITARY:
+			label = "MILITARY";
+			break;
+		default:
+			label = "UNKNOWN";
+			break;
 	}
-	g_game->Print18(canvas, x+75, y, os.str(), SKYBLUE);
+	g_game->Print18(canvas, x + dx, y, label, SKYBLUE);
 
 	//credits
-	os.str(""); y+=20;
-	g_game->Print18(canvas, x, y, "CREDITS:", HEADING_COLOR);
-	os << g_game->gameState->getCredits();
-	g_game->Print18(canvas, x+75, y, os.str(), SKYBLUE);
-
-
-
+	y+=20;
+	g_game->Print18(canvas, x, y, "CREDITS: ", HEADING_COLOR);
+        dx = al_get_text_width(g_game->font18, "CREDITS: ");
+        al_draw_textf(g_game->font18, SKYBLUE, x + dx, y, 0, "%d", g_game->gameState->getCredits());
 }
 
 void ModuleAuxiliaryDisplay::updateSci()
@@ -344,38 +358,37 @@ void ModuleAuxiliaryDisplay::updateSci()
 void ModuleAuxiliaryDisplay::updateNav()
 {
 	ALLEGRO_COLOR HEADING_COLOR = al_map_rgb(0,168,168);
-	ostringstream os;
 	int x = asx,y = asy+130;
-	char s[255];
+        int dx;
 
 	double galacticx = g_game->gameState->player->posHyperspace.x;
 	double galacticy = g_game->gameState->player->posHyperspace.y;
 
 	//officer name
-	os << "Nav Off. " << g_game->gameState->officerNav->getLastName();
-	g_game->Print18(canvas, x, y, os.str(), SKYBLUE);
+        al_draw_textf(g_game->font18, SKYBLUE, x, y, 0, "Nav Off. %s",g_game->gameState->officerNav->getLastName().c_str());
 
 	//galactic location
-	y+=18;
-	g_game->Print18(canvas, x, y, "COORD:", HEADING_COLOR);
+	y+=40;
+	g_game->Print12(canvas, x, y, "COORD:", HEADING_COLOR);
+        dx = al_get_text_width(g_game->font12, "COORD: ");
 	// offset of 4 tiles on the x axis and 2 tiles on the y axis
-	sprintf(s,"%.0f %.0f", galacticx/128 +4, galacticy/128 +2);
-	g_game->Print20(canvas, x+66, y, s, SKYBLUE);
+        al_draw_textf(g_game->font12, SKYBLUE, x + dx, y, 0, "%0.f %0.f", galacticx/128, galacticy / 128 + 2);
 
 	//speed status
-	y+=18;
-	g_game->Print18(canvas, x, y, "SPEED:", HEADING_COLOR);
-	sprintf(s,"%.1f", g_game->gameState->player->getCurrentSpeed());
-	g_game->Print20(canvas, x+66, y, s, SKYBLUE);
+	y+=12;
+	g_game->Print12(canvas, x, y, "SPEED:", HEADING_COLOR);
+        dx = al_get_text_width(g_game->font12, "SPEED: ");
+	al_draw_textf(g_game->font12, SKYBLUE, x+dx, y, 0, "%.1f", g_game->gameState->player->getCurrentSpeed());
 
 	//galactic region (alien space)
 	AlienRaces race = g_game->gameState->player->getGalacticRegion();
 	string race_str = g_game->gameState->player->getAlienRaceName( race );
 	if (race != ALIEN_NONE)
 	{
-		y+=18;
-		g_game->Print18(canvas, x, y, "REGION:", HEADING_COLOR);
-		g_game->Print18(canvas, x+66, y, race_str, SKYBLUE);
+		y+=12;
+		g_game->Print12(canvas, x, y, "REGION: ", HEADING_COLOR);
+                dx = al_get_text_width(g_game->font12, "REGION: ");
+		g_game->Print12(canvas, x+dx, y, race_str, SKYBLUE);
 	}
 
 
@@ -384,76 +397,72 @@ void ModuleAuxiliaryDisplay::updateNav()
 	scroller->drawScrollWindow(g_game->GetBackBuffer(), asx+145, asy+150, 80, 75);
 }
 
-void ModuleAuxiliaryDisplay::PrintSystemStatus(int x,int y,int value)
+void ModuleAuxiliaryDisplay::PrintSystemStatus(int x, int y, const string &title, int value)
 {
-    ALLEGRO_COLOR color;
-    int x2;
-    string status;
-	if(value <= 0){
-		color = BLACK;
+	ALLEGRO_COLOR color;
+	string status;
+
+        al_draw_text(g_game->font12, SKYBLUE, x, y, 0, title.c_str());
+
+	if(value == -1) {
+		color = GRAY1;
 		status = "NONE";
-		x2 = x + 200;
+        } else if (value == 0) {
+		color = RED;
+		status = "DESTROYED";
 	}else if(value < 25){
-		color = RED2;
+		color = RED;
 		status = "CRITICAL";
-		x2 = x + 169;
 	}else if(value < 50){
 		color = YELLOW2;
 		status = "DAMAGED";
-		x2 = x + 163;			
 	}else{
 		color = GREEN2;
 		status = "FUNCTIONAL";
-		x2 = x + 143;
 	}
-    ostringstream os;
-	os << status;
-	g_game->Print18(canvas, x2, y, os.str(), color);
-
+        al_draw_text(g_game->font12, color, x + (asw - asx), y, ALLEGRO_ALIGN_RIGHT, status.c_str());
 }
 
 void ModuleAuxiliaryDisplay::updateEng()
 {
-	ostringstream os;
 	int x = asx, y = asy;
-	std::string status = "";
 
 	Ship ship = g_game->gameState->getShip();
 
 	//officer name
-	os << "Eng Off. " << g_game->gameState->officerEng->getLastName();
-	g_game->Print20(canvas, x, y, os.str(), SKYBLUE);
-
-
+        al_draw_textf(g_game->font20, SKYBLUE, x, y, 0, "Eng Off. %s", g_game->gameState->officerEng->getLastName().c_str());
 	y+=40;
-	g_game->Print18(canvas, x, y, "HULL", SKYBLUE);
-	PrintSystemStatus(0,y,ship.getHullIntegrity());
 
-	os.str(""); y+=20;
-	os << "ENGINE " << ship.getEngineClassString();
-	g_game->Print18(canvas, x, y, os.str(), SKYBLUE);
-	PrintSystemStatus(0,y,ship.getEngineIntegrity());
+	PrintSystemStatus(x, y, "HULL", ship.getHullIntegrity());
+	y+=20;
 
-	os.str(""); y+=20;
-	os << "ARMOR " << ship.getArmorClassString();
-	g_game->Print18(canvas, x, y, os.str(), SKYBLUE);
-	PrintSystemStatus(0,y,ship.getArmorIntegrity()/ship.getMaxArmorIntegrity()*100.0);
+        PrintSystemStatus(x, y, "ENGINE " + ship.getEngineClassString(), ship.getEngineIntegrity());
+	y+=20;
 
-	os.str(""); y+=20;
-	os << "SHIELD " << ship.getShieldClassString();
-	g_game->Print18(canvas, x, y, os.str(), SKYBLUE);
-    PrintSystemStatus(0,y,ship.getShieldIntegrity());
+	PrintSystemStatus(x, y, "ARMOR" + ship.getArmorClassString(), ship.getArmorIntegrity()/ship.getMaxArmorIntegrity()*100.0);
+	y+=20;
 
-	os.str(""); y+=20;
-	os << "LASER " << ship.getLaserClassString();
-	g_game->Print18(canvas, x, y, os.str(), SKYBLUE);
-    PrintSystemStatus(0,y,ship.getLaserIntegrity());
+        if (ship.getShieldClass() != 0) {
+            PrintSystemStatus(x, y, "SHIELD " + ship.getShieldClassString(), ship.getShieldIntegrity());
+        } else {
+            PrintSystemStatus(x, y, "SHIELD", -1);
+        }
+	y+=20;
 
-	os.str(""); y+=20;
-	os << "MISSILE " << ship.getMissileLauncherClassString();
-	g_game->Print18(canvas, x, y, os.str(), SKYBLUE);
-    PrintSystemStatus(0,y,ship.getMissileLauncherIntegrity());
+        if (ship.getLaserClass() != 0) {
+            PrintSystemStatus(x, y, "LASER " + ship.getLaserClassString(), ship.getLaserIntegrity());
+        } else {
+            PrintSystemStatus(x, y, "LASER", -1);
+        }
+	y+=20;
+
+        if (ship.getMissileLauncherClass() != 0) {
+            PrintSystemStatus(x, y, "MISSILE " + ship.getMissileLauncherClassString(), ship.getMissileLauncherIntegrity());
+        } else {
+            PrintSystemStatus(x, y, "MISSILE", -1);
+        }
 }
+
 
 void ModuleAuxiliaryDisplay::updateCom()
 {
@@ -471,26 +480,28 @@ void ModuleAuxiliaryDisplay::updateTac()
 	std::ostringstream os;
 	Ship ship = g_game->gameState->getShip();
 	int x = asx,y = asy+130;
+        int dx;
 
 	//officer name
-	os << "Tac Off. " << g_game->gameState->officerTac->getLastName();
-	g_game->Print20(canvas, x, y, os.str(), SKYBLUE);
+        al_draw_textf(g_game->font20, SKYBLUE, x, y, 0, "Tac Off. %s", g_game->gameState->officerTac->getLastName().c_str());
+
+        dx = asx + asw / 2;
+
+	y += 20;
+        al_draw_text(g_game->font18, HEADING_COLOR, x, y, 0, "ARMOR: ");
+        al_draw_text(g_game->font18, SKYBLUE, x + dx, y, 0, ship.getArmorClassString().c_str());
 
 	y += 18;
-	g_game->Print18(canvas, x, y, "ARMOR:", HEADING_COLOR);
-    g_game->Print18(canvas, x+72, y, ship.getArmorClassString(), SKYBLUE);
-
-	y += 18;
-	g_game->Print18(canvas, x, y, "SHIELD:", HEADING_COLOR);
-    g_game->Print18(canvas, x+72, y, ship.getShieldClassString(), SKYBLUE);
+        al_draw_text(g_game->font18, HEADING_COLOR, x, y, 0, "SHIELD: ");
+        al_draw_text(g_game->font18, SKYBLUE, x+dx, y, 0, ship.getShieldClassString().c_str());
 
 	y += 18;
 	g_game->Print18(canvas, x, y, "LASER: ", HEADING_COLOR);
-    g_game->Print18(canvas, x+72, y, ship.getLaserClassString(), SKYBLUE);
+    g_game->Print18(canvas, x+dx, y, ship.getLaserClassString(), SKYBLUE);
 
 	y += 18;
 	g_game->Print18(canvas, x, y, "MISSILE: ", HEADING_COLOR);
-    g_game->Print18(canvas, x+72, y, ship.getMissileLauncherClassString(), SKYBLUE);
+    g_game->Print18(canvas, x+dx, y, ship.getMissileLauncherClassString(), SKYBLUE);
 }
 
 void ModuleAuxiliaryDisplay::updateMed()
@@ -526,7 +537,7 @@ void ModuleAuxiliaryDisplay::updateMed()
 void ModuleAuxiliaryDisplay::medical_display(Officer* officer_data, int x, int y, const string &additional_data){
 	ALLEGRO_COLOR text_color = BLACK;
 	std::string status = "";
-	int x2 = 100;
+	int x2 = 150;
 	std::ostringstream os;
 	if(officer_data->attributes.getVitality() <= 0){
 		text_color = BLACK;
@@ -544,14 +555,12 @@ void ModuleAuxiliaryDisplay::medical_display(Officer* officer_data, int x, int y
 
 	//name and rank
 	os << additional_data << officer_data->getLastName();
-	g_game->Print18(canvas, x, y, os.str(), SKYBLUE);
+	g_game->Print12(canvas, x, y, os.str(), SKYBLUE);
 
 	os.str(""); //clear
 
 	//medical status
-
-	os << status;
-	g_game->Print18(canvas, x2, y, os.str(), text_color);
+	g_game->Print12(canvas, x2, y, status, text_color);
 }
 
 void ModuleAuxiliaryDisplay::updateCrew()

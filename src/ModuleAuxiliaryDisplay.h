@@ -50,7 +50,7 @@ public:
 	void updateMed();
 	void updateCargoFillPercent();
 	void place_flux_tile(bool visible, int tile);
-    void PrintSystemStatus(int x,int y,int value);
+	void PrintSystemStatus(int x, int y, const std::string &title, int value);
 
    	ALLEGRO_COLOR HEADING_COLOR;
 
