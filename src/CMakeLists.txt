@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 
 file(
     GLOB TOPLEVEL_DATA
@@ -299,6 +299,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES Darwin)
         ${ALLEGRO_PKG_LIBRARIES}
         "${CMAKE_CURRENT_BINARY_DIR}/${APP_NAME}.app/Contents/MacOS/"
     )
+    set_directory_properties(PROPERTIES ADDITIONAL_CLEAN_FILES "${APP_NAME}.app")
 else()
     add_custom_command(
         TARGET ${APP_NAME} POST_BUILD
