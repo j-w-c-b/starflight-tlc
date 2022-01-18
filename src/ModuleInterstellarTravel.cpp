@@ -25,8 +25,8 @@ using namespace std;
 #define GALAXY_SCROLL_WIDTH	SCREEN_WIDTH
 #define GALAXY_SCROLL_HEIGHT 650
 #define GALAXYTILESIZE 128
-#define GALAXYTILESACROSS (250 * 10)
-#define GALAXYTILESDOWN (220 * 10)
+#define GALAXYTILESACROSS 250
+#define GALAXYTILESDOWN 220
 
 ALLEGRO_DEBUG_CHANNEL("ModuleInterstellarTravel")
 
@@ -101,7 +101,7 @@ void ModuleInterstellarTravel::OnMouseWheelDown(int x, int y)
 void ModuleInterstellarTravel::Draw()
 {
 	// draw tile scroller
-	scroller->drawScrollWindow(g_game->GetBackBuffer(), GALAXY_SCROLL_X, GALAXY_SCROLL_Y, GALAXY_SCROLL_WIDTH, GALAXY_SCROLL_HEIGHT);
+	scroller->draw_scroll_window(g_game->GetBackBuffer(), GALAXY_SCROLL_X, GALAXY_SCROLL_Y, GALAXY_SCROLL_WIDTH, GALAXY_SCROLL_HEIGHT);
 
 	//draw the ship
 	ship->draw(g_game->GetBackBuffer());
@@ -378,19 +378,14 @@ bool ModuleInterstellarTravel::Init()
 	ratiox = (float)asw / 250.0f;
 	ratioy = (float)ash / 220.0f;
 
+	//create the ship
+	ship = new PlayerShipSprite();
 
 	//create and configure the tile scroller
 	createGalaxy();
 	loadGalaxyData();
 	load_flux();
-	for (flux_iter i = g_game->dataMgr->flux.begin(); (i != g_game->dataMgr->flux.end()); i++){
-		if((*i)->VISIBLE_SPACE() == true){
-			scroller->setTile((*i)->TILE().X, (*i)->TILE().Y, 8);
-		}
-	}
 
-	//create the ship
-	ship = new PlayerShipSprite();
 	controlKey = 0;
 	shiftKey = 0;
 	starFound = 0;
@@ -408,8 +403,8 @@ bool ModuleInterstellarTravel::Init()
 	doc = g_game->gameState->getCurrentDoc()->getLastName() + "-> ";
 
 
-    //set player to galactic position from gamestate
-	scroller->setScrollPosition(g_game->gameState->player->get_galactic_pos());
+        //set player to galactic position from gamestate
+        scroller->set_scroll_position(g_game->gameState->getHyperspaceCoordinates());
 	return true;
 }
 
@@ -417,20 +412,12 @@ void ModuleInterstellarTravel::Close()
 {
 	ALLEGRO_DEBUG("*** Hyperspace closing\n\n");
 
-	try {
-		delete text;
-		delete scroller;
-		delete ship;
+        delete text;
+        delete scroller;
+        delete ship;
 
-		//unload the data file (thus freeing all resources at once)
-		resources.unload();
-	}
-	catch(std::exception e) {
-		ALLEGRO_DEBUG("%s\n", e.what());
-	}
-	catch(...) {
-		ALLEGRO_DEBUG("Unhandled exception in InterstellarTravel::Close\n");
-	}
+        //unload the data file (thus freeing all resources at once)
+        resources.unload();
 }
 
 #pragma endregion
@@ -805,19 +792,18 @@ void ModuleInterstellarTravel::Update()
 	//update the ship's position based on velocity
 	float multiplier = 1.0;
 
-	float fx = getPlayerGalacticX() + (ship->getVelocityX() * multiplier);
-	float fy = getPlayerGalacticY() + (ship->getVelocityY() * multiplier);
+        Point2D pos = g_game->gameState->getHyperspaceCoordinates();
+	pos.x += (ship->getVelocityX() * multiplier) / GALAXYTILESIZE;
+	pos.y += (ship->getVelocityY() * multiplier) / GALAXYTILESIZE;
 
 	//keep ship position within the bounds of the galaxy
-	//account for negative position since ship is in center of viewport
-	if (fx < -6) fx = -6;
-	else if (fx > GALAXYTILESIZE * 256) fx = GALAXYTILESIZE * 256;
-	if (fy < 0) fy = 0;
-	else if (fy > GALAXYTILESIZE * 220) fy = GALAXYTILESIZE * 220;
+	if (pos.x < 0) pos.x = 0;
+	else if (pos.x > GALAXYTILESACROSS) pos.x = GALAXYTILESACROSS;
+	if (pos.y < 0) pos.y = 0;
+	else if (pos.y > GALAXYTILESDOWN) pos.y = GALAXYTILESDOWN;
 
 	//store ship position in global data object
-	g_game->gameState->player->set_galactic_pos(fx,fy);  //123,203  ***
-
+	g_game->gameState->setHyperspaceCoordinates(pos);
 
 	/*
 	 * Important: Store ship's velocity in gamestate for use in other modules (particularly the aux window)
@@ -826,8 +812,7 @@ void ModuleInterstellarTravel::Update()
 
 
 	//update scroll position and buffer
-	scroller->setScrollPosition(fx, fy);
-	scroller->updateScrollBuffer();
+        scroller->set_scroll_position(pos);
 
 	//locate any stars at ship position
 	identifyStar();
@@ -854,11 +839,11 @@ void ModuleInterstellarTravel::Update()
 
 		g_game->gameState->player->isLost(false);
 	}
-	else if(g_game->gameState->getShip().getFuel() <= 0.00f)
+	if(g_game->gameState->getShip().getFuel() <= 0.00f)
 	{
         g_game->gameState->m_ship.injectEndurium();
 	}
-	else if(g_game->gameState->player->isLost())
+	if(g_game->gameState->player->isLost())
 	{
 		g_game->printout(text, nav + "Sir, I think we are lost...", ORANGE,8000);
 		g_game->printout(text, cap + "...Oh no.", LTGREEN,4000);
@@ -869,9 +854,15 @@ void ModuleInterstellarTravel::Update()
 			g_game->gameState->player->isLost(false);
 			g_game->printout(text, nav + "Oh, wait... I've got our position now!", ORANGE,8000);
 			g_game->printout(text, cap + "...", LTGREEN,1000);
-			flux->PATH_VISIBLE(true);
+                        g_game->gameState->flux_info[flux->get_id()].path_visible = true;
+                        flux = nullptr;
 		}
 	}
+
+        if (enter_flux())
+        {
+            return;
+        }
 
 	//locate any flux at players position
 	identify_flux();
@@ -967,151 +958,193 @@ void ModuleInterstellarTravel::Update()
 
 
 #pragma region FLUX STUFF
-void ModuleInterstellarTravel::identify_flux()
+//
+// If the ship is moved onto a flux tile, jump to the other endpoint.
+bool
+ModuleInterstellarTravel::enter_flux()
 {
-	//adjust for ship's location at center of window
-	int actualx = (int)(g_game->gameState->player->get_galactic_x() + GALAXY_SCROLL_WIDTH / 2);
-	int actualy = (int)(g_game->gameState->player->get_galactic_y() + GALAXY_SCROLL_HEIGHT / 2);
+    //map to tile coordinates
+    Point2D pos = g_game->gameState->getHyperspaceCoordinates();
+    int tilex = static_cast<int>(round(pos.x));
+    int tiley = static_cast<int>(round(pos.y));
 
-	//get tile number based on ship position
-	int tilex = actualx / scroller->getTileWidth();
-	int tiley = actualy / scroller->getTileHeight();
+    const Flux *f = g_game->dataMgr->GetFluxByLocation(tilex, tiley);
 
-	flag_FoundFlux = false;
-	if(g_game->gameState->player->isLost() == false){
-		for (flux_iter i = g_game->dataMgr->flux.begin(); (i != g_game->dataMgr->flux.end()); i++){
-			if((*i)->VISIBLE()){ //if #1
-				if(tilex == (*i)->TILE().X && tiley == (*i)->TILE().Y){
-					//entering a flux
-					g_game->gameState->player->set_galactic_pos((*i)->TILE_EXIT().X * scroller->getTileWidth(), (*i)->TILE_EXIT().Y * scroller->getTileHeight());
-					flux = (*i);
-					tempOfficer->SkillUp(SKILL_NAVIGATION, 10);
-					if(g_game->gameState->SkillCheck(SKILL_NAVIGATION)){//if #5
-						(*i)->rPATH_VISIBLE() = true;
-					}else{
-						g_game->gameState->player->isLost(true);
-						(*i)->rPATH_VISIBLE() = false;
-					}//end if #5
-				}
-			}//end if #1
-			if((*i)->distance_check(tilex, tiley, 10)){ //if #2
-				if((*i)->VISIBLE_SPACE() == false){
-					if(tempOfficer->CanSkillCheck() == true
-					&& g_game->gameState->SkillCheck(SKILL_NAVIGATION) == true){ //if #3
-							//detecting a flux
-							(*i)->rVISIBLE_SPACE() = true;
-							(*i)->rVISIBLE() = true;
-							scroller->setTile((*i)->TILE().X, (*i)->TILE().Y, 8);
-							tempOfficer->SkillUp(SKILL_NAVIGATION, 2);
-					}
-				}//end if #3
-				if((*i)->VISIBLE_SPACE() == true){ //if #4
-					flag_FoundFlux = true;
-				}//end if #4
-			}//end if #2
-		}//end for
-	}
+    if (f) {
+        // Entering a new flux!
+        FluxInfo &fi = g_game->gameState->flux_info[f->get_id()];
+        Point2D ep1 = f->get_endpoint1();
+        Point2D ep2 = f->get_endpoint2();
+        Point2D entering_coords = {-1, -1};
+        Point2D exiting_coords = {-1, -1};
+        bool entering_ep_visible = false;
+
+        if (tilex == ep1.x && tiley == ep1.y) {
+            entering_coords = ep1;
+            exiting_coords = ep2;
+            if (fi.endpoint_1_visible) {
+                entering_ep_visible = true;
+            }
+        } else {
+            ALLEGRO_ASSERT(tilex == ep2.x && tiley == ep2.y);
+
+            entering_coords = ep2;
+            exiting_coords = ep1;
+            if (fi.endpoint_2_visible) {
+                entering_ep_visible = true;
+            }
+        }
+        ALLEGRO_ASSERT(entering_coords.x != -1 && entering_coords.y != -1);
+
+        // Random exit one tile away from flux
+        // There are 8 options
+        // 0 1 2
+        // 3   4
+        // 5 6 7
+        // Some may be invalid if there is a flux near the edge of the galaxy
+        vector<pair<int, int>> valid_exits;
+        if ((exiting_coords.x - 1) > 0) {
+            // 0
+            if ((exiting_coords.y - 1) > 0) {
+                valid_exits.push_back(make_pair(-1, -1));
+            }
+
+            // 3
+            valid_exits.push_back(make_pair(-1, 0));
+
+            // 5
+            if ((exiting_coords.y + 1) < GALAXYTILESDOWN) {
+                valid_exits.push_back(make_pair(1, 0));
+            }
+        }
+        if  ((exiting_coords.x + 1) < GALAXYTILESACROSS) {
+            // 2
+            if ((exiting_coords.y - 1) > 0) {
+                valid_exits.push_back(make_pair(1, -1));
+            }
+            // 4
+            valid_exits.push_back(make_pair(1, 0));
+            if ((exiting_coords.y + 1) < GALAXYTILESDOWN) {
+                valid_exits.push_back(make_pair(1, 1));
+            }
+        }
+        if  (((exiting_coords.x + 1) < GALAXYTILESACROSS) || ((exiting_coords.x - 1) > 0)) {
+
+            // 1
+            if ((exiting_coords.y - 1) > 0) {
+                valid_exits.push_back(make_pair(0, -1));
+            }
+            // 6
+            if ((exiting_coords.y + 1) < GALAXYTILESDOWN) {
+                valid_exits.push_back(make_pair(0, 1));
+            }
+        }
+        pair<int, int> random_exit = valid_exits[rand() % valid_exits.size()];
+
+        ALLEGRO_ASSERT((random_exit.first == random_exit.second && random_exit.first != 0) || random_exit.first != random_exit.second);
+        g_game->gameState->player->set_galactic_pos(
+            (exiting_coords.x + random_exit.first) * GALAXYTILESIZE,
+            (exiting_coords.y + random_exit.second) * GALAXYTILESIZE);
+        flux = f;
+
+        // if you see the entrance and are skilled enough,
+        // you'll be able to see the path on the map, as well as
+        // both endpoints. If not, you'll be lost.
+        tempOfficer->SkillUp(SKILL_NAVIGATION, 10);
+        if (g_game->gameState->SkillCheck(SKILL_NAVIGATION)
+                && entering_ep_visible) {
+            fi.endpoint_1_visible = true;
+            fi.endpoint_2_visible = true;
+            fi.path_visible = true;
+            scroller->set_tile(ep1.x, ep1.y, 8);
+            scroller->set_tile(ep2.x, ep2.y, 8);
+        } else {
+            g_game->gameState->player->isLost(true);
+        }
+        return true;
+    }
+    return false;
+}
+
+void
+ModuleInterstellarTravel::identify_flux()
+{
+    //map to tile coordinates
+    Point2D pos = g_game->gameState->getHyperspaceCoordinates();
+    int tilex = static_cast<int>(round(pos.x));
+    int tiley = static_cast<int>(round(pos.y));
+
+    flag_FoundFlux = false;
+
+    if(g_game->gameState->player->isLost() == false) {
+        Point2D location = {static_cast<double>(tilex), static_cast<double>(tiley)};
+
+        for (int i = 0; i < g_game->dataMgr->GetNumFlux(); i++) {
+            const Flux *f = g_game->dataMgr->GetFlux(i);
+
+            if (!f) {
+                continue;
+            }
+            FluxInfo &fi = g_game->gameState->flux_info[f->get_id()];
+            Point2D endpoint;
+
+            if (f->distance_to_endpoint_1(location) < 10) {
+                if (! fi.endpoint_1_visible) {
+                    if(tempOfficer->CanSkillCheck()
+                            && g_game->gameState->SkillCheck(SKILL_NAVIGATION)) {
+                        //detecting a flux
+                        fi.endpoint_1_visible = true;
+                        endpoint = f->get_endpoint1();
+                        scroller->set_tile(endpoint.x, endpoint.y, 8);
+                        tempOfficer->SkillUp(SKILL_NAVIGATION, 2);
+                        flag_FoundFlux = true;
+                    }
+                } else {
+                    flag_FoundFlux = true;
+                }
+            }
+            if (f->distance_to_endpoint_2(location) < 10) {
+                if (! fi.endpoint_2_visible) {
+                    if(tempOfficer->CanSkillCheck()
+                            && g_game->gameState->SkillCheck(SKILL_NAVIGATION)) {
+                        //detecting a flux
+                        fi.endpoint_2_visible = true;
+                        endpoint = f->get_endpoint2();
+                        scroller->set_tile(endpoint.x, endpoint.y, 8);
+                        tempOfficer->SkillUp(SKILL_NAVIGATION, 2);
+                        flag_FoundFlux = true;
+                    }
+                } else {
+                    flag_FoundFlux = true;
+                }
+            }
+        }
+    }
 }
 
 void ModuleInterstellarTravel::load_flux()
 {
-	if(g_game->dataMgr->flux.empty() == true){
-		srand(42); // remove game randomization - sw 
+	for (int i = 0; i < MAX_FLUX; i++)
+        {
+            const Flux *f = g_game->dataMgr->GetFlux(i);
+            if (!f) {
+                continue;
+            }
 
-		int i_start = 0,
-			_infinite_loop_prevention = 0,
-			a = 0,
-			i_increment = 5,
-			i_radius = i_increment,
-			i_distance = 3;
-		Point2D i_origin;
-		i_origin.x = (scroller->getTilesAcross()/10)/2;
-		i_origin.y = (scroller->getTilesDown()/10)/2;
+            const FluxInfo &fi = g_game->gameState->flux_info[f->get_id()];
 
-		Star *star;
-
-		for(int n=0; n< MAX_FLUX; n++){
-			flux = new Flux();
-			flux->rVISIBLE() = true;
-			flux->rID() = n;
-			if(rand()%2){
-				flux->rTILE().Y = (int)(i_origin.y + i_start + rand()%i_radius);
-			}else{
-				flux->rTILE().Y = (int)(i_origin.y - (i_start + rand()%i_radius));
-			}
-			if(rand()%2){
-				flux->rTILE().X = (int)(i_origin.x + i_start + rand()%i_radius);
-			}else{
-				flux->rTILE().X = (int)(i_origin.x - (i_start + rand()%i_radius));
-			}
-
-			i_start = i_radius;
-			i_radius += i_distance + rand()%i_increment;
-
-			_infinite_loop_prevention = 0;
-			a = 0;
-			while(a < g_game->dataMgr->GetNumStars() && _infinite_loop_prevention < 5){
-				star = g_game->dataMgr->GetStar(a);
-				if(flux->distance_check(star->x, star->y, i_distance)){
-					if(flux->rTILE().Y - star->y < i_distance && flux->rTILE().Y > star->y){
-						flux->rTILE().Y++;
-					}else if(star->y - flux->rTILE().Y < i_distance && flux->rTILE().Y < star->y){
-						flux->rTILE().Y--;
-					}
-					if(flux->rTILE().X - star->x < i_distance && flux->rTILE().X > star->x){
-						flux->rTILE().X++;
-					}else if(star->x - flux->rTILE().X < i_distance && flux->rTILE().X < star->x){
-						flux->rTILE().X--;
-					}
-					a--;
-				}
-				a++;
-				_infinite_loop_prevention++;
-			}
-
-			if(flux->rTILE().Y > 10 && flux->rTILE().Y < scroller->getTilesDown()/10 - 10 ){
-				if(flux->rTILE().X > 10 && flux->rTILE().X < scroller->getTilesAcross()/10 - 10){
-					a = 0;
-					while(a < g_game->dataMgr->GetNumStars() && flux->ID() != -1){
-						star = g_game->dataMgr->GetStar(a);
-						if(flux->rTILE().X == star->x && flux->rTILE().Y == star->y){
-							flux->rID() = -1;
-						}
-						a++;
-					}
-					if(flux->ID() != -1){
-						g_game->dataMgr->flux.push_back(flux);
-					}
-				}
-			}
-		}
-		if(!g_game->dataMgr->flux.empty()){
-			place_flux_exits();
-		}
+            if (fi.endpoint_1_visible)
+            {
+                Point2D endpoint = f->get_endpoint1();
+                scroller->set_tile(endpoint.x, endpoint.y, 8);
+	    }
+            if (fi.endpoint_2_visible)
+            {
+                Point2D endpoint = f->get_endpoint2();
+                scroller->set_tile(endpoint.x, endpoint.y, 8);
+            }
 	}
 }
-
-
-void ModuleInterstellarTravel::place_flux_exits(){
-	srand(42);
-	int scroller_tilesDown = scroller->getTilesDown()/10,
-		scroller_tilesAcross = scroller->getTilesAcross()/10;
-	flux_iter i = g_game->dataMgr->flux.begin();
-	while(i != g_game->dataMgr->flux.end()){
-		if((*i)->TILE_EXIT().X < 10){
-			(*i)->rTILE_EXIT().X = 10;
-		}else if((*i)->TILE_EXIT().X > scroller_tilesAcross - 10){
-			(*i)->rTILE_EXIT().X = scroller_tilesAcross - 10;
-		}
-		if((*i)->TILE_EXIT().Y < 10){
-			(*i)->rTILE_EXIT().Y = 10;
-		}else if((*i)->TILE_EXIT().Y > scroller_tilesDown - 10){
-			(*i)->rTILE_EXIT().Y = scroller_tilesDown - 10;
-		}
-		i++;
-	}
-}
-
 #pragma endregion
 
 
@@ -1137,73 +1170,49 @@ double ModuleInterstellarTravel::Distance( double x1,double y1,double x2,double 
 
 void ModuleInterstellarTravel::identifyStar()
 {
-	//adjust for ship's location at center of window
-	int actualx = (int)(g_game->gameState->player->posHyperspace.x + GALAXY_SCROLL_WIDTH / 2);
-	int actualy = (int)(g_game->gameState->player->posHyperspace.y + GALAXY_SCROLL_HEIGHT / 2 - 64);
+    //get tile number based on ship position
+    Point2D pos = g_game->gameState->getHyperspaceCoordinates();
+    int tilex = static_cast<int>(round(pos.x));
+    int tiley = static_cast<int>(round(pos.y));
 
-	//get tile number based on ship position
-	int tilex = actualx / scroller->getTileWidth();
-	int tiley = actualy / scroller->getTileHeight();
-
-	//look for star at tile location
-	starFound = 0;
-	starSystem = g_game->dataMgr->GetStarByLocation(tilex,tiley);
-	if (starSystem) {
-		starFound = 1;
-		currentStar = starSystem->id;
-	}
+    //look for star at tile location
+    starFound = 0;
+    starSystem = g_game->dataMgr->GetStarByLocation(tilex,tiley);
+    if (starSystem) {
+            starFound = 1;
+            currentStar = starSystem->id;
+    }
 
 }
 
 
- void ModuleInterstellarTravel::createGalaxy()
+void
+ModuleInterstellarTravel::createGalaxy()
 {
-	//create tile scroller object for interstellar space
-	scroller = new TileScroller();
-	scroller->setTileSize(GALAXYTILESIZE,GALAXYTILESIZE);
-	scroller->setTileImageColumns(5);
-	scroller->setTileImageRows(2);
-	scroller->setRegionSize(GALAXYTILESACROSS,GALAXYTILESDOWN);
+    TileSet ts(resources[IS_TILES], GALAXYTILESIZE, GALAXYTILESIZE, 5, 2);
 
-	if (!scroller->createScrollBuffer(GALAXY_SCROLL_WIDTH, GALAXY_SCROLL_HEIGHT)) {
-		g_game->message("Hyperspace: Error creating scroll buffer");
-		return;
-	}
+    scroller = new TileScroller(
+            ts,
+            GALAXYTILESACROSS, GALAXYTILESDOWN,
+            GALAXY_SCROLL_WIDTH, GALAXY_SCROLL_HEIGHT,
+            ship->get_screen_position() - Point2D(32, 32));
 
-	ALLEGRO_BITMAP *img = resources[IS_TILES];
-	scroller->setTileImage(img);
-
-	scroller->setScrollPosition(g_game->gameState->player->posHyperspace);
+    scroller->set_scroll_position(g_game->gameState->getHyperspaceCoordinates());
 }
 
 
 
- void ModuleInterstellarTravel::loadGalaxyData()
+void
+ModuleInterstellarTravel::loadGalaxyData()
 {
-	ALLEGRO_DEBUG("  Loading galaxy data...\n");
-	Star *star;
-	int spectral = -1;
-
-	//set specific tiles in the scrolling tilemap with star data from DataMgr
-	for (int i = 0; i < g_game->dataMgr->GetNumStars(); i++)
-	{
-		star = g_game->dataMgr->GetStar(i);
-
-		//these numbers match the ordering of the images in is_tiles.bmp and are not in astronomical order
-		switch (star->spectralClass ) {
-			case SC_O: spectral = 7; break;		//blue
-			case SC_M: spectral = 6; break;		//red
-			case SC_K: spectral = 5; break;		//orange
-			case SC_G: spectral = 4; break;		//yellow
-			case SC_F: spectral = 3; break;		//lt yellow
-			case SC_B: spectral = 2; break;		//lt blue
-			case SC_A: spectral = 1; break;		//white
-			default: ALLEGRO_ASSERT(0); break;
-		}
-
-		//set tile number in tile scroller to star sprite number
-		scroller->setTile(star->x, star->y, spectral);
-	}
+    ALLEGRO_DEBUG("  Loading galaxy data...\n");
+    //set specific tiles in the scrolling tilemap with star data from DataMgr
+    for (int i = 0; i < g_game->dataMgr->GetNumStars(); i++)
+    {
+        const Star *star = g_game->dataMgr->GetStar(i);
+        //set tile number in tile scroller to star sprite number
+        scroller->set_tile(star->x, star->y, star->spectralClass);
+    }
 }
 
 

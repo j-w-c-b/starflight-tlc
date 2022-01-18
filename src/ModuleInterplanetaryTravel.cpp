@@ -146,7 +146,7 @@ void ModuleInterPlanetaryTravel::OnMouseMove(int x, int y)
 	for (int i = 0; i < star->GetNumPlanets(); i++)  {
 		int planet = planets[i].tilenum;
 		if (planet > 0) {
-			//the various negative offsets after the parenthetised expressions are mere empirical tweaks, so don't expect too much of them
+			//the various negative offsets after the parenthesized expressions are mere empirical tweaks, so don't expect too much of them
 			if(x > (asx + planets[i].tilex * 2.3)-4 - planets[i].radius  && x < (asx + planets[i].tilex * 2.3)-2 + planets[i].radius
 			&& y > (asy + planets[i].tiley * 2.3)-2 - planets[i].radius &&  y < (asy + planets[i].tiley * 2.3) + planets[i].radius){
 				planet_label->SetX( x + 10);
@@ -164,8 +164,8 @@ void ModuleInterPlanetaryTravel::OnMouseMove(int x, int y)
 	}
 	//check if mouse is over a star
 	if(m_bOver_Planet == false){
-		int systemCenterTileX = scroller->getTilesAcross() / 2;
-		int systemCenterTileY = scroller->getTilesDown() / 2;
+		int systemCenterTileX = PLANETTILESACROSS / 2;
+		int systemCenterTileY = PLANETTILESDOWN / 2;
 		if(x > (asx + systemCenterTileX * 2.3)-6  && x < (asx + systemCenterTileX * 2.3)+6
 		&& y > (asy + systemCenterTileY * 2.3)-6 &&  y < (asy + systemCenterTileY * 2.3)+6){
 			planet_label->SetX( x + 10);
@@ -316,7 +316,6 @@ bool ModuleInterPlanetaryTravel::Init()
 	flag_rotation = 0;
 
 	planetFound = 0;
-	distance = 0.0f;
 	flag_DoOrbit = false;
 	flag_DoHyperspace = false;
 	flag_DoDock = false;
@@ -341,25 +340,17 @@ bool ModuleInterPlanetaryTravel::Init()
 	//point global scrollbox to local one in this module for sub-module access
 	g_game->g_scrollbox = text;
 
-
-	//create tile scroller object
-	scroller = new TileScroller();
-	scroller->setTileSize(PLANETTILESIZE,PLANETTILESIZE);
-	scroller->setTileImageColumns(9);
-	scroller->setRegionSize(PLANETTILESACROSS,PLANETTILESDOWN);
-
-	ALLEGRO_BITMAP *tileImage = resources[IP_TILES];
-	scroller->setTileImage(tileImage);
-
-	if (!scroller->createScrollBuffer(PLANET_SCROLL_WIDTH, PLANET_SCROLL_HEIGHT)) {
-		g_game->message("Interplanetary: Error creating scroll buffer");
-		return false;
-	}
-
 	//create the ship sprite
 	ship = new PlayerShipSprite();
 	ship->allstop();
 
+	//create tile scroller object
+        TileSet ts(resources[IP_TILES], PLANETTILESIZE, PLANETTILESIZE, 9, 1);
+
+	scroller = new TileScroller(
+                ts, PLANETTILESACROSS, PLANETTILESDOWN,
+                PLANET_SCROLL_WIDTH, PLANET_SCROLL_HEIGHT,
+                ship->get_screen_position() - Point2D(96, 96));
 
 	//try to read star system data...
 	star = g_game->dataMgr->GetStarByID(g_game->gameState->player->currentStar);
@@ -372,8 +363,7 @@ bool ModuleInterPlanetaryTravel::Init()
 	loadStarSystem(g_game->gameState->player->currentStar);
 
 	//set player's location
-	scroller->setScrollPosition( g_game->gameState->player->posSystem);
-
+	scroller->set_scroll_position(g_game->gameState->getSystemCoordinates());
 
 	//notify questmgr that star system has been entered
 	g_game->questMgr->raiseEvent(10, g_game->gameState->player->currentStar);
@@ -393,15 +383,8 @@ bool ModuleInterPlanetaryTravel::Init()
 
 bool ModuleInterPlanetaryTravel::checkSystemBoundary(int x,int y)
 {
-	int leftEdge = 0;
-	int rightEdge = scroller->getTilesAcross() * scroller->getTileWidth();
-	int topEdge = 0;
-	int bottomEdge = scroller->getTilesDown() * scroller->getTileHeight();
-
-	//if ship reaches edge of system, exit to interstellar space
-	if (x < leftEdge || x > rightEdge || y < topEdge || y > bottomEdge) return false;
-
-	return true;
+    /* FIXME: use system coordinates directly */
+    return !(x <= 0 || x >= PLANETTILESACROSS * PLANETTILESIZE || y <= 0 || y >= PLANETTILESDOWN * PLANETTILESIZE);
 }
 
 void ModuleInterPlanetaryTravel::Update()
@@ -409,11 +392,12 @@ void ModuleInterPlanetaryTravel::Update()
 	std::ostringstream s;
 
 	//update the ship's position based on velocity
-	float fx = g_game->gameState->player->posSystem.x + (ship->getVelocityX() * 6);
-	float fy = g_game->gameState->player->posSystem.y + (ship->getVelocityY() * 6);
+        Point2D f(
+            g_game->gameState->player->posSystem.x + (ship->getVelocityX() * 6),
+            g_game->gameState->player->posSystem.y + (ship->getVelocityY() * 6));
 
 	//exit star system when edge is reached
-	if (!checkSystemBoundary((int)fx,(int)fy))
+	if (!checkSystemBoundary(f.x, f.y))
 	{
 		ship->allstop();
 		flag_DoHyperspace = true;
@@ -421,12 +405,11 @@ void ModuleInterPlanetaryTravel::Update()
 	}
 
 	//store ship position
-	g_game->gameState->player->posSystem.x = fx;
-	g_game->gameState->player->posSystem.y = fy;
+	g_game->gameState->player->posSystem.x = f.x;
+	g_game->gameState->player->posSystem.y = f.y;
 
 	//update scrolling and draw tiles on the scroll buffer
-	scroller->setScrollPosition(fx, fy);
-	scroller->updateScrollBuffer();
+	scroller->set_scroll_position(f / PLANETTILESIZE);
 
 	//check if any planet is located near ship
 	checkShipPosition();
@@ -629,7 +612,7 @@ void ModuleInterPlanetaryTravel::Draw()
 	static bool help1 = true;
 
 	//draw the scrolling view
-	scroller->drawScrollWindow(g_game->GetBackBuffer(), PLANET_SCROLL_X, PLANET_SCROLL_Y, PLANET_SCROLL_WIDTH, PLANET_SCROLL_HEIGHT);
+	scroller->draw_scroll_window(g_game->GetBackBuffer(), PLANET_SCROLL_X, PLANET_SCROLL_Y, PLANET_SCROLL_WIDTH, PLANET_SCROLL_HEIGHT);
 
 	//draw the ship
 	ship->draw(g_game->GetBackBuffer());
@@ -668,63 +651,43 @@ void ModuleInterPlanetaryTravel::Draw()
 
 void ModuleInterPlanetaryTravel::checkShipPosition()
 {
+    Point2D pos = g_game->gameState->getSystemCoordinates();
+    Point2D sun_pos = Point2D(PLANETTILESACROSS / 2, PLANETTILESDOWN / 2);
 
-	//break up window into an evenly-divisible grid of tiles
-	//note the height is based on top of GUI, since that is where scroller stops
-	int windowWidth = (SCREEN_WIDTH / scroller->getTileWidth()) * scroller->getTileWidth();
-	int windowHeight = (540 / scroller->getTileHeight()) * scroller->getTileHeight();
+    //is ship burning up in the star?
+    //calculate distance from ship to star
+    double dx = pos.x - sun_pos.x;
+    double dy = pos.y - sun_pos.y;
+    double distance = sqrt(dx * dx + dy * dy);
 
-	//adjust for ship's position at center of main window
-	int actualx = (int)(g_game->gameState->player->posSystem.x + windowWidth / 2);
-	int actualy = (int)(g_game->gameState->player->posSystem.y + windowHeight / 2);
+    if (distance > 2.0f) {
+        burning = 0;
+    } else if (distance > 1.5f) {
+        burning = 1;
+    } else if (distance > 0.5f) {
+        burning = 2;
+    } else {
+        burning++;
+    }
 
-	//get tile based on ship's coordinates
-	tilex = actualx / scroller->getTileWidth();
-	tiley = actualy / scroller->getTileHeight();
-	tilenum = scroller->getTile(tilex,tiley);
+    //see if ship is over planet tile
+    planetFound = false;
+    for (int i=0; i<10 && !planetFound; i++) {
+        //check tilex,tiley,and tilenum for a planet match
+        if (static_cast<int>(round(pos.x)) == planets[i].tilex
+                && static_cast<int>(round(pos.y)) == planets[i].tiley) {
+            planet = star->GetPlanetByID(planets[i].planetid);
+            if (planet) {
+                planetFound = 1;
 
-
-	//is ship burning up in the star?
-	if (scroller->getTile(tilex,tiley) == 1)
-	{
-		burning++;
-	}
-	else {
-		//calculate distance from ship to star
-		int starTileX = scroller->getTilesAcross() / 2;
-		int starTileY = scroller->getTilesDown() / 2;
-		distance = sqrt( (float) pow( (float)(starTileX - tilex), 2) + (float) pow( (float)(starTileY - tiley), 2) );
-		if (distance > 2.0f)
-			burning = 0;
-		else if (distance > 1.5f)
-			burning = 1;
-		else if (distance > 0.5f)
-			burning = 2;
-	}
-
-
-	//see if ship is over planet tile
-	planetFound = 0;
-	for (int i=0; i<10; i++) {
-
-		if (planetFound) break;
-
-		//check tilex,tiley,and tilenum for a planet match
-		if (tilex == planets[i].tilex && tiley == planets[i].tiley && tilenum == planets[i].tilenum)
-		{
-			planet = star->GetPlanetByID(planets[i].planetid);
-			if (planet) {
-				planetFound = 1;
-
-				//store current planet in global player object
-				g_game->gameState->player->currentPlanet = planets[i].planetid;
-
-			}
-		}
-
-	}
-	if (!planetFound)
-		g_game->gameState->player->currentPlanet = -1;
+                //store current planet in global player object
+                g_game->gameState->player->currentPlanet = planets[i].planetid;
+            }
+        }
+    }
+    if (!planetFound) {
+        g_game->gameState->player->currentPlanet = -1;
+    }
 }
 
 void ModuleInterPlanetaryTravel::updateMiniMap()
@@ -732,8 +695,8 @@ void ModuleInterPlanetaryTravel::updateMiniMap()
 	//get AUX_SCREEN gui values from globals
 	asx = (int)g_game->getGlobalNumber("AUX_SCREEN_X");
 	asy = (int)g_game->getGlobalNumber("AUX_SCREEN_Y");
-	static int asw = (int)g_game->getGlobalNumber("AUX_SCREEN_WIDTH");
-	static int ash = (int)g_game->getGlobalNumber("AUX_SCREEN_HEIGHT");
+	static double asw = g_game->getGlobalNumber("AUX_SCREEN_WIDTH");
+	static double ash = g_game->getGlobalNumber("AUX_SCREEN_HEIGHT");
 	al_set_target_bitmap(g_game->GetBackBuffer());
 
 	//clear aux window
@@ -749,13 +712,13 @@ void ModuleInterPlanetaryTravel::updateMiniMap()
 			cy = asy + ash / 2;
 			rx = (int)( (2 + i) * 8.7 );
 			ry = (int)( (2 + i) * 8.7 );
-			al_draw_ellipse(cx, cy, rx, ry, al_map_rgb(12,12,24), 2);
+			al_draw_ellipse(cx, cy, rx, ry, al_map_rgb(48,48,96), 2);
 		}
 	}
 
 	//draw the star in aux window
-	int systemCenterTileX = scroller->getTilesAcross() / 2;
-	int systemCenterTileY = scroller->getTilesDown() / 2;
+	int systemCenterTileX = PLANETTILESACROSS / 2;
+	int systemCenterTileY = PLANETTILESDOWN / 2;
 
 	ALLEGRO_COLOR color;
 	switch(star->spectralClass) {
@@ -790,8 +753,8 @@ void ModuleInterPlanetaryTravel::updateMiniMap()
 					case 8: color = al_map_rgb(55,147,84);	planets[i].radius = 3;		break; //acidic
 					default: color = al_map_rgb(90,90,90);	planets[i].radius = 1;		break; //none
 				}
-				px = (int)(asx + planets[i].tilex * 2.27);
-				py = (int)(asy + planets[i].tiley * 2.27);
+				px = (int)(asx + planets[i].tilex * 2.3);
+				py = (int)(asy + planets[i].tiley * 2.3);
 				al_draw_filled_circle(px, py, planets[i].radius, color);
 			}
 		}
@@ -805,7 +768,7 @@ void ModuleInterPlanetaryTravel::updateMiniMap()
 	//draw player's location on minimap
 	float fx = asx + g_game->gameState->player->posSystem.x / 256 * 2.3;
 	float fy = asy + g_game->gameState->player->posSystem.y / 256 * 2.3;
-	al_draw_rectangle((int)fx-1, (int)fy-1, (int)fx+2, (int)fy+2, BLUE, 1);
+	al_draw_rectangle((int)fx-1, (int)fy-1, (int)fx+2, (int)fy+2, LTBLUE, 1);
 }
 
 int ModuleInterPlanetaryTravel::loadStarSystem(int id)
@@ -828,15 +791,15 @@ int ModuleInterPlanetaryTravel::loadStarSystem(int id)
 	}
 
 	//clear the tile map
-	scroller->resetTiles();
+	scroller->reset_tiles();
 
 	//calculate center of tile map
-	int systemCenterTileX = scroller->getTilesAcross() / 2;
-	int systemCenterTileY = scroller->getTilesDown() / 2;
+	int systemCenterTileX = PLANETTILESACROSS / 2;
+	int systemCenterTileY = PLANETTILESDOWN / 2;
 
 
 	//position star tile image at center
-	scroller->setTile(systemCenterTileX, systemCenterTileY, 1);
+	scroller->set_tile(systemCenterTileX, systemCenterTileY, 1);
 
 	//read starid passed over by the interstellar module
 	star = g_game->dataMgr->GetStarByID(id);
@@ -872,7 +835,7 @@ int ModuleInterPlanetaryTravel::loadStarSystem(int id)
                         ALLEGRO_ASSERT(planets[i].tilenum > 0);
                         ALLEGRO_ASSERT(planets[i].tilenum < 9);
 
-			scroller->setTile(planets[i].tilex, planets[i].tiley, planets[i].tilenum);
+			scroller->set_tile(planets[i].tilex, planets[i].tiley, planets[i].tilenum);
 		}
 	}
 

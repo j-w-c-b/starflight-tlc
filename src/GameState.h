@@ -343,6 +343,20 @@ private:
 //GAMESTATE CLASS
 #define STARTING_CREDITS 1000
 
+// Info about the flux in the galaxy that the user has
+// interacted with either by seeing it in the interstellar
+// flight or by flying through it with enough knowledge to map
+// it.
+struct FluxInfo 
+{
+    bool endpoint_1_visible;
+    bool endpoint_2_visible;
+    bool path_visible;
+
+    FluxInfo() : endpoint_1_visible(false), endpoint_2_visible(false), path_visible(false) {};
+
+};
+
 class PlayerInfo {
 	private:
 		bool m_scanner,
@@ -489,7 +503,6 @@ public:
 	bool HaveFullCrew() const;
 	bool PreparedToLaunch() const;
 	Ship getShip() const;
-	void init_fluxSeed()			{ srand(time(NULL)); fluxSeed = rand(); }
 
 	std::vector<QuestScript*> planetsurfaceEvents;
 	Quest *RunningScriptsParentQuest;
@@ -511,6 +524,7 @@ public:
 
 
 	int						alienAttitudes[NUM_ALIEN_RACES]; //use enum AlienRaces for index
+        std::map<ID, FluxInfo> flux_info;
 	long					alienAttitudeUpdate;
 	std::string				playerPosture;				//for use in Encounters
 
@@ -530,7 +544,6 @@ public:
 	Items					&m_items;					//player inventory
 	PlayerInfo				*player;					//Holds misc player data
 	Ship					m_ship;						//ship data
-	int						fluxSeed;					//The seed for the randomizing of the fluxes
 	OfficerType				m_currentSelectedOfficer;	//currently selected officer in Control Panel
 	std::vector<Officer*>	m_unemployedOfficers;		//current unemployeed officers;
 
@@ -587,6 +600,17 @@ public:
 	bool getQuestCompleted() { return questCompleted; }
 	void setQuestCompleted(bool value) { questCompleted = value; }
 	bool firstTimeVisitor;
+
+        Point2D getHyperspaceCoordinates() {
+            return Point2D(player->posHyperspace.x / 128.0, player->posHyperspace.y / 128.0);
+        }
+        Point2D setHyperspaceCoordinates(const Point2D &pos) {
+            return player->posHyperspace = Point2D(pos.x * 128.0, pos.y * 128.0);
+        }
+
+        Point2D getSystemCoordinates() {
+	    return Point2D(player->posSystem.x / 256.0, player->posSystem.y / 256.0);
+        }
 
 
 private:

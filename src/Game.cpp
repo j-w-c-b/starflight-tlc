@@ -633,13 +633,7 @@ void Game::Run()
 	ALLEGRO_DEBUG("\nLaunching game loop...\n");
 	while (m_keepRunning)
 	{
-		try {
-			RunGame();
-		}
-		catch(std::exception e)
-		{
-			ALLEGRO_DEBUG("%s\n", e.what());
-		}
+            RunGame();
 	}
 
 	ALLEGRO_DEBUG("\nBailing...\n");
@@ -702,6 +696,7 @@ bool Game::Initialize_Graphics()
     //try to get user-selected fullscreen toggle from settings screen
     bool fullscreen = g_game->getGlobalBoolean("FULLSCREEN");
     int flags = fullscreen ? (ALLEGRO_FULLSCREEN) : (ALLEGRO_WINDOWED | ALLEGRO_RESIZABLE);
+    al_set_new_display_refresh_rate(60);
 
     if (!m_display)
     {
@@ -1215,6 +1210,8 @@ void Game::RunGame()
 		    y+=10; g_game->PrintDefault(m_backbuffer,x,y,"Fuel: " + Util::ToString( g_game->gameState->getShip().getFuel() ) , GRAY);
 		    y+=10; g_game->PrintDefault(m_backbuffer,x,y,"Cred: " + Util::ToString(g_game->gameState->getCredits()) , GRAY);
 		    y+=10; g_game->PrintDefault(m_backbuffer,x,y,"Cargo: " + Util::ToString(g_game->gameState->m_ship.getOccupiedSpace()) + "/" + Util::ToString(g_game->gameState->m_ship.getTotalSpace()), GRAY);
+		    y+=10; g_game->PrintDefault(m_backbuffer,x,y,"HyperPos: " + Util::ToString(g_game->gameState->getHyperspaceCoordinates().x) + "," + Util::ToString(g_game->gameState->getHyperspaceCoordinates().y), GRAY);
+		    y+=10; g_game->PrintDefault(m_backbuffer,x,y,"SystemPos: " + Util::ToString(g_game->gameState->getSystemCoordinates().x) + "," + Util::ToString(g_game->gameState->getSystemCoordinates().y), GRAY);
 		    //Print out the aliens' attitude toward us:
 		 /*   PrintDefault(m_backbuffer,0,y,"Attitudes");
 		    for (int n=1; n<NUM_ALIEN_RACES; n++)

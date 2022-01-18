@@ -167,41 +167,22 @@ void ModuleAuxiliaryDisplay::updateCargoFillPercent()
 // The mini-scroller displayed in the navigator's aux display
 void ModuleAuxiliaryDisplay::init_nav()
 {
-	scroller = new TileScroller();
-	scroller->setTileSize(16,16);
-	scroller->setTileImageColumns(5);
-	scroller->setTileImageRows(2);
-	scroller->setRegionSize(2500,2200);
+    TileSet ts(resources[IS_TILES_SMALL], 16, 16, 5, 2);
+    // center of the viewport minus 1/2 the tile width
+    Point2D tile_offset((80.0 - 8) / 2, (75.0 - 8) / 2);
+    scroller = new TileScroller(
+            ts,
+            250, 220,
+            80, 75,
+            tile_offset);
+    scroller->set_scroll_position(g_game->gameState->getHyperspaceCoordinates());
 
-	if (!scroller->createScrollBuffer(asw + scroller->getTileWidth(), ash + scroller->getTileHeight())) {
-		g_game->message("ModuleAuxiliaryDisplay::Init: Error creating scroll buffer");
-		return;
-	}
-	//initialize mini tile scroller for nav
-	scroller->setTileImage(resources[IS_TILES_SMALL]);
-	scroller->setScrollPosition(g_game->gameState->player->posHyperspace);
-
-	int spectral = -1;
-
-	//set specific tiles in the scrolling tilemap with star data from DataMgr
-	for (int i = 0; i < g_game->dataMgr->GetNumStars(); i++)
-	{
-		Star *star = g_game->dataMgr->GetStar(i);
-
-		//these numbers match the ordering of the images in is_tiles.bmp and are not in astronomical order
-		switch (star->spectralClass ) {
-			case SC_O: spectral = 7; break;		//blue
-			case SC_M: spectral = 6; break;		//red
-			case SC_K: spectral = 5; break;		//orange
-			case SC_G: spectral = 4; break;		//yellow
-			case SC_F: spectral = 3; break;		//lt yellow
-			case SC_B: spectral = 2; break;		//lt blue
-			case SC_A: spectral = 1; break;		//white
-			default: ALLEGRO_ASSERT(0); break;
-		}
-		//set tile number in tile scroller to star sprite number
-		scroller->setTile(star->x, star->y, spectral);
-	}
+    //set specific tiles in the scrolling tilemap with star data from DataMgr
+    for (int i = 0; i < g_game->dataMgr->GetNumStars(); i++)
+    {
+        const Star *star = g_game->dataMgr->GetStar(i);
+        scroller->set_tile(star->x, star->y, star->spectralClass);
+    }
 }
 
 
@@ -361,8 +342,7 @@ void ModuleAuxiliaryDisplay::updateNav()
 	int x = asx,y = asy+130;
         int dx;
 
-	double galacticx = g_game->gameState->player->posHyperspace.x;
-	double galacticy = g_game->gameState->player->posHyperspace.y;
+	Point2D position = g_game->gameState->getHyperspaceCoordinates();
 
 	//officer name
         al_draw_textf(g_game->font18, SKYBLUE, x, y, 0, "Nav Off. %s",g_game->gameState->officerNav->getLastName().c_str());
@@ -371,8 +351,7 @@ void ModuleAuxiliaryDisplay::updateNav()
 	y+=40;
 	g_game->Print12(canvas, x, y, "COORD:", HEADING_COLOR);
         dx = al_get_text_width(g_game->font12, "COORD: ");
-	// offset of 4 tiles on the x axis and 2 tiles on the y axis
-        al_draw_textf(g_game->font12, SKYBLUE, x + dx, y, 0, "%0.f %0.f", galacticx/128, galacticy / 128 + 2);
+        al_draw_textf(g_game->font12, SKYBLUE, x + dx, y, 0, "%0.f %0.f", position.x, position.y);
 
 	//speed status
 	y+=12;
@@ -392,9 +371,8 @@ void ModuleAuxiliaryDisplay::updateNav()
 	}
 
 
-	scroller->setScrollPosition(galacticx/8 + 24, galacticy/8 - 8);
-	scroller->updateScrollBuffer();
-	scroller->drawScrollWindow(g_game->GetBackBuffer(), asx+145, asy+150, 80, 75);
+	scroller->set_scroll_position(g_game->gameState->getHyperspaceCoordinates());
+	scroller->draw_scroll_window(g_game->GetBackBuffer(), asx+145, asy+150, 80, 75);
 }
 
 void ModuleAuxiliaryDisplay::PrintSystemStatus(int x, int y, const string &title, int value)

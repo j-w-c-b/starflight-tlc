@@ -7005,4 +7005,26 @@
     <military>0</military>
     <trade>0</trade>
   </sector>
+  <flux>
+      <id>1</id>
+      <endpoint>
+          <x>110</x>
+          <y>120</y>
+      </endpoint>
+      <endpoint>
+          <x>10</x>
+          <y>18</y>
+      </endpoint>
+  </flux>
+  <flux>
+      <id>2</id>
+      <endpoint>
+          <x>90</x>
+          <y>42</y>
+      </endpoint>
+      <endpoint>
+          <x>38</x>
+          <y>18</y>
+      </endpoint>
+  </flux>
 </galaxy>

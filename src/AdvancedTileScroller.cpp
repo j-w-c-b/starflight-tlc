@@ -94,7 +94,7 @@ bool AdvancedTileScroller::LoadTileSet(char *FileName, int Variations, bool Grou
 		return false;
 	}		
 
-	tiles.push_back(new TileSet(tileSetImage, Variations, GroundNavigation, AirNavigation));
+	tiles.push_back(new AdvancedTileSet(tileSetImage, Variations, GroundNavigation, AirNavigation));
 
 	//data not loaded from data file, but from a ALLEGRO_BITMAP file, so we must delete ALLEGRO_BITMAPs afterward
 	loadedFromDataFile = false;
@@ -109,7 +109,7 @@ bool AdvancedTileScroller::LoadTileSet(ALLEGRO_BITMAP *tileImage, int Variations
 		return false;
 	}		
 
-	tiles.push_back(new TileSet(tileImage, Variations, GroundNavigation, AirNavigation));
+	tiles.push_back(new AdvancedTileSet(tileImage, Variations, GroundNavigation, AirNavigation));
 
 	//when loading from data file, we must not free images afterward!
 	loadedFromDataFile = true;

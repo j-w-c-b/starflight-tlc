@@ -751,6 +751,34 @@ Star* DataMgr::GetStarByLocation(CoordValue x, CoordValue y)
    return result;
 }
 
+int DataMgr::GetNumFlux() {
+    return (int) flux.size();
+}
+
+
+const Flux *
+DataMgr::GetFlux(int idx) {
+   Flux * result = nullptr;
+
+   if ((idx >= 0) && (idx < (int)flux.size()))
+   {
+      result = flux[idx];
+   }
+
+   return result;
+}
+
+
+const Flux *
+DataMgr::GetFluxByLocation(CoordValue x, CoordValue y)
+{
+    auto i = fluxByLocation.find(make_pair(x, y));
+    if (i != fluxByLocation.end()) {
+        return i->second;
+    }
+    return nullptr;
+}
+
 Planet* DataMgr::GetPlanetByID(ID id)
 {
    Planet * result = NULL;
@@ -1161,6 +1189,65 @@ bool DataMgr::LoadGalaxy()
 
       planet = planet->NextSiblingElement("planet");
    }
+
+    // now load all flux
+    TiXmlElement * flux = galaxy->FirstChildElement("flux");
+    while (flux != NULL)
+    {
+        ID flux_id = -1;
+        Point2D endpoint_1 = {-1, -1};
+        Point2D endpoint_2 = {-1, -1};
+        TiXmlHandle fluxHandle(flux);
+
+        TiXmlText * text;
+
+        text = fluxHandle.FirstChild("id").FirstChild().Text();
+        if (text != NULL)
+        {
+            flux_id = atoi(text->Value());
+        }
+
+        TiXmlHandle endpoint = fluxHandle.FirstChildElement("endpoint");
+        text = endpoint.FirstChild("x").FirstChild().Text();
+        if (text != nullptr) {
+            endpoint_1.x = atoi(text->Value());
+        }
+        text = endpoint.FirstChild("y").FirstChild().Text();
+        if (text != nullptr) {
+            endpoint_1.y = atoi(text->Value());
+        }
+        endpoint = fluxHandle.ChildElement("endpoint", 1);
+        text = endpoint.FirstChild("x").FirstChild().Text();
+        if (text != nullptr) {
+            endpoint_2.x = atoi(text->Value());
+        }
+        text = endpoint.FirstChild("y").FirstChild().Text();
+        if (text != nullptr) {
+            endpoint_2.y = atoi(text->Value());
+        }
+
+        //sanity checks
+        if ((flux_id < 0 || flux_id >= MAX_FLUX)
+                || (endpoint_1.x < 0 || endpoint_1.x >= 250)
+                || (endpoint_1.y < 0 || endpoint_1.y >= 220)
+                || (endpoint_2.x < 0 || endpoint_2.x >= 250)
+                || (endpoint_2.y < 0 || endpoint_2.y >= 220))
+        {
+            std::string msg = "loadGalaxy: error loading flux #" + to_string(flux_id);
+            msg += " , endpoint_1 (" + to_string(endpoint_1.x) + ", " + to_string(endpoint_1.y) + ")";
+            msg += " , endpoint_2 (" + to_string(endpoint_2.x) + ", " + to_string(endpoint_2.y) + ")\n";
+            ALLEGRO_ERROR("%s\n", msg.c_str());
+            ALLEGRO_ASSERT(0);
+        }
+
+        // add to the DataMgr
+        Flux * toAdd = new Flux(flux_id, endpoint_1, endpoint_2);
+        this->flux.push_back(toAdd);
+        this->fluxByLocation[make_pair(endpoint_1.x, endpoint_1.y)] = toAdd;
+        this->fluxByLocation[make_pair(endpoint_2.x, endpoint_2.y)] = toAdd;
+
+        flux = flux->NextSiblingElement("flux");
+    }
 
    return true;
 }

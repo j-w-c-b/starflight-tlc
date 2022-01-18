@@ -10,7 +10,7 @@ struct ALLEGRO_BITMAP;
 #define pdIndex(col, row) ( ((row) * (tilesAcross + 1)) + (col) )
 #define tdIndex(col, row) ( ((row) * tilesAcross) + (col) )
 
-struct TileSet
+struct AdvancedTileSet
 {
 public:
 	bool groundNavigation;
@@ -18,7 +18,7 @@ public:
 	int variations;
 	ALLEGRO_BITMAP *tiles;
 
-	TileSet(ALLEGRO_BITMAP *Tiles, int Variations, bool GroundNavigation = true, bool AirNavigation = true): 
+	AdvancedTileSet(ALLEGRO_BITMAP *Tiles, int Variations, bool GroundNavigation = true, bool AirNavigation = true): 
 		groundNavigation(GroundNavigation),
 		airNavigation(AirNavigation),
 		variations(Variations),
@@ -26,7 +26,7 @@ public:
 	{
 	}
 
-	~TileSet() {}
+	~AdvancedTileSet() {}
 
 	bool IsGroundNavigatable()	{ return groundNavigation; }
 	bool IsAirNavigatable()		{ return airNavigation; }
@@ -39,7 +39,7 @@ class AdvancedTileScroller
 {
 private:
    ALLEGRO_BITMAP *scrollbuffer;
-   std::vector<TileSet *> tiles;
+   std::vector<AdvancedTileSet *> tiles;
 
    std::map<int, ALLEGRO_BITMAP *> tileImageCache;
    std::map<int, ALLEGRO_BITMAP *>::iterator cacheIt;

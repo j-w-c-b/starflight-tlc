@@ -19,7 +19,7 @@
 #include "PlayerShipSprite.h"
 #include "starmap_resources.h"
 
-Sprite flux_sprite;
+using namespace std;
 
 ALLEGRO_DEBUG_CHANNEL("ModuleStarmap")
 
@@ -89,12 +89,12 @@ void ModuleStarmap::OnMouseMove(int x, int y)
 void ModuleStarmap::OnMouseClick(int button, int x, int y)
 {
 	Module::OnMouseClick(button,x,y);
-	if(map_active == true){
+	if (map_active) {
 		if(y > MAP_POS_Y && y < MAP_POS_Y+MAP_HEIGHT
 		&& x > MAP_POS_X && x < MAP_POS_X+MAP_WIDTH){
 			if(cursorPos.y > m_destPos.y - 2 && cursorPos.y < m_destPos.y + 2
 			&& cursorPos.x > m_destPos.x - 2 && cursorPos.x < m_destPos.x + 2 
-			&& dest_active == true){
+			&& dest_active) {
 				dest_active = false;
 			}else{
 				m_destPos.y = (float)(y-MAP_POS_Y)/ratioY;
@@ -191,20 +191,6 @@ bool ModuleStarmap::Init()
         al_set_target_bitmap(starview);
 	al_clear_to_color(BLACK);
 
-	flux_sprite.setImage(resources[FLUX_TILE_TRANS]);
-	if (!flux_sprite.getImage()) {
-		g_game->message("Starmap: Error loading flux_sprite");	
-		return false;
-	}
-
-	flux_sprite.setAnimColumns(1);
-	flux_sprite.setTotalFrames(1);
-	flux_sprite.setWidth(8);
-	flux_sprite.setHeight(8);
-	flux_sprite.setFrameWidth(8);
-	flux_sprite.setFrameHeight(8);
-
-	//load star tile image
 	Sprite stars;
 	
 	stars.setImage(resources[IS_TILES_TRANS]);
@@ -217,30 +203,57 @@ bool ModuleStarmap::Init()
 	stars.setTotalFrames(8);
 	stars.setFrameWidth(8);
 	stars.setFrameHeight(8);
-	int spectral = -1;
-	Star *star;
 
 	for (int i = 0; i < g_game->dataMgr->GetNumStars(); i++)  {
-		star = g_game->dataMgr->GetStar(i);
-
-		//these numbers match the ordering of the images in is_tiles.bmp
-		switch (star->spectralClass ) {
-			case SC_O: spectral = 7; break;		//blue
-			case SC_M: spectral = 6; break;		//red
-			case SC_K: spectral = 5; break;		//orange
-			case SC_G: spectral = 4; break;		//yellow
-			case SC_F: spectral = 3; break;		//lt yellow
-			case SC_B: spectral = 2; break;		//lt blue
-			case SC_A: spectral = 1; break;		//white
-			default: ALLEGRO_ASSERT(0);
-		}
+		const Star *star = g_game->dataMgr->GetStar(i);
 		//draw star image on starmap
-		stars.setCurrFrame(spectral);
-		stars.setX(star->x * ratioX - 3);//-4 due to the star's width, and +1 for compensation reasons
-		stars.setY(star->y * ratioY - 3);//-4 due to the star's width, and +1 for compensation reasons
+		stars.setCurrFrame(star->spectralClass);
+		stars.setX(star->x * ratioX);
+		stars.setY(star->y * ratioY);
 		stars.drawframe(starview); 
 	}
 	return true;
+}
+
+void
+ModuleStarmap::draw_flux()
+{
+    al_set_target_bitmap(flux_view);
+    al_clear_to_color(al_map_rgba(0, 0, 0, 0));
+
+    for (int i = 0; i < MAX_FLUX; i++) {
+        const Flux *f = g_game->dataMgr->GetFlux(i);
+        if (! f) {
+            continue;
+        }
+        const FluxInfo &fi = g_game->gameState->flux_info[f->get_id()];
+        const Point2D &endpoint1 = f->get_endpoint1();
+        const Point2D &endpoint2 = f->get_endpoint2();
+
+        if (fi.endpoint_1_visible) {
+            al_draw_bitmap(
+                resources[FLUX_TILE_TRANS],
+                endpoint1.x * ratioX,
+                endpoint1.y * ratioY,
+                0);
+        }
+        if (fi.endpoint_2_visible) {
+            al_draw_bitmap(
+                resources[FLUX_TILE_TRANS],
+                endpoint2.x * ratioX,
+                endpoint2.y * ratioY,
+                0);
+        }
+        if (fi.path_visible) {
+
+            al_draw_line(
+                (int)(endpoint1.x * ratioX),
+                (int)(endpoint1.y * ratioY),
+                (int)(endpoint2.x * ratioX),
+                (int)(endpoint2.y * ratioY),
+                al_map_rgb(0,170,255), 1);
+        }
+    }
 }
 
 void ModuleStarmap::Close()
@@ -264,13 +277,7 @@ void ModuleStarmap::Close()
 			delete star_label;
 			star_label = NULL;
 		}
-		
-		flux_iter i = g_game->dataMgr->flux.begin();
-		while(i != g_game->dataMgr->flux.end() ){
-			(*i)->rDRAWN() = false;
-			(*i)->rLINE_DRAWN() = false;
-			i++;
-		}
+
 		//unload the resources
 		resources.unload();
 	}
@@ -298,30 +305,11 @@ void ModuleStarmap::Draw()
 	Module::Draw();	
 	if(viewer_offset_y > -VIEWER_TARGET_OFFSET){
 		al_draw_bitmap(gui_starmap, 120, viewer_offset_y, 0);	
-	#pragma region Draw Flux
-		flux_iter i = g_game->dataMgr->flux.begin();
-		while(i != g_game->dataMgr->flux.end() ){
-			if((*i)->VISIBLE() == true){
-				if((*i)->PATH_VISIBLE() && (*i)->LINE_DRAWN() == false){
-					al_set_target_bitmap(flux_view);
-					al_draw_line(
-						(int)( (*i)->TILE().X * ratioX - 2 ),
-						(int)( (*i)->TILE().Y * ratioY - 4 ),
-						(int)( (*i)->TILE_EXIT().X * ratioX + 4 ),
-						(int)( (*i)->TILE_EXIT().Y * ratioY + 4 ),
-						al_map_rgb(0,170,255), 1);
-					(*i)->rLINE_DRAWN() = true;
-				}
-				if((*i)->DRAWN() == false){
-					flux_sprite.setX((*i)->TILE().X * ratioX - 4);
-					flux_sprite.setY((*i)->TILE().Y * ratioY - 4);
-					flux_sprite.drawframe(flux_view);
-					(*i)->rDRAWN() = true;
-				}
-			}
-			i++;
-		}
-	#pragma endregion
+
+                // Update the flux layer, which may change as navigation
+                // occurs.
+                draw_flux();
+
 	#pragma region Draw Starmap
 		int new_x_offset = 120+X_OFFSET;
 		int new_y_offset = Y_OFFSET+viewer_offset_y;
@@ -336,15 +324,13 @@ void ModuleStarmap::Draw()
                 al_set_target_bitmap(text);
 
 		//display status info
-		if(g_game->gameState->player->isLost() == false){
-			Point2D playerPos;
-			playerPos.x = 4 + g_game->gameState->player->posHyperspace.x / 128; //offset of 4 tiles
-			playerPos.y = 2 + g_game->gameState->player->posHyperspace.y / 128; //offset of 2 tiles
+		if (! g_game->gameState->player->isLost()) {
+			Point2D playerPos = g_game->gameState->getHyperspaceCoordinates();
 
 			PlayerShipSprite shipSprite;
 			float distance = Point2D::Distance( playerPos, cursorPos );
 
-			if(dest_active == true){distance = Point2D::Distance( playerPos, m_destPos );}
+			if(dest_active) {distance = Point2D::Distance( playerPos, m_destPos );}
 			float max_vel = shipSprite.getMaximumVelocity();
 			float fuel = distance * max_vel / 100 / g_game->gameState->getShip().getEngineClass();
 			
@@ -378,8 +364,7 @@ void ModuleStarmap::Draw()
 		}
 		//else if the mouse cursor is near a starsystem, we want to print the coordinates 
 		//of that starsystem instead of the actual coordinates under the mouse pointer
-		else if(m_bOver_Star == true){
-			// we want "%i" here rather than "%.0f" since star_x, star_y are integers
+		else if(m_bOver_Star) {
 			al_draw_textf(g_game->font10, fontColor, 310, text_y, ALLEGRO_ALIGN_CENTER, "%i", star_x );
 			al_draw_textf(g_game->font10, fontColor, 380, text_y, ALLEGRO_ALIGN_CENTER, "%i", star_y );
 			star_label->Refresh();

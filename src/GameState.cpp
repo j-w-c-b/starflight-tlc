@@ -151,17 +151,11 @@ Officer & Officer::operator =(const Officer &rhs)
 	return *this;
 }
 
-/*
- * THIS IS KNOWN AS A CODE COMMENT. IT EXPLAINS STUFF. IT HELPS OTHER PROGRAMMERS.
- */
 OfficerType Officer::GetOfficerType() const
 {
 	return officerType;
 }
 
-/*
- * THIS IS KNOWN AS A CODE COMMENT. IT EXPLAINS STUFF. IT HELPS OTHER PROGRAMMERS.
- */
 string Officer::GetTitle()
 {
 	string result = "";
@@ -266,9 +260,6 @@ std::string Officer::GetPreferredProfession()
 }
 
 
-/*
- * THIS IS KNOWN AS A CODE COMMENT. IT EXPLAINS STUFF. IT HELPS OTHER PROGRAMMERS.
- */
 void Officer::SetOfficerType(int type)
 {
 	switch(type) {
@@ -300,17 +291,11 @@ void Officer::SetOfficerType(int type)
 	}
 }
 
-/*
- * THIS IS KNOWN AS A CODE COMMENT. IT EXPLAINS STUFF. IT HELPS OTHER PROGRAMMERS.
- */
 void Officer::SetOfficerType(OfficerType type)
 {
 	officerType = type;
 }
 
-/*
- * THIS IS KNOWN AS A CODE COMMENT. IT EXPLAINS STUFF. IT HELPS OTHER PROGRAMMERS.
- */
 void Officer::Reset()
 {
 	name = "";
@@ -320,9 +305,6 @@ void Officer::Reset()
 	this->lastSkillCheck.SetYear(0);
 }
 
-/*
- * THIS IS KNOWN AS A CODE COMMENT. IT EXPLAINS STUFF. IT HELPS OTHER PROGRAMMERS.
- */
 bool Officer::Serialize(Archive &ar)
 {
    string ClassName = "Officer";
@@ -458,9 +440,6 @@ std::string Officer::getLastName()
 
 
 
-/*
- * THIS IS KNOWN AS A CODE COMMENT. IT EXPLAINS STUFF. IT HELPS OTHER PROGRAMMERS.
- */
 std::string convertClassTypeToString(int num)
 {
 	switch(num)
@@ -1333,8 +1312,6 @@ GameState & GameState::operator=(const GameState &rhs)
 
 	m_ship = rhs.m_ship;
 
-	fluxSeed = rhs.fluxSeed;
-
 	m_currentSelectedOfficer = rhs.m_currentSelectedOfficer;
 
 	for (int i=0; i < (int)m_unemployedOfficers.size(); ++i)
@@ -1376,6 +1353,9 @@ GameState & GameState::operator=(const GameState &rhs)
 
    currentModeWhenGameSaved= rhs.currentModeWhenGameSaved;
    dirty= false;
+   for (auto &i : rhs.flux_info) {
+       flux_info[i.first] = i.second;
+   }
 	return *this;
 }
 
@@ -1595,8 +1575,6 @@ void GameState::Reset()
 	defaultShipCargoSize = 0;
 	TotalCargoStacks = 0;
 
-	init_fluxSeed();
-
 	m_currentSelectedOfficer = OFFICER_CAPTAIN;
 
 	for (int i=0; i < (int)m_unemployedOfficers.size(); ++i)
@@ -1750,6 +1728,12 @@ void GameState::Reset()
    storedValue= -1;
    questCompleted = false;
    firstTimeVisitor = true;
+   for (int i = 0; i < MAX_FLUX; i++) {
+       flux_info[i].endpoint_1_visible = false;
+       flux_info[i].endpoint_2_visible = false;
+       flux_info[i].path_visible = false;
+   }
+
 }
 
 /*
@@ -1759,8 +1743,10 @@ void GameState::Reset()
 bool GameState::Serialize(Archive& ar)
 {
    string ClassName = "GameState";
-   int Schema = 0;
-   Schema = 1; // dsc - added currentModeWhenGameSaved
+   int Schema = 3;
+   // schema 1 - added currentModeWhenGameSaved
+   // schema 2 - removed fluxSeed, added flux_info
+   // schema 3 - rework flux_info to include ID, data
 
    if (ar.IsStoring())
    {
@@ -1794,8 +1780,6 @@ bool GameState::Serialize(Archive& ar)
       if (!m_ship.Serialize(ar))
          return false;
 
-	   ar << fluxSeed;
-
       ar << (int)m_currentSelectedOfficer;
 
       ar << (int)m_unemployedOfficers.size();
@@ -1827,6 +1811,13 @@ bool GameState::Serialize(Archive& ar)
 	  //storedValue keeps track of current quest objective
 	  ar << storedValue;
 
+      ar << static_cast<int>(flux_info.size());
+      for (auto &i : flux_info) {
+          ar << i.first;
+          ar << i.second.endpoint_1_visible;
+          ar << i.second.endpoint_2_visible;
+          ar << i.second.path_visible;
+      }
    }
    // READING ARCHIVE INSTEAD OF STORING
    else
@@ -1876,7 +1867,11 @@ bool GameState::Serialize(Archive& ar)
       if (!m_ship.Serialize(ar))
          return false;
 
-      ar >> fluxSeed;
+      if (LoadSchema < 2)
+      {
+          int fluxSeed;
+          ar >> fluxSeed;
+      }
 
       int LoadedCurrentlySelectedOfficer;
       ar >> LoadedCurrentlySelectedOfficer;
@@ -1915,6 +1910,46 @@ bool GameState::Serialize(Archive& ar)
 	  //load quest data
 	  ar >> activeQuest;
 	  ar >> storedValue;
+
+      if (LoadSchema == 2)
+      {
+          int max_flux;
+          ar >> max_flux;
+
+          ALLEGRO_ASSERT(max_flux == MAX_FLUX);
+          flux_info.clear();
+          for (int i = 0; i < MAX_FLUX; i++) {
+              FluxInfo fi;
+
+              ar >> fi.endpoint_1_visible;
+              ar >> fi.endpoint_2_visible;
+              ar >> fi.path_visible;
+
+              if (fi.endpoint_1_visible || fi.endpoint_2_visible || fi.path_visible) {
+                  flux_info[i] = fi;
+              }
+          }
+      }
+      else if (LoadSchema == 3)
+      {
+          int num_flux;
+          ar >> num_flux;
+
+          flux_info.clear();
+          for (int i = 0; i < num_flux; i++) {
+              FluxInfo fi;
+              ID flux_id;
+
+              ar >> flux_id;
+              ar >> fi.endpoint_1_visible;
+              ar >> fi.endpoint_2_visible;
+              ar >> fi.path_visible;
+
+              if (fi.endpoint_1_visible || fi.endpoint_2_visible || fi.path_visible) {
+                  flux_info[i] = fi;
+              }
+          }
+      }
    }
 
    return true;

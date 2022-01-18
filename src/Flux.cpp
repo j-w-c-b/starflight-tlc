@@ -1,76 +1,25 @@
+/*
+	STARFLIGHT - THE LOST COLONY
+	Class: Flux
+	Author: Keith Patch
+	Date: 10-29-2007
+*/
+
 #include "Flux.h"
-#include <cstdlib>
+#include "cmath"
 
-#define SQUARE(d_value) d_value*d_value
-
-Flux::Flux(){
-	m_id = 0;
-	m_tile.Y = 0; 
-	m_tile.X = 0; 
-	m_tile_exit.Y = 0;
-	m_tile_exit.X = 0;
-	m_position.x = 0;
-	m_position.y = 0;
-	m_exit_pos.x = 0;
-	m_exit_pos.y = 0;
-	m_is_visible_map = false;
-	m_is_path_visible = false;
-	m_is_visible_space = false;
-	m_drawn = false;
-	m_drawn_line = false;
+static inline float distance_between_coords(const Point2D &a, const Point2D &b) {
+    int dx = a.x - b.x;
+    int dy = a.y - b.y;
+    return sqrt(dx*dx + dy*dy);
 }
 
-Flux::Flux(int Y, int X){
-	m_id = 0;
-	m_tile.Y = Y; 
-	m_tile.X = X; 
-	m_tile_exit.Y = 0;
-	m_tile_exit.X = 0;
-	m_position.x = 0;
-	m_position.y = 0;
-	m_exit_pos.x = 0;
-	m_exit_pos.y = 0;
-	m_is_visible_map = false;
-	m_is_path_visible = false;
-	m_is_visible_space = false;
-	m_drawn = false;
-	m_drawn_line = false;
+float
+Flux::distance_to_endpoint_1(const Point2D &coordinate) const {
+    return distance_between_coords(m_endpoint1, coordinate);
 }
 
-Flux::~Flux(void){
-}
-
-Flux::Flux(const Flux &rhs){
-   *this = rhs;
-}
-
-Flux & Flux::operator=(const Flux &rhs){
-	m_id = rhs.ID();
-	m_position.x = rhs.POS().x;
-	m_position.y = rhs.POS().y;
-	m_exit_pos.x = rhs.EXIT().x;
-	m_exit_pos.y = rhs.EXIT().y;
-
-	m_tile.X = rhs.TILE().X; 
-	m_tile.Y = rhs.TILE().Y; 
-	m_tile_exit.X = rhs.TILE_EXIT().X; 
-	m_tile_exit.Y = rhs.TILE_EXIT().Y;
-
-	m_is_visible_map = rhs.VISIBLE();
-	m_is_visible_space = rhs.VISIBLE_SPACE();
-	m_is_path_visible = rhs.PATH_VISIBLE();
-	m_drawn = rhs.DRAWN();
-	m_drawn_line = rhs.LINE_DRAWN();
-
-   return *this;
-}
-
-bool Flux::distance_check(double d_other_x, double d_other_y, double d_distance){
-	double dx = this->m_tile.X - d_other_x;
-	double dy =this->m_tile.Y - d_other_y;
-	if(dx*dx + dy*dy < d_distance){
-		return true;
-	}else{
-		return false;
-	}
+float
+Flux::distance_to_endpoint_2(const Point2D &coordinate) const {
+    return distance_between_coords(m_endpoint2, coordinate);
 }

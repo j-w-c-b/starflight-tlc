@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 file(
     GLOB TOPLEVEL_DATA
     LIST_DIRECTORIES false
-    "${CMAKE_SOURCE_DIR}/data/*"
+    "${CMAKE_SOURCE_DIR}/data/*/"
 )
 
 # This function generates a header containing the upper-cased base names
@@ -68,7 +68,7 @@ create_resource_header("titlescreen")
 create_resource_header("topgui")
 create_resource_header("tradedepot")
 
-set(APP_NAME "StarflightTLC")
+set(APP_NAME "${CMAKE_PROJECT_NAME}")
 set(ICON_NAME "starflighttlc.ico")
 set(ICON_PATH ${CMAKE_SOURCE_DIR}/${ICON_NAME})
 
@@ -76,8 +76,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES Darwin)
     set(BUNDLE_ARG MACOSX_BUNDLE)
 endif()
 
-add_executable(
-    ${APP_NAME} ${BUNDLE_ARG}
+add_library(lib${APP_NAME} STATIC
     AdvancedTileScroller.cpp
     AdvancedTileScroller.h
     Archive.cpp
@@ -197,7 +196,6 @@ add_executable(
     Vector3.cpp
     Vector3.h
     debug.h
-    main.cpp
     noiseutils.cpp
     noiseutils.h
     tinyxml/tinystr.cpp
@@ -207,15 +205,31 @@ add_executable(
     tinyxml/tinyxmlerror.cpp
     tinyxml/tinyxmlparser.cpp
     lua.hpp
-    ${TOPLEVEL_DATA}
     ${MODULE_RESOURCE_HEADERS}
+)
+
+add_executable(
+    ${APP_NAME} ${BUNDLE_ARG}
+    main.cpp
+    ${MODULE_RESOURCE_HEADERS}
+    ${TOPLEVEL_DATA}
     ${ICON_PATH}
 )
 
 set_property(TARGET ${APP_NAME} PROPERTY CXX_STANDARD 11)
+set_property(TARGET lib${APP_NAME} PROPERTY CXX_STANDARD 11)
 
 target_include_directories(
     ${APP_NAME}
+    PRIVATE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/>
+    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/libnoise/>
+    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/lua/include/>
+)
+
+target_include_directories(
+    lib${APP_NAME}
     PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/>
@@ -228,8 +242,11 @@ if (${CMAKE_BUILD_TYPE} MATCHES Debug)
 endif()
 
 target_compile_options(${APP_NAME} PRIVATE ${DEBUGMODE} ${STL_TARGET_CXXFLAGS})
+target_compile_options(lib${APP_NAME} PRIVATE ${DEBUGMODE} ${STL_TARGET_CXXFLAGS})
+target_link_options(${APP_NAME} PRIVATE ${STL_TARGET_LDFLAGS})
 target_link_libraries(
     ${APP_NAME} PUBLIC
+    PRIVATE lib${APP_NAME}
     allegro
     allegro_acodec
     allegro_audio
@@ -244,16 +261,20 @@ target_link_libraries(
     noise
 )
 
-
 add_dependencies(
     ${APP_NAME}
+    lib${APP_NAME}
+    allegro_main
+)
+
+add_dependencies(
+    lib${APP_NAME}
     lua
     noise
     allegro
     allegro_acodec
     allegro_audio
     allegro_font
-    allegro_main
     allegro_dialog
     allegro_primitives
 )
@@ -288,6 +309,7 @@ foreach (pkg ${allegro_pkgs})
     pkg_check_modules(${pkg_prefix} REQUIRED IMPORTED_TARGET GLOBAL "${pkg}-5>=5.2")
     add_library(${pkg} ALIAS "PkgConfig::${pkg_prefix}")
     LIST(APPEND ALLEGRO_PKG_LIBRARIES ${${pkg_prefix}_LINK_LIBRARIES})
+    target_include_directories(lib${APP_NAME} PRIVATE ${${pkg_prefix}_INCLUDE_DIRS})
 endforeach()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES Darwin)

@@ -37,6 +37,7 @@ public:
 
 private:
 	bool map_active, dest_active, m_bOver_Star;
+        void draw_flux();
 	float FUEL_PER_UNIT, ratioX, ratioY;
 	int	 VIEWER_WIDTH,
 		 VIEWER_HEIGHT,

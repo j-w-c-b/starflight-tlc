@@ -41,7 +41,7 @@ private:
 
 	Officer* tempOfficer;
 
-	Flux* flux;
+	const Flux* flux;
 	Sprite *shield;
 
 	bool flag_Shields;
@@ -84,7 +84,7 @@ private:
 	void calculateEnemyFleetSize();
 	int getFleetSizeByRace( bool small_fleet );
 	void load_flux();
-	void place_flux_exits();
+	bool enter_flux();
 	void identify_flux();
 	void AugmentFuel(float percentage);
 	bool RollEncounter(AlienRaces forceThisRace = ALIEN_NONE);

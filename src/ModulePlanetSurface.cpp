@@ -37,7 +37,6 @@
 #include <allegro5/allegro_primitives.h>
 
 #include "ModulePlanetSurface.h"
-#include "TileScroller.h"
 #include "PlayerShipSprite.h"
 #include "GameState.h"
 #include "Game.h"

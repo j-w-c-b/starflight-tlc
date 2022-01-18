@@ -89,6 +89,22 @@ public:
 		y = p.y;
 		return *this;
 	}
+	Point2D operator+( const Point2D& p ) const {
+		return Point2D(x + p.x, y + p.y);
+	}
+	Point2D operator+( float delta ) const {
+		return Point2D(x + delta, y + delta);
+	}
+	Point2D operator-( const Point2D& p ) const {
+		return Point2D(x - p.x, y - p.y);
+	}
+	Point2D operator-( float delta ) const {
+		return Point2D(x - delta, y - delta);
+	}
+	Point2D operator/( float scale ) const {
+		return Point2D(x/scale, y / scale);
+	}
+
 
 	static double Distance( const Point2D& a, const Point2D& b ) {
 		return sqrt((b.x - a.x)*(b.x - a.x) + (b.y - a.y)*(b.y - a.y));

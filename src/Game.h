@@ -24,8 +24,8 @@
 ///////////////////////////////////////////
 
 //DO NOT MODIFY THESE
-#define SCREEN_WIDTH 1024  //1280
-#define SCREEN_HEIGHT 768 //960
+#define SCREEN_WIDTH 1024
+#define SCREEN_HEIGHT 768
 
 //COMMON RGB COLORS
 //here's a good source of rgb colors: http://www.pitt.edu/~nisg/cis/web/cgi/rgb.html

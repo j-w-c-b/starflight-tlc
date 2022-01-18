@@ -327,21 +327,19 @@ bool ModuleEncounter::Init()
 	//enable the Pause Menu
 	g_game->pauseMenu->setEnabled(true);
 
-	scroller = new TileScroller();
-	scroller->setTileSize(TILESIZE,TILESIZE);
-	scroller->setTileImageColumns(5);
-	scroller->setRegionSize(TILESACROSS,TILESDOWN);
-	scroller->setScrollPosition((TILESACROSS/2) * TILESIZE, (TILESDOWN/2) * TILESIZE);
-	g_game->gameState->player->posCombat.SetPosition((TILESACROSS/2) * TILESIZE, (TILESDOWN/2) * TILESIZE);
+	//create the player ship
+	playerShip = new PlayerShipSprite();
 
-	if (!scroller->createScrollBuffer(SCREEN_WIDTH, SCREEN_HEIGHT)) {
-		g_game->message("ModuleCombat: Error creating scroll buffer");
-		return false;
-	}
+    	TileSet ts(resources[IP_TILES], TILESIZE, TILESIZE, 5, 1);
+        scroller = new TileScroller(
+                ts,
+                TILESACROSS, TILESDOWN,
+                SCREEN_WIDTH, SCREEN_HEIGHT,
+                playerShip->get_screen_position() - Point2D(96, 96));
+	g_game->gameState->player->posCombat.SetPosition(
+                (TILESACROSS/2) * TILESIZE,
+                (TILESDOWN/2) * TILESIZE);
 
-	//re-load images used in scroller
-	scroller->setTileImage(resources[IP_TILES]);
-    
 	//create the ScrollBar for messages
 	static int gmx = (int)g_game->getGlobalNumber("GUI_MESSAGE_POS_X");
 	static int gmy = (int)g_game->getGlobalNumber("GUI_MESSAGE_POS_Y");
@@ -357,9 +355,6 @@ bool ModuleEncounter::Init()
 	//point global scrollbox to local one in this module for access by external object
     g_game->g_scrollbox = text;
 
-
-	//create the player ship
-	playerShip = new PlayerShipSprite();
 
 	//initialize the encounter sub-system
 	if (!Encounter_Init()) {
@@ -1484,28 +1479,25 @@ void ModuleEncounter::Update()
 	}
 
 	//keep player on the combat area
-	double sx = playerGlobal.x-SCREEN_WIDTH/2;
-	if (sx < -5) {
-		sx = -5;
+        Point2D s((playerGlobal.x-SCREEN_WIDTH/2) / TILESIZE, (playerGlobal.y-effectiveScreenHeight()/2) / TILESIZE);
+	if (s.x <= 0) {
+		s.x = 0;
 		playerShip->applybraking();
 	}
-	else if (sx > TILESIZE * TILESACROSS) {
-		sx = TILESIZE * TILESACROSS;
+	else if (s.x >= TILESACROSS) {
+		s.x = TILESACROSS;
 		playerShip->applybraking();
 	}
-	double sy = playerGlobal.y-effectiveScreenHeight()/2;
-	if (sy < -5) {
-		sy = -5;
+	if (s.y <= 0) {
+		s.y = 0;
 		playerShip->applybraking();
 	}
-	else if (sy > TILESIZE * TILESDOWN) {
-		sy = TILESIZE * TILESACROSS;
+	else if (s.y >= TILESDOWN) {
+		s.y = TILESDOWN;
 		playerShip->applybraking();
 	}
 
-	//update scroll position
-	scroller->setScrollPosition(sx,sy);
-	scroller->updateScrollBuffer();
+	scroller->set_scroll_position(s);
 
 	//calculate player's screen position
 	playerScreen.x = playerGlobal.x / (TILESIZE * TILESACROSS) + SCREEN_WIDTH/2 - 32;
@@ -1539,7 +1531,7 @@ void ModuleEncounter::Draw()
 	Module::Draw();
 
 	//draw space background
-	scroller->drawScrollWindow(g_game->GetBackBuffer(), 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+	scroller->draw_scroll_window(g_game->GetBackBuffer(), 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	//draw player ship
 	playerShip->draw(g_game->GetBackBuffer());
@@ -2348,10 +2340,7 @@ int ModuleEncounter::getShipCount()
 
 Rect ModuleEncounter::getBoundary()
 {
-	Rect boundary(0,0,0,0);
-	boundary.right = scroller->getTilesAcross() * scroller->getTileWidth();
-	boundary.bottom = scroller->getTilesDown() * scroller->getTileHeight();
-	return boundary;
+	return Rect(0, 0, TILESACROSS * TILESIZE, TILESDOWN * TILESIZE);
 }
 
 

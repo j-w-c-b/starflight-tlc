@@ -55,7 +55,6 @@ private:
 	bool flag_DoDock;
 	bool flag_DoHyperspace;
 	int burning;
-	float distance;
 	bool m_bOver_Planet;
 	int asx, asy;
 	Star *star;

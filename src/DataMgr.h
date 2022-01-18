@@ -20,10 +20,8 @@
 #include <list>
 #include "Flux.h"
 #include "Script.h"
-#include "GameState.h"
 
-#define MAX_FLUX 2000
-typedef std::list<Flux*>::iterator flux_iter;
+#define MAX_FLUX 32
 
 class Officer;
 class DataMgr;
@@ -162,16 +160,18 @@ private:
 };
 
 // spectral classes
+// these numbers match the ordering of the images in is_tiles.bmp and are not
+// in astronomical order
 typedef enum
 {
-   SC_INVALID = 0,
-   SC_M,
-   SC_K,
-   SC_G,
-   SC_F,
-   SC_A,
-   SC_B,
-   SC_O
+   SC_INVALID = -1,
+   SC_A = 1,
+   SC_B = 2,
+   SC_F = 3,
+   SC_G = 4,
+   SC_K = 5,
+   SC_M = 6,
+   SC_O = 7
 } SpectralClass;
 
 class Planet;
@@ -389,15 +389,16 @@ public:
    Star* GetStarByID(ID id); // by ID
    Star* GetStarByLocation(CoordValue x, CoordValue y); // by location
 
+   int GetNumFlux();
+   const Flux *GetFlux(int idx);
+   const Flux *GetFluxByLocation(CoordValue x, CoordValue y);
+
    //this version does not require a star parent class
    std::vector<Planet*> allPlanets;
    std::map<ID,Planet*> allPlanetsByID;
    Planet *GetPlanetByID(ID id);
 
    std::string GetRandMixedName();
-
-   std::list<Flux*> flux;
-
 
 private:
    bool m_initialized;
@@ -411,7 +412,8 @@ private:
    std::map<ID,Star*> starsByID;
    std::map<std::pair<CoordValue,CoordValue>,Star*> starsByLocation;
    std::vector<std::pair<std::string*,std::string*>*> humanNames;
-
+   std::vector<Flux*> flux;
+   std::map<std::pair<CoordValue, CoordValue>, Flux *> fluxByLocation;
 };
 
 

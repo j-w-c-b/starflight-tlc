@@ -25,9 +25,9 @@
 #include "AudioSystem.h"
 #include "Util.h"
 #include "ResourceManager.h"
+#include "TileScroller.h"
 
 class CombatObject;
-class TileScroller;
 enum AlienRaces;
 
 const int NormalScreenHeight = 512;
