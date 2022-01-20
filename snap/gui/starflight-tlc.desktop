@@ -1,0 +1,4 @@
+[Desktop Entry]
+Exec=starflight-tlc
+Name=Starflight: The Lost Colony
+Icon=${SNAP}/meta/gui/starflight-tlc.png
