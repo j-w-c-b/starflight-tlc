@@ -1,21 +1,20 @@
 /*
-	STARFLIGHT - THE LOST COLONY
-	ModuleStarport.h - Handles Starport activity
-	Author: Matt Klausmeier
-	Date: October 6, 2007
+        STARFLIGHT - THE LOST COLONY
+        ModuleStarport.h - Handles Starport activity
+        Author: Matt Klausmeier
+        Date: October 6, 2007
 */
 
 #ifndef _STARPORT_H
 #define _STARPORT_H 1
 
-#include <allegro5/allegro.h>
 #include "Module.h"
-#include "Sprite.h"
-#include "ScrollBox.h"
 #include "ResourceManager.h"
+#include "ScrollBox.h"
+#include "Sprite.h"
+#include <allegro5/allegro.h>
 
-class ModuleStarport : public Module
-{
+class ModuleStarport : public Module {
 #define NUMBER_OF_DOORS 8
 #define SCREEN_EDGE_PADDING 24
 #define AVATAR_INSIDE_DOOR_Y 350
@@ -37,50 +36,51 @@ class ModuleStarport : public Module
 #define ENTER_DOOR_SPEED 10
 #define DOOR_SPEED 5
 
-struct doorArea { int left, right, middle; };
+    struct doorArea {
+        int left, right, middle;
+    };
 
-private:
-	~ModuleStarport();	//dtor
+  private:
+    ~ModuleStarport(); // dtor
 
-	ALLEGRO_BITMAP					*starport;
-	Sprite					*door;
-	Sprite					*avatar;
-	int						playerx;
-	int						playery;
-	int						destinationDoor;
-	int						doorDistance;
-	int						movement;
-	bool					enteringDoor;
-	bool					openingDoor;
-	bool					closingDoor;
-	bool					insideDoor;
-	bool					m_bNotified;
-	doorArea				doors[NUMBER_OF_DOORS];
-	bool flag_showWelcome;
-	ResourceManager<ALLEGRO_BITMAP> resources;
+    ALLEGRO_BITMAP *starport;
+    Sprite *door;
+    Sprite *avatar;
+    int playerx;
+    int playery;
+    int destinationDoor;
+    int doorDistance;
+    int movement;
+    bool enteringDoor;
+    bool openingDoor;
+    bool closingDoor;
+    bool insideDoor;
+    bool m_bNotified;
+    doorArea doors[NUMBER_OF_DOORS];
+    bool flag_showWelcome;
+    ResourceManager<ALLEGRO_BITMAP> resources;
 
-	bool testDoors();
-	void movePlayerLeft(int distanceInPixels);
-	void movePlayerRight(int distanceInPixels);
-	void enterDoor();
-	void drawDoors();
+    bool testDoors();
+    void movePlayerLeft(int distanceInPixels);
+    void movePlayerRight(int distanceInPixels);
+    void enterDoor();
+    void drawDoors();
 
-public:
-	ModuleStarport();
-	virtual void Close() override;
-	virtual void Update() override;
-	virtual bool Init() override;
-	virtual void OnEvent(Event *event) override;
-	virtual void OnKeyPressed(int keyCode) override;
-	virtual void OnKeyReleased(int keyCode) override;
-	virtual void OnMouseClick(int button, int x, int y) override;
-	virtual void OnMouseMove(int x, int y) override;
-	virtual void OnMousePressed(int button, int x, int y) override;
-	virtual void OnMouseReleased(int button, int x, int y) override;
-	virtual void OnMouseWheelDown(int x, int y) override;
-	virtual void OnMouseWheelUp(int x, int y) override;
-	virtual void Draw() override;
-
+  public:
+    ModuleStarport();
+    virtual void Close() override;
+    virtual void Update() override;
+    virtual bool Init() override;
+    virtual void OnEvent(Event *event) override;
+    virtual void OnKeyPressed(int keyCode) override;
+    virtual void OnKeyReleased(int keyCode) override;
+    virtual void OnMouseClick(int button, int x, int y) override;
+    virtual void OnMouseMove(int x, int y) override;
+    virtual void OnMousePressed(int button, int x, int y) override;
+    virtual void OnMouseReleased(int button, int x, int y) override;
+    virtual void OnMouseWheelDown(int x, int y) override;
+    virtual void OnMouseWheelUp(int x, int y) override;
+    virtual void Draw() override;
 };
 
 #endif

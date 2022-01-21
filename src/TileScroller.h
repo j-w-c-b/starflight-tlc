@@ -1,16 +1,15 @@
 #ifndef TILESCROLLER_H_
 #define TILESCROLLER_H_ 1
 
-#include <vector>
-#include <allegro5/allegro.h>
 #include "Point2D.h"
+#include <allegro5/allegro.h>
+#include <vector>
 
 /// Tileset for use with the TileScroller
 ///
 /// This class is a bitmap containing a grid of tiles.
-class TileSet
-{
-public:
+class TileSet {
+  public:
     /// Constructor
     ///
     /// Objects of this class retain a pointer to the \a bitmap data for the
@@ -22,7 +21,7 @@ public:
     /// using the grid layout, with tile 0 being the top left of the grid.
     ///
     /// \param[in] bitmap
-    ///     Pointer to the ALLEGRO_BITMAP containg the image. 
+    ///     Pointer to the ALLEGRO_BITMAP containg the image.
     /// \param[in] width
     ///     Width in pixels of the individual tiles within the tile set.
     /// \param[in] height
@@ -33,7 +32,8 @@ public:
     /// \param[in] rows
     ///     Layout of the tiles within bitmap: the number of rows of tile
     ///     images.
-    TileSet(ALLEGRO_BITMAP *bitmap, int width, int height, int columns, int rows);
+    TileSet(
+        ALLEGRO_BITMAP *bitmap, int width, int height, int columns, int rows);
 
     /// Draw a tile to the current target bitmap
     ///
@@ -50,14 +50,20 @@ public:
     /// Retrieve width
     ///
     /// \return The width of tiles in the tile set.
-    inline int get_tile_width() const { return m_width; }
+    inline int
+    get_tile_width() const {
+        return m_width;
+    }
 
     /// Retrieve height
     ///
     /// \return The height of tiles in the tile set.
-    inline int get_tile_height() const { return m_height; }
+    inline int
+    get_tile_height() const {
+        return m_height;
+    }
 
-protected:
+  protected:
     //! Bitmap containing the tile subimages
     ALLEGRO_BITMAP *m_tiles;
     //! Width of tiles in m_tiles
@@ -75,12 +81,11 @@ protected:
 /// This class implements a display of an area consisting of images selected
 /// from a TileSet that can be smoothly scrolled over. Typical usage is to
 /// call set_tile() to select which tile is visible at each coordinate within
-/// the TileScroller, call set_scroll_position() to select which area to display,
-/// and then draw_scroll_window() to render the tiles at the desired location to
-/// a destination bitmap.
-class TileScroller
-{
-public:
+/// the TileScroller, call set_scroll_position() to select which area to
+/// display, and then draw_scroll_window() to render the tiles at the desired
+/// location to a destination bitmap.
+class TileScroller {
+  public:
     /// Constructor
     ///
     /// Create a new TileScroller. The tile data will be filled such that
@@ -104,7 +109,12 @@ public:
     ///     scroll position. Set this value to have this object treat the values
     ///     passed to set_scroll_position() as other than the top left corner of
     ///     the view.
-    TileScroller(const TileSet &t, int max_x, int max_y, int region_width, int region_height, const Point2D &scroll_offset=Point2D(0, 0));
+    TileScroller(const TileSet &t,
+                 int max_x,
+                 int max_y,
+                 int region_width,
+                 int region_height,
+                 const Point2D &scroll_offset = Point2D(0, 0));
     ~TileScroller();
 
     //! Set all tile data in this object to use tile 0.
@@ -122,14 +132,12 @@ public:
     ///     The tile to use at this position.
     /// \return void
     inline void
-    set_tile(int x, int y, short value)
-    {
+    set_tile(int x, int y, short value) {
         ALLEGRO_ASSERT(x >= 0 && x < m_tile_max_x);
         ALLEGRO_ASSERT(y >= 0 && y < m_tile_max_y);
 
-        short &datum  = m_tile_data[x + m_tile_max_x * y] ;
-        if (datum != value)
-        {
+        short &datum = m_tile_data[x + m_tile_max_x * y];
+        if (datum != value) {
             m_dirty = true;
         }
         datum = value;
@@ -143,18 +151,18 @@ public:
     /// \param[in] p
     ///     The position in tile coordinates to scoll to.
     /// \return void
-    void set_scroll_position(const Point2D &p)
-    {
-        Point2D new_position(
-            p.x * m_tiles.get_tile_width() - m_scroll_offset.x,
-            p.y * m_tiles.get_tile_height() - m_scroll_offset.y);
+    void
+    set_scroll_position(const Point2D &p) {
+        Point2D new_position(p.x * m_tiles.get_tile_width() - m_scroll_offset.x,
+                             p.y * m_tiles.get_tile_height() -
+                                 m_scroll_offset.y);
         int tile_width = m_tiles.get_tile_width();
         int tile_height = m_tiles.get_tile_height();
 
-        if (static_cast<int>(new_position.x / tile_width)
-                != static_cast<int>(m_scroll_position.x / tile_width)
-                || static_cast<int>(new_position.y / tile_height)
-                    != static_cast<int>(m_scroll_position.y / tile_height)) {
+        if (static_cast<int>(new_position.x / tile_width) !=
+                static_cast<int>(m_scroll_position.x / tile_width) ||
+            static_cast<int>(new_position.y / tile_height) !=
+                static_cast<int>(m_scroll_position.y / tile_height)) {
             m_dirty = true;
         }
         m_scroll_position = new_position;
@@ -176,9 +184,10 @@ public:
     /// \param[in] height
     ///     The height (in pixels) of the scroll buffer to draw to the bitmap.
     /// \return void
-    void draw_scroll_window(ALLEGRO_BITMAP *dest, int x, int y, int width, int height);
+    void draw_scroll_window(
+        ALLEGRO_BITMAP *dest, int x, int y, int width, int height);
 
-private:
+  private:
     /// Get the tile value at a position
     ///
     /// Get the value previously set by calling set_tile(). If the (x, y)
@@ -203,43 +212,43 @@ private:
     /// \return void
     void update_scroll_buffer();
 
-   //! Vector containing which tile number to use for the area being scrolled
-   std::vector<short> m_tile_data;
+    //! Vector containing which tile number to use for the area being scrolled
+    std::vector<short> m_tile_data;
 
-   //! Tile graphics
-   TileSet m_tiles;
+    //! Tile graphics
+    TileSet m_tiles;
 
-   /// Position in pixel coordinates of the top-left corner of the area to
-   /// render in the scroll buffer.
-   Point2D m_scroll_position;
+    /// Position in pixel coordinates of the top-left corner of the area to
+    /// render in the scroll buffer.
+    Point2D m_scroll_position;
 
-   //! Size of the scroll buffer in pixel coordinates.
-   Point2D m_viewport_dimensions;
+    //! Size of the scroll buffer in pixel coordinates.
+    Point2D m_viewport_dimensions;
 
-   //! Maximum tile x coordinate.
-   int m_tile_max_x;
+    //! Maximum tile x coordinate.
+    int m_tile_max_x;
 
-   //! Maximum tile y coordinate.
-   int m_tile_max_y;
+    //! Maximum tile y coordinate.
+    int m_tile_max_y;
 
-   /// Bitmap that contains the visual representation of the tile data at
-   /// m_scroll_position
-   ALLEGRO_BITMAP *m_scrollbuffer;
+    /// Bitmap that contains the visual representation of the tile data at
+    /// m_scroll_position
+    ALLEGRO_BITMAP *m_scrollbuffer;
 
-   // Flag to call update_scroll_buffer() when draw_scroll_window() is called.
-   bool m_dirty;
+    // Flag to call update_scroll_buffer() when draw_scroll_window() is called.
+    bool m_dirty;
 
-   /// Scroll offset
-   ///
-   /// Offset subtracted from the value passed to set_scroll_position() to allow
-   /// the application to treat that value a centered position.
-   Point2D m_scroll_offset;
+    /// Scroll offset
+    ///
+    /// Offset subtracted from the value passed to set_scroll_position() to
+    /// allow the application to treat that value a centered position.
+    Point2D m_scroll_offset;
 
-   /// Disable copy constructor to prevent accidental misuse of this class.
-   TileScroller(const TileScroller&) = delete;
+    /// Disable copy constructor to prevent accidental misuse of this class.
+    TileScroller(const TileScroller &) = delete;
 
-   /// Disable assignment operator to prevent accidental misuse of this class.
-   TileScroller &operator=(const TileScroller&) = delete;
+    /// Disable assignment operator to prevent accidental misuse of this class.
+    TileScroller &operator=(const TileScroller &) = delete;
 };
 
 #endif

@@ -1,41 +1,43 @@
 /*
-	STARFLIGHT - THE LOST COLONY
-	Script.h
-	Author: J.Harbour
-	Date: 2007
+        STARFLIGHT - THE LOST COLONY
+        Script.h
+        Author: J.Harbour
+        Date: 2007
 
-	This wrapper helps with repetitive use of LUA library.
-	Add new functionality as needed.
+        This wrapper helps with repetitive use of LUA library.
+        Add new functionality as needed.
 */
 
 #pragma once
 
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "lua.hpp"
 
-class Script
-{
-	private:
-		lua_State *luaState;
-		
-	public:
-		Script();
-		virtual ~Script();
+class Script {
+  private:
+    lua_State *luaState;
 
-		bool load(std::string scriptfile);
+  public:
+    Script();
+    virtual ~Script();
 
-		std::string getGlobalString(std::string name);
-		void setGlobalString(std::string name, std::string value);
+    bool load(std::string scriptfile);
 
-		double getGlobalNumber(std::string name);
-		void setGlobalNumber(std::string name, double value);
+    std::string getGlobalString(std::string name);
+    void setGlobalString(std::string name, std::string value);
 
-		bool getGlobalBoolean(std::string name);
+    double getGlobalNumber(std::string name);
+    void setGlobalNumber(std::string name, double value);
 
-		bool runFunction(std::string name);
+    bool getGlobalBoolean(std::string name);
 
-		std::string errorMessage;
-		lua_State *getState() { return luaState; }
+    bool runFunction(std::string name);
+
+    std::string errorMessage;
+    lua_State *
+    getState() {
+        return luaState;
+    }
 };
