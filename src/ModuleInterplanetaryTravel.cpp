@@ -867,19 +867,11 @@ int ModuleInterPlanetaryTravel::loadStarSystem(int id)
 			ry = (int)( sin(angle) * radius );
 			planets[i].tilex = systemCenterTileX + rx;
 			planets[i].tiley = systemCenterTileY + ry;
+			planets[i].tilenum = planet->type;
 
-			switch(planet->type) {
-			case PT_GASGIANT:	planets[i].tilenum = 2;	break;
-			case PT_MOLTEN:		planets[i].tilenum = 3;	break;
-			case PT_FROZEN:		planets[i].tilenum = 4;	break;
-			case PT_OCEANIC:	planets[i].tilenum = 5;	break;
-			case PT_ROCKY:		planets[i].tilenum = 6;	break;
-			case PT_ASTEROID:	planets[i].tilenum = 7;	break;
-			case PT_ACIDIC:		planets[i].tilenum = 8;	break;
-			default:
-				planets[i].tilenum = 2; //this bug needs to be fixed
-                ALLEGRO_DEBUG("loadStarSystem: Unknown planet type: %d\n",planet->type);
-			}
+                        ALLEGRO_ASSERT(planets[i].tilenum > 0);
+                        ALLEGRO_ASSERT(planets[i].tilenum < 9);
+
 			scroller->setTile(planets[i].tilex, planets[i].tiley, planets[i].tilenum);
 		}
 	}

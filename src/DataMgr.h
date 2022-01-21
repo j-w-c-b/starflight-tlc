@@ -240,17 +240,18 @@ typedef enum
    PS_HUGE
 } PlanetSize;
 
-// planet types
+// planet types, values are the tiles used for the types
 typedef enum
 {
    PT_INVALID = 0,
-   PT_ASTEROID,
-   PT_ROCKY,
-   PT_FROZEN,
-   PT_OCEANIC,
-   PT_MOLTEN,
-   PT_GASGIANT,
-   PT_ACIDIC
+   PT_ASTEROID = 7,
+   PT_ROCKY = 6,
+   PT_FROZEN = 4,
+   PT_OCEANIC = 5,
+   PT_MOLTEN = 3,
+   PT_GASGIANT = 2,
+   PT_ACIDIC = 8
+
 } PlanetType;
 
 // planet temperatures
