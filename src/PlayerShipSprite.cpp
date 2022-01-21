@@ -274,7 +274,7 @@ void PlayerShipSprite::applybraking()
 		return;
 	}
 
-    double stop_threshold = 0.02;
+    double stop_threshold = 0.08;
     double brake_value = 0.08;
     double speed =  sqrt(velx*velx + vely*vely);
     double dir = atan2(vely,velx);
