@@ -1,9 +1,11 @@
-#include "QuestMgr.h"
+#include <string>
+
 #include "DataMgr.h"
 #include "Game.h"
 #include "GameState.h"
+#include "QuestMgr.h"
 #include "Util.h"
-#include <string>
+
 using namespace std;
 
 QuestMgr::QuestMgr() : script(), questName(""), questShort(""), questLong("") {}

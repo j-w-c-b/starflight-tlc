@@ -14,7 +14,6 @@
 #include "Point2D.h"
 #include "QuestMgr.h"
 #include "Util.h"
-#include <exception>
 #include <fstream>
 #include <math.h>
 #include <sstream>

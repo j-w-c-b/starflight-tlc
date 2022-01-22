@@ -2,6 +2,7 @@
 
 #include "AudioSystem.h"
 #include "Game.h"
+#include "Util.h"
 
 using namespace std;
 
@@ -137,7 +138,9 @@ shared_ptr<Sample>
 AudioSystem::Load(const string &filename, float volume) {
     if (filename.length() == 0)
         return NULL;
-    auto sample = make_shared<Sample>(filename, volume);
+    string data_filename = Util::resource_path(filename);
+
+    auto sample = make_shared<Sample>(data_filename.c_str(), volume);
 
     if (!sample->IsInitialized()) {
         return nullptr;

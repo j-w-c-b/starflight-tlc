@@ -7,11 +7,12 @@
 #include "ModeMgr.h"
 #include "Util.h"
 #include "captainslounge_resources.h"
-#include <exception>
 
 #include <sstream>
 #include <string>
+
 using namespace std;
+using namespace captainslounge_resources;
 
 #define TEXTHEIGHT_TITLES 60
 #define TEXTHEIGHT_GAME_NAME 30
@@ -100,10 +101,10 @@ ModuleCaptainsLounge::Init() {
     }
 
     // load the background
-    m_background = m_resources[CAPTAINSLOUNGE_BACKGROUND];
+    m_background = m_resources[I_CAPTAINSLOUNGE_BACKGROUND];
 
-    btnNorm = m_resources[GENERIC_EXIT_BTN_NORM];
-    btnOver = m_resources[GENERIC_EXIT_BTN_OVER];
+    btnNorm = m_resources[I_GENERIC_EXIT_BTN_NORM];
+    btnOver = m_resources[I_GENERIC_EXIT_BTN_OVER];
 
     // create exit button
     m_backBtn = new Button(btnNorm,
@@ -139,9 +140,9 @@ ModuleCaptainsLounge::Init() {
 
     int y = BTN_BASE_Y;
     for (int i = 0; i < CAPTAINSLOUNGE_NUMSLOTS; i++) {
-        btnNorm = m_resources[CAPTAINSLOUNGE_PLUS];
-        btnOver = m_resources[CAPTAINSLOUNGE_PLUS_MOUSEOVER];
-        btnDis = m_resources[CAPTAINSLOUNGE_PLUS_DISABLED];
+        btnNorm = m_resources[I_CAPTAINSLOUNGE_PLUS];
+        btnOver = m_resources[I_CAPTAINSLOUNGE_PLUS_MOUSEOVER];
+        btnDis = m_resources[I_CAPTAINSLOUNGE_PLUS_DISABLED];
         m_newCaptBtns[i] = new Button(btnNorm,
                                       btnOver,
                                       btnDis,
@@ -154,9 +155,9 @@ ModuleCaptainsLounge::Init() {
         if (!m_newCaptBtns[i]->IsInitialized())
             return false;
 
-        btnNorm = m_resources[CAPTAINSLOUNGE_DEL];
-        btnOver = m_resources[CAPTAINSLOUNGE_DEL_MOUSEOVER];
-        btnDis = m_resources[CAPTAINSLOUNGE_DEL_DISABLED];
+        btnNorm = m_resources[I_CAPTAINSLOUNGE_DEL];
+        btnOver = m_resources[I_CAPTAINSLOUNGE_DEL_MOUSEOVER];
+        btnDis = m_resources[I_CAPTAINSLOUNGE_DEL_DISABLED];
         m_delCaptBtns[i] = new Button(btnNorm,
                                       btnOver,
                                       btnDis,
@@ -169,9 +170,9 @@ ModuleCaptainsLounge::Init() {
         if (!m_delCaptBtns[i]->IsInitialized())
             return false;
 
-        btnNorm = m_resources[CAPTAINSLOUNGE_SEL];
-        btnOver = m_resources[CAPTAINSLOUNGE_SEL_MOUSEOVER];
-        btnDis = m_resources[CAPTAINSLOUNGE_SEL_DISABLED];
+        btnNorm = m_resources[I_CAPTAINSLOUNGE_SEL];
+        btnOver = m_resources[I_CAPTAINSLOUNGE_SEL_MOUSEOVER];
+        btnDis = m_resources[I_CAPTAINSLOUNGE_SEL_DISABLED];
         m_selCaptBtns[i] = new Button(btnNorm,
                                       btnOver,
                                       btnDis,
@@ -184,8 +185,8 @@ ModuleCaptainsLounge::Init() {
         if (!m_selCaptBtns[i]->IsInitialized())
             return false;
 
-        btnNorm = m_resources[CAPTAINSLOUNGE_SAVE];
-        btnOver = m_resources[CAPTAINSLOUNGE_SAVE_MOUSEOVER];
+        btnNorm = m_resources[I_CAPTAINSLOUNGE_SAVE];
+        btnOver = m_resources[I_CAPTAINSLOUNGE_SAVE_MOUSEOVER];
         m_saveCaptBtns[i] = new Button(btnNorm,
                                        btnOver,
                                        NULL,
@@ -203,15 +204,15 @@ ModuleCaptainsLounge::Init() {
         y += BTN_DELTA_Y;
     }
 
-    btnNorm = m_resources[CAPTAINSLOUNGE_YES];
-    btnOver = m_resources[CAPTAINSLOUNGE_YES_MOUSEOVER];
+    btnNorm = m_resources[I_CAPTAINSLOUNGE_YES];
+    btnOver = m_resources[I_CAPTAINSLOUNGE_YES_MOUSEOVER];
     m_yesBtn =
         new Button(btnNorm, btnOver, NULL, YES_X, YES_Y, EVENT_NONE, EVENT_YES);
     if (!m_yesBtn->IsInitialized())
         return false;
 
-    btnNorm = m_resources[CAPTAINSLOUNGE_NO];
-    btnOver = m_resources[CAPTAINSLOUNGE_NO_MOUSEOVER];
+    btnNorm = m_resources[I_CAPTAINSLOUNGE_NO];
+    btnOver = m_resources[I_CAPTAINSLOUNGE_NO_MOUSEOVER];
     m_noBtn =
         new Button(btnNorm, btnOver, NULL, NO_X, NO_Y, EVENT_NONE, EVENT_NO);
     if (!m_noBtn->IsInitialized())
@@ -248,7 +249,7 @@ ModuleCaptainsLounge::Init() {
     m_modalPromptActive = false;
 
     m_modalPromptBackground =
-        m_resources[CAPTAINSLOUNGE_MODALPROMPT_BACKGROUND];
+        m_resources[I_CAPTAINSLOUNGE_MODALPROMPT_BACKGROUND];
 
     LoadGames();
 
@@ -263,64 +264,58 @@ void
 ModuleCaptainsLounge::Close() {
     // continue the stardate updates
 
-    try {
-        if (m_sndBtnClick != NULL) {
-            m_sndBtnClick = NULL;
-        }
-
-        if (m_backBtn != NULL) {
-            delete m_backBtn;
-            m_backBtn = NULL;
-        }
-        if (m_launchBtn != NULL) {
-            delete m_launchBtn;
-            m_launchBtn = NULL;
-        }
-
-        for (int i = 0; i < CAPTAINSLOUNGE_NUMSLOTS; i++) {
-            if (m_newCaptBtns[i] != NULL) {
-                delete m_newCaptBtns[i];
-                m_newCaptBtns[i] = NULL;
-            }
-
-            if (m_delCaptBtns[i] != NULL) {
-                delete m_delCaptBtns[i];
-                m_delCaptBtns[i] = NULL;
-            }
-
-            if (m_selCaptBtns[i] != NULL) {
-                delete m_selCaptBtns[i];
-                m_selCaptBtns[i] = NULL;
-            }
-
-            if (m_saveCaptBtns[i] != NULL) {
-                delete m_saveCaptBtns[i];
-                m_saveCaptBtns[i] = NULL;
-            }
-
-            if (m_games[i] != NULL) {
-                delete m_games[i];
-                m_games[i] = NULL;
-            }
-        }
-
-        if (m_yesBtn != NULL) {
-            delete m_yesBtn;
-            m_yesBtn = NULL;
-        }
-
-        if (m_noBtn != NULL) {
-            delete m_noBtn;
-            m_noBtn = NULL;
-        }
-
-        // unload the data
-        m_resources.unload();
-    } catch (std::exception e) {
-        ALLEGRO_DEBUG("%s\n", e.what());
-    } catch (...) {
-        ALLEGRO_DEBUG("Unhandled exception in CaptainsLounge::Close\n");
+    if (m_sndBtnClick != NULL) {
+        m_sndBtnClick = NULL;
     }
+
+    if (m_backBtn != NULL) {
+        delete m_backBtn;
+        m_backBtn = NULL;
+    }
+    if (m_launchBtn != NULL) {
+        delete m_launchBtn;
+        m_launchBtn = NULL;
+    }
+
+    for (int i = 0; i < CAPTAINSLOUNGE_NUMSLOTS; i++) {
+        if (m_newCaptBtns[i] != NULL) {
+            delete m_newCaptBtns[i];
+            m_newCaptBtns[i] = NULL;
+        }
+
+        if (m_delCaptBtns[i] != NULL) {
+            delete m_delCaptBtns[i];
+            m_delCaptBtns[i] = NULL;
+        }
+
+        if (m_selCaptBtns[i] != NULL) {
+            delete m_selCaptBtns[i];
+            m_selCaptBtns[i] = NULL;
+        }
+
+        if (m_saveCaptBtns[i] != NULL) {
+            delete m_saveCaptBtns[i];
+            m_saveCaptBtns[i] = NULL;
+        }
+
+        if (m_games[i] != NULL) {
+            delete m_games[i];
+            m_games[i] = NULL;
+        }
+    }
+
+    if (m_yesBtn != NULL) {
+        delete m_yesBtn;
+        m_yesBtn = NULL;
+    }
+
+    if (m_noBtn != NULL) {
+        delete m_noBtn;
+        m_noBtn = NULL;
+    }
+
+    // unload the data
+    m_resources.unload();
 }
 
 void

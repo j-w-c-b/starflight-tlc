@@ -8,6 +8,7 @@
 #include "captaincreation_resources.h"
 
 using namespace std;
+using namespace captaincreation_resources;
 
 ALLEGRO_DEBUG_CHANNEL("ModuleCaptainCreation")
 
@@ -185,14 +186,15 @@ ModuleCaptainCreation::Init() {
     }
 
     m_professionChoiceBackground =
-        m_resources[CAPTAINCREATION_PROFESSIONBACKGROUND];
-    m_scientificBtn = m_resources[CAPTAINCREATION_SCIENTIFIC];
+        m_resources[I_CAPTAINCREATION_PROFESSIONBACKGROUND];
+    m_scientificBtn = m_resources[I_CAPTAINCREATION_SCIENTIFIC];
     m_scientificBtnMouseOver =
-        m_resources[CAPTAINCREATION_SCIENTIFIC_MOUSEOVER];
-    m_freelanceBtn = m_resources[CAPTAINCREATION_FREELANCE];
-    m_freelanceBtnMouseOver = m_resources[CAPTAINCREATION_FREELANCE_MOUSEOVER];
-    m_militaryBtn = m_resources[CAPTAINCREATION_MILITARY];
-    m_militaryBtnMouseOver = m_resources[CAPTAINCREATION_MILITARY_MOUSEOVER];
+        m_resources[I_CAPTAINCREATION_SCIENTIFIC_MOUSEOVER];
+    m_freelanceBtn = m_resources[I_CAPTAINCREATION_FREELANCE];
+    m_freelanceBtnMouseOver =
+        m_resources[I_CAPTAINCREATION_FREELANCE_MOUSEOVER];
+    m_militaryBtn = m_resources[I_CAPTAINCREATION_MILITARY];
+    m_militaryBtnMouseOver = m_resources[I_CAPTAINCREATION_MILITARY_MOUSEOVER];
 
     m_profInfoScientific = new Label(
         "Even though the universe regresses towards smaller and smaller "
@@ -251,15 +253,15 @@ ModuleCaptainCreation::Init() {
         return false;
     m_profInfoMilitary->Refresh();
 
-    m_detailsBackground = m_resources[CAPTAINCREATION_DETAILSBACKGROUND];
-    m_resetBtn = m_resources[CAPTAINCREATION_RESET];
-    m_resetBtnMouseOver = m_resources[CAPTAINCREATION_RESET_MOUSEOVER];
+    m_detailsBackground = m_resources[I_CAPTAINCREATION_DETAILSBACKGROUND];
+    m_resetBtn = m_resources[I_CAPTAINCREATION_RESET];
+    m_resetBtnMouseOver = m_resources[I_CAPTAINCREATION_RESET_MOUSEOVER];
 
     ALLEGRO_BITMAP *btnNorm, *btnOver, *btnDis;
 
-    btnNorm = m_resources[CAPTAINCREATION_FINISH];
-    btnOver = m_resources[CAPTAINCREATION_FINISH_MOUSEOVER];
-    btnDis = m_resources[CAPTAINCREATION_FINISH_DISABLED];
+    btnNorm = m_resources[I_CAPTAINCREATION_FINISH];
+    btnOver = m_resources[I_CAPTAINCREATION_FINISH_MOUSEOVER];
+    btnDis = m_resources[I_CAPTAINCREATION_FINISH_DISABLED];
 
     m_finishBtn = new Button(btnNorm,
                              btnOver,
@@ -276,18 +278,18 @@ ModuleCaptainCreation::Init() {
     if (!m_finishBtn->IsInitialized())
         return false;
 
-    m_cursor[0] = m_resources[CAPTAINCREATION_CURSOR0];
-    m_cursor[1] = m_resources[CAPTAINCREATION_CURSOR1];
+    m_cursor[0] = m_resources[I_CAPTAINCREATION_CURSOR0];
+    m_cursor[1] = m_resources[I_CAPTAINCREATION_CURSOR1];
 
-    m_backBtn = m_resources[CAPTAINCREATION_BACK];
-    m_backBtnMouseOver = m_resources[CAPTAINCREATION_BACK_MOUSEOVER];
+    m_backBtn = m_resources[I_CAPTAINCREATION_BACK];
+    m_backBtnMouseOver = m_resources[I_CAPTAINCREATION_BACK_MOUSEOVER];
 
-    m_plusBtn = m_resources[CAPTAINCREATION_PLUS];
-    m_plusBtnMouseOver = m_resources[CAPTAINCREATION_PLUS_MOUSEOVER];
+    m_plusBtn = m_resources[I_CAPTAINCREATION_PLUS];
+    m_plusBtnMouseOver = m_resources[I_CAPTAINCREATION_PLUS_MOUSEOVER];
 
-    btnNorm = m_resources[MINUS];
-    btnOver = m_resources[MINUS_MOUSEOVER];
-    btnDis = m_resources[MINUS_DISABLED];
+    btnNorm = m_resources[I_MINUS];
+    btnOver = m_resources[I_MINUS_MOUSEOVER];
+    btnDis = m_resources[I_MINUS_DISABLED];
     m_minusBtns[0] = new Button(btnNorm,
                                 btnOver,
                                 btnDis,
@@ -614,51 +616,44 @@ ModuleCaptainCreation::Draw() {
 
 void
 ModuleCaptainCreation::Close() {
-    try {
-        if (m_profInfoScientific != NULL) {
-            delete m_profInfoScientific;
-            m_profInfoScientific = NULL;
-        }
-
-        if (m_profInfoFreelance != NULL) {
-            delete m_profInfoFreelance;
-            m_profInfoFreelance = NULL;
-        }
-
-        if (m_profInfoMilitary != NULL) {
-            delete m_profInfoMilitary;
-            m_profInfoMilitary = NULL;
-        }
-
-        if (m_finishBtn != NULL) {
-            delete m_finishBtn;
-            m_finishBtn = NULL;
-        }
-
-        if (m_sndBtnClick != NULL) {
-            m_sndBtnClick = NULL;
-        }
-
-        if (m_sndClick != NULL) {
-            m_sndClick = NULL;
-        }
-
-        if (m_sndErr != NULL) {
-            m_sndErr = NULL;
-        }
-
-        for (int i = 0; i < 8; i++) {
-            delete m_minusBtns[i];
-            m_minusBtns[i] = NULL;
-        }
-
-        // unload the data file (thus freeing all resources at once)
-        m_resources.unload();
-    } catch (std::exception e) {
-        ALLEGRO_DEBUG("%s\n", e.what());
-    } catch (...) {
-        ALLEGRO_DEBUG("Unhandled exception in CaptainCreation::Close\n");
+    if (m_profInfoScientific != NULL) {
+        delete m_profInfoScientific;
+        m_profInfoScientific = NULL;
     }
+
+    if (m_profInfoFreelance != NULL) {
+        delete m_profInfoFreelance;
+        m_profInfoFreelance = NULL;
+    }
+
+    if (m_profInfoMilitary != NULL) {
+        delete m_profInfoMilitary;
+        m_profInfoMilitary = NULL;
+    }
+
+    if (m_finishBtn != NULL) {
+        delete m_finishBtn;
+        m_finishBtn = NULL;
+    }
+
+    if (m_sndBtnClick != NULL) {
+        m_sndBtnClick = NULL;
+    }
+
+    if (m_sndClick != NULL) {
+        m_sndClick = NULL;
+    }
+
+    if (m_sndErr != NULL) {
+        m_sndErr = NULL;
+    }
+
+    for (int i = 0; i < 8; i++) {
+        delete m_minusBtns[i];
+        m_minusBtns[i] = NULL;
+    }
+
+    m_resources.unload();
 }
 
 void

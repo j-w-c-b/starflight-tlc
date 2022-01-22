@@ -6,7 +6,6 @@
 
 #pragma region HEADER
 
-#include <exception>
 #include <sstream>
 #include <string>
 
@@ -27,6 +26,7 @@
 #include "spacetravel_resources.h"
 
 using namespace std;
+using namespace spacetravel_resources;
 
 // scroller properties
 #define PLANET_SCROLL_X 0
@@ -329,26 +329,19 @@ void
 ModuleInterPlanetaryTravel::Close() {
     ALLEGRO_DEBUG("*** Interplanetary Closing\n\n");
 
-    try {
-        if (text != NULL) {
-            delete text;
-            text = NULL;
-        }
-        delete scroller;
-        delete ship;
-
-        if (planet_label != NULL) {
-            delete planet_label;
-            planet_label = NULL;
-        }
-
-        // unload the data file (thus freeing all resources at once)
-        resources.unload();
-    } catch (std::exception e) {
-        ALLEGRO_DEBUG("%s\n", e.what());
-    } catch (...) {
-        ALLEGRO_DEBUG("Unhandled exception in InterplanetaryTravel::Close\n");
+    if (text != NULL) {
+        delete text;
+        text = NULL;
     }
+    delete scroller;
+    delete ship;
+
+    if (planet_label != NULL) {
+        delete planet_label;
+        planet_label = NULL;
+    }
+
+    resources.unload();
 }
 
 bool
@@ -405,7 +398,7 @@ ModuleInterPlanetaryTravel::Init() {
     ship->allstop();
 
     // create tile scroller object
-    TileSet ts(resources[IP_TILES], PLANETTILESIZE, PLANETTILESIZE, 9, 1);
+    TileSet ts(resources[I_IP_TILES], PLANETTILESIZE, PLANETTILESIZE, 9, 1);
 
     scroller = new TileScroller(ts,
                                 PLANETTILESACROSS,

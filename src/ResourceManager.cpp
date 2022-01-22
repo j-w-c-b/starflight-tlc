@@ -1,4 +1,7 @@
 #include "ResourceManager.h"
+#include "Util.h"
+
+using namespace std;
 
 ALLEGRO_DEBUG_CHANNEL("ResourceManager")
 
@@ -74,15 +77,13 @@ Resource<ALLEGRO_BITMAP>::deleter(ALLEGRO_BITMAP *b) {
 template <>
 ALLEGRO_BITMAP *
 ResourceManager<ALLEGRO_BITMAP>::load(Resource<ALLEGRO_BITMAP> &data) {
-    ALLEGRO_BITMAP *b = al_load_bitmap(data.path.c_str());
+    string full_path = Util::resource_path(data.path);
+    ALLEGRO_BITMAP *b = al_load_bitmap(full_path.c_str());
     if (b == nullptr) {
         ALLEGRO_ERROR("Unable to load resource %s\n", data.path.c_str());
         return nullptr;
     }
-    size_t idx = data.path.find(".bmp");
-    if (idx != std::string::npos) {
-        al_convert_mask_to_alpha(b, al_map_rgb(255, 0, 255));
-    }
+    al_convert_mask_to_alpha(b, al_map_rgb(255, 0, 255));
     resources[data.name].data =
         std::unique_ptr<ALLEGRO_BITMAP, void (*)(ALLEGRO_BITMAP *)>(
             b, Resource<ALLEGRO_BITMAP>::deleter);

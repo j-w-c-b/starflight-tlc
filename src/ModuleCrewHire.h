@@ -55,9 +55,6 @@ class ModuleCrewHire : public Module {
     Label *hiremoreDirections;
     Label *stats;
 
-    ALLEGRO_BITMAP *m_background;
-    ALLEGRO_BITMAP *m_miniSkills;
-
     Button *m_exitBtn;
     Button *m_hireBtn;
     Button *m_hiremoreBtn;

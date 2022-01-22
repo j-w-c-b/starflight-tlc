@@ -1,7 +1,7 @@
 -- basicProjectile SCRIPT FILE
 
 function basicProjectileInitialize( )
-	C_LoadImage("data\\planetsurface\\stun.tga")
+	C_LoadImage("data/planetsurface/stun.tga")
 	C_SetDamage(2)
 	C_SetHealth(60)
 	C_SetColHalfWidth(12)

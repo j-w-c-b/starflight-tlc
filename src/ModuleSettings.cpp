@@ -17,7 +17,10 @@
 #include <fstream>
 #include <sstream>
 
+#include "settings_resources.h"
+
 using namespace std;
+using namespace settings_resources;
 
 const int EVENT_EXIT = -1;
 
@@ -30,8 +33,7 @@ ALLEGRO_DEBUG_CHANNEL("ModuleSettings")
 
 std::string old_resolution = "";
 
-ModuleSettings::ModuleSettings(void) {
-    background = NULL;
+ModuleSettings::ModuleSettings(void) : m_resources(SETTINGS_IMAGES) {
     btn_exit = NULL;
     btn_fullscreen = NULL;
     btn_defaults = NULL;
@@ -49,23 +51,15 @@ ModuleSettings::Init() {
     cmd_selected = 0;
     button_selected = 0;
 
-    background = al_load_bitmap("data/settings/background.tga");
-    if (!background) {
-        g_game->message("Settings: Error loading background");
-        return false;
-    }
-
-    ALLEGRO_BITMAP *imgNorm = NULL, *imgOver = NULL;
     g_game->audioSystem->Load("data/cantina/buttonclick.ogg", "click");
 
     // exit button
-    imgNorm = al_load_bitmap("data/settings/button1.tga");
-    imgOver = al_load_bitmap("data/settings/button.tga");
-    btn_exit = new Button(imgNorm,
-                          imgOver,
+    btn_exit = new Button(m_resources[I_BUTTON1],
+                          m_resources[I_BUTTON],
                           NULL,
                           10,
-                          SCREEN_HEIGHT - al_get_bitmap_height(imgNorm) - 10,
+                          SCREEN_HEIGHT -
+                              al_get_bitmap_height(m_resources[I_BUTTON1]) - 10,
                           0,
                           EVENT_EXIT,
                           g_game->font22,
@@ -80,11 +74,12 @@ ModuleSettings::Init() {
         return false;
 
     // save button
-    btn_save = new Button(imgNorm,
-                          imgOver,
+    btn_save = new Button(m_resources[I_BUTTON1],
+                          m_resources[I_BUTTON],
                           NULL,
                           140,
-                          SCREEN_HEIGHT - al_get_bitmap_height(imgNorm) - 10,
+                          SCREEN_HEIGHT -
+                              al_get_bitmap_height(m_resources[I_BUTTON1]) - 10,
                           0,
                           EVENT_SAVESETTINGS,
                           g_game->font22,
@@ -103,8 +98,8 @@ ModuleSettings::Init() {
     for (int i = 0; i < 11; i++) {
         x = 680;
         y = 110 + i * 40;
-        btn_controls[i] = new Button(imgNorm,
-                                     imgOver,
+        btn_controls[i] = new Button(m_resources[I_BUTTON1],
+                                     m_resources[I_BUTTON],
                                      NULL,
                                      x,
                                      y,
@@ -168,21 +163,8 @@ ModuleSettings::Init() {
     }
 
     // create fullscreen toggle
-    ALLEGRO_BITMAP *toggleImage = NULL;
-    toggleImage = al_load_bitmap("data/settings/button32_normal.bmp");
-    if (!toggleImage) {
-        g_game->fatalerror("Settings: Error loading toggle image\n");
-        return false;
-    }
-    ALLEGRO_BITMAP *toggleImageOver = NULL;
-    toggleImageOver = al_load_bitmap("data/settings/button32_over.bmp");
-    if (!toggleImageOver) {
-        g_game->fatalerror("Settings: Error loading toggle image\n");
-        return false;
-    }
-
-    btn_fullscreen = new Button(toggleImage,
-                                toggleImageOver,
+    btn_fullscreen = new Button(m_resources[I_BUTTON32_NORMAL],
+                                m_resources[I_BUTTON32_OVER],
                                 NULL,
                                 40,
                                 360,
@@ -200,11 +182,8 @@ ModuleSettings::Init() {
         return false;
 
     string fullscreen = "";
-    try {
-        if (g_game->getGlobalBoolean("FULLSCREEN"))
-            fullscreen = "X";
-    } catch (...) {
-    }
+    if (g_game->getGlobalBoolean("FULLSCREEN"))
+        fullscreen = "X";
     btn_fullscreen->SetButtonText(fullscreen);
 
     return true;
@@ -213,33 +192,27 @@ ModuleSettings::Init() {
 void
 ModuleSettings::Close() {
     ALLEGRO_DEBUG("*** ModuleSettings closing\n");
-    try {
-        if (btn_fullscreen != NULL) {
-            btn_fullscreen->Destroy();
-            btn_fullscreen = NULL;
+    if (btn_fullscreen != NULL) {
+        btn_fullscreen->Destroy();
+        btn_fullscreen = NULL;
+    }
+    if (btn_exit != NULL) {
+        btn_exit->Destroy();
+        btn_exit = NULL;
+    }
+    for (int i = 0; i < 10; i++) {
+        if (btn_controls[i] != NULL) {
+            btn_controls[i]->Destroy();
+            btn_controls[i] = NULL;
         }
-        if (btn_exit != NULL) {
-            btn_exit->Destroy();
-            btn_exit = NULL;
-        }
-        for (int i = 0; i < 10; i++) {
-            if (btn_controls[i] != NULL) {
-                btn_controls[i]->Destroy();
-                btn_controls[i] = NULL;
-            }
-        }
-        if (btn_save != NULL) {
-            btn_save->Destroy();
-            btn_save = NULL;
-        }
-        if (btn_fullscreen) {
-            btn_fullscreen->Destroy();
-            btn_fullscreen = NULL;
-        }
-    } catch (std::exception e) {
-        ALLEGRO_DEBUG("%s\n", e.what());
-    } catch (...) {
-        ALLEGRO_DEBUG("Unhandled exception in ModuleSettings::Close\n");
+    }
+    if (btn_save != NULL) {
+        btn_save->Destroy();
+        btn_save = NULL;
+    }
+    if (btn_fullscreen) {
+        btn_fullscreen->Destroy();
+        btn_fullscreen = NULL;
     }
 }
 
@@ -247,7 +220,7 @@ void
 ModuleSettings::Draw() {
     // draw background
     al_set_target_bitmap(g_game->GetBackBuffer());
-    al_draw_bitmap(background, 0, 0, 0);
+    al_draw_bitmap(m_resources[I_BACKGROUND], 0, 0, 0);
 
     btn_save->Run(g_game->GetBackBuffer());
     btn_exit->Run(g_game->GetBackBuffer());

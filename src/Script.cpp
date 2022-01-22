@@ -3,13 +3,16 @@
         Note: LUA does not throw exceptions.
 */
 
-#include "Script.h"
-#include "Game.h"
-#include <allegro5/allegro.h>
 #include <csetjmp>
-#include <exception>
 #include <iostream>
 #include <string>
+
+#include <allegro5/allegro.h>
+
+#include "Game.h"
+#include "Script.h"
+#include "Util.h"
+
 using namespace std;
 
 ALLEGRO_DEBUG_CHANNEL("Script")
@@ -25,16 +28,18 @@ custom_lua_atpanic(lua_State * /*lua*/) {
 
 Script::~Script() { lua_close(luaState); }
 
-Script::Script() {
-    errorMessage = "";
+Script::Script() : errorMessage("") {
     luaState = luaL_newstate();
     luaL_openlibs(luaState);
+    lua_register(luaState, "L_LoadScript", Script::L_LoadScript);
     lua_atpanic(luaState, &custom_lua_atpanic);
 }
 
 bool
-Script::load(std::string scriptfile) {
-    int ret = luaL_dofile(luaState, scriptfile.c_str());
+Script::load(const string &scriptfile) {
+    string fullpath = Util::resource_path(scriptfile);
+    ALLEGRO_DEBUG("Loading script `%s'\n", fullpath.c_str());
+    int ret = luaL_dofile(luaState, fullpath.c_str());
     if (ret > 0) {
         // get lua error message from the stack
         string luaError = lua_tostring(luaState, -1);
@@ -50,8 +55,8 @@ Script::load(std::string scriptfile) {
     return true;
 }
 
-std::string
-Script::getGlobalString(std::string name) {
+string
+Script::getGlobalString(const string &name) {
     string value = "";
     string luaError = "";
 
@@ -68,13 +73,13 @@ Script::getGlobalString(std::string name) {
 }
 
 void
-Script::setGlobalString(std::string name, std::string value) {
+Script::setGlobalString(const string &name, const string &value) {
     lua_pushstring(luaState, value.c_str());
     lua_setglobal(luaState, name.c_str());
 }
 
 double
-Script::getGlobalNumber(std::string name) {
+Script::getGlobalNumber(const string &name) {
     double value = 0.0;
     lua_getglobal(luaState, name.c_str()); // TAG - debug spot
     value = lua_tonumber(luaState, -1);
@@ -83,13 +88,13 @@ Script::getGlobalNumber(std::string name) {
 }
 
 void
-Script::setGlobalNumber(std::string name, double value) {
+Script::setGlobalNumber(const string &name, double value) {
     lua_pushnumber(luaState, (int)value);
     lua_setglobal(luaState, name.c_str());
 }
 
 bool
-Script::getGlobalBoolean(std::string name) {
+Script::getGlobalBoolean(const string &name) {
 
     bool value = false;
     string luaError = "";
@@ -100,7 +105,7 @@ Script::getGlobalBoolean(std::string name) {
 }
 
 bool
-Script::runFunction(std::string name) {
+Script::runFunction(const string &name) {
     // call script function, 0 args, 0 retvals
     string luaError = "";
     lua_getglobal(luaState, name.c_str());
@@ -115,4 +120,14 @@ Script::runFunction(std::string name) {
     }
     errorMessage = "";
     return true;
+}
+
+int
+Script::L_LoadScript(lua_State *luaVM) {
+    string lua_script = Util::resource_path(lua_tostring(luaVM, -1));
+
+    luaL_dofile(luaVM, lua_script.c_str());
+    lua_pop(luaVM, 1);
+
+    return 0;
 }

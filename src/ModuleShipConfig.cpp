@@ -20,6 +20,7 @@
 #include "shipconfig_resources.h"
 
 using namespace std;
+using namespace shipconfig_resources;
 
 ALLEGRO_DEBUG_CHANNEL("ModuleShipConfig")
 
@@ -42,9 +43,9 @@ ModuleShipConfig::Init() {
 
     // create button images
     ALLEGRO_BITMAP *btnNorm, *btnOver, *btnDeact;
-    btnNorm = m_resources[SHIPCONFIG_BTN_NORM];
-    btnOver = m_resources[SHIPCONFIG_BTN_OVER];
-    btnDeact = m_resources[SHIPCONFIG_BTN_DEACTIVE];
+    btnNorm = m_resources[I_SHIPCONFIG_BTN_NORM];
+    btnOver = m_resources[I_SHIPCONFIG_BTN_OVER];
+    btnDeact = m_resources[I_SHIPCONFIG_BTN_DEACTIVE];
 
     // initialize array of button ptrs
     for (int i = 0; i < NUMBER_OF_BUTTONS; ++i) {
@@ -74,16 +75,16 @@ ModuleShipConfig::Init() {
     g_game->modeMgr->BroadcastEvent(&e);
 
     // load background image
-    shipConfig = m_resources[SHIPCONFIG];
+    shipConfig = m_resources[I_SHIPCONFIG];
 
     // load ship image
     switch (g_game->gameState->getProfession()) {
     case PROFESSION_FREELANCE:
-        shipImage = m_resources[FREELANCE];
+        shipImage = m_resources[I_FREELANCE];
     case PROFESSION_MILITARY:
-        shipImage = m_resources[MILITARY];
+        shipImage = m_resources[I_MILITARY];
     case PROFESSION_SCIENTIFIC:
-        shipImage = m_resources[SCIENCE];
+        shipImage = m_resources[I_SCIENCE];
     default:
         ALLEGRO_ERROR("***ERROR: ShipConfig: Player's profession is invalid.");
     }
@@ -99,7 +100,7 @@ ModuleShipConfig::Init() {
         g_game->message("ShipConfig: Error loading error.ogg");
         return false;
     }
-    m_cursor = m_resources[SHIPCONFIG_CURSOR0];
+    m_cursor = m_resources[I_SHIPCONFIG_CURSOR0];
 
     // tell questmgr that this module has been entered
     g_game->questMgr->raiseEvent(22);
@@ -483,23 +484,17 @@ void
 ModuleShipConfig::Close() {
     ALLEGRO_DEBUG("ShipConfig Destroy\n");
 
-    try {
-        menuPath.clear();
-        for (int a = 0; a < NUMBER_OF_BUTTONS; ++a) {
-            buttons[a]->Destroy();
-            buttons[a] = NULL;
-        }
-
-        m_sndClick.reset();
-        m_sndErr.reset();
-
-        // unload the data file
-        m_resources.unload();
-    } catch (std::exception e) {
-        ALLEGRO_DEBUG("%s\n", e.what());
-    } catch (...) {
-        ALLEGRO_DEBUG("Unhandled exception in ShipConfig::Close\n");
+    menuPath.clear();
+    for (int a = 0; a < NUMBER_OF_BUTTONS; ++a) {
+        buttons[a]->Destroy();
+        buttons[a] = NULL;
     }
+
+    m_sndClick.reset();
+    m_sndErr.reset();
+
+    // unload the data file
+    m_resources.unload();
 }
 std::string
 ModuleShipConfig::convertMenuPathToString() const {

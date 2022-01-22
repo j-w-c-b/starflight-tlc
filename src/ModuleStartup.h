@@ -5,8 +5,10 @@
    to titlescreen. Author: J.Harbour Date: Jan 1,2008
 */
 
-#include "Module.h"
 #include <allegro5/allegro.h>
+
+#include "Module.h"
+#include "ResourceManager.h"
 
 class ModuleStartup : public Module {
   public:
@@ -23,9 +25,8 @@ class ModuleStartup : public Module {
     int fadein(ALLEGRO_BITMAP *dest, ALLEGRO_BITMAP *source, int speed);
     int fadeout(ALLEGRO_BITMAP *dest, ALLEGRO_BITMAP *source, int speed);
 
-    ALLEGRO_BITMAP *m_background;
-    ALLEGRO_BITMAP *copyright;
     int display_mode;
+    ResourceManager<ALLEGRO_BITMAP> m_resources;
 };
 
 const int pages = 5;

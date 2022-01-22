@@ -290,12 +290,9 @@ Button::OnMouseReleased(int /*button*/, int initX, int initY) {
 
 bool
 Button::PtInBtn(int initX, int initY) {
-    try {
-        if ((initX >= x) && (initX < (x + al_get_bitmap_width(imgNormal))) &&
-            (initY >= y) && (initY < (y + al_get_bitmap_height(imgNormal))))
-            return true;
-    } catch (...) {
-    }
+    if ((initX >= x) && (initX < (x + al_get_bitmap_width(imgNormal))) &&
+        (initY >= y) && (initY < (y + al_get_bitmap_height(imgNormal))))
+        return true;
 
     return false;
 }

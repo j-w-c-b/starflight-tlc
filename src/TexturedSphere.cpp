@@ -195,6 +195,9 @@ TexturedSphere::Draw(ALLEGRO_BITMAP *dest,
                      int radius,
                      int center_x,
                      int center_y) {
+    ALLEGRO_ASSERT(phi >= 0 && phi < 256);
+    ALLEGRO_ASSERT(theta >= 0 && theta < 256);
+    ALLEGRO_ASSERT(psi >= 0 && psi < 256);
     int x, y; // current Pixel-Position
     int xr;   // Half Width of Sphere (pixels) in current scanline
     int alpha_beta2, alpha_beta3;

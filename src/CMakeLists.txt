@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 
+include(implib_utils.cmake)
+
 file(
     GLOB TOPLEVEL_DATA
     LIST_DIRECTORIES false
@@ -204,6 +206,7 @@ add_library(lib${APP_NAME} STATIC
     tinyxml/tinyxml.h
     tinyxml/tinyxmlerror.cpp
     tinyxml/tinyxmlparser.cpp
+    rand.c
     lua.hpp
     ${MODULE_RESOURCE_HEADERS}
 )
@@ -286,7 +289,6 @@ set_source_files_properties(${ICON_PATH} PROPERTIES MACOSX_PACKAGE_LOCATION Reso
 set_source_files_properties(
     ${TOPLEVEL_DATA} PROPERTIES MACOSX_PACKAGE_LOCATION Resources/data/
 )
-install(TARGETS ${APP_NAME} BUNDLE DESTINATION bin)
 
 # Use pkgconfig to find the allegro libraries and headers, and add them to
 # our build. For macos, we include them in the application bundle
@@ -303,27 +305,58 @@ set(allegro_pkgs
     allegro_primitives
     allegro_ttf
 )
+
 foreach (pkg ${allegro_pkgs})
     string(TOUPPER ${pkg} pkg_prefix)
 
     pkg_check_modules(${pkg_prefix} REQUIRED IMPORTED_TARGET GLOBAL "${pkg}-5>=5.2")
-    add_library(${pkg} ALIAS "PkgConfig::${pkg_prefix}")
-    LIST(APPEND ALLEGRO_PKG_LIBRARIES ${${pkg_prefix}_LINK_LIBRARIES})
+    add_library(${pkg} SHARED IMPORTED GLOBAL)
+    
+    list(GET ${pkg_prefix}_LINK_LIBRARIES 0 firstlib)
+
+    set_property(TARGET ${pkg} PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${${pkg_prefix}_INCLUDE_DIRS})
+
+    if (WIN32)
+        set(${pkg}_IMPLIB ${firstlib})
+        set_property(TARGET ${pkg} PROPERTY IMPORTED_IMPLIB ${firstlib})
+        implib_to_dll(${pkg}_IMPLIB)
+        set_property(TARGET ${pkg} PROPERTY IMPORTED_LOCATION ${${pkg}_LIBRARY})
+    else()
+        set_property(TARGET ${pkg} PROPERTY IMPORTED_LOCATION ${firstlib})
+    endif()
+    LIST(APPEND ALLEGRO_LIBRARY_DIRS ${${pkg_prefix}_LIBRARY_DIRS})
     target_include_directories(lib${APP_NAME} PRIVATE ${${pkg_prefix}_INCLUDE_DIRS})
 endforeach()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES Darwin)
-    add_custom_command(
-        TARGET ${APP_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy 
-        $<TARGET_FILE:lua>
-        $<TARGET_FILE:noise>
-        ${ALLEGRO_PKG_LIBRARIES}
-        "${CMAKE_CURRENT_BINARY_DIR}/${APP_NAME}.app/Contents/MacOS/"
-    )
     set_directory_properties(PROPERTIES ADDITIONAL_CLEAN_FILES "${APP_NAME}.app")
-else()
+    install(TARGETS ${APP_NAME} BUNDLE DESTINATION .)
+    install(CODE "
+            include(BundleUtilities)
+            fixup_bundle(\"\${CMAKE_INSTALL_PREFIX}/${APP_NAME}.app\" \"\" \"${ALLEGRO_LIBRARY_DIRS}\")
+            ")
+
+    set(CPACK_PACKAGE_EXECUTABLES "${CMAKE_INSTALL_PREFIX}/${APP_NAME}.app;Starflight - The Lost Colony")
+    set(CPACK_PACKAGE_ICON "${ICON_PATH}")
+elseif (${CMAKE_SYSTEM_NAME} MATCHES Windows)
     add_custom_command(
         TARGET ${APP_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/../data ${CMAKE_CURRENT_BINARY_DIR}/data)
+    install(TARGETS ${APP_NAME} DESTINATION .)
+    install(DIRECTORY ../data/ DESTINATION data)
+    add_custom_command(
+        TARGET ${APP_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:${APP_NAME}> $<TARGET_FILE_DIR:${APP_NAME}>
+        COMMAND_EXPAND_LISTS)
+    install(FILES $<TARGET_RUNTIME_DLLS:${APP_NAME}> DESTINATION .)
+    set (CPACK_PACKAGE_INSTALL_DIRECTORY ${CMAKE_PROJECT})
+elseif (${CMAKE_SYSTEM_NAME} MATCHES Linux)
+    add_custom_command(
+        TARGET ${APP_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/../data ${CMAKE_CURRENT_BINARY_DIR}/data)
+    install(TARGETS ${APP_NAME})
+    install(DIRECTORY ../data/ DESTINATION data)
+else()
+    message(FATAL_ERROR "Unsupported OS")
 endif()
+include(CPack)

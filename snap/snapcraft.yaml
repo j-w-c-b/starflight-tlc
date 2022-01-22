@@ -1,0 +1,72 @@
+name: starflight-tlc
+base: core20
+version: '3.0~a1'
+summary: "Starflight: The Lost Colony"
+description: |
+        Starflight - The Lost Colony is a sci-fi adventure game for a
+        single player with space exploration, character development,
+        alien races to encounter, and an engrossing storyline that
+        unfolds as the player gradually explores the galaxy. The Lost
+        Colony is based on two previous games from Electronic Arts:
+        Starflight (1986) and the sequel, Starflight II: Trade Routes
+        of the Cloud Nebula (1988). Starflight features free-roaming
+        gameplay that spans hundreds of star systems and numerous alien
+        races. A compelling storyline pits the player against a vast
+        enemy endangering all life in the galaxy.  Hundreds of unique
+        planetary systems filled with planets and asteroids that can be
+        landed on and explored in real time. Players will interact with
+        lifeforms (some hostile!) and mine minerals in order to raise
+        capital for ship upgrades and fuel.
+grade: devel
+confinement: strict
+apps:
+    starflight-tlc:
+        command: usr/bin/StarflightTLC
+        extensions:
+            - gnome-3-38
+        environment:
+            XDG_DATA_HOME: $SNAP_USER_COMMON/data
+            XDG_CONFIG_HOME: $SNAP_USER_COMMON/config
+        plugs:
+            - desktop
+            - desktop-legacy
+            - wayland
+            - x11
+            - unity7
+            - audio-playback
+icon: snap/gui/starflight-tlc.png
+
+layout:
+    $SNAP/usr/bin/data:
+        symlink: $SNAP/usr/data
+
+parts:
+  starflight-tlc:
+        plugin: cmake
+        source-type: git
+        source-depth: 1
+        source: https://github.com/j-w-c-b/starflightt-tlc.git
+        source-branch: allegro5
+        cmake-parameters:
+            - -DBUILD_SHARED_LIBS=off
+            - -DCMAKE_BUILD_TYPE=Debug
+            - -DCMAKE_INSTALL_PREFIX=/usr
+        build-packages:
+            - liballegro5-dev
+            - liballegro-acodec5-dev
+            - liballegro-audio5-dev
+            - liballegro-dialog5-dev
+            - liballegro-image5-dev
+            - liballegro-ttf5-dev
+            - pkg-config
+        stage-packages:
+            - liballegro-acodec5.2
+            - liballegro-audio5.2
+            - liballegro-dialog5.2
+            - liballegro-image5.2
+            - liballegro-ttf5.2
+            - liballegro5.2
+        override-prime: |
+            snapcraftctl prime
+            sed -i 's|XDG_DATA_HOME="$SNAP_USER_DATA|XDG_DATA_HOME="$SNAP_USER_COMMON|' $SNAPCRAFT_PRIME/snap/command-chain/desktop-launch
+            sed -i 's|XDG_CONFIG_HOME="$SNAP_USER_DATA|XDG_CONFIG_HOME="$SNAP_USER_COMMON|' $SNAPCRAFT_PRIME/snap/command-chain/desktop-launch

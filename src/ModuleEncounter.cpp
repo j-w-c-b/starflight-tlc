@@ -7,7 +7,6 @@
 
 #pragma region HEADER
 
-#include <exception>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
@@ -38,6 +37,7 @@
 #include "encounter_resources.h"
 
 using namespace std;
+using namespace encounter_resources;
 
 const int ENCOUNTER_DIALOGUE_EVENT = 8000;
 const int ENCOUNTER_CLOSECOMM_EVENT = 8001;
@@ -313,7 +313,7 @@ ModuleEncounter::Init() {
     // create the player ship
     playerShip = new PlayerShipSprite();
 
-    TileSet ts(resources[IP_TILES], TILESIZE, TILESIZE, 5, 1);
+    TileSet ts(resources[I_IP_TILES], TILESIZE, TILESIZE, 5, 1);
     scroller =
         new TileScroller(ts,
                          TILESACROSS,
@@ -443,57 +443,57 @@ ModuleEncounter::Encounter_Init() {
     switch (region) {
     case ALIEN_ELOWAN:
         scriptFile = "encounter_elowan";
-        portraitName = PORTRAIT_ELOWAN;
-        schematicName = SCHEMATIC_ELOWAN;
-        shipName = SHIP_ELOWAN;
+        portraitName = I_PORTRAIT_ELOWAN;
+        schematicName = I_SCHEMATIC_ELOWAN;
+        shipName = I_SHIP_ELOWAN;
         break;
     case ALIEN_SPEMIN:
         scriptFile = "encounter_spemin";
-        portraitName = PORTRAIT_SPEMIN;
-        schematicName = SCHEMATIC_SPEMIN;
-        shipName = SHIP_SPEMIN;
+        portraitName = I_PORTRAIT_SPEMIN;
+        schematicName = I_SCHEMATIC_SPEMIN;
+        shipName = I_SHIP_SPEMIN;
         break;
     case ALIEN_THRYNN:
         scriptFile = "encounter_thrynn";
-        portraitName = PORTRAIT_THRYNN;
-        schematicName = SCHEMATIC_THRYNN;
-        shipName = SHIP_THRYNN;
+        portraitName = I_PORTRAIT_THRYNN;
+        schematicName = I_SCHEMATIC_THRYNN;
+        shipName = I_SHIP_THRYNN;
         break;
     case ALIEN_BARZHON:
         scriptFile = "encounter_barzhon";
-        portraitName = PORTRAIT_BARZHON;
-        schematicName = SCHEMATIC_BARZHON;
-        shipName = SHIP_BARZHON;
+        portraitName = I_PORTRAIT_BARZHON;
+        schematicName = I_SCHEMATIC_BARZHON;
+        shipName = I_SHIP_BARZHON;
         break;
     case ALIEN_NYSSIAN:
         scriptFile = "encounter_nyssian";
-        portraitName = PORTRAIT_NYSSIAN;
-        schematicName = SCHEMATIC_NYSSIAN;
-        shipName = SHIP_NYSSIAN;
+        portraitName = I_PORTRAIT_NYSSIAN;
+        schematicName = I_SCHEMATIC_NYSSIAN;
+        shipName = I_SHIP_NYSSIAN;
         break;
     case ALIEN_TAFEL:
         scriptFile = "encounter_tafel";
-        portraitName = PORTRAIT_TAFEL;
-        schematicName = SCHEMATIC_TAFEL;
-        shipName = SHIP_TAFEL;
+        portraitName = I_PORTRAIT_TAFEL;
+        schematicName = I_SCHEMATIC_TAFEL;
+        shipName = I_SHIP_TAFEL;
         break;
     case ALIEN_MINEX:
         scriptFile = "encounter_minex";
-        portraitName = PORTRAIT_MINEX;
-        schematicName = SCHEMATIC_MINEX;
-        shipName = SHIP_MINEX;
+        portraitName = I_PORTRAIT_MINEX;
+        schematicName = I_SCHEMATIC_MINEX;
+        shipName = I_SHIP_MINEX;
         break;
     case ALIEN_COALITION:
         scriptFile = "encounter_coalition";
-        portraitName = PORTRAIT_COALITION;
-        schematicName = SCHEMATIC_COALITION;
-        shipName = SHIP_COALITION;
+        portraitName = I_PORTRAIT_COALITION;
+        schematicName = I_SCHEMATIC_COALITION;
+        shipName = I_SHIP_COALITION;
         break;
     case ALIEN_PIRATE:
         scriptFile = "encounter_pirate";
-        portraitName = PORTRAIT_PIRATE;
-        schematicName = SCHEMATIC_PIRATE;
-        shipName = SHIP_PIRATE;
+        portraitName = I_PORTRAIT_PIRATE;
+        schematicName = I_SCHEMATIC_PIRATE;
+        shipName = I_SHIP_PIRATE;
         break;
     default:
         break;
@@ -679,7 +679,7 @@ ModuleEncounter::Combat_Init() {
     int num = rand() % 10 + 5;
     for (int a = 0; a < num; ++a) {
         CombatObject *temp = new CombatObject();
-        temp->setImage(resources[BIGASTEROID]);
+        temp->setImage(resources[I_BIGASTEROID]);
         temp->setObjectType(OBJ_ASTEROID_BIG);
         temp->setTotalFrames(1);
         temp->setDamage(0);
@@ -1629,7 +1629,7 @@ ModuleEncounter::Draw() {
         static int gmw = (int)g_game->getGlobalNumber("GUI_MESSAGE_WIDTH");
         static int gmh = (int)g_game->getGlobalNumber("GUI_MESSAGE_HEIGHT");
         al_draw_bitmap_region(
-            resources[GUI_MESSAGEWINDOW], 0, 0, gmw, gmh, gmx, gmy, 0);
+            resources[I_GUI_MESSAGEWINDOW], 0, 0, gmw, gmh, gmx, gmy, 0);
 
         // draw message and list boxes
         (bFlagDialogue) ? dialogue->Draw(g_game->GetBackBuffer())
@@ -1638,12 +1638,12 @@ ModuleEncounter::Draw() {
         // draw socket gui
         static int gsx = (int)g_game->getGlobalNumber("GUI_SOCKET_POS_X");
         static int gsy = (int)g_game->getGlobalNumber("GUI_SOCKET_POS_Y");
-        al_draw_bitmap(resources[GUI_SOCKET], gsx, gsy, 0);
+        al_draw_bitmap(resources[I_GUI_SOCKET], gsx, gsy, 0);
 
         // draw the aux gui
         static int gax = (int)g_game->getGlobalNumber("GUI_AUX_POS_X");
         static int gay = (int)g_game->getGlobalNumber("GUI_AUX_POS_Y");
-        al_draw_bitmap(resources[GUI_AUX], gax, gay, 0);
+        al_draw_bitmap(resources[I_GUI_AUX], gax, gay, 0);
     }
 
     if (g_game->getGlobalBoolean("DEBUG_OUTPUT") == true) {
@@ -1789,7 +1789,7 @@ ModuleEncounter::Encounter_Draw() {
     if (bFlagChatting) {
         static int gvx = (int)g_game->getGlobalNumber("GUI_VIEWER_POS_X");
         static int gvy = (int)g_game->getGlobalNumber("GUI_VIEWER_POS_Y");
-        al_draw_bitmap(resources[GUI_VIEWER], gvx, gvy, 0);
+        al_draw_bitmap(resources[I_GUI_VIEWER], gvx, gvy, 0);
         al_draw_bitmap(resources[portraitName], gvx + 108, gvy + 34, 0);
 
         // draw gui schematic window with ship schematic
@@ -1797,7 +1797,7 @@ ModuleEncounter::Encounter_Draw() {
             (int)g_game->getGlobalNumber("GUI_RIGHT_VIEWER_POS_X");
         static int gvry =
             (int)g_game->getGlobalNumber("GUI_RIGHT_VIEWER_POS_Y");
-        al_draw_bitmap(resources[GUI_VIEWER_RIGHT], gvrx, gvry, 0);
+        al_draw_bitmap(resources[I_GUI_VIEWER_RIGHT], gvrx, gvry, 0);
         al_draw_bitmap(resources[schematicName], gvrx + 34, gvry + 34, 0);
     }
 }
@@ -1831,48 +1831,44 @@ ModuleEncounter::ImpactPlayer(CombatObject *player, CombatObject *other) {
     static double bump = 1.2;
     double vx, vy, x1, y1, x2, y2;
 
-    try {
-        // first, move the objects off each other
-        while (player->CheckCollision(other)) {
-            x1 = g_game->gameState->player->posCombat.x + 32;
-            y1 = g_game->gameState->player->posCombat.y + 32;
-            x2 = other->getX() + other->getFrameWidth() / 2;
-            y2 = other->getY() + other->getFrameHeight() / 2;
+    // first, move the objects off each other
+    while (player->CheckCollision(other)) {
+        x1 = g_game->gameState->player->posCombat.x + 32;
+        y1 = g_game->gameState->player->posCombat.y + 32;
+        x2 = other->getX() + other->getFrameWidth() / 2;
+        y2 = other->getY() + other->getFrameHeight() / 2;
 
-            if (x1 < x2) {
-                g_game->gameState->player->posCombat.x -= bump;
-                other->setX(other->getX() + bump);
-            } else {
-                g_game->gameState->player->posCombat.x += bump;
-                other->setX(other->getX() - bump);
-            }
-
-            if (y1 < y2) {
-                g_game->gameState->player->posCombat.y -= bump;
-                other->setY(other->getY() + bump);
-            } else {
-                g_game->gameState->player->posCombat.y += bump;
-                other->setY(other->getY() - bump);
-            }
+        if (x1 < x2) {
+            g_game->gameState->player->posCombat.x -= bump;
+            other->setX(other->getX() + bump);
+        } else {
+            g_game->gameState->player->posCombat.x += bump;
+            other->setX(other->getX() - bump);
         }
 
-        // second, velocity affected by mass
-        double mass_factor = 1.0;
-        double modifier = 0.005;
-
-        // calculate mass ratio
-        if (player->getMass() > 0.0)
-            mass_factor = other->getMass() / (player->getMass());
-
-        double angle = other->getFaceAngle() - 90.0;
-        vx = Sprite::calcAngleMoveX((int)angle) * mass_factor * modifier;
-        vy = Sprite::calcAngleMoveY((int)angle) * mass_factor * modifier;
-
-        playerShip->setVelocityX(playerShip->getVelocityX() + vx);
-        playerShip->setVelocityY(playerShip->getVelocityY() + vy);
-    } catch (std::exception e) {
-        g_game->fatalerror(e.what());
+        if (y1 < y2) {
+            g_game->gameState->player->posCombat.y -= bump;
+            other->setY(other->getY() + bump);
+        } else {
+            g_game->gameState->player->posCombat.y += bump;
+            other->setY(other->getY() - bump);
+        }
     }
+
+    // second, velocity affected by mass
+    double mass_factor = 1.0;
+    double modifier = 0.005;
+
+    // calculate mass ratio
+    if (player->getMass() > 0.0)
+        mass_factor = other->getMass() / (player->getMass());
+
+    double angle = other->getFaceAngle() - 90.0;
+    vx = Sprite::calcAngleMoveX((int)angle) * mass_factor * modifier;
+    vy = Sprite::calcAngleMoveY((int)angle) * mass_factor * modifier;
+
+    playerShip->setVelocityX(playerShip->getVelocityX() + vx);
+    playerShip->setVelocityY(playerShip->getVelocityY() + vy);
 }
 
 void
@@ -3119,7 +3115,7 @@ ModuleEncounter::createLaser(CombatObject *laser,
     double duration = g_game->getGlobalNumber("LASER_DURATION");
     double speed = g_game->getGlobalNumber("LASER_SPEED");
 
-    laser->setImage(resources[LASER_BEAM]);
+    laser->setImage(resources[I_LASER_BEAM]);
     laser->setTotalFrames(1); // was 4--too fast for animation
     laser->setAnimColumns(1); // was 4
     laser->setFrameWidth(16);
@@ -3161,7 +3157,7 @@ ModuleEncounter::createMissile(CombatObject *missile,
     double duration = g_game->getGlobalNumber("MISSILE_DURATION");
     double speed = g_game->getGlobalNumber("MISSILE_SPEED");
 
-    missile->setImage(resources[RED_BOLT]);
+    missile->setImage(resources[I_RED_BOLT]);
     missile->setTotalFrames(30);
     missile->setAnimColumns(10);
     missile->setFrameWidth(16);
@@ -3200,7 +3196,7 @@ ModuleEncounter::combatDoBigExplosion(CombatObject *victim) {
 
     // create explosion sprite
     CombatObject *exp = new CombatObject();
-    exp->setImage(resources[EXPLOSION_30_128]);
+    exp->setImage(resources[I_EXPLOSION_30_128]);
     exp->setAlpha(true);
     exp->setObjectType(OBJ_EXPLOSION);
     exp->setTotalFrames(30);
@@ -3235,7 +3231,7 @@ ModuleEncounter::combatDoMedExplosion(CombatObject *victim) {
 
     // create explosion sprite
     CombatObject *exp = new CombatObject();
-    exp->setImage(resources[EXPLOSION_30_64]);
+    exp->setImage(resources[I_EXPLOSION_30_64]);
     exp->setAlpha(true);
     exp->setObjectType(OBJ_EXPLOSION);
     exp->setTotalFrames(30);
@@ -3271,7 +3267,7 @@ ModuleEncounter::combatDoSmlExplosion(CombatObject *victim,
 
     // create explosion sprite
     CombatObject *exp = new CombatObject();
-    exp->setImage(resources[EXPLOSION_30_48]);
+    exp->setImage(resources[I_EXPLOSION_30_48]);
     exp->setAlpha(true);
     exp->setObjectType(OBJ_EXPLOSION);
     exp->setTotalFrames(30);
@@ -3309,7 +3305,7 @@ ModuleEncounter::combatDoBreakAsteroid(CombatObject *victim) {
 
         // create explosion sprite
         CombatObject *exp = new CombatObject();
-        exp->setImage(resources[SMLASTEROID]);
+        exp->setImage(resources[I_SMLASTEROID]);
         exp->setObjectType(21); // sub-asteroids
         exp->setAnimColumns(8);
         exp->setTotalFrames(64);
@@ -3344,7 +3340,7 @@ ModuleEncounter::combatDoPowerup(CombatObject *victim) {
     int r = Util::Random(1, 7);
     switch (r) {
     case 1: // health
-        pow->setImage(resources[POWERUP_HEALTH]);
+        pow->setImage(resources[I_POWERUP_HEALTH]);
         pow->setObjectType(OBJ_POWERUP_HEALTH);
         pow->setAlpha(true);
         pow->setTotalFrames(9);
@@ -3353,7 +3349,7 @@ ModuleEncounter::combatDoPowerup(CombatObject *victim) {
         pow->setFrameHeight(32);
         break;
     case 2: // shield
-        pow->setImage(resources[POWERUP_SHIELD]);
+        pow->setImage(resources[I_POWERUP_SHIELD]);
         pow->setObjectType(OBJ_POWERUP_SHIELD);
         pow->setAlpha(true);
         pow->setTotalFrames(9);
@@ -3362,7 +3358,7 @@ ModuleEncounter::combatDoPowerup(CombatObject *victim) {
         pow->setFrameHeight(32);
         break;
     case 3: // armor
-        pow->setImage(resources[POWERUP_ARMOR]);
+        pow->setImage(resources[I_POWERUP_ARMOR]);
         pow->setObjectType(OBJ_POWERUP_ARMOR);
         pow->setAlpha(true);
         pow->setTotalFrames(9);
@@ -3374,7 +3370,7 @@ ModuleEncounter::combatDoPowerup(CombatObject *victim) {
     case 5:
     case 6:
     case 7:
-        pow->setImage(resources[POWERUP_MINERAL]);
+        pow->setImage(resources[I_POWERUP_MINERAL]);
         (victim->getObjectType() == OBJ_ALIENSHIP)
             ? pow->setObjectType(OBJ_POWERUP_MINERAL_FROM_SHIP)
             : pow->setObjectType(OBJ_POWERUP_MINERAL_FROM_ASTEROID);

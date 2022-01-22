@@ -27,7 +27,7 @@
 --]]
 
 --include common encounter functions
-dofile("data/encounter/encounter_common.lua")
+L_LoadScript("data/encounter/encounter_common.lua")
 
 function SetPlayerTables()
 	playerStatement= {
@@ -1273,7 +1273,7 @@ function commFxn(type, n, ftest)
 --[[		elseif (n == --000) then
 			if (ship_----_class < max_----_class) then
 				goto_question = --005
-			else\
+			else
 				goto_question = --006
 			end
 			ATTITUDE = ATTITUDE + ---

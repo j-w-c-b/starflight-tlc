@@ -14,6 +14,6 @@ Major dependencies (included):
 It also depends on Allegro 5.2 (font, ttf, image, audio, acodec, dialog addons)
 
 It uses CMake to generate the build configuration, and has been built
-successfully on macos, ubuntu linux, and windows 10.
+successfully on macos, ubuntu linux, and windows 10 (using mingw32/msys).
 
 Feel free to edit.

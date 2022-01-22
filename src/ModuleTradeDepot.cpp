@@ -12,6 +12,7 @@
 
 #include <sstream>
 using namespace std;
+using namespace tradedepot_resources;
 
 #define PLAYERLIST_X 10
 #define PLAYERLIST_Y 240
@@ -149,18 +150,10 @@ ModuleTradeDepot::Init() {
     item_to_display = IT_INVALID;
     portrait_string = "";
 
-    for (int n = 0; n < 6; n++)
-        item_portrait[n] = NULL;
-    item_portrait[0] =
-        al_load_bitmap("data/tradedepot/T_AlienArtifact.tga"); // IT_ARTIFACT
-    item_portrait[2] =
-        al_load_bitmap("data/tradedepot/T_Gems.tga"); // IT_MINERAL
-    item_portrait[3] =
-        al_load_bitmap("data/tradedepot/T_Rabid_Vertruk.tga"); // IT_LIFEFORM
-    item_portrait[4] =
-        al_load_bitmap("data/tradedepot/T_Seeds.tga"); // IT_TRADEITEM
-
-    ALLEGRO_BITMAP *imgNormal, *imgMO;
+    m_item_portraits[IT_ARTIFACT] = m_resources[I_T_ALIENARTIFACT];
+    m_item_portraits[IT_MINERAL] = m_resources[I_T_GEMS];
+    m_item_portraits[IT_LIFEFORM] = m_resources[I_T_RABID_VERTRUK];
+    m_item_portraits[IT_TRADEITEM] = m_resources[I_T_SEEDS];
 
     // load the datafile
     if (!m_resources.load()) {
@@ -186,7 +179,7 @@ ModuleTradeDepot::Init() {
     m_depotItems.SetItemCount(44, Util::Random(1, 6) + 6); // silica
 
     // load gui images
-    m_background = m_resources[TRADEDEPOT_BACKGROUND];
+    m_background = m_resources[I_TRADEDEPOT_BACKGROUND];
 
     m_playerListValue = new ScrollBox::ScrollBox(
         g_game->font24,
@@ -333,10 +326,8 @@ ModuleTradeDepot::Init() {
     m_buyListValue->LinkBox(m_buyListNumItems);
 
     // create exit button
-    imgNormal = m_resources[GENERIC_EXIT_BTN_NORM];
-    imgMO = m_resources[GENERIC_EXIT_BTN_OVER];
-    m_exitBtn = new Button(imgNormal,
-                           imgMO,
+    m_exitBtn = new Button(m_resources[I_GENERIC_EXIT_BTN_NORM],
+                           m_resources[I_GENERIC_EXIT_BTN_OVER],
                            NULL,
                            EXITBTN_X,
                            EXITBTN_Y,
@@ -353,11 +344,8 @@ ModuleTradeDepot::Init() {
     m_modeBtnMap[m_exitBtn] = TM_TRADING;
 
     // create buy/sell button
-    imgNormal = m_resources[TRADEDEPOT_BTN];
-    imgMO = m_resources[TRADEDEPOT_BTN_MO];
-
-    m_sellbuyBtn = new Button(imgNormal,
-                              imgMO,
+    m_sellbuyBtn = new Button(m_resources[I_TRADEDEPOT_BTN],
+                              m_resources[I_TRADEDEPOT_BTN_MO],
                               NULL,
                               BUTTONS_X,
                               SELLBUYBTN_Y,
@@ -374,8 +362,8 @@ ModuleTradeDepot::Init() {
     m_modeBtnMap[m_sellbuyBtn] = TM_TRADING;
 
     // create confirm button
-    m_checkoutBtn = new Button(imgNormal,
-                               imgMO,
+    m_checkoutBtn = new Button(m_resources[I_TRADEDEPOT_BTN],
+                               m_resources[I_TRADEDEPOT_BTN_MO],
                                NULL,
                                BUTTONS_X,
                                CHECKOUTBTN_Y,
@@ -392,8 +380,8 @@ ModuleTradeDepot::Init() {
     m_modeBtnMap[m_checkoutBtn] = TM_TRADING;
 
     // create clear button
-    m_clearBtn = new Button(imgNormal,
-                            imgMO,
+    m_clearBtn = new Button(m_resources[I_TRADEDEPOT_BTN],
+                            m_resources[I_TRADEDEPOT_BTN_MO],
                             NULL,
                             BUTTONS_X,
                             CLEARBTN_Y,
@@ -409,14 +397,10 @@ ModuleTradeDepot::Init() {
     m_buttons[3] = m_clearBtn;
     m_modeBtnMap[m_clearBtn] = TM_TRADING;
 
-    // create shared filter buttons
-    imgNormal = m_resources[TRADEDEPOT_FILTERBTN];
-    imgMO = m_resources[TRADEDEPOT_FILTERBTN_MO];
-
     // create all button
     int x = FILTERBTN_START_X;
-    m_filterAllBtn = new Button(imgNormal,
-                                imgMO,
+    m_filterAllBtn = new Button(m_resources[I_TRADEDEPOT_FILTERBTN],
+                                m_resources[I_TRADEDEPOT_FILTERBTN_MO],
                                 NULL,
                                 x,
                                 FILTERBTN_Y,
@@ -435,8 +419,8 @@ ModuleTradeDepot::Init() {
 
     // create artifacts button
     x += FILTERBTN_DELTA_X;
-    m_filterArtifactBtn = new Button(imgNormal,
-                                     imgMO,
+    m_filterArtifactBtn = new Button(m_resources[I_TRADEDEPOT_FILTERBTN],
+                                     m_resources[I_TRADEDEPOT_FILTERBTN_MO],
                                      NULL,
                                      x,
                                      FILTERBTN_Y,
@@ -455,16 +439,17 @@ ModuleTradeDepot::Init() {
 
     // create spec goods button
     x += FILTERBTN_DELTA_X;
-    m_filterSpecialtyGoodBtn = new Button(imgNormal,
-                                          imgMO,
-                                          NULL,
-                                          x,
-                                          FILTERBTN_Y,
-                                          0,
-                                          FILTEREVENT_SPECIALTYGOOD,
-                                          g_game->font18,
-                                          "Spec Goods",
-                                          BTNTEXTCOLOR);
+    m_filterSpecialtyGoodBtn =
+        new Button(m_resources[I_TRADEDEPOT_FILTERBTN],
+                   m_resources[I_TRADEDEPOT_FILTERBTN_MO],
+                   NULL,
+                   x,
+                   FILTERBTN_Y,
+                   0,
+                   FILTEREVENT_SPECIALTYGOOD,
+                   g_game->font18,
+                   "Spec Goods",
+                   BTNTEXTCOLOR);
     if (m_filterSpecialtyGoodBtn == NULL)
         return false;
     if (!m_filterSpecialtyGoodBtn->IsInitialized())
@@ -475,8 +460,8 @@ ModuleTradeDepot::Init() {
 
     // create minerals button
     x += FILTERBTN_DELTA_X;
-    m_filterMineralBtn = new Button(imgNormal,
-                                    imgMO,
+    m_filterMineralBtn = new Button(m_resources[I_TRADEDEPOT_FILTERBTN],
+                                    m_resources[I_TRADEDEPOT_FILTERBTN_MO],
                                     NULL,
                                     x,
                                     FILTERBTN_Y,
@@ -495,8 +480,8 @@ ModuleTradeDepot::Init() {
 
     // create lifeforms button
     x += FILTERBTN_DELTA_X;
-    m_filterLifeformBtn = new Button(imgNormal,
-                                     imgMO,
+    m_filterLifeformBtn = new Button(m_resources[I_TRADEDEPOT_FILTERBTN],
+                                     m_resources[I_TRADEDEPOT_FILTERBTN_MO],
                                      NULL,
                                      x,
                                      FILTERBTN_Y,
@@ -515,8 +500,8 @@ ModuleTradeDepot::Init() {
 
     // create trade items button
     x += FILTERBTN_DELTA_X;
-    m_filterTradeItemBtn = new Button(imgNormal,
-                                      imgMO,
+    m_filterTradeItemBtn = new Button(m_resources[I_TRADEDEPOT_FILTERBTN],
+                                      m_resources[I_TRADEDEPOT_FILTERBTN_MO],
                                       NULL,
                                       x,
                                       FILTERBTN_Y,
@@ -535,8 +520,8 @@ ModuleTradeDepot::Init() {
 
     // create ship upgrades button
     x += FILTERBTN_DELTA_X;
-    m_filterShipUpgradeBtn = new Button(imgNormal,
-                                        imgMO,
+    m_filterShipUpgradeBtn = new Button(m_resources[I_TRADEDEPOT_FILTERBTN],
+                                        m_resources[I_TRADEDEPOT_FILTERBTN_MO],
                                         NULL,
                                         x,
                                         FILTERBTN_Y,
@@ -554,32 +539,24 @@ ModuleTradeDepot::Init() {
     m_modeBtnMap[m_filterShipUpgradeBtn] = TM_TRADING;
 
     // load quantity prompt ALLEGRO_BITMAP
-    m_promptBackground = m_resources[TRADEDEPOT_QUANTITY_PROMPT];
+    m_promptBackground = m_resources[I_TRADEDEPOT_QUANTITY_PROMPT];
 
     // create spinup buttons
-    imgNormal = m_resources[TRADEDEPOT_SPINUPBTN];
-    imgMO = m_resources[TRADEDEPOT_SPINUPBTN_MO];
-
-    m_spinUpBtn = new Button(imgNormal,
-                             imgMO,
+    m_spinUpBtn = new Button(m_resources[I_TRADEDEPOT_SPINUPBTN],
+                             m_resources[I_TRADEDEPOT_SPINUPBTN_MO],
                              NULL,
                              SPINUPBTN_X + PROMPTBG_X,
                              SPINUPBTN_Y + PROMPTBG_Y,
                              0,
                              BTNEVENT_SPINUP);
-    if (m_spinUpBtn == NULL)
-        return false;
     if (!m_spinUpBtn->IsInitialized())
         return false;
     m_buttons[11] = m_spinUpBtn;
     m_modeBtnMap[m_spinUpBtn] = TM_PROMPTING;
 
     // create spindown buttons
-    imgNormal = m_resources[TRADEDEPOT_SPINDOWNBTN];
-    imgMO = m_resources[TRADEDEPOT_SPINDOWNBTN_MO];
-
-    m_spinDownBtn = new Button(imgNormal,
-                               imgMO,
+    m_spinDownBtn = new Button(m_resources[I_TRADEDEPOT_SPINDOWNBTN],
+                               m_resources[I_TRADEDEPOT_SPINDOWNBTN_MO],
                                NULL,
                                SPINDOWNBTN_X + PROMPTBG_X,
                                SPINDOWNBTN_Y + PROMPTBG_Y,
@@ -592,13 +569,9 @@ ModuleTradeDepot::Init() {
     m_buttons[12] = m_spinDownBtn;
     m_modeBtnMap[m_spinDownBtn] = TM_PROMPTING;
 
-    // create shared prompt buttons
-    imgNormal = m_resources[TRADEDEPOT_PROMPTBTN];
-    imgMO = m_resources[TRADEDEPOT_PROMPTBTN_MO];
-
     // create all button
-    m_allBtn = new Button(imgNormal,
-                          imgMO,
+    m_allBtn = new Button(m_resources[I_TRADEDEPOT_PROMPTBTN],
+                          m_resources[I_TRADEDEPOT_PROMPTBTN_MO],
                           NULL,
                           ALLBTN_X + PROMPTBG_X,
                           ALLBTN_Y + PROMPTBG_Y,
@@ -615,8 +588,8 @@ ModuleTradeDepot::Init() {
     m_modeBtnMap[m_allBtn] = TM_PROMPTING;
 
     // create ok button
-    m_okBtn = new Button(imgNormal,
-                         imgMO,
+    m_okBtn = new Button(m_resources[I_TRADEDEPOT_PROMPTBTN],
+                         m_resources[I_TRADEDEPOT_PROMPTBTN_MO],
                          NULL,
                          OKBTN_X + PROMPTBG_X,
                          OKBTN_Y + PROMPTBG_Y,
@@ -633,8 +606,8 @@ ModuleTradeDepot::Init() {
     m_modeBtnMap[m_okBtn] = TM_PROMPTING;
 
     // create cancel button
-    m_cancelBtn = new Button(imgNormal,
-                             imgMO,
+    m_cancelBtn = new Button(m_resources[I_TRADEDEPOT_PROMPTBTN],
+                             m_resources[I_TRADEDEPOT_PROMPTBTN_MO],
                              NULL,
                              CANCELBTN_X + PROMPTBG_X,
                              CANCELBTN_Y + PROMPTBG_Y,
@@ -650,8 +623,8 @@ ModuleTradeDepot::Init() {
     m_buttons[15] = m_cancelBtn;
     m_modeBtnMap[m_cancelBtn] = TM_PROMPTING;
 
-    m_cursor[0] = m_resources[TRADEDEPOT_CURSOR0];
-    m_cursor[1] = m_resources[TRADEDEPOT_CURSOR1];
+    m_cursor[0] = m_resources[I_TRADEDEPOT_CURSOR0];
+    m_cursor[1] = m_resources[I_TRADEDEPOT_CURSOR1];
 
     m_sellTotal = 0;
     m_buyTotal = 0;
@@ -792,26 +765,14 @@ ModuleTradeDepot::Draw() {
     // case logic
     // 447,443
     if (portrait_string == "") {
-        switch (item_to_display) {
-        case IT_ARTIFACT:
-            al_draw_bitmap(item_portrait[0], 447, 443, 0);
-            break;
-        case IT_MINERAL:
-            al_draw_bitmap(item_portrait[2], 447, 443, 0);
-            break;
-        case IT_LIFEFORM:
-            al_draw_bitmap(item_portrait[3], 447, 443, 0);
-            break;
-        case IT_TRADEITEM:
-            al_draw_bitmap(item_portrait[4], 447, 443, 0);
-            break;
-        case IT_INVALID:
-        default:
-            break;
+        ALLEGRO_BITMAP *portrait = m_item_portraits[item_to_display];
+        if (portrait) {
+            al_draw_bitmap(portrait, 447, 443, 0);
         }
     } else {
         ALLEGRO_BITMAP *temp_bmp;
-        std::string temp_string = "data/tradedepot/" + portrait_string;
+        std::string temp_string =
+            Util::resource_path("data/tradedepot/" + portrait_string);
         temp_bmp = al_load_bitmap(temp_string.c_str());
         if (temp_bmp) {
             al_draw_bitmap(temp_bmp, 447, 443, 0);
@@ -825,49 +786,33 @@ ModuleTradeDepot::Draw() {
 
 void
 ModuleTradeDepot::Close() {
-    try {
-        if (m_playerListValue != NULL) {
-            delete m_playerListValue;
-            m_playerListValue = NULL;
-        }
-
-        if (m_sellListValue != NULL) {
-            delete m_sellListValue;
-            m_sellListValue = NULL;
-        }
-
-        if (m_depotListValue != NULL) {
-            delete m_depotListValue;
-            m_depotListValue = NULL;
-        }
-
-        if (m_buyListValue != NULL) {
-            delete m_buyListValue;
-            m_buyListValue = NULL;
-        }
-
-        for (int i = 0; i < TRADEDEPOT_NUMBUTTONS; i++) {
-            m_buttons[i]->Destroy();
-            delete m_buttons[i];
-            m_buttons[i] = NULL;
-        }
-
-        // bug fix: was only going to < 5
-        for (int i = 0; i < 6; i++) {
-            // new NULL setting in Init makes this work now
-            if (item_portrait[i]) {
-                al_destroy_bitmap(item_portrait[i]);
-                item_portrait[i] = NULL;
-            }
-        }
-
-        // unload the data file (thus freeing all resources at once)
-        m_resources.unload();
-    } catch (std::exception e) {
-        ALLEGRO_DEBUG("%s\n", e.what());
-    } catch (...) {
-        ALLEGRO_DEBUG("Unhandled exception in TradeDepot::Close\n");
+    if (m_playerListValue != NULL) {
+        delete m_playerListValue;
+        m_playerListValue = NULL;
     }
+
+    if (m_sellListValue != NULL) {
+        delete m_sellListValue;
+        m_sellListValue = NULL;
+    }
+
+    if (m_depotListValue != NULL) {
+        delete m_depotListValue;
+        m_depotListValue = NULL;
+    }
+
+    if (m_buyListValue != NULL) {
+        delete m_buyListValue;
+        m_buyListValue = NULL;
+    }
+
+    for (int i = 0; i < TRADEDEPOT_NUMBUTTONS; i++) {
+        m_buttons[i]->Destroy();
+        delete m_buttons[i];
+        m_buttons[i] = NULL;
+    }
+
+    m_resources.unload();
 }
 
 void

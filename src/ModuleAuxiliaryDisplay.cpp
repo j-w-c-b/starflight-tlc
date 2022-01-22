@@ -65,6 +65,7 @@
 #include "auxiliary_resources.h"
 
 using namespace std;
+using namespace auxiliary_resources;
 
 ALLEGRO_DEBUG_CHANNEL("ModuleAuxiliaryDisplay")
 
@@ -86,8 +87,6 @@ ModuleAuxiliaryDisplay::OnEvent(Event *event) {
 void
 ModuleAuxiliaryDisplay::Close() {
     delete scroller;
-
-    al_destroy_bitmap(img_aux);
 
     resources.unload();
 }
@@ -118,24 +117,23 @@ ModuleAuxiliaryDisplay::Init() {
     ash = (int)g_game->getGlobalNumber("AUX_SCREEN_HEIGHT");
 
     // load the aux gui
-    img_aux = al_load_bitmap("data/spacetravel/gui_aux.bmp");
+    img_aux = resources[I_GUI_AUX];
     if (!img_aux) {
         g_game->message("Aux: Error loading gui_aux");
         return false;
     }
-    al_convert_mask_to_alpha(img_aux, MASK_COLOR);
 
     // load ship status icon
     ship_icon_image = NULL;
     switch (g_game->gameState->getProfession()) {
     case PROFESSION_FREELANCE:
-        ship_icon_image = resources[AUX_ICON_FREELANCE];
+        ship_icon_image = resources[I_AUX_ICON_FREELANCE];
         break;
     case PROFESSION_MILITARY:
-        ship_icon_image = resources[AUX_ICON_MILITARY];
+        ship_icon_image = resources[I_AUX_ICON_MILITARY];
         break;
     case PROFESSION_SCIENTIFIC:
-        ship_icon_image = resources[AUX_ICON_SCIENCE];
+        ship_icon_image = resources[I_AUX_ICON_SCIENCE];
         break;
 
     default:
@@ -167,7 +165,7 @@ ModuleAuxiliaryDisplay::updateCargoFillPercent() {
 // The mini-scroller displayed in the navigator's aux display
 void
 ModuleAuxiliaryDisplay::init_nav() {
-    TileSet ts(resources[IS_TILES_SMALL], 16, 16, 5, 2);
+    TileSet ts(resources[I_IS_TILES_SMALL], 16, 16, 5, 2);
     // center of the viewport minus 1/2 the tile width
     Point2D tile_offset((80.0 - 8) / 2, (75.0 - 8) / 2);
     scroller = new TileScroller(ts, 250, 220, 80, 75, tile_offset);

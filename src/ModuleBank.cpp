@@ -9,6 +9,8 @@
 #include "QuestMgr.h"
 #include "bank_resources.h"
 
+using namespace bank_resources;
+
 ALLEGRO_DEBUG_CHANNEL("ModuleBank")
 
 const int EVENT_TAKE = 101;
@@ -157,8 +159,8 @@ ModuleBank::init_buttons() {
     ALLEGRO_BITMAP *imgNorm, *imgOver, *imgDis;
     g_game->audioSystem->Load("data/cantina/buttonclick.ogg", "click");
 
-    imgNorm = resources[BANK_BUTTON_EXIT];
-    imgOver = resources[BANK_BUTTON_EXIT_HOVER];
+    imgNorm = resources[I_BANK_BUTTON_EXIT];
+    imgOver = resources[I_BANK_BUTTON_EXIT_HOVER];
     exit_button = new Button( // exit button
         imgNorm,
         imgOver,
@@ -179,8 +181,8 @@ ModuleBank::init_buttons() {
         return false;
     }
 
-    imgNorm = resources[BANK_BUTTON_HELP];
-    imgOver = resources[BANK_BUTTON_HELP_HOVER];
+    imgNorm = resources[I_BANK_BUTTON_HELP];
+    imgOver = resources[I_BANK_BUTTON_HELP_HOVER];
     help_button = new Button( // help button
         imgNorm,
         imgOver,
@@ -201,8 +203,8 @@ ModuleBank::init_buttons() {
         return false;
     }
 
-    imgNorm = resources[BANK_BUTTON_CONFIRM_NORMAL];
-    imgOver = resources[BANK_BUTTON_CONFIRM_HOVER];
+    imgNorm = resources[I_BANK_BUTTON_CONFIRM_NORMAL];
+    imgOver = resources[I_BANK_BUTTON_CONFIRM_HOVER];
     confirm_button = new Button( // confirm button
         imgNorm,
         imgOver,
@@ -223,8 +225,8 @@ ModuleBank::init_buttons() {
         return false;
     }
 
-    imgNorm = resources[BANK_BUTTON_PAY_NORMAL];
-    imgOver = resources[BANK_BUTTON_PAY_HOVER];
+    imgNorm = resources[I_BANK_BUTTON_PAY_NORMAL];
+    imgOver = resources[I_BANK_BUTTON_PAY_HOVER];
     pay_button = new Button( // pay button
         imgNorm,
         imgOver,
@@ -245,8 +247,8 @@ ModuleBank::init_buttons() {
         return false;
     }
 
-    imgNorm = resources[BANK_BUTTON_TAKE_NORMAL];
-    imgOver = resources[BANK_BUTTON_TAKE_HOVER];
+    imgNorm = resources[I_BANK_BUTTON_TAKE_NORMAL];
+    imgOver = resources[I_BANK_BUTTON_TAKE_HOVER];
     take_button = new Button( // take button
         imgNorm,
         imgOver,
@@ -267,9 +269,9 @@ ModuleBank::init_buttons() {
         return false;
     }
 
-    imgNorm = resources[BANK_CALC_BUTTON_NORMAL];
-    imgOver = resources[BANK_CALC_BUTTON_HOVER];
-    imgDis = resources[BANK_CALC_BUTTON_DEACTIVATE];
+    imgNorm = resources[I_BANK_CALC_BUTTON_NORMAL];
+    imgOver = resources[I_BANK_CALC_BUTTON_HOVER];
+    imgDis = resources[I_BANK_CALC_BUTTON_DEACTIVATE];
     calc_buttons[0] = new Button(imgNorm,
                                  imgOver,
                                  imgDis,
@@ -453,7 +455,7 @@ ModuleBank::Draw() {
     { // help window
         if (b_help_visible) {
             al_draw_bitmap(
-                resources[BANK_HELP_WINDOW], HELP_WINDOW_X, HELP_WINDOW_Y, 0);
+                resources[I_BANK_HELP_WINDOW], HELP_WINDOW_X, HELP_WINDOW_Y, 0);
             m_help_window->Draw(g_game->GetBackBuffer());
         }
     }
@@ -461,8 +463,8 @@ ModuleBank::Draw() {
 
 void
 ModuleBank::render_images() {
-    al_draw_bitmap(resources[BANK_BACKGROUND], 0, 0, 0);
-    al_draw_bitmap(resources[BANK_BANNER],
+    al_draw_bitmap(resources[I_BANK_BACKGROUND], 0, 0, 0);
+    al_draw_bitmap(resources[I_BANK_BANNER],
                    BANK_BANNER_X,
                    BANK_BANNER_Y,
                    0); // render background
@@ -967,45 +969,39 @@ ModuleBank::Close() {
     ALLEGRO_DEBUG("ModuleBank Closing\n");
     Module::Close();
 
-    try {
-        if (m_help_window != NULL) {
-            delete m_help_window;
-            m_help_window = NULL;
-        }
-        if (exit_button != NULL) {
-            exit_button->Destroy();
-            exit_button = NULL;
-        }
-        if (help_button != NULL) {
-            help_button->Destroy();
-            help_button = NULL;
-        }
-        if (confirm_button != NULL) {
-            confirm_button->Destroy();
-            confirm_button = NULL;
-        }
-        if (pay_button != NULL) {
-            pay_button->Destroy();
-            pay_button = NULL;
-        }
-        if (take_button != NULL) {
-            take_button->Destroy();
-            take_button = NULL;
-        }
-        for (int i = 0; i < NUM_CALC_BUTTONS; i++) {
-            if (calc_buttons[i] != NULL) {
-                calc_buttons[i]->Destroy();
-                calc_buttons[i] = NULL;
-            }
-        }
-
-        // unload the data file
-        resources.unload();
-    } catch (std::exception e) {
-        ALLEGRO_DEBUG("%s\n", e.what());
-    } catch (...) {
-        ALLEGRO_DEBUG("Unhandled exception in Bank::Close\n");
+    if (m_help_window != NULL) {
+        delete m_help_window;
+        m_help_window = NULL;
     }
+    if (exit_button != NULL) {
+        exit_button->Destroy();
+        exit_button = NULL;
+    }
+    if (help_button != NULL) {
+        help_button->Destroy();
+        help_button = NULL;
+    }
+    if (confirm_button != NULL) {
+        confirm_button->Destroy();
+        confirm_button = NULL;
+    }
+    if (pay_button != NULL) {
+        pay_button->Destroy();
+        pay_button = NULL;
+    }
+    if (take_button != NULL) {
+        take_button->Destroy();
+        take_button = NULL;
+    }
+    for (int i = 0; i < NUM_CALC_BUTTONS; i++) {
+        if (calc_buttons[i] != NULL) {
+            calc_buttons[i]->Destroy();
+            calc_buttons[i] = NULL;
+        }
+    }
+
+    // unload the data file
+    resources.unload();
 }
 
 bool

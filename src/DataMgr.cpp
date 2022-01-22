@@ -649,22 +649,15 @@ DataMgr::GetPlanetByID(ID id) {
 
 string
 DataMgr::GetRandMixedName() {
-    try {
-        if (humanNames.size() == 0) {
-            g_game->message("ERROR: The human names data has not been loaded.");
-            return "<Error>";
-        }
-
-        int randomID = Util::Random(0, (int)humanNames.size() - 1);
-        int randomID2 = Util::Random(0, (int)humanNames.size() - 1);
-
-        return *humanNames[randomID]->first + " " +
-               *humanNames[randomID2]->second;
-    } catch (...) {
+    if (humanNames.size() == 0) {
         g_game->message("ERROR: The human names data has not been loaded.");
-        return "<error>";
+        return "<Error>";
     }
-    return "<Error>";
+
+    int randomID = Util::Random(0, (int)humanNames.size() - 1);
+    int randomID2 = Util::Random(0, (int)humanNames.size() - 1);
+
+    return *humanNames[randomID]->first + " " + *humanNames[randomID2]->second;
 }
 
 bool
@@ -688,10 +681,11 @@ DataMgr::Initialize() {
 
 bool
 DataMgr::LoadItems() {
+    string xml_file = Util::resource_path(ITEMS_FILE);
 
     // open the strfltitems.xml file
+    TiXmlDocument doc(xml_file);
 
-    TiXmlDocument doc(ITEMS_FILE);
     if (!doc.LoadFile())
         return false;
 
@@ -809,8 +803,9 @@ DataMgr::LoadItems() {
 
 bool
 DataMgr::LoadGalaxy() {
+    string xml_file = Util::resource_path(GALAXY_FILE);
+    TiXmlDocument doc(xml_file);
 
-    TiXmlDocument doc(GALAXY_FILE);
     if (!doc.LoadFile())
         return false;
 
@@ -1069,7 +1064,10 @@ DataMgr::LoadGalaxy() {
 
 bool
 DataMgr::LoadHumanNames() {
-    TiXmlDocument doc(HUMANNAMES_FILE);
+    string xml_file = Util::resource_path(HUMANNAMES_FILE);
+
+    TiXmlDocument doc(xml_file);
+
     if (!doc.LoadFile())
         return false;
 

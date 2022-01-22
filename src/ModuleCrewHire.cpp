@@ -18,6 +18,7 @@
 #include "crewhire_resources.h"
 
 using namespace std;
+using namespace crewhire_resources;
 
 ALLEGRO_DEBUG_CHANNEL("ModuleCrewHire")
 
@@ -95,11 +96,10 @@ ALLEGRO_DEBUG_CHANNEL("ModuleCrewHire")
 
 ModuleCrewHire::ModuleCrewHire(void)
     : lastEmployeeSpawn(-1), title(NULL), slogan(NULL), directions(NULL),
-      hiremoreDirections(NULL), stats(NULL), m_background(NULL),
-      m_miniSkills(NULL), m_exitBtn(NULL), m_hireBtn(NULL), m_hiremoreBtn(NULL),
-      m_fireBtn(NULL), m_unassignBtn(NULL), m_backBtn(NULL),
-      selectedOfficer(NULL), unassignedCrew(NULL), unemployeed(NULL),
-      unemployeedType(NULL), resources(CREWHIRE_IMAGES) {
+      hiremoreDirections(NULL), stats(NULL), m_exitBtn(NULL), m_hireBtn(NULL),
+      m_hiremoreBtn(NULL), m_fireBtn(NULL), m_unassignBtn(NULL),
+      m_backBtn(NULL), selectedOfficer(NULL), unassignedCrew(NULL),
+      unemployeed(NULL), unemployeedType(NULL), resources(CREWHIRE_IMAGES) {
 
     for (int i = 0; i < 8; ++i)
         m_PositionBtns[i] = NULL;
@@ -833,12 +833,9 @@ ModuleCrewHire::Init() {
                                AVAILABLE_TEXT_COLOR);
     }
 
-    // load the background
-    m_background = resources[PERSONEL_BACKGROUND];
-
     // Create escape button for the module
-    btnNorm = resources[GENERIC_EXIT_BTN_NORM];
-    btnOver = resources[GENERIC_EXIT_BTN_OVER];
+    btnNorm = resources[I_GENERIC_EXIT_BTN_NORM];
+    btnOver = resources[I_GENERIC_EXIT_BTN_OVER];
     m_exitBtn = new Button(btnNorm,
                            btnOver,
                            NULL,
@@ -873,9 +870,9 @@ ModuleCrewHire::Init() {
         return false;
 
     // Create and initialize the HireMore button for the module
-    btnNorm = resources[PERSONEL_BTN2];
-    btnOver = resources[PERSONEL_BTN2_HOV];
-    btnDis = resources[PERSONEL_BTN2_DIS];
+    btnNorm = resources[I_PERSONEL_BTN2];
+    btnOver = resources[I_PERSONEL_BTN2_HOV];
+    btnDis = resources[I_PERSONEL_BTN2_DIS];
     m_hiremoreBtn = new Button(btnNorm,
                                btnOver,
                                btnDis,
@@ -893,9 +890,9 @@ ModuleCrewHire::Init() {
         return false;
 
     // Create and initialize the Hire button for the module
-    btnNorm = resources[PERSONEL_BTN];
-    btnOver = resources[PERSONEL_BTN_HOV];
-    btnDis = resources[PERSONEL_BTN_DIS];
+    btnNorm = resources[I_PERSONEL_BTN];
+    btnOver = resources[I_PERSONEL_BTN_HOV];
+    btnDis = resources[I_PERSONEL_BTN_DIS];
     m_hireBtn = new Button(btnNorm,
                            btnOver,
                            btnDis,
@@ -946,13 +943,13 @@ ModuleCrewHire::Init() {
     if (!m_unassignBtn->IsInitialized())
         return false;
 
-    ALLEGRO_BITMAP *blackIcons = resources[ICONS_SMALL];
-    ALLEGRO_BITMAP *greenIcons = resources[ICONS_SMALL_GREEN];
-    ALLEGRO_BITMAP *redIcons = resources[ICONS_SMALL_RED];
+    ALLEGRO_BITMAP *blackIcons = resources[I_ICONS_SMALL];
+    ALLEGRO_BITMAP *greenIcons = resources[I_ICONS_SMALL_GREEN];
+    ALLEGRO_BITMAP *redIcons = resources[I_ICONS_SMALL_RED];
 
-    btnNorm = resources[PERSONEL_CATBTN];
-    btnOver = resources[PERSONEL_CATBTN_HOV];
-    btnDis = resources[PERSONEL_CATBTN_DIS];
+    btnNorm = resources[I_PERSONEL_CATBTN];
+    btnOver = resources[I_PERSONEL_CATBTN_HOV];
+    btnDis = resources[I_PERSONEL_CATBTN_DIS];
 
     // create crew buttons
     char positions[8][20] = {"- Captain - ",
@@ -1021,13 +1018,6 @@ ModuleCrewHire::Init() {
             g_game->font24, al_map_rgb(0, 255, 255), 35, 4, 0, positions[i]);
     }
 
-    m_miniSkills = al_load_bitmap("data/crewhire/personel_miniPositions.bmp");
-    if (!m_miniSkills) {
-        g_game->message("CrewHire: Error loading personel_miniPositions");
-        return false;
-    }
-    al_convert_mask_to_alpha(m_miniSkills, MASK_COLOR);
-
     // tell questmgr that Personnel event has occurred
     g_game->questMgr->raiseEvent(18);
 
@@ -1042,7 +1032,7 @@ ModuleCrewHire::Update() {
 void
 ModuleCrewHire::Draw() {
     al_set_target_bitmap(g_game->GetBackBuffer());
-    al_draw_bitmap(m_background, 0, 0, 0);
+    al_draw_bitmap(resources[I_PERSONEL_BACKGROUND], 0, 0, 0);
 
     switch (currentScreen) {
     case PERSONEL_SCREEN:
@@ -1215,7 +1205,8 @@ ModuleCrewHire::DrawOfficerInfo(Officer *officer) {
                                         "learning",
                                         "durability"};
 
-    al_draw_bitmap(m_miniSkills, SKILLICONS_X, SKILLICONS_Y, 0);
+    al_draw_bitmap(
+        resources[I_PERSONEL_MINIPOSITIONS], SKILLICONS_X, SKILLICONS_Y, 0);
 
     stats->Draw(g_game->GetBackBuffer());
 

@@ -14,6 +14,7 @@
 #include "ModeMgr.h"
 #include "Module.h"
 #include "PauseMenu.h"
+#include "Util.h"
 
 using namespace std;
 
@@ -28,39 +29,33 @@ ModeMgr::ModeMgr(Game * /* game*/)
 
 ModeMgr::~ModeMgr() {
     ALLEGRO_DEBUG("[DESTROYING MODULES]\n");
-    try {
-        map<string, Mode *>::iterator i;
-        i = m_modes.begin();
+    map<string, Mode *>::iterator i;
+    i = m_modes.begin();
 
-        bool isOperationsRoom,
-            operationsRoomDeleted =
-                false; // needed!! (cannot delete same object 3x)
-        while (i != m_modes.end()) {
-            if (i->first.length() > 0) {
-                if ((strcmp(i->first.c_str(), "CANTINA") == 0) ||
-                    (strcmp(i->first.c_str(), "RESEARCHLAB") == 0) ||
-                    (strcmp(i->first.c_str(), "MILITARYOPS") == 0))
-                    isOperationsRoom = true;
-                else
-                    isOperationsRoom = false;
+    bool isOperationsRoom,
+        operationsRoomDeleted =
+            false; // needed!! (cannot delete same object 3x)
+    while (i != m_modes.end()) {
+        if (i->first.length() > 0) {
+            if ((strcmp(i->first.c_str(), "CANTINA") == 0) ||
+                (strcmp(i->first.c_str(), "RESEARCHLAB") == 0) ||
+                (strcmp(i->first.c_str(), "MILITARYOPS") == 0))
+                isOperationsRoom = true;
+            else
+                isOperationsRoom = false;
 
-                if ((!isOperationsRoom) || (!operationsRoomDeleted)) {
-                    if (isOperationsRoom)
-                        operationsRoomDeleted = true;
-                    ALLEGRO_DEBUG("  Destroying %s\n", i->first.c_str());
-                    delete i->second;
-                } else {
-                    ALLEGRO_DEBUG("  Module %s was previously deleted (object "
-                                  "assigned 3x)\n",
-                                  i->first.c_str());
-                }
+            if ((!isOperationsRoom) || (!operationsRoomDeleted)) {
+                if (isOperationsRoom)
+                    operationsRoomDeleted = true;
+                ALLEGRO_DEBUG("  Destroying %s\n", i->first.c_str());
+                delete i->second;
+            } else {
+                ALLEGRO_DEBUG("  Module %s was previously deleted (object "
+                              "assigned 3x)\n",
+                              i->first.c_str());
             }
-            ++i;
         }
-    } catch (std::exception e) {
-        ALLEGRO_DEBUG("%s\n", e.what());
-    } catch (...) {
-        ALLEGRO_DEBUG("Unhandled exception in ~ModeMgr\n");
+        ++i;
     }
 }
 
@@ -69,7 +64,8 @@ ModeMgr::AddMode(const string &modeName,
                  Module *rootModule,
                  const string &musicPath) {
     if (musicPath.compare("") != 0) {
-        ALLEGRO_FS_ENTRY *entry = al_create_fs_entry(musicPath.c_str());
+        ALLEGRO_FS_ENTRY *entry =
+            al_create_fs_entry(Util::resource_path(musicPath).c_str());
         if (!al_fs_entry_exists(entry)) {
             std::string error = "ModeMgr::AddMode: [ERROR] file " + musicPath +
                                 " does not exist";

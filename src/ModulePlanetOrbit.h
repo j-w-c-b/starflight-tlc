@@ -11,6 +11,7 @@
 #include "AudioSystem.h"
 #include "DataMgr.h"
 #include "Module.h"
+#include "ResourceManager.h"
 #include "ScrollBox.h"
 #include "TexturedSphere.h"
 #include <allegro5/allegro.h>
@@ -23,7 +24,6 @@ class ModulePlanetOrbit : public Module {
 
     bool CreatePlanetTexture();
 
-    ALLEGRO_BITMAP *background;
     std::shared_ptr<Sample> audio_scan;
 
     // shortcuts to crew last names to simplify code
@@ -39,7 +39,14 @@ class ModulePlanetOrbit : public Module {
     int gui_viewer_x;
     int gui_viewer_y;
     int gui_viewer_dir;
+    int starid;
+    int planetid;
+    int planetRadius;
+    int lightmapOffsetX, lightmapOffsetY;
+    bool flag_DoDock;
+    double planetRotationSpeed, planetRotation;
     bool gui_viewer_sliding;
+    ALLEGRO_BITMAP *planet_topography, *planet_scanner_map, *planet_texture;
 
     int planetScan;
     int planetAnalysis;
@@ -50,6 +57,7 @@ class ModulePlanetOrbit : public Module {
     ALLEGRO_BITMAP *lightmap_overlay;
 
     TexturedSphere *texsphere;
+    ResourceManager<ALLEGRO_BITMAP> m_resources;
 
   public:
     ModulePlanetOrbit(void);

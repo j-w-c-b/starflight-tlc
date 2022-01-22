@@ -24,6 +24,8 @@
 #include "cargohold_resources.h"
 #include <sstream>
 
+using namespace cargohold_resources;
+
 // gui elements positioning, fonts settings...
 #define PLAYERLIST_X 108
 #define PLAYERLIST_Y 52
@@ -88,12 +90,12 @@ ModuleCargoWindow::Init() {
         return false;
     }
 
-    img_viewer = m_resources[GUI_VIEWER];
+    img_viewer = m_resources[I_GUI_VIEWER];
 
     // jettison button
     ALLEGRO_BITMAP *btnNorm, *btnOver;
-    btnNorm = m_resources[CARGO_BTN];
-    btnOver = m_resources[CARGO_BTN_MO];
+    btnNorm = m_resources[I_CARGO_BTN];
+    btnOver = m_resources[I_CARGO_BTN_MO];
 
     m_jettisonButton = new Button(btnNorm,
                                   btnOver,

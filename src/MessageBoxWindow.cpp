@@ -4,13 +4,10 @@
 #include "Game.h"
 #include "Label.h"
 #include "ModeMgr.h"
+#include "gui_resources.h"
 
 using namespace std;
-
-ALLEGRO_BITMAP *MessageBoxWindow::bg = NULL;
-ALLEGRO_BITMAP *MessageBoxWindow::bar = NULL;
-Button *MessageBoxWindow::button1 = NULL;
-Button *MessageBoxWindow::button2 = NULL;
+using namespace gui_resources;
 
 MessageBoxWindow::MessageBoxWindow(const string &initheading,
                                    const string &initText,
@@ -22,19 +19,11 @@ MessageBoxWindow::MessageBoxWindow(const string &initheading,
                                    bool initCentered)
     : heading(initheading), text(initText), x(initX), y(initY),
       width(initWidth), height(initHeight), textColor(initTextColor),
-      centered(initCentered), visible(true) {
-    if (bg == NULL)
-        bg = al_load_bitmap("data/gui/trans_bg.tga");
+      centered(initCentered), visible(true), m_resources(GUI_IMAGES) {
 
-    if (bar == NULL) {
-        bar = al_load_bitmap("data/gui/messagebox_bar.bmp");
-        al_convert_mask_to_alpha(bar, MASK_COLOR);
-    }
-
-    if (button1 == NULL) {
-        button1 = new Button("data/gui/generic_exit_btn_norm.bmp",
-                             "data/gui/generic_exit_btn_over.bmp",
-                             "data/gui/generic_exit_btn_over.bmp",
+    m_ok_button = new Button(m_resources[I_GENERIC_EXIT_BTN_NORM],
+                             m_resources[I_GENERIC_EXIT_BTN_OVER],
+                             m_resources[I_GENERIC_EXIT_BTN_OVER],
                              x,
                              y,
                              EVENT_MOUSEOVER,
@@ -42,13 +31,12 @@ MessageBoxWindow::MessageBoxWindow(const string &initheading,
                              g_game->font24,
                              "Ok",
                              WHITE);
-    }
 
     int top = y - height / 2;
 
     if (centered) {
-        button1->SetX(x - button1->GetWidth() / 2);
-        button1->SetY((y + height / 2) - (button1->GetHeight() + 7));
+        m_ok_button->SetX(x - m_ok_button->GetWidth() / 2);
+        m_ok_button->SetY((y + height / 2) - (m_ok_button->GetHeight() + 7));
         labelText = new Label(text,
                               (x - width / 2) + 20,
                               top + 60,
@@ -64,8 +52,8 @@ MessageBoxWindow::MessageBoxWindow(const string &initheading,
                                  initTextColor,
                                  g_game->font20);
     } else {
-        button1->SetX((x + width / 2) - (button1->GetWidth() / 2));
-        button1->SetY((y + height) - (button1->GetHeight() + 7));
+        m_ok_button->SetX((x + width / 2) - (m_ok_button->GetWidth() / 2));
+        m_ok_button->SetY((y + height) - (m_ok_button->GetHeight() + 7));
         labelText = new Label(text,
                               x + 20,
                               y + 30,
@@ -148,11 +136,8 @@ bool
 MessageBoxWindow::OnMouseMove(int x, int y) {
     bool result = false;
 
-    if (button1)
-        result = button1->OnMouseMove(x, y);
-
-    if (button2 && !result)
-        result = button2->OnMouseMove(x, y);
+    if (m_ok_button)
+        result = m_ok_button->OnMouseMove(x, y);
 
     return result;
 }
@@ -160,11 +145,8 @@ bool
 MessageBoxWindow::OnMouseReleased(int button, int x, int y) {
     bool result = false;
 
-    if (button1)
-        result = button1->OnMouseReleased(button, x, y);
-
-    if (button2 && !result)
-        result = button2->OnMouseReleased(button, x, y);
+    if (m_ok_button)
+        result = m_ok_button->OnMouseReleased(button, x, y);
 
     return result;
 }
@@ -173,11 +155,8 @@ bool
 MessageBoxWindow::OnMouseClick(int /*button*/, int x, int y) {
     bool result = false;
 
-    if (button1)
-        result = button1->PtInBtn(x, y);
-
-    if (button2 && !result)
-        result = button2->PtInBtn(x, y);
+    if (m_ok_button)
+        result = m_ok_button->PtInBtn(x, y);
 
     return result;
 }
@@ -186,11 +165,8 @@ bool
 MessageBoxWindow::OnMousePressed(int /*button*/, int x, int y) {
     bool result = false;
 
-    if (button1)
-        result = button1->PtInBtn(x, y);
-
-    if (button2 && !result)
-        result = button2->PtInBtn(x, y);
+    if (m_ok_button)
+        result = m_ok_button->PtInBtn(x, y);
 
     return result;
 }
@@ -226,11 +202,11 @@ MessageBoxWindow::Draw() {
 
     ALLEGRO_BITMAP *temp = al_create_bitmap(width, height);
     al_set_target_bitmap(temp);
-    al_draw_scaled_bitmap(bg,
+    al_draw_scaled_bitmap(m_resources[I_TRANS_BG],
                           0,
                           0,
-                          al_get_bitmap_width(bg),
-                          al_get_bitmap_height(bg),
+                          al_get_bitmap_width(m_resources[I_TRANS_BG]),
+                          al_get_bitmap_height(m_resources[I_TRANS_BG]),
                           0,
                           0,
                           width,
@@ -239,33 +215,32 @@ MessageBoxWindow::Draw() {
     al_set_target_bitmap(backBuffer);
     al_draw_bitmap(temp, left, top, 0);
 
-    if (button1)
-        button1->Run(backBuffer);
-    if (button2)
-        button2->Run(backBuffer);
+    if (m_ok_button)
+        m_ok_button->Run(backBuffer);
 
     al_set_target_bitmap(backBuffer);
-    al_draw_scaled_bitmap(bar,
+    al_draw_scaled_bitmap(m_resources[I_MESSAGEBOX_BAR],
                           0,
                           0,
-                          al_get_bitmap_width(bar),
-                          al_get_bitmap_height(bar),
+                          al_get_bitmap_width(m_resources[I_MESSAGEBOX_BAR]),
+                          al_get_bitmap_height(m_resources[I_MESSAGEBOX_BAR]),
                           left,
                           top,
                           al_get_bitmap_width(temp),
-                          al_get_bitmap_height(bar),
+                          al_get_bitmap_height(m_resources[I_MESSAGEBOX_BAR]),
                           0);
-    al_draw_scaled_bitmap(bar,
-                          0,
-                          0,
-                          al_get_bitmap_width(bar),
-                          al_get_bitmap_height(bar),
-                          left,
-                          top + al_get_bitmap_height(temp) -
-                              al_get_bitmap_height(bar),
-                          al_get_bitmap_width(temp),
-                          al_get_bitmap_height(bar),
-                          0);
+    al_draw_scaled_bitmap(
+        m_resources[I_MESSAGEBOX_BAR],
+        0,
+        0,
+        al_get_bitmap_width(m_resources[I_MESSAGEBOX_BAR]),
+        al_get_bitmap_height(m_resources[I_MESSAGEBOX_BAR]),
+        left,
+        top + al_get_bitmap_height(temp) -
+            al_get_bitmap_height(m_resources[I_MESSAGEBOX_BAR]),
+        al_get_bitmap_width(temp),
+        al_get_bitmap_height(m_resources[I_MESSAGEBOX_BAR]),
+        0);
 
     al_destroy_bitmap(temp);
 
