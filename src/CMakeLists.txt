@@ -286,7 +286,6 @@ set_source_files_properties(${ICON_PATH} PROPERTIES MACOSX_PACKAGE_LOCATION Reso
 set_source_files_properties(
     ${TOPLEVEL_DATA} PROPERTIES MACOSX_PACKAGE_LOCATION Resources/data/
 )
-install(TARGETS ${APP_NAME} BUNDLE DESTINATION bin)
 
 # Use pkgconfig to find the allegro libraries and headers, and add them to
 # our build. For macos, we include them in the application bundle
@@ -308,20 +307,21 @@ foreach (pkg ${allegro_pkgs})
 
     pkg_check_modules(${pkg_prefix} REQUIRED IMPORTED_TARGET GLOBAL "${pkg}-5>=5.2")
     add_library(${pkg} ALIAS "PkgConfig::${pkg_prefix}")
-    LIST(APPEND ALLEGRO_PKG_LIBRARIES ${${pkg_prefix}_LINK_LIBRARIES})
+    LIST(APPEND ALLEGRO_LIBRARY_DIRS ${${pkg_prefix}_LIBRARY_DIRS})
     target_include_directories(lib${APP_NAME} PRIVATE ${${pkg_prefix}_INCLUDE_DIRS})
 endforeach()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES Darwin)
-    add_custom_command(
-        TARGET ${APP_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy 
-        $<TARGET_FILE:lua>
-        $<TARGET_FILE:noise>
-        ${ALLEGRO_PKG_LIBRARIES}
-        "${CMAKE_CURRENT_BINARY_DIR}/${APP_NAME}.app/Contents/MacOS/"
-    )
     set_directory_properties(PROPERTIES ADDITIONAL_CLEAN_FILES "${APP_NAME}.app")
+    install(TARGETS ${APP_NAME} BUNDLE DESTINATION .)
+    install(CODE "
+            include(BundleUtilities)
+            fixup_bundle(\"\${CMAKE_INSTALL_PREFIX}/${APP_NAME}.app\" \"\" \"${ALLEGRO_LIBRARY_DIRS}\")
+            ")
+
+    set(CPACK_PACKAGE_EXECUTABLES "${CMAKE_INSTALL_PREFIX}/${APP_NAME}.app;Starflight - The Lost Colony")
+    set(CPACK_PACKAGE_ICON "${ICON_PATH}")
+    include(CPack)
 else()
     add_custom_command(
         TARGET ${APP_NAME} POST_BUILD
