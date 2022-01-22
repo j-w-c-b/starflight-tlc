@@ -115,6 +115,17 @@ class Util {
 
     // converts a string to all upper case
     static std::string ToUpper(std::string &str);
+
+    static std::string
+    resource_path(const std::string &relative_path) {
+        static ALLEGRO_PATH *data_dir =
+            al_get_standard_path(ALLEGRO_RESOURCES_PATH);
+        ALLEGRO_PATH *resource = al_create_path(relative_path.c_str());
+        al_rebase_path(data_dir, resource);
+        std::string res = al_path_cstr(resource, ALLEGRO_NATIVE_PATH_SEP);
+        al_destroy_path(resource);
+        return res;
+    }
 };
 
 class Rect {

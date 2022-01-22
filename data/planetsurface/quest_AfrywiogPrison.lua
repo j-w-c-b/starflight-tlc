@@ -4,7 +4,7 @@
 
 function AfrywiogPrisonInitialize( )
 
-	L_LoadImage("data\\planetsurface\\B_Metropolis.tga")
+	L_LoadImage("data/planetsurface/B_Metropolis.tga")
 
 	L_SetColHalfWidth(40)
 	L_SetColHalfHeight(40)

@@ -40,7 +40,7 @@ class ModuleTradeDepot : public Module {
     ItemType item_to_display;
 
     // bug fix: needs 0-5, was capped at 5
-    ALLEGRO_BITMAP *item_portrait[6];
+    std::map<ItemType, ALLEGRO_BITMAP *> m_item_portraits;
     std::string portrait_string;
 
     typedef enum

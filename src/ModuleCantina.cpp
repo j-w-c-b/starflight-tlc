@@ -18,6 +18,7 @@
 #include "cantina_resources.h"
 
 using namespace std;
+using namespace cantina_resources;
 
 ALLEGRO_DEBUG_CHANNEL("ModuleCantina")
 
@@ -93,23 +94,15 @@ ModuleCantina::OnEvent(Event *event) {
 
 void
 ModuleCantina::Close() {
-    try {
-        if (m_exitBtn != NULL) {
-            delete m_exitBtn;
-            m_exitBtn = NULL;
-        }
-        if (m_turninBtn != NULL) {
-            delete m_turninBtn;
-            m_turninBtn = NULL;
-        }
-
-        // unload the data file (thus freeing all resources at once)
-        resources.unload();
-    } catch (std::exception e) {
-        ALLEGRO_DEBUG("%s\n", e.what());
-    } catch (...) {
-        ALLEGRO_DEBUG("Unhandled exception in TitleScreen::Close\n");
+    if (m_exitBtn != NULL) {
+        delete m_exitBtn;
+        m_exitBtn = NULL;
     }
+    if (m_turninBtn != NULL) {
+        delete m_turninBtn;
+        m_turninBtn = NULL;
+    }
+    resources.unload();
 }
 
 bool
@@ -129,8 +122,8 @@ ModuleCantina::Init() {
     // Create and initialize the ESC button for the module
     ALLEGRO_BITMAP *btnNorm, *btnOver, *btnDis;
 
-    btnNorm = resources[CANTINA_EXIT_BTN_NORM];
-    btnOver = resources[CANTINA_EXIT_BTN_OVER];
+    btnNorm = resources[I_CANTINA_EXIT_BTN_NORM];
+    btnOver = resources[I_CANTINA_EXIT_BTN_OVER];
     m_exitBtn = new Button(btnNorm,
                            btnOver,
                            NULL,
@@ -148,9 +141,9 @@ ModuleCantina::Init() {
         return false;
 
     // load button images
-    btnNorm = resources[CANTINA_BTN];
-    btnOver = resources[CANTINA_BTN_HOV];
-    btnDis = resources[CANTINA_BTN_DIS];
+    btnNorm = resources[I_CANTINA_BTN];
+    btnOver = resources[I_CANTINA_BTN_HOV];
+    btnDis = resources[I_CANTINA_BTN_DIS];
 
     // Create and initialize the TURNIN button for the module
     m_turninBtn = new Button(btnNorm,
@@ -173,7 +166,7 @@ ModuleCantina::Init() {
     // Load the background image based on profession
     switch (g_game->gameState->getProfession()) {
     case PROFESSION_SCIENTIFIC:
-        m_background = resources[RESEARCHLAB_BACKGROUND];
+        m_background = resources[I_RESEARCHLAB_BACKGROUND];
         m_turninBtn->SetButtonText("Breakthrough!");
         m_exitBtn->SetButtonText("Terminate");
         label1 = "PROJECT TITLE";
@@ -183,7 +176,7 @@ ModuleCantina::Init() {
         textcolor = DODGERBLUE;
         break;
     case PROFESSION_MILITARY:
-        m_background = resources[MILITARYOPS_BACKGROUND];
+        m_background = resources[I_MILITARYOPS_BACKGROUND];
         m_turninBtn->SetButtonText("Accomplished!");
         m_exitBtn->SetButtonText("Dismissed");
         label1 = "MISSION CODENAME";
@@ -193,7 +186,7 @@ ModuleCantina::Init() {
         textcolor = DKORANGE;
         break;
     default:
-        m_background = resources[CANTINA_BACKGROUND];
+        m_background = resources[I_CANTINA_BACKGROUND];
         m_turninBtn->SetButtonText("Pay Up!");
         m_exitBtn->SetButtonText("Scram");
         label1 = "JOB NAME";

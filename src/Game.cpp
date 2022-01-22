@@ -121,14 +121,6 @@ Game::Game() {
 }
 
 Game::~Game() {
-    // delete messagebox globals
-    al_destroy_bitmap(MessageBoxWindow::bg);
-    al_destroy_bitmap(MessageBoxWindow::bar);
-    if (MessageBoxWindow::button1 != NULL)
-        delete MessageBoxWindow::button1;
-    if (MessageBoxWindow::button2 != NULL)
-        delete MessageBoxWindow::button2;
-
     // destroy the ScrollBox queue
     messages.clear();
 
@@ -168,14 +160,9 @@ Game::fatalerror(const std::string &error) {
 
 void
 Game::shutdown() {
-    try {
-        ALLEGRO_DEBUG("[shutting down]");
-        g_game->modeMgr->CloseCurrentModule();
-        this->Stop();
-    } catch (...) {
-        // throw an error up to main.cpp
-        throw "serious problem in shutdown";
-    }
+    ALLEGRO_DEBUG("[shutting down]");
+    g_game->modeMgr->CloseCurrentModule();
+    Stop();
 }
 
 void
@@ -530,12 +517,13 @@ ValidatePortraits() {
         }
         case IT_ARTIFACT: {
             doCheck = true;
-            filepath = "data/tradedepot/" + item->portrait;
+            filepath = Util::resource_path("data/tradedepot/" + item->portrait);
             break;
         }
         case IT_RUIN: {
             doCheck = true;
-            filepath = "data/planetsurface/" + item->portrait;
+            filepath =
+                Util::resource_path("data/planetsurface/" + item->portrait);
             break;
         }
         case IT_MINERAL:
@@ -548,7 +536,7 @@ ValidatePortraits() {
         }
         case IT_TRADEITEM: {
             doCheck = true;
-            filepath = "data/tradedepot/" + item->portrait;
+            filepath = Util::resource_path("data/tradedepot/" + item->portrait);
             break;
         }
         default: {
@@ -579,6 +567,12 @@ ValidatePortraits() {
 
 void
 Game::Run() {
+    ALLEGRO_DEBUG("Firing up Allegro...\n");
+    if (!al_init()) {
+        fatalerror("Error during game initialization\n");
+        return;
+    }
+
     // validate scripts
     ALLEGRO_DEBUG("Validating Lua scripts...\n");
     if (!ValidateScripts(p_title)) {
@@ -826,12 +820,6 @@ Game::InitGame() {
     p_version = getGlobalString("GAME_VERSION");
     ALLEGRO_DEBUG("%s v%s\n", p_title.c_str(), p_version.c_str());
 
-    ALLEGRO_DEBUG("Firing up Allegro...\n");
-    if (!al_init()) {
-        g_game->message("Error initializing allegro runtime");
-        return false;
-    }
-
     ALLEGRO_DEBUG("Firing up Alfont...\n");
     if (!al_init_font_addon()) {
         g_game->message("Error initializing font system");
@@ -898,7 +886,7 @@ Game::InitGame() {
     al_register_event_source(m_event_queue, &m_user_event_source);
 
     // load up default fonts
-    string fontfile = "data/gui/Xolonium-Regular.ttf";
+    string fontfile = Util::resource_path("data/gui/Xolonium-Regular.ttf");
     ALLEGRO_DEBUG("Creating default fonts...\n");
     font10 = al_load_font(fontfile.c_str(), 10, 0);
     if (font10 == NULL) {

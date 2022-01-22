@@ -17,6 +17,7 @@
 #include <allegro5/allegro.h>
 
 using namespace std;
+using namespace messagegui_resources;
 
 int gmx, gmy, gmw, gmh, gsx, gsy;
 
@@ -34,8 +35,8 @@ ModuleMessageGUI::Init() {
     }
 
     // load the gauges gui
-    img_message = resources[GUI_MESSAGEWINDOW];
-    img_socket = resources[GUI_SOCKET];
+    img_message = resources[I_GUI_MESSAGEWINDOW];
+    img_socket = resources[I_GUI_SOCKET];
 
     gmx = (int)g_game->getGlobalNumber("GUI_MESSAGE_POS_X");
     gmy = (int)g_game->getGlobalNumber("GUI_MESSAGE_POS_Y");
@@ -49,13 +50,7 @@ ModuleMessageGUI::Init() {
 
 void
 ModuleMessageGUI::Close() {
-    try {
-        resources.unload();
-    } catch (std::exception e) {
-        ALLEGRO_DEBUG("%s\n", e.what());
-    } catch (...) {
-        ALLEGRO_DEBUG("Unhandled exception in ModuleMessageGUI::Close\n");
-    }
+    resources.unload();
 }
 
 void

@@ -117,14 +117,13 @@ PlanetSurfaceObject::load(const char *filename) {
         graphics.find(filename);
 
     if (it == graphics.end()) {
-        this->image = al_load_bitmap(filename);
+        this->image = al_load_bitmap(Util::resource_path(filename).c_str());
         if (!this->image) {
             std::string msg = "Error loading sprite file ";
             msg += filename;
             g_game->message(msg);
             return 0;
         }
-        this->image = al_load_bitmap(filename);
         al_convert_mask_to_alpha(image, MASK_COLOR);
         graphics[filename] = image;
     } else {

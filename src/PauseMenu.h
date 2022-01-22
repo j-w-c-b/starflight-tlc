@@ -2,7 +2,8 @@
 #include <allegro5/allegro.h>
 #include <string>
 
-class Button;
+#include "Button.h"
+#include "ResourceManager.h"
 
 class PauseMenu {
   public:
@@ -34,13 +35,12 @@ class PauseMenu {
     void Update();
     void Draw();
 
-    static Button *button1;
-    static Button *button2;
-    static Button *button3;
-    static Button *button4;
-    static ALLEGRO_BITMAP *bg;
-
   private:
+    Button *m_save_button;
+    Button *m_load_button;
+    Button *m_quit_button;
+    Button *m_return_button;
+    ResourceManager<ALLEGRO_BITMAP> m_resources;
     bool display;
     bool enabled;
 

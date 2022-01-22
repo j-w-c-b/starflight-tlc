@@ -23,17 +23,17 @@ class Script {
     Script();
     virtual ~Script();
 
-    bool load(std::string scriptfile);
+    bool load(const std::string &scriptfile);
 
-    std::string getGlobalString(std::string name);
-    void setGlobalString(std::string name, std::string value);
+    std::string getGlobalString(const std::string &name);
+    void setGlobalString(const std::string &name, const std::string &value);
 
-    double getGlobalNumber(std::string name);
-    void setGlobalNumber(std::string name, double value);
+    double getGlobalNumber(const std::string &name);
+    void setGlobalNumber(const std::string &name, double value);
 
-    bool getGlobalBoolean(std::string name);
+    bool getGlobalBoolean(const std::string &name);
 
-    bool runFunction(std::string name);
+    bool runFunction(const std::string &name);
 
     std::string errorMessage;
     lua_State *

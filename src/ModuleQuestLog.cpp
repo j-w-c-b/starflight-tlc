@@ -17,6 +17,7 @@
 #include <allegro5/allegro.h>
 
 using namespace std;
+using namespace questviewer_resources;
 
 #define VIEWER_MOVE_RATE 16
 
@@ -53,13 +54,7 @@ ModuleQuestLog::OnEvent(Event *event) {
 
 void
 ModuleQuestLog::Close() {
-    try {
-        resources.unload();
-    } catch (std::exception e) {
-        ALLEGRO_DEBUG("%s\n", e.what());
-    } catch (...) {
-        ALLEGRO_DEBUG("Unhandled exception in QuestLog::Close\n");
-    }
+    resources.unload();
 }
 
 bool
@@ -99,7 +94,7 @@ ModuleQuestLog::Init() {
     questDesc->Refresh();
 
     // load window GUI
-    window = resources[QUEST_VIEWER];
+    window = resources[I_QUEST_VIEWER];
 
     return true;
 }

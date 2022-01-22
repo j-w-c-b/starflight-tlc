@@ -20,6 +20,7 @@
 #include "medical_resources.h"
 
 using namespace std;
+using namespace medical_resources;
 
 int gvl = 0, gvr = 0;                // global viewer right and left
 const int RIGHT_TARGET_OFFSET = 600; // SCREEN_WIDTH - 436;
@@ -296,26 +297,26 @@ ModuleMedical::Init() {
         return false;
     }
 
-    img_left_viewer2 = resources[GUI_VIEWER_RIGHT];
-    img_right_viewer = resources[GUI_VIEWER_RIGHT];
-    img_right_bg = resources[RIGHT_VIEWER_BG];
-    img_left_viewer = resources[GUI_VIEWER];
+    img_left_viewer2 = resources[I_GUI_VIEWER_RIGHT];
+    img_right_viewer = resources[I_GUI_VIEWER_RIGHT];
+    img_right_bg = resources[I_RIGHT_VIEWER_BG];
+    img_left_viewer = resources[I_GUI_VIEWER];
 
-    img_left_bg = resources[MED_WINDOW_DATA];
-    img_health_bar = resources[MED_BAR_HEALTH];
-    img_science_bar = resources[MED_BAR_SCIENCE];
-    img_nav_bar = resources[MED_BAR_NAVIGATION];
-    img_medical_bar = resources[MED_BAR_MEDICAL];
-    img_engineer_bar = resources[MED_BAR_ENGINEER];
-    img_dur_bar = resources[MED_BAR_DURABILITY];
-    img_learn_bar = resources[MED_BAR_LEARN];
-    img_comm_bar = resources[MED_BAR_COMMUNICATION];
-    img_tac_bar = resources[MED_BAR_TACTICAL];
+    img_left_bg = resources[I_MED_WINDOW_DATA];
+    img_health_bar = resources[I_MED_BAR_HEALTH];
+    img_science_bar = resources[I_MED_BAR_SCIENCE];
+    img_nav_bar = resources[I_MED_BAR_NAVIGATION];
+    img_medical_bar = resources[I_MED_BAR_MEDICAL];
+    img_engineer_bar = resources[I_MED_BAR_ENGINEER];
+    img_dur_bar = resources[I_MED_BAR_DURABILITY];
+    img_learn_bar = resources[I_MED_BAR_LEARN];
+    img_comm_bar = resources[I_MED_BAR_COMMUNICATION];
+    img_tac_bar = resources[I_MED_BAR_TACTICAL];
 
     // load crew button images
-    img_button_crew = resources[MEDICAL_CAPTBTN];
-    img_button_crew_hov = resources[MEDICAL_CAPTBTN_HOV];
-    img_button_crew_dis = resources[MEDICAL_CAPTBTN_DIS];
+    img_button_crew = resources[I_MEDICAL_CAPTBTN];
+    img_button_crew_hov = resources[I_MEDICAL_CAPTBTN_HOV];
+    img_button_crew_dis = resources[I_MEDICAL_CAPTBTN_DIS];
 
     for (int i = 0; i < 7; i++) {
         // Create and initialize the crew buttons
@@ -356,9 +357,9 @@ ModuleMedical::Init() {
                                   g_game->gameState->officerDoc->name);
 
     // load plus button images
-    img_treat = resources[BTN_NORM];
-    img_treat_hov = resources[BTN_HOV];
-    img_treat_hov = resources[BTN_DIS];
+    img_treat = resources[I_BTN_NORM];
+    img_treat_hov = resources[I_BTN_HOV];
+    img_treat_hov = resources[I_BTN_DIS];
 
     // Create and initialize the heal buttons
     // they share the same location but are unique for each crew to make events
@@ -389,27 +390,18 @@ ModuleMedical::Init() {
 void
 ModuleMedical::Close() {
     ALLEGRO_DEBUG("*** ModuleMedical::Close()\n");
+    resources.unload();
 
-    try {
-
-        resources.unload();
-
-        for (int i = 0; i < 7; i++) {
-            delete OfficerBtns[i];
-            OfficerBtns[i] = NULL;
-        }
-
-        for (int i = 0; i < 7; i++) {
-            delete HealBtns[i];
-            HealBtns[i] = NULL;
-        }
-        selected_officer = NULL;
-
-    } catch (std::exception e) {
-        ALLEGRO_DEBUG("%s\n", e.what());
-    } catch (...) {
-        ALLEGRO_DEBUG("Unhandled exception in ModuleMedical::Close\n");
+    for (int i = 0; i < 7; i++) {
+        delete OfficerBtns[i];
+        OfficerBtns[i] = NULL;
     }
+
+    for (int i = 0; i < 7; i++) {
+        delete HealBtns[i];
+        HealBtns[i] = NULL;
+    }
+    selected_officer = NULL;
 }
 
 void

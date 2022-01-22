@@ -1,4 +1,5 @@
 #pragma once
+#include "ResourceManager.h"
 #include <allegro5/allegro.h>
 #include <string>
 
@@ -43,12 +44,9 @@ class MessageBoxWindow {
     void Update();
     void Draw();
 
-    static Button *button1;
-    static Button *button2;
-    static ALLEGRO_BITMAP *bg;
-    static ALLEGRO_BITMAP *bar;
-
   private:
+    Button *m_ok_button;
+
     std::string heading;
     std::string text;
     int x;
@@ -60,4 +58,5 @@ class MessageBoxWindow {
     bool visible;
     Label *labelText;
     Label *labelHeading;
+    ResourceManager<ALLEGRO_BITMAP> m_resources;
 };

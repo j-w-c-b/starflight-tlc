@@ -4,7 +4,7 @@
 
 function MilitaryOutpostInitialize( )
 
-	L_LoadImage("data\\planetsurface\\B_WeaponsPlacement.tga")
+	L_LoadImage("data/planetsurface/B_WeaponsPlacement.tga")
 
 	L_SetColHalfWidth(40)
 	L_SetColHalfHeight(40)

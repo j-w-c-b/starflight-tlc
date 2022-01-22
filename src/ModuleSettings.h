@@ -6,6 +6,7 @@
 #include "GameState.h"
 #include "ModeMgr.h"
 #include "Module.h"
+#include "ResourceManager.h"
 #include "Stardate.h"
 #include <allegro5/allegro.h>
 
@@ -32,11 +33,11 @@ class ModuleSettings : public Module {
     bool SaveConfigurationFile();
 
   private:
-    ALLEGRO_BITMAP *background;
     Button *btn_exit, *btn_fullscreen, *btn_controls[11], *btn_defaults,
         *btn_save;
 
     ScrollBox::ScrollBox *resScrollbox;
     std::string chosenResolution;
     int cmd_selected, button_selected;
+    ResourceManager<ALLEGRO_BITMAP> m_resources;
 };

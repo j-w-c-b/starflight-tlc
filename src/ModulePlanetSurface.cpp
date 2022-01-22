@@ -58,6 +58,7 @@
 #include "planetsurface_resources.h"
 
 using namespace std;
+using namespace planetsurface_resources;
 
 ALLEGRO_DEBUG_CHANNEL("ModulePlanetSurface")
 
@@ -495,99 +496,88 @@ void
 ModulePlanetSurface::Close() {
     ALLEGRO_DEBUG("PlanetSurface Destroy\n");
 
-    try {
+    // unload the data file (thus freeing all resources at once)
+    resources.unload();
 
-        al_destroy_bitmap(img_aux);
-        al_destroy_bitmap(img_control);
+    PlanetSurfaceObject::EmptyGraphics();
 
-        // unload the data file (thus freeing all resources at once)
-        resources.unload();
-
-        PlanetSurfaceObject::EmptyGraphics();
-
-        if (messages != NULL) {
-            delete messages;
-            messages = NULL;
-        }
-
-        if (BigBtns[0] != NULL) {
-            delete BigBtns[0];
-            BigBtns[0] = NULL;
-        }
-        if (BigBtns[1] != NULL) {
-            delete BigBtns[1];
-            BigBtns[1] = NULL;
-        }
-        if (cargoBtn != NULL) {
-            delete cargoBtn;
-            cargoBtn = NULL;
-        }
-
-        for (portraitsIt = portraits.begin(); portraitsIt != portraits.end();
-             ++portraitsIt) {
-            al_destroy_bitmap(portraitsIt->second);
-            portraitsIt->second = NULL;
-        }
-        portraits.clear();
-
-        if (LuaVM != NULL) {
-            lua_close(LuaVM);
-        }
-
-        if (playerTV != NULL) {
-            delete playerTV;
-            playerTV = NULL;
-        }
-
-        if (playerShip != NULL) {
-            delete playerShip;
-            playerShip = NULL;
-        }
-
-        if (cinematicShip != NULL) {
-            delete cinematicShip;
-            cinematicShip = NULL;
-        }
-
-        if (scroller != NULL) {
-            delete scroller;
-            scroller = NULL;
-        }
-
-        for (objectIt = surfaceObjects.begin();
-             objectIt != surfaceObjects.end();
-             ++objectIt) {
-            delete *objectIt;
-            *objectIt = NULL;
-        }
-        surfaceObjects.clear();
-
-        for (int i = 0; i < 9; ++i) {
-            delete Btns[i];
-            Btns[i] = NULL;
-        }
-
-        if (label != NULL) {
-            delete label;
-            label = NULL;
-        }
-
-        // force the looping sound effects to stop
-        if (g_game->audioSystem->SampleExists("TVmove"))
-            g_game->audioSystem->Stop("TVmove");
-        if (g_game->audioSystem->SampleExists("damagedTV"))
-            g_game->audioSystem->Stop("damagedTV");
-        if (g_game->audioSystem->SampleExists("scanning"))
-            g_game->audioSystem->Stop("scanning");
-        if (g_game->audioSystem->SampleExists("pickuplifeform"))
-            g_game->audioSystem->Stop("pickuplifeform");
-        if (g_game->audioSystem->SampleExists("mining"))
-            g_game->audioSystem->Stop("mining");
-    } catch (std::exception e) {
-        ALLEGRO_DEBUG("%s\n", e.what());
-    } catch (...) {
-        ALLEGRO_DEBUG("Unhandled exception in PlanetSurface::Close\n");
+    if (messages != NULL) {
+        delete messages;
+        messages = NULL;
     }
+
+    if (BigBtns[0] != NULL) {
+        delete BigBtns[0];
+        BigBtns[0] = NULL;
+    }
+    if (BigBtns[1] != NULL) {
+        delete BigBtns[1];
+        BigBtns[1] = NULL;
+    }
+    if (cargoBtn != NULL) {
+        delete cargoBtn;
+        cargoBtn = NULL;
+    }
+
+    for (portraitsIt = portraits.begin(); portraitsIt != portraits.end();
+         ++portraitsIt) {
+        al_destroy_bitmap(portraitsIt->second);
+        portraitsIt->second = NULL;
+    }
+    portraits.clear();
+
+    if (LuaVM != NULL) {
+        lua_close(LuaVM);
+    }
+
+    if (playerTV != NULL) {
+        delete playerTV;
+        playerTV = NULL;
+    }
+
+    if (playerShip != NULL) {
+        delete playerShip;
+        playerShip = NULL;
+    }
+
+    if (cinematicShip != NULL) {
+        delete cinematicShip;
+        cinematicShip = NULL;
+    }
+
+    if (scroller != NULL) {
+        delete scroller;
+        scroller = NULL;
+    }
+
+    for (objectIt = surfaceObjects.begin(); objectIt != surfaceObjects.end();
+         ++objectIt) {
+        delete *objectIt;
+        *objectIt = NULL;
+    }
+    surfaceObjects.clear();
+
+    for (int i = 0; i < 9; ++i) {
+        delete Btns[i];
+        Btns[i] = NULL;
+    }
+
+    if (label != NULL) {
+        delete label;
+        label = NULL;
+    }
+
+    // force the looping sound effects to stop
+    if (g_game->audioSystem->SampleExists("TVmove"))
+        g_game->audioSystem->Stop("TVmove");
+    if (g_game->audioSystem->SampleExists("damagedTV"))
+        g_game->audioSystem->Stop("damagedTV");
+    if (g_game->audioSystem->SampleExists("scanning"))
+        g_game->audioSystem->Stop("scanning");
+    if (g_game->audioSystem->SampleExists("pickuplifeform"))
+        g_game->audioSystem->Stop("pickuplifeform");
+    if (g_game->audioSystem->SampleExists("mining"))
+        g_game->audioSystem->Stop("mining");
 }
 
 // Init is a good place to load resources
@@ -715,70 +705,61 @@ ModulePlanetSurface::Init() {
     al_draw_filled_rectangle(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1, BLACK);
 
     // load the message gui
-    img_messages = resources[GUI_MESSAGEWINDOW];
+    img_messages = resources[I_GUI_MESSAGEWINDOW];
 
     // load the socket gui
-    img_socket = resources[GUI_SOCKET];
+    img_socket = resources[I_GUI_SOCKET];
 
     // load the gauges gui
-    img_gauges = resources[GUI_GAUGES];
+    img_gauges = resources[I_GUI_GAUGES];
 
     // load the aux gui
-    img_aux = al_load_bitmap("data/spacetravel/gui_aux.bmp");
-    if (!img_aux) {
-        g_game->message("Planet: Error loading gui_aux");
-        return false;
-    }
+    img_aux = resources[I_GUI_AUX];
     al_convert_mask_to_alpha(img_aux, MASK_COLOR);
 
     // load the control gui
-    img_control = al_load_bitmap("data/controlpanel/gui_controlpanel.bmp");
-    if (!img_control) {
-        g_game->message("Planet: Error loading gui_controlpanel");
-        return false;
-    }
-    al_convert_mask_to_alpha(img_control, MASK_COLOR);
+    img_control = resources[I_GUI_CONTROLPANEL];
 
     // load the static
-    Static = resources[STATIC];
+    Static = resources[I_STATIC];
 
     // load the fuel graphic
-    Fuel = resources[FUEL_BAR];
+    Fuel = resources[I_FUEL_BAR];
 
     // load the fuel graphic
-    FuelBar = resources[ELEMENT_GAUGE_ORANGE];
+    FuelBar = resources[I_ELEMENT_GAUGE_ORANGE];
 
     // load the armor graphic
-    Armor = resources[ARMOR_BAR];
+    Armor = resources[I_ARMOR_BAR];
 
     // load the armor graphic
-    ArmorBar = resources[ELEMENT_GAUGE_RED];
+    ArmorBar = resources[I_ELEMENT_GAUGE_RED];
 
     // load the hull graphic
-    Hull = resources[HULL_BAR];
+    Hull = resources[I_HULL_BAR];
 
     // load the hull graphic
-    HullBar = resources[ELEMENT_GAUGE_GREEN];
+    HullBar = resources[I_ELEMENT_GAUGE_GREEN];
 
     // load timer bar fill
-    Timer_BarFill = resources[ELEMENT_BIGGAUGE_YELLOW];
+    Timer_BarFill = resources[I_ELEMENT_BIGGAUGE_YELLOW];
 
     // load timer bar empty
-    Timer_BarEmpty = resources[ELEMENT_BIGGAUGE_EMPTY];
+    Timer_BarEmpty = resources[I_ELEMENT_BIGGAUGE_EMPTY];
 
     // load lifeforms HP bar
-    HP_Bar = resources[ELEMENT_SMALLGAUGE_GREEN];
+    HP_Bar = resources[I_ELEMENT_SMALLGAUGE_GREEN];
 
     // create the label for the timer
     TimerText =
         new Label("", TIMERTEXT_X, TIMERTEXT_Y, 247, 19, BLACK, g_game->font18);
 
     // Load Cargo Images
-    Cargo = resources[CARGO_BAR];
+    Cargo = resources[I_CARGO_BAR];
 
-    CargoMouseOver = resources[CARGO_BAR_MO];
+    CargoMouseOver = resources[I_CARGO_BAR_MO];
 
-    Cargo_BarFill = resources[ELEMENT_GAUGE_PURPLE];
+    Cargo_BarFill = resources[I_ELEMENT_GAUGE_PURPLE];
 
     // create the ScrollBox for message window
     static int gmx = (int)g_game->getGlobalNumber("GUI_MESSAGE_POS_X");
@@ -830,10 +811,10 @@ ModulePlanetSurface::Init() {
     label->Refresh();
 
     // Load command btn images
-    btnNormal = resources[COMMAND_BUTTON_BG];
-    btnDisabled = resources[COMMAND_BUTTON_BG_DISABLED];
-    btnMouseOver = resources[COMMAND_BUTTON_BG_MO];
-    btnSelect = resources[COMMAND_BUTTON_BG_SELECT];
+    btnNormal = resources[I_COMMAND_BUTTON_BG];
+    btnDisabled = resources[I_COMMAND_BUTTON_BG_DISABLED];
+    btnMouseOver = resources[I_COMMAND_BUTTON_BG_MO];
+    btnSelect = resources[I_COMMAND_BUTTON_BG_SELECT];
 
     // Create command btns
     int cbx = CMDBUTTONS_UL_X;
@@ -942,10 +923,10 @@ ModulePlanetSurface::Init() {
                          BLACK);
 
     // Load big command btn images
-    btnBigNormal = resources[COMMAND_BIGBUTTON_BG];
-    btnBigDisabled = resources[COMMAND_BIGBUTTON_BG_DISABLED];
-    btnBigMouseOver = resources[COMMAND_BIGBUTTON_BG_MO];
-    btnBigSelect = resources[COMMAND_BIGBUTTON_BG_SELECT];
+    btnBigNormal = resources[I_COMMAND_BIGBUTTON_BG];
+    btnBigDisabled = resources[I_COMMAND_BIGBUTTON_BG_DISABLED];
+    btnBigMouseOver = resources[I_COMMAND_BIGBUTTON_BG_MO];
+    btnBigSelect = resources[I_COMMAND_BIGBUTTON_BG_SELECT];
 
     BigBtns[0] = new Button(btnBigNormal,
                             btnBigMouseOver,
@@ -1174,7 +1155,7 @@ ModulePlanetSurface::fabTilemap() {
 
     ostringstream os;
     os << "data/planetorbit/planet_" << randomness << "_500.bmp";
-    std::string planetTextureFilename = os.str();
+    std::string planetTextureFilename = Util::resource_path(os.str());
 
     // fill tilemap based on planet surface image
     surface = al_load_bitmap(planetTextureFilename.c_str());
@@ -1251,11 +1232,11 @@ ModulePlanetSurface::fabAsteroid() {
     ALLEGRO_BITMAP *mem_bmp = al_clone_bitmap(surface);
     al_set_new_bitmap_flags(new_bitmap_flags);
 
-    scroller->LoadTileSet(resources[TILESET_ASH], 16);              // 0
-    scroller->LoadTileSet(resources[TILESET_ROCK_LIGHT], 16);       // 1
-    scroller->LoadTileSet(resources[TILESET_ICE], 16);              // 2
-    scroller->LoadTileSet(resources[TILESET_ROCK_DARK], 16, false); // 3
-    scroller->LoadTileSet(resources[TILESET_STARS], 16, false);     // 4
+    scroller->LoadTileSet(resources[I_TILESET_ASH], 16);              // 0
+    scroller->LoadTileSet(resources[I_TILESET_ROCK_LIGHT], 16);       // 1
+    scroller->LoadTileSet(resources[I_TILESET_ICE], 16);              // 2
+    scroller->LoadTileSet(resources[I_TILESET_ROCK_DARK], 16, false); // 3
+    scroller->LoadTileSet(resources[I_TILESET_STARS], 16, false);     // 4
 
     if (!scroller->CreateScrollBuffer(SCREEN_WIDTH, 640)) {
         g_game->message("PlanetSurface: Error creating scroll buffer");
@@ -1296,7 +1277,9 @@ ModulePlanetSurface::fabAsteroid() {
     }
     scroller->GenerateTiles();
 
-    luaL_dofile(LuaVM, "data/planetsurface/PopAsteriod.lua");
+    luaL_dofile(
+        LuaVM,
+        Util::resource_path("data/planetsurface/PopAsteriod.lua").c_str());
 
     al_destroy_bitmap(mem_bmp);
     return true;
@@ -1308,10 +1291,10 @@ ModulePlanetSurface::fabRocky() {
     al_set_new_bitmap_flags(ALLEGRO_MEMORY_BITMAP);
     ALLEGRO_BITMAP *mem_bmp = al_clone_bitmap(surface);
     al_set_new_bitmap_flags(new_bitmap_flags);
-    scroller->LoadTileSet(resources[TILESET_ROCK_DARK], 16, false); // 0
-    scroller->LoadTileSet(resources[TILESET_ROCK_LIGHT], 16);       // 1
-    scroller->LoadTileSet(resources[TILESET_DIRT], 16);             // 2
-    scroller->LoadTileSet(resources[TILESET_DESERT], 16);           // 3
+    scroller->LoadTileSet(resources[I_TILESET_ROCK_DARK], 16, false); // 0
+    scroller->LoadTileSet(resources[I_TILESET_ROCK_LIGHT], 16);       // 1
+    scroller->LoadTileSet(resources[I_TILESET_DIRT], 16);             // 2
+    scroller->LoadTileSet(resources[I_TILESET_DESERT], 16);           // 3
 
     if (!scroller->CreateScrollBuffer(SCREEN_WIDTH, 640)) {
         g_game->message("PlanetSurface: Error creating scroll buffer");
@@ -1370,7 +1353,9 @@ ModulePlanetSurface::fabRocky() {
     }
     scroller->GenerateTiles();
 
-    luaL_dofile(LuaVM, "data/planetsurface/PopRockyPlanet.lua");
+    luaL_dofile(
+        LuaVM,
+        Util::resource_path("data/planetsurface/PopRockyPlanet.lua").c_str());
 
     al_destroy_bitmap(mem_bmp);
     return true;
@@ -1383,10 +1368,10 @@ ModulePlanetSurface::fabFrozen() {
     ALLEGRO_BITMAP *mem_bmp = al_clone_bitmap(surface);
     al_set_new_bitmap_flags(new_bitmap_flags);
 
-    scroller->LoadTileSet(resources[TILESET_WATER_DARK], 16, false); // 0
-    scroller->LoadTileSet(resources[TILESET_ICE], 16);               // 1
-    scroller->LoadTileSet(resources[TILESET_ROCK_LIGHT], 16);        // 2
-    scroller->LoadTileSet(resources[TILESET_SNOW], 16);              // 3
+    scroller->LoadTileSet(resources[I_TILESET_WATER_DARK], 16, false); // 0
+    scroller->LoadTileSet(resources[I_TILESET_ICE], 16);               // 1
+    scroller->LoadTileSet(resources[I_TILESET_ROCK_LIGHT], 16);        // 2
+    scroller->LoadTileSet(resources[I_TILESET_SNOW], 16);              // 3
 
     if (!scroller->CreateScrollBuffer(SCREEN_WIDTH, 640)) {
         g_game->message("PlanetSurface: Error creating scroll buffer");
@@ -1433,7 +1418,9 @@ ModulePlanetSurface::fabFrozen() {
     }
     scroller->GenerateTiles();
 
-    luaL_dofile(LuaVM, "data/planetsurface/PopFrozenPlanet.lua");
+    luaL_dofile(
+        LuaVM,
+        Util::resource_path("data/planetsurface/PopFrozenPlanet.lua").c_str());
 
     al_destroy_bitmap(mem_bmp);
     return true;
@@ -1446,31 +1433,31 @@ ModulePlanetSurface::fabOceanic() {
     ALLEGRO_BITMAP *mem_bmp = al_clone_bitmap(surface);
     al_set_new_bitmap_flags(new_bitmap_flags);
 
-    scroller->LoadTileSet(resources[TILESET_WATER_DARK], 16, false); // 0
+    scroller->LoadTileSet(resources[I_TILESET_WATER_DARK], 16, false); // 0
     if (planet->temperature == PTMP_TEMPERATE) {
-        scroller->LoadTileSet(resources[TILESET_MUD], 16);               // 1
-        scroller->LoadTileSet(resources[TILESET_GRASS_LIGHT], 16);       // 2
-        scroller->LoadTileSet(resources[TILESET_GRASS_DARK], 16);        // 3
-        scroller->LoadTileSet(resources[TILESET_WATER_MID], 16, false);  // 4
-        scroller->LoadTileSet(resources[TILESET_ROCK_DARK], 16, false);  // 5
-        scroller->LoadTileSet(resources[TILESET_SNOW], 16, false);       // 6}
-        scroller->LoadTileSet(resources[TILESET_ROCK_LIGHT], 16, false); // 7
+        scroller->LoadTileSet(resources[I_TILESET_MUD], 16);               // 1
+        scroller->LoadTileSet(resources[I_TILESET_GRASS_LIGHT], 16);       // 2
+        scroller->LoadTileSet(resources[I_TILESET_GRASS_DARK], 16);        // 3
+        scroller->LoadTileSet(resources[I_TILESET_WATER_MID], 16, false);  // 4
+        scroller->LoadTileSet(resources[I_TILESET_ROCK_DARK], 16, false);  // 5
+        scroller->LoadTileSet(resources[I_TILESET_SNOW], 16, false);       // 6}
+        scroller->LoadTileSet(resources[I_TILESET_ROCK_LIGHT], 16, false); // 7
     } else if (planet->temperature == PTMP_SEARING) {
-        scroller->LoadTileSet(resources[TILESET_DESERT], 16);            // 1
-        scroller->LoadTileSet(resources[TILESET_GRASS_DEAD], 16);        // 2
-        scroller->LoadTileSet(resources[TILESET_GRASS_LIGHT], 16);       // 3
-        scroller->LoadTileSet(resources[TILESET_WATER_MID], 16, false);  // 4
-        scroller->LoadTileSet(resources[TILESET_DIRT], 16);              // 5
-        scroller->LoadTileSet(resources[TILESET_ROCK_LIGHT], 16, false); // 6}
-        scroller->LoadTileSet(resources[TILESET_ROCK_DARK], 16, false);  // 7
+        scroller->LoadTileSet(resources[I_TILESET_DESERT], 16);            // 1
+        scroller->LoadTileSet(resources[I_TILESET_GRASS_DEAD], 16);        // 2
+        scroller->LoadTileSet(resources[I_TILESET_GRASS_LIGHT], 16);       // 3
+        scroller->LoadTileSet(resources[I_TILESET_WATER_MID], 16, false);  // 4
+        scroller->LoadTileSet(resources[I_TILESET_DIRT], 16);              // 5
+        scroller->LoadTileSet(resources[I_TILESET_ROCK_LIGHT], 16, false); // 6}
+        scroller->LoadTileSet(resources[I_TILESET_ROCK_DARK], 16, false);  // 7
     } else { // if(planet->temperature == PTMP_TROPICAL){
-        scroller->LoadTileSet(resources[TILESET_DESERT], 16);            // 1
-        scroller->LoadTileSet(resources[TILESET_GRASS_LIGHT], 16);       // 2
-        scroller->LoadTileSet(resources[TILESET_GRASS_DARK], 16);        // 3
-        scroller->LoadTileSet(resources[TILESET_WATER_MID], 16, false);  // 4
-        scroller->LoadTileSet(resources[TILESET_DIRT], 16);              // 5
-        scroller->LoadTileSet(resources[TILESET_ROCK_LIGHT], 16, false); // 6
-        scroller->LoadTileSet(resources[TILESET_ROCK_DARK], 16, false);  // 7
+        scroller->LoadTileSet(resources[I_TILESET_DESERT], 16);            // 1
+        scroller->LoadTileSet(resources[I_TILESET_GRASS_LIGHT], 16);       // 2
+        scroller->LoadTileSet(resources[I_TILESET_GRASS_DARK], 16);        // 3
+        scroller->LoadTileSet(resources[I_TILESET_WATER_MID], 16, false);  // 4
+        scroller->LoadTileSet(resources[I_TILESET_DIRT], 16);              // 5
+        scroller->LoadTileSet(resources[I_TILESET_ROCK_LIGHT], 16, false); // 6
+        scroller->LoadTileSet(resources[I_TILESET_ROCK_DARK], 16, false);  // 7
     }
 
     if (!scroller->CreateScrollBuffer(SCREEN_WIDTH, 640)) {
@@ -1536,7 +1523,9 @@ ModulePlanetSurface::fabOceanic() {
     }
     scroller->GenerateTiles();
 
-    luaL_dofile(LuaVM, "data/planetsurface/PopOceanicPlanet.lua");
+    luaL_dofile(
+        LuaVM,
+        Util::resource_path("data/planetsurface/PopOceanicPlanet.lua").c_str());
 
     al_destroy_bitmap(mem_bmp);
     return true;
@@ -1549,10 +1538,10 @@ ModulePlanetSurface::fabMolten() {
     ALLEGRO_BITMAP *mem_bmp = al_clone_bitmap(surface);
     al_set_new_bitmap_flags(new_bitmap_flags);
 
-    scroller->LoadTileSet(resources[TILESET_LAVA], 16, false);  // 0
-    scroller->LoadTileSet(resources[TILESET_MAGMA], 16, false); // 1
-    scroller->LoadTileSet(resources[TILESET_ASH], 16);          // 2
-    scroller->LoadTileSet(resources[TILESET_ROCK_LIGHT], 16);   // 3
+    scroller->LoadTileSet(resources[I_TILESET_LAVA], 16, false);  // 0
+    scroller->LoadTileSet(resources[I_TILESET_MAGMA], 16, false); // 1
+    scroller->LoadTileSet(resources[I_TILESET_ASH], 16);          // 2
+    scroller->LoadTileSet(resources[I_TILESET_ROCK_LIGHT], 16);   // 3
 
     if (!scroller->CreateScrollBuffer(SCREEN_WIDTH, 640)) {
         g_game->message("PlanetSurface: Error creating scroll buffer");
@@ -1609,7 +1598,9 @@ ModulePlanetSurface::fabMolten() {
     }
     scroller->GenerateTiles();
 
-    luaL_dofile(LuaVM, "data/planetsurface/PopMoltenPlanet.lua");
+    luaL_dofile(
+        LuaVM,
+        Util::resource_path("data/planetsurface/PopMoltenPlanet.lua").c_str());
 
     al_destroy_bitmap(mem_bmp);
     return true;
@@ -1622,10 +1613,10 @@ ModulePlanetSurface::fabAcidic() {
     ALLEGRO_BITMAP *mem_bmp = al_clone_bitmap(surface);
     al_set_new_bitmap_flags(new_bitmap_flags);
 
-    scroller->LoadTileSet(resources[TILESET_GAS_GRASS], 16, true);   // 0
-    scroller->LoadTileSet(resources[TILESET_GAS_ACID_2], 16, false); // 1
-    scroller->LoadTileSet(resources[TILESET_GAS_ROCK_1], 16);        // 2
-    scroller->LoadTileSet(resources[TILESET_GAS_ROCK_2], 16, false); // 3
+    scroller->LoadTileSet(resources[I_TILESET_GAS_GRASS], 16, true);   // 0
+    scroller->LoadTileSet(resources[I_TILESET_GAS_ACID_2], 16, false); // 1
+    scroller->LoadTileSet(resources[I_TILESET_GAS_ROCK_1], 16);        // 2
+    scroller->LoadTileSet(resources[I_TILESET_GAS_ROCK_2], 16, false); // 3
 
     if (!scroller->CreateScrollBuffer(SCREEN_WIDTH, 640)) {
         g_game->message("PlanetSurface: Error creating scroll buffer");
@@ -1661,7 +1652,9 @@ ModulePlanetSurface::fabAcidic() {
     }
     scroller->GenerateTiles();
 
-    luaL_dofile(LuaVM, "data/planetsurface/PopAcidicPlanet.lua");
+    luaL_dofile(
+        LuaVM,
+        Util::resource_path("data/planetsurface/PopAcidicPlanet.lua").c_str());
 
     al_destroy_bitmap(mem_bmp);
     return true;
@@ -2430,10 +2423,19 @@ ModulePlanetSurface::SetupLua() {
     lua_register(LuaVM, "L_GetDescription", L_GetDescription);
 
     /* load the scripts */
-    luaL_dofile(LuaVM, "data/planetsurface/Functions.lua");
-    luaL_dofile(LuaVM, "data/planetsurface/PlanetSurfacePlayerShip.lua");
-    luaL_dofile(LuaVM, "data/planetsurface/PlanetSurfacePlayerTV.lua");
-    luaL_dofile(LuaVM, "data/planetsurface/stunprojectile.lua");
+    luaL_dofile(
+        LuaVM, Util::resource_path("data/planetsurface/Functions.lua").c_str());
+    luaL_dofile(
+        LuaVM,
+        Util::resource_path("data/planetsurface/PlanetSurfacePlayerShip.lua")
+            .c_str());
+    luaL_dofile(
+        LuaVM,
+        Util::resource_path("data/planetsurface/PlanetSurfacePlayerTV.lua")
+            .c_str());
+    luaL_dofile(
+        LuaVM,
+        Util::resource_path("data/planetsurface/stunprojectile.lua").c_str());
 }
 
 //********************************************************
@@ -2527,7 +2529,9 @@ L_SetActions(lua_State *luaVM) {
 
 int
 L_LoadScript(lua_State *luaVM) {
-    luaL_dofile(luaVM, lua_tostring(luaVM, -1));
+    string lua_script = Util::resource_path(lua_tostring(luaVM, -1));
+
+    luaL_dofile(luaVM, lua_script.c_str());
     lua_pop(luaVM, 1);
 
     return 0;

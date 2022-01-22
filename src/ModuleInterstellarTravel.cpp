@@ -13,10 +13,10 @@
 #include "ModuleControlPanel.h"
 #include "PauseMenu.h"
 #include "spacetravel_resources.h"
-#include <exception>
 #include <sstream>
 
 using namespace std;
+using namespace spacetravel_resources;
 
 // scroller properties
 #define GALAXY_SCROLL_X 0
@@ -1305,7 +1305,7 @@ ModuleInterstellarTravel::identifyStar() {
 
 void
 ModuleInterstellarTravel::createGalaxy() {
-    TileSet ts(resources[IS_TILES], GALAXYTILESIZE, GALAXYTILESIZE, 5, 2);
+    TileSet ts(resources[I_IS_TILES], GALAXYTILESIZE, GALAXYTILESIZE, 5, 2);
 
     scroller = new TileScroller(ts,
                                 GALAXYTILESACROSS,

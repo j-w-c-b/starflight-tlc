@@ -204,6 +204,7 @@ add_library(lib${APP_NAME} STATIC
     tinyxml/tinyxml.h
     tinyxml/tinyxmlerror.cpp
     tinyxml/tinyxmlparser.cpp
+    rand.c
     lua.hpp
     ${MODULE_RESOURCE_HEADERS}
 )

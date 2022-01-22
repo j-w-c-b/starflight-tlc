@@ -12,8 +12,6 @@
    the planet surface module.
 */
 
-#include <exception>
-
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
 
@@ -33,24 +31,17 @@
 #include "PauseMenu.h"
 #include "QuestMgr.h"
 #include "Util.h"
+#include "planetorbit_resources.h"
+
 using namespace std;
+using namespace planetorbit_resources;
 
 ALLEGRO_DEBUG_CHANNEL("ModulePlanetOrbit")
 
-float m_rotationAngle;
-int starid = -1;
-int planetid = -1;
-int planetRadius;
-double planetRotationSpeed, planetRotation;
-int lightmapOffsetX, lightmapOffsetY;
-std::string lightmapFilename;
+ModulePlanetOrbit::ModulePlanetOrbit()
+    : flag_DoDock(false), m_resources(PLANETORBIT_IMAGES) {}
 
-ALLEGRO_BITMAP *planet_topography, *planet_scanner_map, *planet_texture;
-bool flag_DoDock = false;
-
-ModulePlanetOrbit::ModulePlanetOrbit(void) {}
-
-ModulePlanetOrbit::~ModulePlanetOrbit(void) {}
+ModulePlanetOrbit::~ModulePlanetOrbit() {}
 
 #pragma endregion
 
@@ -316,6 +307,10 @@ ModulePlanetOrbit::CreatePlanetTexture() {
     static int TEX_SIZE_SURFACE = 500;
     std::string orbitFilename = "";
     std::string surfaceFilename = "";
+    ALLEGRO_PATH *user_data_path = al_get_standard_path(ALLEGRO_USER_DATA_PATH);
+    ALLEGRO_PATH *planetorbit_path = al_create_path("planetorbit");
+    al_rebase_path(user_data_path, planetorbit_path);
+    al_make_directory(al_path_cstr(planetorbit_path, ALLEGRO_NATIVE_PATH_SEP));
 
     // use starid and planetid for random seed
     int randomness = starid * 1000 + planetid;
@@ -326,18 +321,23 @@ ModulePlanetOrbit::CreatePlanetTexture() {
     // software renderer
 
     ostringstream os;
-    os << "data/planetorbit/planet_" << randomness << "_256.bmp";
+    os << al_path_cstr(planetorbit_path, '/') << "/planet_" << randomness
+       << "_256.bmp";
     orbitFilename = os.str();
     ALLEGRO_DEBUG("Planet orbit filename: %s\n", orbitFilename.c_str());
 
     os.str("");
-    os << "data/planetorbit/planet_" << randomness << "_500.bmp";
+    os << al_path_cstr(planetorbit_path, '/') << "/planet_" << randomness
+       << "_500.bmp";
     surfaceFilename = os.str();
     ALLEGRO_DEBUG("Planet surface filename: %s\n", surfaceFilename.c_str());
 
+    al_destroy_path(planetorbit_path);
+    al_destroy_path(user_data_path);
+
     // try to find planet texture previously generated
     planet_texture = NULL;
-    planet_texture = (ALLEGRO_BITMAP *)al_load_bitmap(orbitFilename.c_str());
+    planet_texture = al_load_bitmap(orbitFilename.c_str());
     if (!planet_texture) {
         // generate planet texture for ORBIT render 256x256
         createPlanetSurface(TEX_SIZE_ORBIT,
@@ -407,39 +407,28 @@ void
 ModulePlanetOrbit::Close() {
     ALLEGRO_DEBUG("PlanetOrbit Destroy\n");
 
-    try {
-        if (lightmap_overlay) {
-            al_destroy_bitmap(lightmap_overlay);
-            lightmap_overlay = NULL;
-        }
-        if (planet_topography) {
-            al_destroy_bitmap(planet_topography);
-            planet_topography = NULL;
-        }
-        if (planet_scanner_map) {
-            al_destroy_bitmap(planet_scanner_map);
-            planet_scanner_map = NULL;
-        }
-        if (planet_texture) {
-            al_destroy_bitmap(planet_texture);
-            planet_texture = NULL;
-        }
-        if (background) {
-            al_destroy_bitmap(background);
-            background = NULL;
-        }
+    if (lightmap_overlay) {
+        al_destroy_bitmap(lightmap_overlay);
+        lightmap_overlay = NULL;
+    }
+    if (planet_topography) {
+        al_destroy_bitmap(planet_topography);
+        planet_topography = NULL;
+    }
+    if (planet_scanner_map) {
+        al_destroy_bitmap(planet_scanner_map);
+        planet_scanner_map = NULL;
+    }
+    if (planet_texture) {
+        al_destroy_bitmap(planet_texture);
+        planet_texture = NULL;
+    }
 
-        audio_scan.reset();
+    audio_scan.reset();
 
-        if (text != NULL) {
-            delete text;
-            text = NULL;
-        }
-
-    } catch (std::exception e) {
-        ALLEGRO_DEBUG("%s\n", e.what());
-    } catch (...) {
-        ALLEGRO_DEBUG("Unhandled exception in PlanetOrbit::Close\n");
+    if (text != NULL) {
+        delete text;
+        text = NULL;
     }
 }
 
@@ -461,23 +450,8 @@ ModulePlanetOrbit::Init() {
 
     planetScan = 0;
     planetAnalysis = 0;
+    planetRotation = 0;
     flag_DoDock = false;
-
-    // load the background
-    background = al_load_bitmap("data/planetorbit/STARFIELD.tga");
-    if (!background) {
-        g_game->fatalerror("PlanetOrbit: Error loading background");
-        return false;
-    }
-
-    // load the viewer gui
-    /*static int gvl = (int)g_game->getGlobalNumber("GUI_VIEWER_LEFT");
-    static int gvs = (int)g_game->getGlobalNumber("GUI_VIEWER_SPEED");
-    gui_viewer_x = gvl;
-    gui_viewer_y = 10;
-    gui_viewer_dir = gvs;
-    gui_viewer_sliding = false;
-    img_viewer = al_load_bitmap("data/spacetravel/gui_viewer.bmp");*/
 
     // create the ScrollBox for message window
     static int gmx = (int)g_game->getGlobalNumber("GUI_MESSAGE_POS_X");
@@ -505,9 +479,11 @@ ModulePlanetOrbit::Init() {
     else
         starid = -1;
 
+    string lightmapFilename;
     // read planet data
     if (star != nullptr && g_game->gameState->player->currentPlanet > -1) {
         planet = star->GetPlanetByID(g_game->gameState->player->currentPlanet);
+
         if (planet) {
             planetid = planet->id;
             planetType = planet->type;
@@ -558,10 +534,18 @@ ModulePlanetOrbit::Init() {
     }
 
     // load planet lightmap overlay
+    ALLEGRO_PATH *data_root = al_get_standard_path(ALLEGRO_RESOURCES_PATH);
     lightmapFilename = "data/planetorbit/" + lightmapFilename;
+    ALLEGRO_PATH *lightmap_path = al_create_path(lightmapFilename.c_str());
+
+    al_rebase_path(data_root, lightmap_path);
+
     lightmap_overlay = NULL;
     lightmap_overlay =
-        (ALLEGRO_BITMAP *)al_load_bitmap(lightmapFilename.c_str());
+        al_load_bitmap(al_path_cstr(lightmap_path, ALLEGRO_NATIVE_PATH_SEP));
+    al_destroy_path(lightmap_path);
+    al_destroy_path(data_root);
+
     if (!lightmap_overlay) {
         g_game->fatalerror("PlanetOrbit: error loading lightmap_overlay");
         return false;
@@ -883,7 +867,7 @@ ModulePlanetOrbit::Update() {
 void
 ModulePlanetOrbit::Draw() {
     al_set_target_bitmap(g_game->GetBackBuffer());
-    al_draw_bitmap(background, 0, 0, 0);
+    al_draw_bitmap(m_resources[I_STARFIELD], 0, 0, 0);
 
     // clear aux window
     static int asx = (int)g_game->getGlobalNumber("AUX_SCREEN_X");
@@ -904,6 +888,13 @@ ModulePlanetOrbit::Draw() {
     int cx = SCREEN_WIDTH / 2;
     int cy = 250;
     planetRotation += planetRotationSpeed;
+
+    if (planetRotation > 255) {
+        planetRotation = static_cast<int>(planetRotation) % 256;
+    } else if (planetRotation < 0) {
+        planetRotation = 255 - static_cast<int>(planetRotation) % 256;
+    }
+
     texsphere->Draw(g_game->GetBackBuffer(),
                     0,
                     0,

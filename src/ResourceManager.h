@@ -32,7 +32,6 @@ template <class T> class ResourceManager {
     T *operator[](const std::string &name);
 
   private:
-    static void deleter(T *);
     std::map<std::string, Resource<T>> resources;
     T *load(Resource<T> &data);
 };

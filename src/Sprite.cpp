@@ -15,9 +15,12 @@
 
 #include "Game.h"
 #include "Sprite.h"
+#include "Util.h"
 
 #define PI 3.1415926535
 #define PI_div_180 0.017453292519444
+
+using namespace std;
 
 Sprite::Sprite() {
     image = NULL;
@@ -75,7 +78,8 @@ Sprite::~Sprite() {
 
 bool
 Sprite::load(const char *filename) {
-    this->image = al_load_bitmap(filename);
+    string full_filename = Util::resource_path(filename);
+    this->image = al_load_bitmap(full_filename.c_str());
     if (!this->image) {
         std::ostringstream s;
         s << "Error loading sprite file: " << filename;

@@ -4,7 +4,7 @@
 
 function MetnebFactoryInitialize( )
 
-	L_LoadImage("data\\planetsurface\\B_Factory.tga")
+	L_LoadImage("data/planetsurface/B_Factory.tga")
 
 	L_SetColHalfWidth(40)
 	L_SetColHalfHeight(40)

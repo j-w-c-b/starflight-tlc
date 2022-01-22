@@ -4,7 +4,7 @@
 
 function KelvynCoInitialize( )
 
-	L_LoadImage("data\\planetsurface\\B_Research.tga")
+	L_LoadImage("data/planetsurface/B_Research.tga")
 
 	L_SetColHalfWidth(40)
 	L_SetColHalfHeight(40)

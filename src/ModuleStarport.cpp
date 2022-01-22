@@ -9,21 +9,22 @@
         go to the bank, trade goods and receive orders.
 */
 
-#include "ModuleStarport.h"
+#include <sstream>
+
 #include "AudioSystem.h"
 #include "Events.h"
 #include "Game.h"
 #include "GameState.h"
 #include "ModeMgr.h"
+#include "ModuleStarport.h"
 #include "PauseMenu.h"
 #include "QuestMgr.h"
 #include "ScrollBox.h"
 #include "Sprite.h"
 #include "starport_resources.h"
-#include <exception>
-#include <sstream>
 
 using namespace std;
+using namespace starport_resources;
 
 ALLEGRO_DEBUG_CHANNEL("ModuleStarport")
 
@@ -32,10 +33,6 @@ ALLEGRO_DEBUG_CHANNEL("ModuleStarport")
 //***********************************************
 ModuleStarport::ModuleStarport(void) : resources(STARPORT_IMAGES) {
     // load the starport background
-
-    // The starport.bmp file is huge so it is loaded at mode startup and remains
-    // in memory during gameplay only to be removed when the root mode
-    // terminates
     if (!resources.load()) {
         g_game->message("Starport: Error loading datafile");
     }
@@ -220,15 +217,8 @@ ModuleStarport::movePlayerRight(int distanceInPixels) {
 //***********************************************
 void
 ModuleStarport::Close() {
-    try {
-        delete avatar;
-        delete door;
-
-    } catch (std::exception e) {
-        ALLEGRO_DEBUG("%s\n", e.what());
-    } catch (...) {
-        ALLEGRO_DEBUG("Unhandled exception in Starport::Close\n");
-    }
+    delete avatar;
+    delete door;
 }
 
 bool
@@ -251,11 +241,11 @@ ModuleStarport::Init() {
     }
 
     // load the starport background
-    starport = resources[STARPORT];
+    starport = resources[I_STARPORT];
 
     // load door
     door = new Sprite();
-    door->setImage(resources[STARPORT_DOOR]);
+    door->setImage(resources[I_STARPORT_DOOR]);
     door->setAnimColumns(2);
     door->setFrameWidth(180);
     door->setFrameHeight(237);
@@ -263,7 +253,7 @@ ModuleStarport::Init() {
 
     // load avatar
     avatar = new Sprite();
-    avatar->setImage(resources[STARPORT_AVATAR]);
+    avatar->setImage(resources[I_STARPORT_AVATAR]);
     avatar->setAnimColumns(8);
     avatar->setTotalFrames(16);
     avatar->setFrameHeight(237);

@@ -8,9 +8,9 @@
 #ifndef MODULETITLESCREEN_H
 #define MODULETITLESCREEN_H
 
+#include "Button.h"
 #include "Module.h"
-
-class Button;
+#include "ResourceManager.h"
 
 class ModuleTitleScreen : public Module {
   public:
@@ -28,7 +28,7 @@ class ModuleTitleScreen : public Module {
 
   private:
     float m_rotationAngle;
-    ALLEGRO_BITMAP *m_background;
+    ResourceManager<ALLEGRO_BITMAP> m_resources;
     Button *btnTitle;
     Button *btnNewGame;
     Button *btnLoadGame;

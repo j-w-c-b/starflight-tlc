@@ -19,6 +19,8 @@
 #include "Util.h"
 #include "engineer_resources.h"
 
+using namespace engineer_resources;
+
 // bar 1 = Lasers
 // bar 2 = Missiles
 // bar 3 = Hull
@@ -61,27 +63,27 @@ ModuleEngineer::Init() {
         return false;
     }
 
-    img_window = resources[GUI];
-    img_bar_base = resources[ELEMENT_GAUGE_GRAY];
-    img_bar_laser = resources[ELEMENT_GAUGE_MAGENTA];
-    img_bar_missile = resources[ELEMENT_GAUGE_PURPLE];
-    img_bar_hull = resources[ELEMENT_GAUGE_GREEN];
-    img_bar_armor = resources[ELEMENT_GAUGE_RED];
-    img_bar_shield = resources[ELEMENT_GAUGE_BLUE];
-    img_bar_engine = resources[ELEMENT_GAUGE_ORANGE];
+    img_window = resources[I_GUI];
+    img_bar_base = resources[I_ELEMENT_GAUGE_GRAY];
+    img_bar_laser = resources[I_ELEMENT_GAUGE_MAGENTA];
+    img_bar_missile = resources[I_ELEMENT_GAUGE_PURPLE];
+    img_bar_hull = resources[I_ELEMENT_GAUGE_GREEN];
+    img_bar_armor = resources[I_ELEMENT_GAUGE_RED];
+    img_bar_shield = resources[I_ELEMENT_GAUGE_BLUE];
+    img_bar_engine = resources[I_ELEMENT_GAUGE_ORANGE];
 
     switch (g_game->gameState->getProfession()) {
     case PROFESSION_FREELANCE:
-        img_ship = resources[HIGH_RES_SHIP_FREELANCE];
+        img_ship = resources[I_HIGH_RES_SHIP_FREELANCE];
         break;
 
     case PROFESSION_MILITARY:
-        img_ship = resources[HIGH_RES_SHIP_MILITARY];
+        img_ship = resources[I_HIGH_RES_SHIP_MILITARY];
         break;
 
     case PROFESSION_SCIENTIFIC:
     default:
-        img_ship = resources[HIGH_RES_SHIP_SCIENCE];
+        img_ship = resources[I_HIGH_RES_SHIP_SCIENCE];
         break;
     }
 
@@ -90,8 +92,8 @@ ModuleEngineer::Init() {
     al_clear_to_color(al_map_rgba(0, 0, 0, 0));
 
     // load button images
-    img_button_repair = resources[AUX_REPAIR];
-    img_button_repair_over = resources[AUX_REPAIR_HOVER];
+    img_button_repair = resources[I_AUX_REPAIR];
+    img_button_repair_over = resources[I_AUX_REPAIR_HOVER];
 
     // Create and initialize the crew buttons
     button[0] = new Button(img_button_repair,
@@ -164,19 +166,13 @@ ModuleEngineer::Init() {
 
 void
 ModuleEngineer::Close() {
-    try {
-        al_destroy_bitmap(text);
+    al_destroy_bitmap(text);
 
-        resources.unload();
+    resources.unload();
 
-        for (int i = 0; i < 5; i++) {
-            delete button[i];
-            button[i] = NULL;
-        }
-    } catch (std::exception e) {
-        ALLEGRO_DEBUG("%s\n", e.what());
-    } catch (...) {
-        ALLEGRO_DEBUG("Unhandled exception in ModuleEngineer::Close\n");
+    for (int i = 0; i < 5; i++) {
+        delete button[i];
+        button[i] = NULL;
     }
 }
 

@@ -12,6 +12,7 @@
 #include "credits_resources.h"
 
 using namespace std;
+using namespace credits_resources;
 
 ALLEGRO_DEBUG_CHANNEL("ModuleCredits")
 /*
@@ -96,7 +97,7 @@ ModuleCredits::Init() {
     }
 
     // Load background
-    background = resources[BACKGROUND];
+    background = resources[I_BACKGROUND];
 
     g_game->Print32(background, 390, 10, "CONTRIBUTORS", STEEL, true);
 

@@ -6,7 +6,7 @@
    This is just easier. Author: J.Harbour Date: Jan,2008
 */
 
-#include <exception>
+#include <string>
 
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
@@ -17,41 +17,29 @@
 #include "ModeMgr.h"
 #include "ModuleStartup.h"
 #include "Util.h"
-#include <string>
+#include "startup_resources.h"
+
+using namespace startup_resources;
 
 void showOpeningStory(int page);
 int storypage = 0;
 
 ALLEGRO_DEBUG_CHANNEL("ModuleStartup")
 
-ModuleStartup::ModuleStartup() { display_mode = 3; }
+ModuleStartup::ModuleStartup() : m_resources(STARTUP_IMAGES) {
+    display_mode = 3;
+}
 
 ModuleStartup::~ModuleStartup() {}
 
 bool
 ModuleStartup::Init() {
-    m_background = al_load_bitmap("data/startup/space_1280.bmp");
-
-    // load copyright screen
-    copyright = al_load_bitmap("data/startup/startup_copyrights.bmp");
-    if (!copyright) {
-        g_game->message("Startup: Error loading startup_copyrights");
-        return false;
-    }
-
     return true;
 }
 
 void
 ModuleStartup::Close() {
-    try {
-        al_destroy_bitmap(copyright);
-        al_destroy_bitmap(m_background);
-    } catch (std::exception e) {
-        ALLEGRO_DEBUG("%s\n", e.what());
-    } catch (...) {
-        ALLEGRO_DEBUG("Unhandled exception in Startup::Close\n");
-    }
+    m_resources.unload();
 }
 
 int
@@ -111,7 +99,7 @@ ModuleStartup::Draw() {
     static bool title_done = false;
     al_set_target_bitmap(g_game->GetBackBuffer());
 
-    al_draw_bitmap(m_background, 0, 0, 0);
+    al_draw_bitmap(m_resources[I_SPACE_1280], 0, 0, 0);
 
     switch (display_mode) {
 
@@ -122,12 +110,14 @@ ModuleStartup::Draw() {
 
     case 1: // copyright fadein
         if (!title_done) {
-            if (fadein(g_game->GetBackBuffer(), copyright, 1)) {
+            if (fadein(g_game->GetBackBuffer(),
+                       m_resources[I_STARTUP_COPYRIGHTS],
+                       1)) {
                 title_done = true;
             }
 
         } else {
-            al_draw_bitmap(copyright, 0, 0, 0);
+            al_draw_bitmap(m_resources[I_STARTUP_COPYRIGHTS], 0, 0, 0);
             if (Util::ReentrantDelay(4000))
                 display_mode = 2;
         }
@@ -135,7 +125,9 @@ ModuleStartup::Draw() {
 
     case 2: // copyright fadeout
         title_done = false;
-        if (fadeout(g_game->GetBackBuffer(), copyright, 2)) {
+        if (fadeout(g_game->GetBackBuffer(),
+                    m_resources[I_STARTUP_COPYRIGHTS],
+                    2)) {
             display_mode = 3;
         }
         break;

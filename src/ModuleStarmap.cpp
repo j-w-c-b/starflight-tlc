@@ -20,6 +20,7 @@
 #include "starmap_resources.h"
 
 using namespace std;
+using namespace starmap_resources;
 
 ALLEGRO_DEBUG_CHANNEL("ModuleStarmap")
 
@@ -171,7 +172,7 @@ ModuleStarmap::Init() {
     delete lua;
 
     // load starmap GUI
-    gui_starmap = resources[STARMAP_VIEWER];
+    gui_starmap = resources[I_STARMAP_VIEWER];
 
     m_bOver_Star = false;
     star_label = new Label("", 0, 0, 100, 22, ORANGE, g_game->font18);
@@ -196,7 +197,7 @@ ModuleStarmap::Init() {
 
     Sprite stars;
 
-    stars.setImage(resources[IS_TILES_TRANS]);
+    stars.setImage(resources[I_IS_TILES_TRANS]);
     if (!stars.getImage()) {
         g_game->message("Starmap: Error loading stars");
         return false;
@@ -233,13 +234,13 @@ ModuleStarmap::draw_flux() {
         const Point2D &endpoint2 = f->get_endpoint2();
 
         if (fi.endpoint_1_visible) {
-            al_draw_bitmap(resources[FLUX_TILE_TRANS],
+            al_draw_bitmap(resources[I_FLUX_TILE_TRANS],
                            endpoint1.x * ratioX,
                            endpoint1.y * ratioY,
                            0);
         }
         if (fi.endpoint_2_visible) {
-            al_draw_bitmap(resources[FLUX_TILE_TRANS],
+            al_draw_bitmap(resources[I_FLUX_TILE_TRANS],
                            endpoint2.x * ratioX,
                            endpoint2.y * ratioY,
                            0);
@@ -258,33 +259,27 @@ ModuleStarmap::draw_flux() {
 
 void
 ModuleStarmap::Close() {
-    try {
-        if (starview != NULL) {
-            al_destroy_bitmap(starview);
-            starview = NULL;
-        }
-        if (text != NULL) {
-            al_destroy_bitmap(text);
-            text = NULL;
-        }
-
-        if (flux_view != NULL) {
-            al_destroy_bitmap(flux_view);
-            flux_view = NULL;
-        }
-
-        if (star_label != NULL) {
-            delete star_label;
-            star_label = NULL;
-        }
-
-        // unload the resources
-        resources.unload();
-    } catch (std::exception e) {
-        ALLEGRO_DEBUG("%s\n", e.what());
-    } catch (...) {
-        ALLEGRO_DEBUG("Unhandled exception in Starmap::Close\n");
+    if (starview != NULL) {
+        al_destroy_bitmap(starview);
+        starview = NULL;
     }
+    if (text != NULL) {
+        al_destroy_bitmap(text);
+        text = NULL;
+    }
+
+    if (flux_view != NULL) {
+        al_destroy_bitmap(flux_view);
+        flux_view = NULL;
+    }
+
+    if (star_label != NULL) {
+        delete star_label;
+        star_label = NULL;
+    }
+
+    // unload the resources
+    resources.unload();
 }
 
 void
