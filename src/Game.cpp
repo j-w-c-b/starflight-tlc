@@ -415,21 +415,21 @@ ValidateScripts(const string &p_title) {
     // validate global and encounter scripts
     Script *scr;
     for (n = 0; n < ENCNUM; n++) {
-        scr = new Script();
+        Script scr;
 
         // register all required C++ functions needed by encounter scripts
         for (int f = 0; f < ENCFUNCS; f++)
-            lua_register(scr->getState(), enc_funcnames[f].c_str(), voidfunc);
+            lua_register(scr.getState(), enc_funcnames[f].c_str(), voidfunc);
 
-        if (!scr->load(encounterScripts[n])) {
-            error = scr->errorMessage;
+        if (!scr.load(encounterScripts[n])) {
+            error = scr.errorMessage;
             pos = (int)error.find(":");
             filename = error.substr(0, pos);
             error = error.substr(pos + 1);
             pos = (int)error.find(":");
             linenum = error.substr(0, pos);
             message = error.substr(pos + 1);
-            error = "Filename: " + encounterScripts[n] +
+            error = "Filename: " + Util::resource_path(encounterScripts[n]) +
                     "\n\nLine #: " + linenum + "\n\nError: " + filename + "\n" +
                     message;
             ALLEGRO_DEBUG("%s\n", error.c_str());
@@ -439,10 +439,8 @@ ValidateScripts(const string &p_title) {
                                        error.c_str(),
                                        nullptr,
                                        ALLEGRO_MESSAGEBOX_ERROR);
-            delete scr;
             return false;
         }
-        delete scr;
     }
 
     // validate planet surface scripts

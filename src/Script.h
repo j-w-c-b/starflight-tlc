@@ -35,6 +35,8 @@ class Script {
 
     bool runFunction(const std::string &name);
 
+    static int L_LoadScript(lua_State *luaVM);
+
     std::string errorMessage;
     lua_State *
     getState() {

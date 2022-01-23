@@ -1,7 +1,7 @@
 -- GLOBALS SCRIPT FILE
 
 -- include the user modifiable options
-dofile("data/config.lua")
+L_LoadScript("data/config.lua")
 
 GAME_TITLE = "Starflight-The Lost Colony"
 GAME_VERSION = "2.0"

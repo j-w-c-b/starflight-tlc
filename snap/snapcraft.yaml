@@ -31,6 +31,7 @@ apps:
             - x11
             - unity7
             - audio-playback
+icon: meta/gui/starflight-tlc.png
 layout:
     /usr/bin/data:
         bind: $SNAP_DATA/data

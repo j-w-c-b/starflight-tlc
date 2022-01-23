@@ -25,7 +25,7 @@
 --]]
 
 --include common encounter functions
-dofile("data/encounter/encounter_common.lua")
+L_LoadScript("data/encounter/encounter_common.lua")
 
 -- Sentence fragments to combine for questions and statements
 function SetPlayerTables()
