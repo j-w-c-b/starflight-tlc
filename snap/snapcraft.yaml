@@ -24,6 +24,9 @@ apps:
         command: usr/bin/StarflightTLC
         extensions:
             - gnome-3-38
+        environment:
+            XDG_DATA_HOME: $SNAP_USER_COMMON/data
+            XDG_CONFIG_HOME: $SNAP_USER_COMMON/config
         plugs:
             - desktop
             - desktop-legacy
@@ -31,10 +34,11 @@ apps:
             - x11
             - unity7
             - audio-playback
-icon: meta/gui/starflight-tlc.png
+icon: snap/gui/starflight-tlc.png
+
 layout:
-    /usr/bin/data:
-        bind: $SNAP_DATA/data
+    $SNAP/usr/bin/data:
+        symlink: $SNAP/usr/data
 
 parts:
   starflight-tlc:
@@ -62,3 +66,7 @@ parts:
             - liballegro-image5.2
             - liballegro-ttf5.2
             - liballegro5.2
+        override-prime: |
+            snapcraftctl prime
+            sed -i 's|XDG_DATA_HOME="$SNAP_USER_DATA|XDG_DATA_HOME="$SNAP_USER_COMMON|' $SNAPCRAFT_PRIME/snap/command-chain/desktop-launch
+            sed -i 's|XDG_CONFIG_HOME="$SNAP_USER_DATA|XDG_CONFIG_HOME="$SNAP_USER_COMMON|' $SNAPCRAFT_PRIME/snap/command-chain/desktop-launch

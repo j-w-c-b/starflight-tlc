@@ -2,3 +2,5 @@
 Exec=starflight-tlc
 Name=Starflight: The Lost Colony
 Icon=${SNAP}/meta/gui/starflight-tlc.png
+Type=Application
+Terminal=false
