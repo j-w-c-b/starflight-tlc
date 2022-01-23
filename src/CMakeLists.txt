@@ -74,7 +74,7 @@ set(APP_NAME "${CMAKE_PROJECT_NAME}")
 set(ICON_NAME "starflighttlc.ico")
 set(ICON_PATH ${CMAKE_SOURCE_DIR}/${ICON_NAME})
 
-if (MACOS)
+if (${CMAKE_SYSTEM_NAME} MATCHES Darwin)
     set(BUNDLE_ARG MACOSX_BUNDLE)
 endif()
 
@@ -328,7 +328,7 @@ foreach (pkg ${allegro_pkgs})
     target_include_directories(lib${APP_NAME} PRIVATE ${${pkg_prefix}_INCLUDE_DIRS})
 endforeach()
 
-if (MACOS)
+if (${CMAKE_SYSTEM_NAME} MATCHES Darwin)
     set_directory_properties(PROPERTIES ADDITIONAL_CLEAN_FILES "${APP_NAME}.app")
     install(TARGETS ${APP_NAME} BUNDLE DESTINATION .)
     install(CODE "
@@ -338,7 +338,7 @@ if (MACOS)
 
     set(CPACK_PACKAGE_EXECUTABLES "${CMAKE_INSTALL_PREFIX}/${APP_NAME}.app;Starflight - The Lost Colony")
     set(CPACK_PACKAGE_ICON "${ICON_PATH}")
-elseif (WIN32)
+elseif (${CMAKE_SYSTEM_NAME} MATCHES Windows)
     add_custom_command(
         TARGET ${APP_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/../data ${CMAKE_CURRENT_BINARY_DIR}/data)
@@ -350,5 +350,13 @@ elseif (WIN32)
         COMMAND_EXPAND_LISTS)
     install(FILES $<TARGET_RUNTIME_DLLS:${APP_NAME}> DESTINATION .)
     set (CPACK_PACKAGE_INSTALL_DIRECTORY ${CMAKE_PROJECT})
+elseif (${CMAKE_SYSTEM_NAME} MATCHES Linux)
+    add_custom_command(
+        TARGET ${APP_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/../data ${CMAKE_CURRENT_BINARY_DIR}/data)
+    install(TARGETS ${APP_NAME})
+    install(DIRECTORY ../data/ DESTINATION data)
+else()
+    message(FATAL_ERROR "Unsupported OS")
 endif()
 include(CPack)

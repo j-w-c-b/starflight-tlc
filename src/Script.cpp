@@ -31,12 +31,14 @@ Script::~Script() { lua_close(luaState); }
 Script::Script() : errorMessage("") {
     luaState = luaL_newstate();
     luaL_openlibs(luaState);
+    lua_register(luaState, "L_LoadScript", Script::L_LoadScript);
     lua_atpanic(luaState, &custom_lua_atpanic);
 }
 
 bool
 Script::load(const string &scriptfile) {
     string fullpath = Util::resource_path(scriptfile);
+    ALLEGRO_DEBUG("Loading script `%s'\n", fullpath.c_str());
     int ret = luaL_dofile(luaState, fullpath.c_str());
     if (ret > 0) {
         // get lua error message from the stack
@@ -118,4 +120,14 @@ Script::runFunction(const string &name) {
     }
     errorMessage = "";
     return true;
+}
+
+int
+Script::L_LoadScript(lua_State *luaVM) {
+    string lua_script = Util::resource_path(lua_tostring(luaVM, -1));
+
+    luaL_dofile(luaVM, lua_script.c_str());
+    lua_pop(luaVM, 1);
+
+    return 0;
 }

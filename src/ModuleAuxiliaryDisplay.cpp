@@ -88,8 +88,6 @@ void
 ModuleAuxiliaryDisplay::Close() {
     delete scroller;
 
-    al_destroy_bitmap(img_aux);
-
     resources.unload();
 }
 
@@ -119,12 +117,11 @@ ModuleAuxiliaryDisplay::Init() {
     ash = (int)g_game->getGlobalNumber("AUX_SCREEN_HEIGHT");
 
     // load the aux gui
-    img_aux = al_load_bitmap("data/spacetravel/gui_aux.bmp");
+    img_aux = resources[I_GUI_AUX];
     if (!img_aux) {
         g_game->message("Aux: Error loading gui_aux");
         return false;
     }
-    al_convert_mask_to_alpha(img_aux, MASK_COLOR);
 
     // load ship status icon
     ship_icon_image = NULL;

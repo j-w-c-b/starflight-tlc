@@ -155,21 +155,20 @@ ModuleStarmap::Init() {
     }
 
     // initialize constants
-    Script *lua = new Script();
-    lua->load("data/starmap/starmap.lua");
-    FUEL_PER_UNIT = (float)lua->getGlobalNumber("FUEL_PER_UNIT");
-    VIEWER_WIDTH = (int)lua->getGlobalNumber("VIEWER_WIDTH");
-    VIEWER_HEIGHT = (int)lua->getGlobalNumber("VIEWER_HEIGHT");
-    MAP_WIDTH = (int)lua->getGlobalNumber("MAP_WIDTH");
-    MAP_HEIGHT = (int)lua->getGlobalNumber("MAP_HEIGHT");
-    X_OFFSET = (int)lua->getGlobalNumber("X_OFFSET");
-    Y_OFFSET = (int)lua->getGlobalNumber("Y_OFFSET");
-    MAP_POS_X = (int)lua->getGlobalNumber("MAP_POS_X");
-    MAP_POS_Y = (int)lua->getGlobalNumber("MAP_POS_Y");
-    VIEWER_TARGET_OFFSET = (int)lua->getGlobalNumber("VIEWER_TARGET_OFFSET");
+    Script lua;
+    lua.load("data/starmap/starmap.lua");
+    FUEL_PER_UNIT = (float)lua.getGlobalNumber("FUEL_PER_UNIT");
+    VIEWER_WIDTH = (int)lua.getGlobalNumber("VIEWER_WIDTH");
+    VIEWER_HEIGHT = (int)lua.getGlobalNumber("VIEWER_HEIGHT");
+    MAP_WIDTH = (int)lua.getGlobalNumber("MAP_WIDTH");
+    MAP_HEIGHT = (int)lua.getGlobalNumber("MAP_HEIGHT");
+    X_OFFSET = (int)lua.getGlobalNumber("X_OFFSET");
+    Y_OFFSET = (int)lua.getGlobalNumber("Y_OFFSET");
+    MAP_POS_X = (int)lua.getGlobalNumber("MAP_POS_X");
+    MAP_POS_Y = (int)lua.getGlobalNumber("MAP_POS_Y");
+    VIEWER_TARGET_OFFSET = (int)lua.getGlobalNumber("VIEWER_TARGET_OFFSET");
     viewer_offset_y = -VIEWER_TARGET_OFFSET;
-    VIEWER_MOVE_RATE = (int)lua->getGlobalNumber("VIEWER_MOVE_RATE");
-    delete lua;
+    VIEWER_MOVE_RATE = (int)lua.getGlobalNumber("VIEWER_MOVE_RATE");
 
     // load starmap GUI
     gui_starmap = resources[I_STARMAP_VIEWER];

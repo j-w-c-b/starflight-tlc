@@ -25,7 +25,7 @@
 --]]
 
 --include common encounter functions
-dofile("data/encounter/encounter_common.lua")
+L_LoadScript("data/encounter/encounter_common.lua")
 
 --[[ What do you think of this idea: I've dumped all the statements from the Coalition initial file,
 	 plus a few from other files (most are the same) into this categorized statements table (could

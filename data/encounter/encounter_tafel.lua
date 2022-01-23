@@ -27,7 +27,7 @@
 --]]
 
 --include common encounter functions
-dofile("data/encounter/encounter_common.lua")
+L_LoadScript("data/encounter/encounter_common.lua")
 
 function SetPlayerTables()
 	playerStatement= {

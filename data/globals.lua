@@ -1,7 +1,7 @@
 -- GLOBALS SCRIPT FILE
 
 -- include the user modifiable options
-dofile("data/config.lua")
+L_LoadScript("data/config.lua")
 
 GAME_TITLE = "Starflight-The Lost Colony"
 GAME_VERSION = "2.0"
@@ -179,8 +179,8 @@ ALIEN_LASER_RANGE   = 400	--was 400
 ALIEN_SAFETY_DISTANCE = 400	--not used. "flee" code is commented out. 
 
 --when game starts, this should be next to Myrrdan star system
-PLAYER_HYPERSPACE_START_X = 15553
-PLAYER_HYPERSPACE_START_Y = 13244
+PLAYER_HYPERSPACE_START_X = 125 * 128
+PLAYER_HYPERSPACE_START_Y = 105 * 128
 
 --when player enters star system (should probably be random)
 PLAYER_SYSTEM_START_X = 10370

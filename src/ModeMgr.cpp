@@ -14,6 +14,7 @@
 #include "ModeMgr.h"
 #include "Module.h"
 #include "PauseMenu.h"
+#include "Util.h"
 
 using namespace std;
 
@@ -63,7 +64,8 @@ ModeMgr::AddMode(const string &modeName,
                  Module *rootModule,
                  const string &musicPath) {
     if (musicPath.compare("") != 0) {
-        ALLEGRO_FS_ENTRY *entry = al_create_fs_entry(musicPath.c_str());
+        ALLEGRO_FS_ENTRY *entry =
+            al_create_fs_entry(Util::resource_path(musicPath).c_str());
         if (!al_fs_entry_exists(entry)) {
             std::string error = "ModeMgr::AddMode: [ERROR] file " + musicPath +
                                 " does not exist";
