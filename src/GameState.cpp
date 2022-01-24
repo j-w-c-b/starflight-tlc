@@ -5,18 +5,20 @@
         Date: ?
 */
 
-#include "GameState.h"
+#include <cmath>
+#include <fstream>
+#include <math.h>
+#include <sstream>
+
 #include "Archive.h"
 #include "DataMgr.h"
 #include "Events.h"
 #include "Game.h"
+#include "GameState.h"
 #include "ModeMgr.h"
 #include "Point2D.h"
 #include "QuestMgr.h"
 #include "Util.h"
-#include <fstream>
-#include <math.h>
-#include <sstream>
 
 using namespace std;
 
@@ -549,6 +551,50 @@ Ship::getArmorClass() const {
 int
 Ship::getMissileLauncherClass() const {
     return missileLauncherClass;
+}
+
+float
+Ship::get_maximum_velocity() const {
+    double topspeed = 1.0;
+
+    int engine = getEngineClass();
+    if (engine < 1 || engine > 6) {
+        engine = 1;
+        ALLEGRO_DEBUG("*** Error in PlayerShipSprite::getMaximumVelocity: "
+                      "Engine class is invalid");
+    }
+
+    switch (engine) {
+    case 1:
+        topspeed = g_game->getGlobalNumber("ENGINE1_TOPSPEED");
+        break;
+    case 2:
+        topspeed = g_game->getGlobalNumber("ENGINE2_TOPSPEED");
+        break;
+    case 3:
+        topspeed = g_game->getGlobalNumber("ENGINE3_TOPSPEED");
+        break;
+    case 4:
+        topspeed = g_game->getGlobalNumber("ENGINE4_TOPSPEED");
+        break;
+    case 5:
+        topspeed = g_game->getGlobalNumber("ENGINE5_TOPSPEED");
+        break;
+    case 6:
+        topspeed = g_game->getGlobalNumber("ENGINE6_TOPSPEED");
+        break;
+    }
+
+    return topspeed;
+}
+
+float
+Ship::get_fuel_usage(float distance) const {
+    float max_vel = get_maximum_velocity();
+
+    distance = fabs(distance);
+
+    return distance * max_vel / 100 / getEngineClass();
 }
 
 int

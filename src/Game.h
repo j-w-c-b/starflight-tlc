@@ -26,6 +26,8 @@
 // DO NOT MODIFY THESE
 #define SCREEN_WIDTH 1024
 #define SCREEN_HEIGHT 768
+#define GALAXY_WIDTH 250
+#define GALAXY_HEIGHT 220
 
 // COMMON RGB COLORS
 // here's a good source of rgb colors:

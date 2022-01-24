@@ -286,6 +286,8 @@ class Ship {
     getMaxMissileLauncherClass() {
         return maxMissileLauncherClass;
     }
+    float get_maximum_velocity() const;
+    float get_fuel_usage(float distance) const;
 
     int getTotalSpace();
     int getOccupiedSpace();

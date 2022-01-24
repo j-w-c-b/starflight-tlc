@@ -995,7 +995,7 @@ Game::RunGame() {
     bool change_module = false;
     string new_module;
     ALLEGRO_EVENT event;
-    bool hide_cursor = false;
+    bool hide_cursor = true;
     bool show_cursor = false;
 
     do {
