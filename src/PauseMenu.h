@@ -11,23 +11,11 @@ class PauseMenu {
     PauseMenu();
     ~PauseMenu();
 
-    bool
-    isShowing() const {
-        return display;
-    }
-    void
-    setShowing(bool value) {
-        display = value;
-    }
+    bool isShowing() const { return display; }
+    void setShowing(bool value) { display = value; }
 
-    bool
-    isEnabled() {
-        return enabled;
-    }
-    void
-    setEnabled(bool value) {
-        enabled = value;
-    }
+    bool isEnabled() { return enabled; }
+    void setEnabled(bool value) { enabled = value; }
 
     bool OnMouseMove(int x, int y);
     bool OnMouseReleased(int button, int x, int y);

@@ -12,26 +12,11 @@ class Vector3 {
     Vector3(int x, int y, int z);
     void Set(double x1, double y1, double z1);
     void Set(const Vector3 &v);
-    double
-    getX() {
-        return x;
-    }
-    void
-    setX(double v) {
-        x = v;
-    }
-    double
-    getY() {
-        return y;
-    }
-    void
-    setY(double v) {
-        y = v;
-    }
-    double
-    getZ() {
-        return z;
-    }
+    double getX() { return x; }
+    void setX(double v) { x = v; }
+    double getY() { return y; }
+    void setY(double v) { y = v; }
+    double getZ() { return z; }
     void Move(double mx, double my, double mz);
     void operator+=(const Vector3 &v);
     void operator-=(const Vector3 &v);

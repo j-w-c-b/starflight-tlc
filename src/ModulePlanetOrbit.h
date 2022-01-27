@@ -20,7 +20,7 @@ const int HOMEWORLD_ID = 8;
 
 class ModulePlanetOrbit : public Module {
   private:
-    ~ModulePlanetOrbit(void);
+    ~ModulePlanetOrbit();
 
     bool CreatePlanetTexture();
 
@@ -61,17 +61,14 @@ class ModulePlanetOrbit : public Module {
 
   public:
     ModulePlanetOrbit(void);
-    virtual bool Init() override;
-    virtual void Update() override;
-    virtual void Draw() override;
-    virtual void OnMouseMove(int x, int y) override;
-    virtual void OnMouseClick(int button, int x, int y) override;
-    virtual void OnMousePressed(int button, int x, int y) override;
-    virtual void OnMouseReleased(int button, int x, int y) override;
-    virtual void OnMouseWheelUp(int x, int y) override;
-    virtual void OnMouseWheelDown(int x, int y) override;
-    virtual void OnEvent(Event *event) override;
-    virtual void Close() override;
+    virtual bool on_init() override;
+    virtual bool on_update() override;
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
+    virtual bool on_mouse_move(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_mouse_button_down(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_event(ALLEGRO_EVENT *event) override;
+    virtual bool on_close() override;
 
     void doorbit();
     void dosurface();

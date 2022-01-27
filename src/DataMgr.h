@@ -68,14 +68,8 @@ class Item {
 
     void Reset();
 
-    bool
-    IsArtifact() {
-        return itemType == IT_ARTIFACT;
-    };
-    bool
-    IsMineral() {
-        return itemType == IT_MINERAL;
-    };
+    bool IsArtifact() { return itemType == IT_ARTIFACT; };
+    bool IsMineral() { return itemType == IT_MINERAL; };
 
     ID id;                // the ID of this item
     ItemType itemType;    // the type of item

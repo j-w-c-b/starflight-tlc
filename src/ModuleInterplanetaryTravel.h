@@ -57,7 +57,7 @@ class ModuleInterPlanetaryTravel : public Module {
     int asx, asy;
     Star *star;
     Planet *planet;
-    Label *planet_label;
+    Label *m_planet_label;
     bool flag_nav;
     bool flag_thrusting;
     int flag_rotation;
@@ -74,19 +74,16 @@ class ModuleInterPlanetaryTravel : public Module {
   public:
     ModuleInterPlanetaryTravel();
     ~ModuleInterPlanetaryTravel();
-    virtual bool Init() override;
-    virtual void Update() override;
-    virtual void Draw() override;
-    virtual void OnKeyPress(int keyCode) override;
-    virtual void OnKeyReleased(int keyCode) override;
-    virtual void OnMouseMove(int x, int y) override;
-    virtual void OnMouseClick(int button, int x, int y) override;
-    virtual void OnMousePressed(int button, int x, int y) override;
-    virtual void OnMouseReleased(int button, int x, int y) override;
-    virtual void OnMouseWheelUp(int x, int y) override;
-    virtual void OnMouseWheelDown(int x, int y) override;
-    virtual void OnEvent(Event *event) override;
-    virtual void Close() override;
+    virtual bool on_init() override;
+    virtual bool on_update() override;
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
+    virtual bool on_key_down(ALLEGRO_KEYBOARD_EVENT *event) override;
+    virtual bool on_key_up(ALLEGRO_KEYBOARD_EVENT *event) override;
+    virtual bool on_mouse_move(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_mouse_button_down(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_event(ALLEGRO_EVENT *event) override;
+    virtual bool on_close() override;
 };
 
 #endif

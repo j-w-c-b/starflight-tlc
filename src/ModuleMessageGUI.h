@@ -22,10 +22,9 @@ class ModuleMessageGUI : public Module {
   public:
     ModuleMessageGUI();
     virtual ~ModuleMessageGUI();
-    virtual bool Init() override;
-    virtual void Update() override;
-    virtual void Draw() override;
-    virtual void Close() override;
+    virtual bool on_init() override;
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
+    virtual bool on_close() override;
 };
 
 #endif

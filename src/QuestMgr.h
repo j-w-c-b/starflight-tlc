@@ -22,22 +22,10 @@ class QuestMgr {
 
     void raiseEvent(int eventid, int param1 = -1, int param2 = -1);
 
-    std::string
-    getName() {
-        return questName;
-    }
-    std::string
-    getShort() {
-        return questShort;
-    }
-    std::string
-    getLong() {
-        return questLong;
-    }
-    std::string
-    getDebrief() {
-        return questDebrief;
-    }
+    std::string getName() { return questName; }
+    std::string getShort() { return questShort; }
+    std::string getLong() { return questLong; }
+    std::string getDebrief() { return questDebrief; }
 
     void getScriptGlobals();
     void setStoredValue(int value);

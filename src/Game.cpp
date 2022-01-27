@@ -166,28 +166,30 @@ Game::shutdown() {
 }
 
 void
-Game::ShowMessageBoxWindow(const std::string &initHeading,
-                           const std::string &initText,
-                           int initWidth,
-                           int initHeight,
-                           ALLEGRO_COLOR initTextColor,
-                           int initX,
-                           int initY,
-                           bool initCentered,
-                           bool /*pauseGame*/) {
+Game::ShowMessageBoxWindow(
+    const std::string &initHeading,
+    const std::string &initText,
+    int initWidth,
+    int initHeight,
+    ALLEGRO_COLOR initTextColor,
+    int initX,
+    int initY,
+    bool initCentered,
+    bool /*pauseGame*/) {
     m_pause = true;
 
     // if we have a msg box window, delete it
     KillMessageBoxWindow();
 
-    messageBox = new MessageBoxWindow(initHeading,
-                                      initText,
-                                      initX,
-                                      initY,
-                                      initWidth,
-                                      initHeight,
-                                      initTextColor,
-                                      initCentered);
+    messageBox = new MessageBoxWindow(
+        initHeading,
+        initText,
+        initX,
+        initY,
+        initWidth,
+        initHeight,
+        initTextColor,
+        initCentered);
 }
 
 void
@@ -396,18 +398,19 @@ ValidateScripts(const string &p_title) {
     };
 
     const int ENCNUM = 12;
-    string encounterScripts[ENCNUM] = {"data/globals.lua",
-                                       "data/quests.lua",
-                                       "data/encounter/encounter_common.lua",
-                                       "data/encounter/encounter_pirate.lua",
-                                       "data/encounter/encounter_spemin.lua",
-                                       "data/encounter/encounter_tafel.lua",
-                                       "data/encounter/encounter_thrynn.lua",
-                                       "data/encounter/encounter_nyssian.lua",
-                                       "data/encounter/encounter_minex.lua",
-                                       "data/encounter/encounter_elowan.lua",
-                                       "data/encounter/encounter_coalition.lua",
-                                       "data/encounter/encounter_barzhon.lua"};
+    string encounterScripts[ENCNUM] = {
+        "data/globals.lua",
+        "data/quests.lua",
+        "data/encounter/encounter_common.lua",
+        "data/encounter/encounter_pirate.lua",
+        "data/encounter/encounter_spemin.lua",
+        "data/encounter/encounter_tafel.lua",
+        "data/encounter/encounter_thrynn.lua",
+        "data/encounter/encounter_nyssian.lua",
+        "data/encounter/encounter_minex.lua",
+        "data/encounter/encounter_elowan.lua",
+        "data/encounter/encounter_coalition.lua",
+        "data/encounter/encounter_barzhon.lua"};
 
     string error, filename, linenum, message;
     int pos, n;
@@ -428,16 +431,17 @@ ValidateScripts(const string &p_title) {
             pos = (int)error.find(":");
             linenum = error.substr(0, pos);
             message = error.substr(pos + 1);
-            error = "Filename: " + Util::resource_path(encounterScripts[n]) +
-                    "\n\nLine #: " + linenum + "\n\nError: " + filename + "\n" +
-                    message;
+            error = "Filename: " + Util::resource_path(encounterScripts[n])
+                    + "\n\nLine #: " + linenum + "\n\nError: " + filename + "\n"
+                    + message;
             ALLEGRO_DEBUG("%s\n", error.c_str());
-            al_show_native_message_box(nullptr,
-                                       p_title.c_str(),
-                                       "Script Error",
-                                       error.c_str(),
-                                       nullptr,
-                                       ALLEGRO_MESSAGEBOX_ERROR);
+            al_show_native_message_box(
+                nullptr,
+                p_title.c_str(),
+                "Script Error",
+                error.c_str(),
+                nullptr,
+                ALLEGRO_MESSAGEBOX_ERROR);
             return false;
         }
     }
@@ -466,15 +470,16 @@ ValidateScripts(const string &p_title) {
             pos = (int)error.find(":");
             linenum = error.substr(0, pos);
             message = error.substr(pos + 1);
-            error = "Filename: " + planetScripts[n] + "\n\nLine #: " + linenum +
-                    "\n\nError: " + filename + "\n" + message;
+            error = "Filename: " + planetScripts[n] + "\n\nLine #: " + linenum
+                    + "\n\nError: " + filename + "\n" + message;
             ALLEGRO_DEBUG("%s\n", error.c_str());
-            al_show_native_message_box(nullptr,
-                                       p_title.c_str(),
-                                       "Script Error",
-                                       error.c_str(),
-                                       nullptr,
-                                       ALLEGRO_MESSAGEBOX_ERROR);
+            al_show_native_message_box(
+                nullptr,
+                p_title.c_str(),
+                "Script Error",
+                error.c_str(),
+                nullptr,
+                ALLEGRO_MESSAGEBOX_ERROR);
             return false;
         }
     }
@@ -501,41 +506,51 @@ ValidatePortraits() {
         std::string filepath;
 
         switch (item->itemType) {
-        case IT_INVALID: {
-            // this one is not supposed to ever happen
-            ALLEGRO_DEBUG("[ERROR]: item #%d is of invalid type\n", item->id);
-            ALLEGRO_ASSERT(0);
-        }
-        case IT_ARTIFACT: {
-            doCheck = true;
-            filepath = Util::resource_path("data/tradedepot/" + item->portrait);
-            break;
-        }
-        case IT_RUIN: {
-            doCheck = true;
-            filepath =
-                Util::resource_path("data/planetsurface/" + item->portrait);
-            break;
-        }
+        case IT_INVALID:
+            {
+                // this one is not supposed to ever happen
+                ALLEGRO_DEBUG(
+                    "[ERROR]: item #%d is of invalid type\n", item->id);
+                ALLEGRO_ASSERT(0);
+            }
+        case IT_ARTIFACT:
+            {
+                doCheck = true;
+                filepath =
+                    Util::resource_path("data/tradedepot/" + item->portrait);
+                break;
+            }
+        case IT_RUIN:
+            {
+                doCheck = true;
+                filepath =
+                    Util::resource_path("data/planetsurface/" + item->portrait);
+                break;
+            }
         case IT_MINERAL:
             // minerals do not have portraits
             doCheck = false;
             break;
-        case IT_LIFEFORM: {
-            doCheck = false;
-            break;
-        }
-        case IT_TRADEITEM: {
-            doCheck = true;
-            filepath = Util::resource_path("data/tradedepot/" + item->portrait);
-            break;
-        }
-        default: {
-            // not supposed to happen either
-            ALLEGRO_DEBUG("[ERROR]: item #%d is of unknown type\n", item->id);
-            ALLEGRO_ASSERT(0);
-            break;
-        }
+        case IT_LIFEFORM:
+            {
+                doCheck = false;
+                break;
+            }
+        case IT_TRADEITEM:
+            {
+                doCheck = true;
+                filepath =
+                    Util::resource_path("data/tradedepot/" + item->portrait);
+                break;
+            }
+        default:
+            {
+                // not supposed to happen either
+                ALLEGRO_DEBUG(
+                    "[ERROR]: item #%d is of unknown type\n", item->id);
+                ALLEGRO_ASSERT(0);
+                break;
+            }
         }
 
         if (doCheck) {
@@ -664,9 +679,9 @@ Game::Initialize_Graphics() {
     if (resolution == "") {
         actual_width = desktop_width;
         actual_height = desktop_height;
-        g_game->setGlobalString("RESOLUTION",
-                                Util::ToString(actual_width) + "x" +
-                                    Util::ToString(actual_height));
+        g_game->setGlobalString(
+            "RESOLUTION",
+            Util::ToString(actual_width) + "x" + Util::ToString(actual_height));
     } else {
         std::size_t div = resolution.find_first_of("xX,");
         if (div != string::npos) {
@@ -701,8 +716,8 @@ Game::Initialize_Graphics() {
             actual_width = SCREEN_WIDTH;
             actual_height = SCREEN_HEIGHT;
 
-            if ((m_display = al_create_display(actual_width, actual_height)) ==
-                nullptr) {
+            if ((m_display = al_create_display(actual_width, actual_height))
+                == nullptr) {
                 ALLEGRO_DEBUG("Fatal Error: Unable to set graphics mode\n");
                 return false;
             }
@@ -728,8 +743,8 @@ Game::Initialize_Graphics() {
                 VideoMode vmode;
                 vmode.width = mode.width;
                 vmode.height = mode.height;
-                if (vmode.width >= SCREEN_WIDTH &&
-                    vmode.height >= SCREEN_HEIGHT) {
+                if (vmode.width >= SCREEN_WIDTH
+                    && vmode.height >= SCREEN_HEIGHT) {
                     videomodes.push_back(vmode);
                 }
             }
@@ -797,6 +812,15 @@ Game::LoadModule(const string &mod) {
         string *s = reinterpret_cast<string *>(e->data1);
         delete s;
     });
+}
+
+void
+Game::broadcast_event(ALLEGRO_EVENT *event) {
+    if (event->type == EVENT_NONE) {
+        return;
+    }
+
+    al_emit_user_event(&m_user_event_source, event, nullptr);
 }
 
 /*
@@ -964,8 +988,8 @@ Game::UpdateAlienRaceAttitudes() {
     // update alien attitudes (200,000 is 3 1/3 minute, changing from attitude 1
     // to 10 will require 30 minutes)
     int mins = 1;
-    if (globalTimer.getTimer() >
-        g_game->gameState->alienAttitudeUpdate + 200000 * mins) {
+    if (globalTimer.getTimer()
+        > g_game->gameState->alienAttitudeUpdate + 200000 * mins) {
         g_game->gameState->alienAttitudeUpdate = globalTimer.getTimer();
 
         // update alien attitudes, all but for NONE(0) and PIRATE(1)
@@ -1015,16 +1039,16 @@ Game::RunGame() {
             need_redraw = true;
             break;
         case ALLEGRO_EVENT_KEY_DOWN:
-            OnKeyPress(event.keyboard.keycode);
+            on_key_down(&event.keyboard);
             break;
         case ALLEGRO_EVENT_KEY_CHAR:
-            OnKeyPressed(event.keyboard.keycode);
+            on_key_pressed(&event.keyboard);
             break;
         case ALLEGRO_EVENT_KEY_UP:
-            OnKeyReleased(event.keyboard.keycode);
+            on_key_up(&event.keyboard);
             break;
         case ALLEGRO_EVENT_MOUSE_AXES:
-            OnMouseMove(event.mouse.x, event.mouse.y);
+            on_mouse_move(&event.mouse);
             break;
         case ALLEGRO_EVENT_MOUSE_ENTER_DISPLAY:
         case ALLEGRO_EVENT_DISPLAY_SWITCH_IN:
@@ -1039,24 +1063,10 @@ Game::RunGame() {
         case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
             m_last_button_downs[event.mouse.button - 1] =
                 make_pair(event.mouse.x, event.mouse.y);
-            OnMousePressed(
-                event.mouse.button - 1, event.mouse.x, event.mouse.y);
+            on_mouse_button_down(&event.mouse);
             break;
         case ALLEGRO_EVENT_MOUSE_BUTTON_UP:
-            OnMouseReleased(
-                event.mouse.button - 1, event.mouse.x, event.mouse.y);
-            {
-                pair<int, int> &last_down =
-                    m_last_button_downs[event.mouse.button - 1];
-                int last_x = last_down.first;
-                int last_y = last_down.second;
-                if (last_x == event.mouse.x && last_y == event.mouse.y) {
-                    OnMouseClick(
-                        event.mouse.button - 1, event.mouse.x, event.mouse.y);
-                }
-                last_down.first = -1;
-                last_down.second = -1;
-            }
+            on_mouse_button_up(&event.mouse);
             break;
         case EVENT_CHANGE_MODULE:
             need_redraw = true;
@@ -1064,6 +1074,12 @@ Game::RunGame() {
             new_module = *reinterpret_cast<string *>(event.user.data1);
             al_flush_event_queue(m_event_queue);
             break;
+        default:
+            if (ALLEGRO_EVENT_TYPE_IS_USER(event.type)) {
+                modeMgr->event(&event);
+            } else {
+                cout << "Unexpected event source " << event.type << endl;
+            }
         }
     } while (!(need_redraw && al_is_event_queue_empty(m_event_queue)));
 
@@ -1088,22 +1104,22 @@ Game::RunGame() {
     if (!timePause) { // Update the current stardate:
         // base game time is needed to properly restore the date from a savegame
         // file
-        double newTime = gameState->getBaseGameTimeSecs() +
-                         (double)globalTimer.getStartTimeMillis() / 1000.0;
+        double newTime = gameState->getBaseGameTimeSecs()
+                         + (double)globalTimer.getStartTimeMillis() / 1000.0;
         gameState->setGameTimeSecs(newTime);
         gameState->stardate.Update(newTime, timeRateDivisor);
     }
 
     if (!m_pause) {
         // call update on all modules
-        modeMgr->Update();
+        modeMgr->update();
 
         // global abort flag to end game
         if (!m_keepRunning)
             return;
 
         // tell active module to draw
-        modeMgr->Draw();
+        modeMgr->draw(m_backbuffer);
 
         // perform generic updates to time-sensitive game data
         UpdateAlienRaceAttitudes();
@@ -1113,7 +1129,7 @@ Game::RunGame() {
     // handle the pause menu
     if (pauseMenu->isShowing()) {
         // tell active module to draw
-        modeMgr->Draw();
+        modeMgr->draw(m_backbuffer);
 
         // draw the pause popup
         pauseMenu->Draw();
@@ -1121,12 +1137,12 @@ Game::RunGame() {
 
     // handle the messagebox
     if (messageBox != NULL) {
-        if (messageBox->IsVisible()) {
+        if (messageBox->is_active()) {
             // tell active module to draw
-            modeMgr->Draw();
+            modeMgr->draw(m_backbuffer);
 
             // draw messagebox
-            messageBox->Draw();
+            messageBox->on_draw(m_backbuffer);
         } else {
             KillMessageBoxWindow();
         }
@@ -1160,21 +1176,22 @@ Game::RunGame() {
         // x == 0 doesn't quite work on the Trade Depot Screen - made it a 3 -
         // jjh
         y += 10;
-        g_game->PrintDefault(m_backbuffer,
-                             x,
-                             y,
-                             "Screen: " + Util::ToString((int)scale_width) +
-                                 "," + Util::ToString((int)scale_height) +
-                                 " (" + Util::ToString(screen_scaling) + "x)",
-                             GRAY);
+        g_game->PrintDefault(
+            m_backbuffer,
+            x,
+            y,
+            "Screen: " + Util::ToString((int)scale_width) + ","
+                + Util::ToString((int)scale_height) + " ("
+                + Util::ToString(screen_scaling) + "x)",
+            GRAY);
         y += 10;
         g_game->PrintDefault(
             m_backbuffer,
             x,
             y,
-            "Quest: " + Util::ToString(g_game->gameState->getActiveQuest()) +
-                " (" + Util::ToString(g_game->gameState->getQuestCompleted()) +
-                ")",
+            "Quest: " + Util::ToString(g_game->gameState->getActiveQuest())
+                + " (" + Util::ToString(g_game->gameState->getQuestCompleted())
+                + ")",
             GREEN);
         y += 10;
         g_game->PrintDefault(
@@ -1191,12 +1208,12 @@ Game::RunGame() {
             "Date: " + Util::ToString(gameState->stardate.GetFullDateString()),
             GRAY);
         y += 10;
-        g_game->PrintDefault(m_backbuffer,
-                             x,
-                             y,
-                             "Prof: " +
-                                 g_game->gameState->getProfessionString(),
-                             GRAY);
+        g_game->PrintDefault(
+            m_backbuffer,
+            x,
+            y,
+            "Prof: " + g_game->gameState->getProfessionString(),
+            GRAY);
         y += 10;
         g_game->PrintDefault(
             m_backbuffer,
@@ -1216,30 +1233,32 @@ Game::RunGame() {
             m_backbuffer,
             x,
             y,
-            "Cargo: " +
-                Util::ToString(g_game->gameState->m_ship.getOccupiedSpace()) +
-                "/" + Util::ToString(g_game->gameState->m_ship.getTotalSpace()),
+            "Cargo: "
+                + Util::ToString(g_game->gameState->m_ship.getOccupiedSpace())
+                + "/"
+                + Util::ToString(g_game->gameState->m_ship.getTotalSpace()),
             GRAY);
         y += 10;
         g_game->PrintDefault(
             m_backbuffer,
             x,
             y,
-            "HyperPos: " +
-                Util::ToString(
-                    g_game->gameState->getHyperspaceCoordinates().x) +
-                "," +
-                Util::ToString(g_game->gameState->getHyperspaceCoordinates().y),
+            "HyperPos: "
+                + Util::ToString(
+                    g_game->gameState->getHyperspaceCoordinates().x)
+                + ","
+                + Util::ToString(
+                    g_game->gameState->getHyperspaceCoordinates().y),
             GRAY);
         y += 10;
         g_game->PrintDefault(
             m_backbuffer,
             x,
             y,
-            "SystemPos: " +
-                Util::ToString(g_game->gameState->getSystemCoordinates().x) +
-                "," +
-                Util::ToString(g_game->gameState->getSystemCoordinates().y),
+            "SystemPos: "
+                + Util::ToString(g_game->gameState->getSystemCoordinates().x)
+                + ","
+                + Util::ToString(g_game->gameState->getSystemCoordinates().y),
             GRAY);
         // Print out the aliens' attitude toward us:
         /*   PrintDefault(m_backbuffer,0,y,"Attitudes");
@@ -1266,16 +1285,17 @@ Game::RunGame() {
         al_clear_to_color(BLACK);
     }
 
-    al_draw_scaled_bitmap(m_backbuffer,
-                          0,
-                          0,
-                          SCREEN_WIDTH,
-                          SCREEN_HEIGHT,
-                          m_backbuffer_x_offset + v,
-                          m_backbuffer_y_offset,
-                          SCREEN_WIDTH * m_backbuffer_scale - v,
-                          SCREEN_HEIGHT * m_backbuffer_scale - v,
-                          0);
+    al_draw_scaled_bitmap(
+        m_backbuffer,
+        0,
+        0,
+        SCREEN_WIDTH,
+        SCREEN_HEIGHT,
+        m_backbuffer_x_offset + v,
+        m_backbuffer_y_offset,
+        SCREEN_WIDTH * m_backbuffer_scale - v,
+        SCREEN_HEIGHT * m_backbuffer_scale - v,
+        0);
 
     al_flip_display();
 }
@@ -1283,45 +1303,50 @@ Game::RunGame() {
 #pragma region "UI events"
 
 void
-Game::OnKeyPress(int keyCode) {
+Game::on_key_down(ALLEGRO_KEYBOARD_EVENT *event) {
     // send keypress event to messagebox
-    if (messageBox != NULL) {
-        // this stops buttons from under the messagebox from being clicked
-        if (messageBox->OnKeyPress(keyCode))
+    if (messageBox != nullptr) {
+        if (!messageBox->on_key_pressed(event)) {
             return;
+        }
     }
 
     if (!m_pause) {
-        modeMgr->OnKeyPress(keyCode);
+        modeMgr->on_key_down(event);
     }
 }
 
 void
-Game::OnKeyPressed(int keyCode) {
+Game::on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event) {
     if (!m_pause) {
-        modeMgr->OnKeyPressed(keyCode);
+        modeMgr->on_key_pressed(event);
     }
 }
 
 void
-Game::OnKeyReleased(int keyCode) {
-    if (keyCode == ALLEGRO_KEY_ESCAPE)
+Game::on_key_up(ALLEGRO_KEYBOARD_EVENT *event) {
+    if (event->keycode == ALLEGRO_KEY_ESCAPE)
         TogglePauseMenu();
 
     if (!m_pause) {
-        modeMgr->OnKeyReleased(keyCode);
+        modeMgr->on_key_up(event);
     }
 }
 
 void
 Game::toggleShowControls() {
     showControls = !showControls;
-    Event e(showControls ? EVENT_SHOW_CONTROLS : EVENT_HIDE_CONTROLS);
-    modeMgr->BroadcastEvent(&e);
+    ALLEGRO_EVENT e = {
+        .type = static_cast<unsigned int>(
+            showControls ? EVENT_SHOW_CONTROLS : EVENT_HIDE_CONTROLS)};
+    broadcast_event(&e);
 }
 
 void
-Game::OnMouseMove(int x, int y) {
+Game::on_mouse_move(ALLEGRO_MOUSE_EVENT *event) {
+    int x = event->x;
+    int y = event->y;
+
     // send mouse event to pause menu
     if (pauseMenu->isShowing()) {
         if (pauseMenu->OnMouseMove(x, y))
@@ -1329,45 +1354,36 @@ Game::OnMouseMove(int x, int y) {
     }
 
     // send mouse event to messagebox
-    if (messageBox != NULL) {
+    if (messageBox != nullptr) {
         // this stops buttons from under the messagebox from being clicked
-        if (messageBox->OnMouseMove(x, y))
+        if (!messageBox->on_mouse_move(event))
             return;
     }
 
     if (!m_pause) {
-        modeMgr->OnMouseMove(x, y);
+        modeMgr->on_mouse_move(event);
     }
 }
 
 void
-Game::OnMouseClick(int button, int x, int y) {
+Game::on_mouse_button_down(ALLEGRO_MOUSE_EVENT *event) {
     // send mouse event to messagebox
-    if (messageBox != NULL) {
+    if (messageBox != nullptr) {
         // this stops buttons from under the messagebox from being clicked
-        if (messageBox->OnMouseClick(button, x, y))
+        if (!messageBox->on_mouse_button_down(event))
             return;
     }
     if (!m_pause) {
-        modeMgr->OnMouseClick(button, x, y);
+        modeMgr->mouse_button_down(event);
     }
 }
 
 void
-Game::OnMousePressed(int button, int x, int y) {
-    // send mouse event to messagebox
-    if (messageBox != NULL) {
-        // this stops buttons from under the messagebox from being clicked
-        if (messageBox->OnMousePressed(button, x, y))
-            return;
-    }
-    if (!m_pause) {
-        modeMgr->OnMousePressed(button, x, y);
-    }
-}
+Game::on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) {
+    int button = event->button - 1;
+    int x = event->x;
+    int y = event->y;
 
-void
-Game::OnMouseReleased(int button, int x, int y) {
     // send mouse event to pause menu
     if (pauseMenu->isShowing()) {
         if (pauseMenu->OnMouseReleased(button, x, y))
@@ -1377,25 +1393,11 @@ Game::OnMouseReleased(int button, int x, int y) {
     // send mouse event to messagebox
     if (messageBox != NULL) {
         // this stops buttons from under the messagebox from being clicked
-        if (messageBox->OnMouseReleased(button, x, y))
+        if (!messageBox->on_mouse_button_up(event))
             return;
     }
     if (!m_pause) {
-        modeMgr->OnMouseReleased(button, x, y);
-    }
-}
-
-void
-Game::OnMouseWheelUp(int x, int y) {
-    if (!m_pause) {
-        modeMgr->OnMouseWheelUp(x, y);
-    }
-}
-
-void
-Game::OnMouseWheelDown(int x, int y) {
-    if (!m_pause) {
-        modeMgr->OnMouseWheelDown(x, y);
+        modeMgr->on_mouse_button_up(event);
     }
 }
 
@@ -1406,154 +1408,117 @@ Game::InitializeModules() {
     bool result = true;
 
     // STARTUP MODE
-    Module *mode_startup = new Module;
-    Module *startup = new ModuleStartup;
-    mode_startup->AddChildModule(startup);
     modeMgr->AddMode(
-        MODULE_STARTUP, mode_startup, "data/startup/Starflight.ogg");
+        MODULE_STARTUP, new ModuleStartup(), "data/startup/Starflight.ogg");
 
     // TITLE SCREEN GAME MODE
-    Module *mode_titleScreen = new Module;
-    Module *titleScreen = new ModuleTitleScreen;
-    mode_titleScreen->AddChildModule(titleScreen);
     modeMgr->AddMode(
-        MODULE_TITLESCREEN, mode_titleScreen, "data/startup/Starflight.ogg");
+        MODULE_TITLESCREEN,
+        new ModuleTitleScreen(),
+        "data/startup/Starflight.ogg");
 
     // CREDITS GAME MODE
-    Module *mode_Credits = new Module;
-    Module *credits = new ModuleCredits;
-    mode_Credits->AddChildModule(credits);
-    modeMgr->AddMode(MODULE_CREDITS, mode_Credits, "data/credits/credits.ogg");
+    modeMgr->AddMode(
+        MODULE_CREDITS, new ModuleCredits(), "data/credits/credits.ogg");
 
     // STARPORT MODE
-    Module *mode_starport = new Module;
-    Module *starport = new ModuleStarport;
-    mode_starport->AddChildModule(starport);
     modeMgr->AddMode(
-        MODULE_STARPORT, mode_starport, "data/starport/starport.ogg");
+        MODULE_STARPORT, new ModuleStarport, "data/starport/starport.ogg");
 
     // CAPTAIN CREATION MODE
-    Module *mode_captainCreation = new Module;
-    Module *captainCreation = new ModuleCaptainCreation;
-    mode_captainCreation->AddChildModule(captainCreation);
-    modeMgr->AddMode(MODULE_CAPTAINCREATION,
-                     mode_captainCreation,
-                     "data/startup/Starflight.ogg");
+    modeMgr->AddMode(
+        MODULE_CAPTAINCREATION,
+        new ModuleCaptainCreation,
+        "data/startup/Starflight.ogg");
 
     // CAPTAIN'S LOUNGE MODE
-    Module *mode_captainsLounge = new Module;
-    Module *captainsLounge = new ModuleCaptainsLounge;
-    mode_captainsLounge->AddChildModule(captainsLounge);
-    modeMgr->AddMode(MODULE_CAPTAINSLOUNGE,
-                     mode_captainsLounge,
-                     "data/starport/starport.ogg");
+    modeMgr->AddMode(
+        MODULE_CAPTAINSLOUNGE,
+        new ModuleCaptainsLounge,
+        "data/starport/starport.ogg");
 
     // SHIPCONFIG GAME MODE
-    Module *mode_Shipconfig = new Module;
-    Module *shipconfig = new ModuleShipConfig;
-    mode_Shipconfig->AddChildModule(shipconfig);
     modeMgr->AddMode(
-        MODULE_SHIPCONFIG, mode_Shipconfig, "data/starport/starport.ogg");
+        MODULE_SHIPCONFIG, new ModuleShipConfig, "data/starport/starport.ogg");
 
     // INTERSTELLAR (HYPERSPACE) TRAVEL GAME MODE
-    Module *mode_hyperspace = new Module();
-    mode_hyperspace->AddChildModule(new ModuleInterstellarTravel);
-    mode_hyperspace->AddChildModule(new ModuleAuxiliaryDisplay);
-    mode_hyperspace->AddChildModule(new ModuleControlPanel);
-    mode_hyperspace->AddChildModule(new ModuleStarmap);
-    mode_hyperspace->AddChildModule(new ModuleTopGUI);
-    mode_hyperspace->AddChildModule(new ModuleQuestLog);
-    mode_hyperspace->AddChildModule(new ModuleMedical);
-    mode_hyperspace->AddChildModule(new ModuleEngineer);
-    mode_hyperspace->AddChildModule(new ModuleCargoWindow);
-    mode_hyperspace->AddChildModule(new ModuleMessageGUI);
+    Module *mode_hyperspace = new ModuleInterstellarTravel();
+    mode_hyperspace->add_child_module(new ModuleAuxiliaryDisplay);
+    mode_hyperspace->add_child_module(new ModuleControlPanel);
+    mode_hyperspace->add_child_module(new ModuleStarmap);
+    mode_hyperspace->add_child_module(new ModuleTopGUI);
+    mode_hyperspace->add_child_module(new ModuleQuestLog);
+    mode_hyperspace->add_child_module(new ModuleMedical);
+    mode_hyperspace->add_child_module(new ModuleEngineer);
+    mode_hyperspace->add_child_module(new ModuleCargoWindow);
+    mode_hyperspace->add_child_module(new ModuleMessageGUI);
     modeMgr->AddMode(
         MODULE_HYPERSPACE, mode_hyperspace, "data/spacetravel/spacetravel.ogg");
 
     // INTERPLANETARY TRAVEL GAME MODE
-    Module *mode_interplanetaryTravel = new Module();
-    mode_interplanetaryTravel->AddChildModule(new ModuleInterPlanetaryTravel);
-    mode_interplanetaryTravel->AddChildModule(new ModuleAuxiliaryDisplay);
-    mode_interplanetaryTravel->AddChildModule(new ModuleControlPanel);
-    mode_interplanetaryTravel->AddChildModule(new ModuleStarmap);
-    mode_interplanetaryTravel->AddChildModule(new ModuleTopGUI);
-    mode_interplanetaryTravel->AddChildModule(new ModuleQuestLog);
-    mode_interplanetaryTravel->AddChildModule(new ModuleMedical);
-    mode_interplanetaryTravel->AddChildModule(new ModuleEngineer);
-    mode_interplanetaryTravel->AddChildModule(new ModuleCargoWindow);
-    mode_interplanetaryTravel->AddChildModule(new ModuleMessageGUI);
-    modeMgr->AddMode(MODULE_INTERPLANETARY,
-                     mode_interplanetaryTravel,
-                     "data/spacetravel/spacetravel.ogg");
+    Module *mode_interplanetaryTravel = new ModuleInterPlanetaryTravel;
+    mode_interplanetaryTravel->add_child_module(new ModuleAuxiliaryDisplay);
+    mode_interplanetaryTravel->add_child_module(new ModuleControlPanel);
+    mode_interplanetaryTravel->add_child_module(new ModuleStarmap);
+    mode_interplanetaryTravel->add_child_module(new ModuleTopGUI);
+    mode_interplanetaryTravel->add_child_module(new ModuleQuestLog);
+    mode_interplanetaryTravel->add_child_module(new ModuleMedical);
+    mode_interplanetaryTravel->add_child_module(new ModuleEngineer);
+    mode_interplanetaryTravel->add_child_module(new ModuleCargoWindow);
+    mode_interplanetaryTravel->add_child_module(new ModuleMessageGUI);
+    modeMgr->AddMode(
+        MODULE_INTERPLANETARY,
+        mode_interplanetaryTravel,
+        "data/spacetravel/spacetravel.ogg");
 
     // PLANET ORBIT GAME MODE
-    // due to OpenGL rendering, 2D overlays will not work here
-    Module *mode_orbit = new Module();
-    mode_orbit->AddChildModule(new ModulePlanetOrbit);
-    mode_orbit->AddChildModule(new ModuleAuxiliaryDisplay);
-    mode_orbit->AddChildModule(new ModuleControlPanel);
-    mode_orbit->AddChildModule(new ModuleMessageGUI);
+    Module *mode_orbit = new ModulePlanetOrbit();
+    mode_orbit->add_child_module(new ModuleAuxiliaryDisplay);
+    mode_orbit->add_child_module(new ModuleControlPanel);
+    mode_orbit->add_child_module(new ModuleMessageGUI);
     modeMgr->AddMode(
         MODULE_ORBIT, mode_orbit, "data/spacetravel/spacetravel.ogg");
 
     // PLANET SURFACE MODE
-    Module *mode_planet = new Module();
-    mode_planet->AddChildModule(new ModulePlanetSurface);
-    mode_planet->AddChildModule(new ModuleCargoWindow);
+    Module *mode_planet = new ModulePlanetSurface;
+    mode_planet->add_child_module(new ModuleCargoWindow);
     modeMgr->AddMode(
         MODULE_SURFACE, mode_planet, "data/planetsurface/planetsurface.ogg");
 
     // CREW ASSIGNMENT GAME MODE
-    Module *mode_crew = new Module;
-    Module *crewAssignment = new ModuleCrewHire();
-    mode_crew->AddChildModule(crewAssignment);
-    modeMgr->AddMode(MODULE_CREWBUY, mode_crew, "data/starport/starport.ogg");
+    modeMgr->AddMode(
+        MODULE_CREWBUY, new ModuleCrewHire(), "data/starport/starport.ogg");
 
     // BANK MODULE
-    Module *mode_bank = new Module;
-    Module *bank = new ModuleBank();
-    mode_bank->AddChildModule(bank);
-    modeMgr->AddMode(MODULE_BANK, mode_bank, "data/starport/starport.ogg");
+    modeMgr->AddMode(MODULE_BANK, new ModuleBank, "data/starport/starport.ogg");
 
     // TRADE DEPOT MODULE
-    Module *mode_tradedepot = new Module;
-    Module *tradedepot = new ModuleTradeDepot;
-    mode_tradedepot->AddChildModule(tradedepot);
     g_game->modeMgr->AddMode(
-        MODULE_TRADEDEPOT, mode_tradedepot, "data/starport/starport.ogg");
+        MODULE_TRADEDEPOT, new ModuleTradeDepot, "data/starport/starport.ogg");
 
     // GAME OVER MODULE
-    Module *mode_gameover = new Module;
-    Module *gameOver = new ModuleGameOver;
-    mode_gameover->AddChildModule(gameOver);
-    g_game->modeMgr->AddMode(MODULE_GAMEOVER, mode_gameover, "");
+    g_game->modeMgr->AddMode(MODULE_GAMEOVER, new ModuleGameOver, "");
 
     // CANTINA MODULE
-    Module *mode_cantina = new Module;
     Module *cantina = new ModuleCantina;
-    mode_cantina->AddChildModule(cantina);
     g_game->modeMgr->AddMode(
-        MODULE_CANTINA, mode_cantina, "data/starport/starport.ogg");
+        MODULE_CANTINA, cantina, "data/starport/starport.ogg");
     g_game->modeMgr->AddMode(
-        MODULE_RESEARCHLAB, mode_cantina, "data/starport/starport.ogg");
+        MODULE_RESEARCHLAB, cantina, "data/starport/starport.ogg");
     g_game->modeMgr->AddMode(
-        MODULE_MILITARYOPS, mode_cantina, "data/starport/starport.ogg");
+        MODULE_MILITARYOPS, cantina, "data/starport/starport.ogg");
 
     // ALIEN ENCOUNTER MODULE
-    Module *mode_encounter = new Module;
-    mode_encounter->AddChildModule(new ModuleEncounter);
-    mode_encounter->AddChildModule(new ModuleTopGUI);
-    mode_encounter->AddChildModule(new ModuleControlPanel);
-    mode_encounter->AddChildModule(new ModuleCargoWindow);
+    Module *mode_encounter = new ModuleEncounter;
+    mode_encounter->add_child_module(new ModuleTopGUI);
+    mode_encounter->add_child_module(new ModuleControlPanel);
+    mode_encounter->add_child_module(new ModuleCargoWindow);
     g_game->modeMgr->AddMode(
         MODULE_ENCOUNTER, mode_encounter, "data/encounter/combat.ogg");
 
     // SETTINGS GAME MODE
-    Module *mode_Settings = new Module;
-    Module *settings = new ModuleSettings;
-    mode_Settings->AddChildModule(settings);
     modeMgr->AddMode(
-        MODULE_SETTINGS, mode_Settings, "data/startup/Starflight.ogg");
+        MODULE_SETTINGS, new ModuleSettings, "data/startup/Starflight.ogg");
 
     return result;
 }
@@ -1561,23 +1526,25 @@ Game::InitializeModules() {
 #pragma region "Text output"
 
 void
-Game::PrintDefault(ALLEGRO_BITMAP *dest,
-                   int x,
-                   int y,
-                   const std::string &text,
-                   ALLEGRO_COLOR color) {
+Game::PrintDefault(
+    ALLEGRO_BITMAP *dest,
+    int x,
+    int y,
+    const std::string &text,
+    ALLEGRO_COLOR color) {
     al_set_target_bitmap(dest);
     al_draw_text(font12, color, x, y, 0, text.c_str());
 }
 
 void
-Game::Print(ALLEGRO_BITMAP *dest,
-            ALLEGRO_FONT *_font,
-            int x,
-            int y,
-            const std::string &text,
-            ALLEGRO_COLOR color,
-            bool shadow) {
+Game::Print(
+    ALLEGRO_BITMAP *dest,
+    ALLEGRO_FONT *_font,
+    int x,
+    int y,
+    const std::string &text,
+    ALLEGRO_COLOR color,
+    bool shadow) {
     al_set_target_bitmap(dest);
     if (shadow) {
         al_draw_text(_font, BLACK, x + 2, y + 2, 0, text.c_str());
@@ -1586,58 +1553,64 @@ Game::Print(ALLEGRO_BITMAP *dest,
 }
 
 void
-Game::Print12(ALLEGRO_BITMAP *dest,
-              int x,
-              int y,
-              const std::string &text,
-              ALLEGRO_COLOR color,
-              bool shadow) {
+Game::Print12(
+    ALLEGRO_BITMAP *dest,
+    int x,
+    int y,
+    const std::string &text,
+    ALLEGRO_COLOR color,
+    bool shadow) {
     Print(dest, font12, x, y, text, color, shadow);
 }
 
 void
-Game::Print18(ALLEGRO_BITMAP *dest,
-              int x,
-              int y,
-              const std::string &text,
-              ALLEGRO_COLOR color,
-              bool shadow) {
+Game::Print18(
+    ALLEGRO_BITMAP *dest,
+    int x,
+    int y,
+    const std::string &text,
+    ALLEGRO_COLOR color,
+    bool shadow) {
     Print(dest, font18, x, y, text, color, shadow);
 }
 void
-Game::Print20(ALLEGRO_BITMAP *dest,
-              int x,
-              int y,
-              const std::string &text,
-              ALLEGRO_COLOR color,
-              bool shadow) {
+Game::Print20(
+    ALLEGRO_BITMAP *dest,
+    int x,
+    int y,
+    const std::string &text,
+    ALLEGRO_COLOR color,
+    bool shadow) {
     Print(dest, font20, x, y, text, color, shadow);
 }
 void
-Game::Print22(ALLEGRO_BITMAP *dest,
-              int x,
-              int y,
-              const std::string &text,
-              ALLEGRO_COLOR color,
-              bool shadow) {
+Game::Print22(
+    ALLEGRO_BITMAP *dest,
+    int x,
+    int y,
+    const std::string &text,
+    ALLEGRO_COLOR color,
+    bool shadow) {
     Print(dest, font22, x, y, text, color, shadow);
 }
 void
-Game::Print24(ALLEGRO_BITMAP *dest,
-              int x,
-              int y,
-              const std::string &text,
-              ALLEGRO_COLOR color,
-              bool shadow) {
+Game::Print24(
+    ALLEGRO_BITMAP *dest,
+    int x,
+    int y,
+    const std::string &text,
+    ALLEGRO_COLOR color,
+    bool shadow) {
     Print(dest, font24, x, y, text, color, shadow);
 }
 void
-Game::Print32(ALLEGRO_BITMAP *dest,
-              int x,
-              int y,
-              const std::string &text,
-              ALLEGRO_COLOR color,
-              bool shadow) {
+Game::Print32(
+    ALLEGRO_BITMAP *dest,
+    int x,
+    int y,
+    const std::string &text,
+    ALLEGRO_COLOR color,
+    bool shadow) {
     Print(dest, font32, x, y, text, color, shadow);
 }
 
@@ -1649,10 +1622,11 @@ want messages printing repeatedly. Delay of -1 causes message to print only once
 (until ScrollBox is cleared). Default delay of 0 forces printout.
  **/
 void
-Game::printout(ScrollBox::ScrollBox *scroll,
-               const string &str,
-               ALLEGRO_COLOR color,
-               long delay) {
+Game::printout(
+    ScrollBox::ScrollBox *scroll,
+    const string &str,
+    ALLEGRO_COLOR color,
+    long delay) {
     bool found = false;
 
     TimedText message = {str, color, globalTimer.getTimer() + delay};

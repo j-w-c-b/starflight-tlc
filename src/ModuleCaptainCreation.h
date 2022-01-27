@@ -2,34 +2,27 @@
 #define MODULECAPTAINCREATION_H
 #pragma once
 
-#include "AudioSystem.h"
-#include "GameState.h"
-#include "Module.h"
-#include "ResourceManager.h"
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_font.h>
-
-class Button;
-class Label;
+#
+#include "AudioSystem.h"
+#include "Button.h"
+#include "GameState.h"
+#include "Label.h"
+#include "Module.h"
+#include "ResourceManager.h"
 
 class ModuleCaptainCreation : public Module {
   public:
-    ModuleCaptainCreation(void);
-    virtual ~ModuleCaptainCreation(void);
-    virtual bool Init() override;
-    virtual void Update() override;
-    virtual void Draw() override;
-    virtual void OnKeyPress(int keyCode) override;
-    virtual void OnKeyPressed(int keyCode) override;
-    virtual void OnKeyReleased(int keyCode) override;
-    virtual void OnMouseMove(int x, int y) override;
-    virtual void OnMouseClick(int button, int x, int y) override;
-    virtual void OnMousePressed(int button, int x, int y) override;
-    virtual void OnMouseReleased(int button, int x, int y) override;
-    virtual void OnMouseWheelUp(int x, int y) override;
-    virtual void OnMouseWheelDown(int x, int y) override;
-    virtual void OnEvent(Event *event) override;
-    virtual void Close() override;
+    ModuleCaptainCreation();
+    virtual ~ModuleCaptainCreation();
+    virtual bool on_init() override;
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
+    virtual bool on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event) override;
+    virtual bool on_mouse_move(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_event(ALLEGRO_EVENT *event) override;
+    virtual bool on_close() override;
 
   private:
     void chooseFreelance();
@@ -54,11 +47,11 @@ class ModuleCaptainCreation : public Module {
     ALLEGRO_BITMAP *m_militaryBtn;
     ALLEGRO_BITMAP *m_militaryBtnMouseOver;
 
-    Label *m_profInfoScientific;
-    Label *m_profInfoFreelance;
-    Label *m_profInfoMilitary;
+    Label *m_prof_info_label;
 
-    Label *m_profInfoBox;
+    static const std::string c_prof_info_scientific_text;
+    static const std::string c_prof_info_freelance_text;
+    static const std::string c_prof_info_military_text;
 
     ALLEGRO_BITMAP *m_detailsBackground;
 

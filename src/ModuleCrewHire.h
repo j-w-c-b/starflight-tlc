@@ -10,36 +10,35 @@
 
 #include "Button.h"
 #include "GameState.h"
+#include "Label.h"
 #include "Module.h"
 #include "ResourceManager.h"
 #include "ScrollBox.h"
 #include "tinyxml/tinyxml.h"
 #include <allegro5/allegro.h>
 
-class Label;
-
 class ModuleCrewHire : public Module {
   public:
     ModuleCrewHire();
     virtual ~ModuleCrewHire();
-    virtual bool Init() override;
-    virtual void Update() override;
-    virtual void Draw() override;
-    virtual void OnMouseMove(int x, int y) override;
-    virtual void OnMouseClick(int button, int x, int y) override;
-    virtual void OnMousePressed(int button, int x, int y) override;
-    virtual void OnMouseReleased(int button, int x, int y) override;
-    virtual void OnMouseWheelUp(int x, int y) override;
-    virtual void OnMouseWheelDown(int x, int y) override;
-    virtual void OnEvent(Event *event) override;
-    virtual void Close() override;
+    virtual bool on_init() override;
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
+    virtual bool on_mouse_move(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_event(ALLEGRO_EVENT *event) override;
+    virtual bool on_close() override;
 
     Officer *FindOfficerType(OfficerType type);
 
   private:
     void RefreshUnassignedCrewBox();
-    void RefreshUnemployeedCrewBox();
+    void RefreshUnemployedCrewBox();
     void DrawOfficerInfo(Officer *officer);
+
+    static std::string c_directions;
+    static std::string c_hire_more_directions;
+    static std::string c_title;
+    static std::string c_statistics_title;
 
     int currentScreen;
     int selectedPosition;
@@ -49,11 +48,9 @@ class ModuleCrewHire : public Module {
     int lastEmployeeSpawn;
     int currentVisit;
 
-    Label *title;
-    Label *slogan;
-    Label *directions;
-    Label *hiremoreDirections;
-    Label *stats;
+    Label *m_title;
+    Label *m_slogan;
+    Label *m_directions;
 
     Button *m_exitBtn;
     Button *m_hireBtn;
@@ -72,8 +69,8 @@ class ModuleCrewHire : public Module {
     Officer *selectedOfficer;
 
     ScrollBox::ScrollBox *unassignedCrew;
-    ScrollBox::ScrollBox *unemployeed;
-    ScrollBox::ScrollBox *unemployeedType;
+    ScrollBox::ScrollBox *unemployed;
+    ScrollBox::ScrollBox *unemployedType;
 
     ScrollBox::ColoredString coloredString;
     ResourceManager<ALLEGRO_BITMAP> resources;

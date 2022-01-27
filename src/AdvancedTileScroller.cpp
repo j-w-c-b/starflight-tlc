@@ -1,14 +1,17 @@
 
+#include <string.h>
+
+#include <allegro5/allegro.h>
+
 #include "AdvancedTileScroller.h"
 #include "Game.h"
 #include "Util.h"
-#include <allegro5/allegro.h>
-#include <string.h>
 
-AdvancedTileScroller::AdvancedTileScroller(int TilesAcross,
-                                           int TilesDown,
-                                           int TileWidth,
-                                           int TileHeight)
+AdvancedTileScroller::AdvancedTileScroller(
+    int TilesAcross,
+    int TilesDown,
+    int TileWidth,
+    int TileHeight)
     : scrollbuffer(0), tiles(0), tileData(0), pointData(0),
       tileWidth(TileWidth), tileHeight(TileHeight), tilesAcross(TilesAcross),
       tilesDown(TilesDown), scrollX(0.0f), scrollY(0.0f), windowWidth(0),
@@ -73,10 +76,11 @@ AdvancedTileScroller::ClearTileImageCache() {
 }
 
 bool
-AdvancedTileScroller::LoadTileSet(char *FileName,
-                                  int Variations,
-                                  bool GroundNavigation,
-                                  bool AirNavigation) {
+AdvancedTileScroller::LoadTileSet(
+    char *FileName,
+    int Variations,
+    bool GroundNavigation,
+    bool AirNavigation) {
     ALLEGRO_BITMAP *tileSetImage = al_load_bitmap(FileName);
     if (!tileSetImage) {
         g_game->message("error loading tileSetImage");
@@ -94,10 +98,11 @@ AdvancedTileScroller::LoadTileSet(char *FileName,
 }
 
 bool
-AdvancedTileScroller::LoadTileSet(ALLEGRO_BITMAP *tileImage,
-                                  int Variations,
-                                  bool GroundNavigation,
-                                  bool AirNavigation) {
+AdvancedTileScroller::LoadTileSet(
+    ALLEGRO_BITMAP *tileImage,
+    int Variations,
+    bool GroundNavigation,
+    bool AirNavigation) {
     if (!tileImage) {
         g_game->message("PlanetSurface: error loading tileSetImage");
         return false;
@@ -132,8 +137,8 @@ AdvancedTileScroller::GenerateTiles() {
 ALLEGRO_BITMAP *
 AdvancedTileScroller::GenerateTile(int BaseTileSet, int TileX, int TileY) {
     int key = 0;
-    int variation = (int)(pow((float)(rand() / RAND_MAX), 22) *
-                          (tiles[BaseTileSet]->getVariations() + 2));
+    int variation =
+        (int)(pow((float)(rand() / RAND_MAX), 22) * (tiles[BaseTileSet]->getVariations() + 2));
     if (variation > tiles[BaseTileSet]->getVariations() + 1)
         variation = tiles[BaseTileSet]->getVariations() + 1;
     int pdIndexes[4];
@@ -142,9 +147,9 @@ AdvancedTileScroller::GenerateTile(int BaseTileSet, int TileX, int TileY) {
     pdIndexes[2] = pdIndex(TileX + 1, TileY + 1);
     pdIndexes[3] = pdIndex(TileX + 1, TileY);
 
-    if (!(pointData[pdIndexes[0]] == pointData[pdIndexes[1]] &&
-          pointData[pdIndexes[1]] == pointData[pdIndexes[2]] &&
-          pointData[pdIndexes[2]] == pointData[pdIndexes[3]]))
+    if (!(pointData[pdIndexes[0]] == pointData[pdIndexes[1]]
+          && pointData[pdIndexes[1]] == pointData[pdIndexes[2]]
+          && pointData[pdIndexes[2]] == pointData[pdIndexes[3]]))
         variation = 0;
 
     key = BaseTileSet * 0x1;
@@ -160,33 +165,35 @@ AdvancedTileScroller::GenerateTile(int BaseTileSet, int TileX, int TileY) {
         al_set_target_bitmap(tile);
         ALLEGRO_BITMAP *scratch = al_create_bitmap(tileWidth, tileHeight);
         if (variation == 0)
-            al_draw_bitmap_region(tiles[BaseTileSet]->getTiles(),
-                                  0,
-                                  0,
-                                  tileWidth,
-                                  tileHeight,
-                                  0,
-                                  0,
-                                  0);
+            al_draw_bitmap_region(
+                tiles[BaseTileSet]->getTiles(),
+                0,
+                0,
+                tileWidth,
+                tileHeight,
+                0,
+                0,
+                0);
         else if (variation == 1)
-            al_draw_bitmap_region(tiles[BaseTileSet]->getTiles(),
-                                  3 * tileWidth,
-                                  3 * tileHeight,
-                                  tileWidth,
-                                  tileHeight,
-                                  0,
-                                  0,
-                                  0);
+            al_draw_bitmap_region(
+                tiles[BaseTileSet]->getTiles(),
+                3 * tileWidth,
+                3 * tileHeight,
+                tileWidth,
+                tileHeight,
+                0,
+                0,
+                0);
         else
-            al_draw_bitmap_region(tiles[BaseTileSet]->getTiles(),
-                                  256 +
-                                      ((int)((variation - 2) % 4) * tileWidth),
-                                  ((int)((variation - 2) / 4) * tileHeight),
-                                  tileWidth,
-                                  tileHeight,
-                                  0,
-                                  0,
-                                  0);
+            al_draw_bitmap_region(
+                tiles[BaseTileSet]->getTiles(),
+                256 + ((int)((variation - 2) % 4) * tileWidth),
+                ((int)((variation - 2) / 4) * tileHeight),
+                tileWidth,
+                tileHeight,
+                0,
+                0,
+                0);
 
         int pdValues[4];
         pdValues[0] = pointData[pdIndexes[0]];
@@ -209,14 +216,15 @@ AdvancedTileScroller::GenerateTile(int BaseTileSet, int TileX, int TileY) {
                 }
 
                 al_set_target_bitmap(scratch);
-                al_draw_bitmap_region(tiles[pdValues[i]]->getTiles(),
-                                      (int)(accessoryType % 4) * tileWidth,
-                                      (int)(accessoryType / 4) * tileHeight,
-                                      tileWidth,
-                                      tileHeight,
-                                      0,
-                                      0,
-                                      0);
+                al_draw_bitmap_region(
+                    tiles[pdValues[i]]->getTiles(),
+                    (int)(accessoryType % 4) * tileWidth,
+                    (int)(accessoryType / 4) * tileHeight,
+                    tileWidth,
+                    tileHeight,
+                    0,
+                    0,
+                    0);
                 al_set_target_bitmap(tile);
                 al_draw_bitmap(scratch, 0, 0, 0);
             }
@@ -296,14 +304,15 @@ AdvancedTileScroller::UpdateScrollBuffer() {
 
     for (int y = 0; y <= rows && y + tiley < tilesDown; ++y) {
         for (int x = 0; x <= cols && x + tilex < tilesAcross; ++x) {
-            al_draw_bitmap_region(tileData[tdIndex(tilex + x, tiley + y)],
-                                  0,
-                                  0,
-                                  tileWidth,
-                                  tileHeight,
-                                  x * tileWidth,
-                                  y * tileHeight,
-                                  0);
+            al_draw_bitmap_region(
+                tileData[tdIndex(tilex + x, tiley + y)],
+                0,
+                0,
+                tileWidth,
+                tileHeight,
+                x * tileWidth,
+                y * tileHeight,
+                0);
         }
     }
 }
@@ -314,7 +323,11 @@ AdvancedTileScroller::UpdateScrollBuffer() {
  **/
 void
 AdvancedTileScroller::DrawScrollWindow(
-    ALLEGRO_BITMAP *Dest, int X, int Y, int Width, int Height) {
+    ALLEGRO_BITMAP *Dest,
+    int X,
+    int Y,
+    int Width,
+    int Height) {
     // prevent a crash
     if (tileWidth < 1 || tileHeight < 1)
         return;

@@ -8,6 +8,7 @@
 #ifndef _SHIPCONFIG_H
 #define _SHIPCONFIG_H 1
 
+#include "AudioSystem.h"
 #include "Button.h"
 #include "GameState.h"
 #include "Module.h"
@@ -101,93 +102,63 @@ const double _360_TO_256(256.0 / 360.0);
 //#define LASER_CLASS8 260000
 //#define LASER_CLASS9 260000
 
-const int ITEM_PRICES[5][6] = {{ENGINE_CLASS1,
-                                ENGINE_CLASS2,
-                                ENGINE_CLASS3,
-                                ENGINE_CLASS4,
-                                ENGINE_CLASS5,
-                                ENGINE_CLASS6},
-                               {SHIELD_CLASS1,
-                                SHIELD_CLASS2,
-                                SHIELD_CLASS3,
-                                SHIELD_CLASS4,
-                                SHIELD_CLASS5,
-                                SHIELD_CLASS6},
-                               {ARMOR_CLASS1,
-                                ARMOR_CLASS2,
-                                ARMOR_CLASS3,
-                                ARMOR_CLASS4,
-                                ARMOR_CLASS5,
-                                ARMOR_CLASS6},
-                               {MISSILELAUNCHER_CLASS1,
-                                MISSILELAUNCHER_CLASS2,
-                                MISSILELAUNCHER_CLASS3,
-                                MISSILELAUNCHER_CLASS4,
-                                MISSILELAUNCHER_CLASS5,
-                                MISSILELAUNCHER_CLASS6},
-                               {LASER_CLASS1,
-                                LASER_CLASS2,
-                                LASER_CLASS3,
-                                LASER_CLASS4,
-                                LASER_CLASS5,
-                                LASER_CLASS6}};
-enum ButtonType
-{
-    UndefButtonType,
-    ModuleEntry,
-    ShipConfig,
-    Launch,
-    Buy,
-    Sell,
-    Repair,
-    Name,
-    Exit,
-    CargoPods,
-    Engines,
-    Shields,
-    Armor,
-    Missiles,
-    Lasers,
-    Hull,
-    Back,
-    Class1,
-    Class2,
-    Class3,
-    Class4,
-    Class5,
-    Class6,
-    Pay,
-    Nevermind,
-    SaveName,
-    TVConfig,
-    BuyTV
-};
+const int ITEM_PRICES[5][6] = {
+    {ENGINE_CLASS1,
+     ENGINE_CLASS2,
+     ENGINE_CLASS3,
+     ENGINE_CLASS4,
+     ENGINE_CLASS5,
+     ENGINE_CLASS6},
+    {SHIELD_CLASS1,
+     SHIELD_CLASS2,
+     SHIELD_CLASS3,
+     SHIELD_CLASS4,
+     SHIELD_CLASS5,
+     SHIELD_CLASS6},
+    {ARMOR_CLASS1,
+     ARMOR_CLASS2,
+     ARMOR_CLASS3,
+     ARMOR_CLASS4,
+     ARMOR_CLASS5,
+     ARMOR_CLASS6},
+    {MISSILELAUNCHER_CLASS1,
+     MISSILELAUNCHER_CLASS2,
+     MISSILELAUNCHER_CLASS3,
+     MISSILELAUNCHER_CLASS4,
+     MISSILELAUNCHER_CLASS5,
+     MISSILELAUNCHER_CLASS6},
+    {LASER_CLASS1,
+     LASER_CLASS2,
+     LASER_CLASS3,
+     LASER_CLASS4,
+     LASER_CLASS5,
+     LASER_CLASS6}};
 
 // calculate the difference between the enums
 const int CLASS_ENUM_DIF =
-    (Class1 - Class1Type); // calculates the correct value for the class of item
+    (EVENT_SHIP_CONFIG_CLASS1
+     - Class1Type); // calculates the correct value for the class of item
 const int ITEM_ENUM_DIF =
-    Engines -
-    0; // calculates the correct index into the ITEM_PRICES[5][6] array
+    EVENT_SHIP_CONFIG_ENGINES
+    - 0; // calculates the correct index into the ITEM_PRICES[5][6] array
 
 class ModuleShipConfig : public Module {
 
   public:
     ModuleShipConfig();
-    virtual bool Init() override;
-    virtual void Update() override;
-    virtual void Draw() override;
-    virtual void OnKeyPressed(int keyCode) override;
-    virtual void OnMouseMove(int x, int y) override;
-    virtual void OnMouseReleased(int button, int x, int y) override;
-    virtual void OnEvent(Event *event) override;
-    virtual void Close() override;
+    virtual bool on_init() override;
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
+    virtual bool on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event) override;
+    virtual bool on_mouse_move(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_event(ALLEGRO_EVENT *event) override;
+    virtual bool on_close() override;
 
   private:
     virtual ~ModuleShipConfig() {}
 
     int buttonsActive;
-    std::vector<ButtonType> menuPath;
+    std::vector<EventType> menuPath;
     Button *buttons[NUMBER_OF_BUTTONS];
     ALLEGRO_BITMAP *shipImage;
     ALLEGRO_BITMAP *shipConfig;
@@ -201,8 +172,8 @@ class ModuleShipConfig : public Module {
 
     void display() const;
     std::string convertMenuPathToString() const;
-    std::string convertButtonTypeToString(ButtonType btnType) const;
-    void configureButton(int btn, ButtonType btnType);
+    std::string convertEventTypeToString(EventType btnType) const;
+    void configureButton(int btn, EventType btnType);
     bool checkComponent() const;
     void buyComponent();
     void sellComponent();

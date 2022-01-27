@@ -21,13 +21,13 @@ class ModuleStarmap : public Module {
   public:
     ModuleStarmap();
     virtual ~ModuleStarmap();
-    virtual bool Init() override;
-    virtual void Update() override;
-    virtual void Draw() override;
-    virtual void OnMouseMove(int x, int y) override;
-    virtual void OnMouseClick(int button, int x, int y) override;
-    virtual void OnEvent(Event *event) override;
-    virtual void Close() override;
+    virtual bool on_init() override;
+    virtual bool on_update() override;
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
+    virtual bool on_mouse_move(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_event(ALLEGRO_EVENT *event) override;
+    virtual bool on_close() override;
 
   private:
     bool map_active, dest_active, m_over_star;
@@ -80,7 +80,7 @@ class ModuleStarmap : public Module {
     Point2D m_cursor_pos;
     Point2D m_dest_pos;
 
-    Label *star_label;
+    Label *m_star_label;
     CoordValue star_x;
     CoordValue star_y;
     ResourceManager<ALLEGRO_BITMAP> resources;

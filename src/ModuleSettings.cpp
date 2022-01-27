@@ -22,18 +22,11 @@
 using namespace std;
 using namespace settings_resources;
 
-const int EVENT_EXIT = -1;
-
-const int EVENT_CONTROLS = 100;
-const int EVENT_SAVESETTINGS = -200;
-const int EVENT_RES_CHANGE = 9900;
-const int EVENT_FULLSCREEN_BUTTON = 9901;
-
 ALLEGRO_DEBUG_CHANNEL("ModuleSettings")
 
 std::string old_resolution = "";
 
-ModuleSettings::ModuleSettings(void) : m_resources(SETTINGS_IMAGES) {
+ModuleSettings::ModuleSettings() : m_resources(SETTINGS_IMAGES) {
     btn_exit = NULL;
     btn_fullscreen = NULL;
     btn_defaults = NULL;
@@ -42,52 +35,51 @@ ModuleSettings::ModuleSettings(void) : m_resources(SETTINGS_IMAGES) {
         btn_controls[i] = NULL;
 }
 
-ModuleSettings::~ModuleSettings(void) {}
+ModuleSettings::~ModuleSettings() {}
 
 bool
-ModuleSettings::Init() {
+ModuleSettings::on_init() {
     ALLEGRO_DEBUG("  ModuleSettings Initialize\n");
 
-    cmd_selected = 0;
     button_selected = 0;
 
     g_game->audioSystem->Load("data/cantina/buttonclick.ogg", "click");
 
     // exit button
-    btn_exit = new Button(m_resources[I_BUTTON1],
-                          m_resources[I_BUTTON],
-                          NULL,
-                          10,
-                          SCREEN_HEIGHT -
-                              al_get_bitmap_height(m_resources[I_BUTTON1]) - 10,
-                          0,
-                          EVENT_EXIT,
-                          g_game->font22,
-                          "EXIT",
-                          GOLD,
-                          "click",
-                          true,
-                          true);
+    btn_exit = new Button(
+        m_resources[I_BUTTON1],
+        m_resources[I_BUTTON],
+        NULL,
+        10,
+        SCREEN_HEIGHT - al_get_bitmap_height(m_resources[I_BUTTON1]) - 10,
+        0,
+        EVENT_SETTINGS_EXIT,
+        g_game->font22,
+        "EXIT",
+        GOLD,
+        "click",
+        true,
+        true);
     if (!btn_exit)
         return false;
     if (!btn_exit->IsInitialized())
         return false;
 
     // save button
-    btn_save = new Button(m_resources[I_BUTTON1],
-                          m_resources[I_BUTTON],
-                          NULL,
-                          140,
-                          SCREEN_HEIGHT -
-                              al_get_bitmap_height(m_resources[I_BUTTON1]) - 10,
-                          0,
-                          EVENT_SAVESETTINGS,
-                          g_game->font22,
-                          "SAVE",
-                          GOLD,
-                          "click",
-                          true,
-                          true);
+    btn_save = new Button(
+        m_resources[I_BUTTON1],
+        m_resources[I_BUTTON],
+        NULL,
+        140,
+        SCREEN_HEIGHT - al_get_bitmap_height(m_resources[I_BUTTON1]) - 10,
+        0,
+        EVENT_SETTINGS_SAVE,
+        g_game->font22,
+        "SAVE",
+        GOLD,
+        "click",
+        true,
+        true);
     if (!btn_save)
         return false;
     if (!btn_save->IsInitialized())
@@ -98,19 +90,20 @@ ModuleSettings::Init() {
     for (int i = 0; i < 11; i++) {
         x = 680;
         y = 110 + i * 40;
-        btn_controls[i] = new Button(m_resources[I_BUTTON1],
-                                     m_resources[I_BUTTON],
-                                     NULL,
-                                     x,
-                                     y,
-                                     0,
-                                     EVENT_CONTROLS + i,
-                                     g_game->font22,
-                                     "",
-                                     GOLD,
-                                     "click",
-                                     true,
-                                     true);
+        btn_controls[i] = new Button(
+            m_resources[I_BUTTON1],
+            m_resources[I_BUTTON],
+            NULL,
+            x,
+            y,
+            EVENT_NONE,
+            EVENT_NONE,
+            g_game->font22,
+            "",
+            GOLD,
+            "click",
+            true,
+            true);
         if (!btn_controls[i])
             return false;
         if (!btn_controls[i]->IsInitialized())
@@ -130,13 +123,14 @@ ModuleSettings::Init() {
     btn_controls[10]->SetButtonText("F1-F7");
 
     // create the resolution list scrollbox
-    resScrollbox = new ScrollBox::ScrollBox(g_game->font18,
-                                            ScrollBox::SB_LIST,
-                                            40,
-                                            100,
-                                            200,
-                                            230,
-                                            EVENT_RES_CHANGE);
+    resScrollbox = new ScrollBox::ScrollBox(
+        g_game->font18,
+        ScrollBox::SB_LIST,
+        40,
+        100,
+        200,
+        230,
+        EVENT_SETTINGS_CHANGE_RESOLUTION);
     resScrollbox->setLines(g_game->videomodes.size());
     resScrollbox->DrawScrollBar(true);
     resScrollbox->SetColorBackground(al_map_rgb(30, 30, 30));
@@ -163,19 +157,20 @@ ModuleSettings::Init() {
     }
 
     // create fullscreen toggle
-    btn_fullscreen = new Button(m_resources[I_BUTTON32_NORMAL],
-                                m_resources[I_BUTTON32_OVER],
-                                NULL,
-                                40,
-                                360,
-                                0,
-                                EVENT_FULLSCREEN_BUTTON,
-                                g_game->font24,
-                                "",
-                                GOLD,
-                                "click",
-                                true,
-                                true);
+    btn_fullscreen = new Button(
+        m_resources[I_BUTTON32_NORMAL],
+        m_resources[I_BUTTON32_OVER],
+        NULL,
+        40,
+        360,
+        0,
+        EVENT_SETTINGS_TOGGLE_FULLSCREEN,
+        g_game->font24,
+        "",
+        GOLD,
+        "click",
+        true,
+        true);
     if (!btn_fullscreen)
         return false;
     if (!btn_fullscreen->IsInitialized())
@@ -189,8 +184,8 @@ ModuleSettings::Init() {
     return true;
 }
 
-void
-ModuleSettings::Close() {
+bool
+ModuleSettings::on_close() {
     ALLEGRO_DEBUG("*** ModuleSettings closing\n");
     if (btn_fullscreen != NULL) {
         btn_fullscreen->Destroy();
@@ -214,113 +209,121 @@ ModuleSettings::Close() {
         btn_fullscreen->Destroy();
         btn_fullscreen = NULL;
     }
+    return true;
 }
 
-void
-ModuleSettings::Draw() {
+bool
+ModuleSettings::on_draw(ALLEGRO_BITMAP *target) {
     // draw background
-    al_set_target_bitmap(g_game->GetBackBuffer());
+    al_set_target_bitmap(target);
     al_draw_bitmap(m_resources[I_BACKGROUND], 0, 0, 0);
 
-    btn_save->Run(g_game->GetBackBuffer());
-    btn_exit->Run(g_game->GetBackBuffer());
+    btn_save->Run(target);
+    btn_exit->Run(target);
 
     // Show screen resolutions
-    g_game->Print32(g_game->GetBackBuffer(), 40, 30, "VIDEO MODES");
-    g_game->Print24(
-        g_game->GetBackBuffer(), 40, 70, "MODE: " + chosenResolution);
+    g_game->Print32(target, 40, 30, "VIDEO MODES");
+    g_game->Print24(target, 40, 70, "MODE: " + chosenResolution);
     resScrollbox->SetX(40);
     resScrollbox->SetY(110);
-    resScrollbox->Draw(g_game->GetBackBuffer());
+    resScrollbox->Draw(target);
 
     // text
-    g_game->Print32(g_game->GetBackBuffer(), 680, 30, "CONTROLS");
+    g_game->Print32(target, 680, 30, "CONTROLS");
     int x = btn_controls[0]->GetX() + btn_controls[0]->GetWidth() + 10;
     int y = btn_controls[0]->GetY() + 5;
 
-    g_game->Print20(g_game->GetBackBuffer(), x, y, "Forward", WHITE);
+    g_game->Print20(target, x, y, "Forward", WHITE);
     y += 40;
-    g_game->Print20(g_game->GetBackBuffer(), x, y, "Turn left", WHITE);
+    g_game->Print20(target, x, y, "Turn left", WHITE);
     y += 40;
-    g_game->Print20(g_game->GetBackBuffer(), x, y, "Turn right", WHITE);
+    g_game->Print20(target, x, y, "Turn right", WHITE);
     y += 40;
-    g_game->Print20(g_game->GetBackBuffer(), x, y, "Reverse", WHITE);
+    g_game->Print20(target, x, y, "Reverse", WHITE);
     y += 40;
-    g_game->Print20(g_game->GetBackBuffer(), x, y, "Strafe left", WHITE);
+    g_game->Print20(target, x, y, "Strafe left", WHITE);
     y += 40;
-    g_game->Print20(g_game->GetBackBuffer(), x, y, "Strafe right", WHITE);
+    g_game->Print20(target, x, y, "Strafe right", WHITE);
     y += 40;
-    g_game->Print20(
-        g_game->GetBackBuffer(), x, y, "Fire laser or stunner", WHITE);
+    g_game->Print20(target, x, y, "Fire laser or stunner", WHITE);
     y += 40;
-    g_game->Print20(g_game->GetBackBuffer(), x, y, "Fire missile", WHITE);
+    g_game->Print20(target, x, y, "Fire missile", WHITE);
     y += 40;
-    g_game->Print20(g_game->GetBackBuffer(), x, y, "Toggle shield", WHITE);
+    g_game->Print20(target, x, y, "Toggle shield", WHITE);
     y += 40;
-    g_game->Print20(g_game->GetBackBuffer(), x, y, "Toggle weapons", WHITE);
+    g_game->Print20(target, x, y, "Toggle weapons", WHITE);
     y += 40;
-    g_game->Print20(
-        g_game->GetBackBuffer(), x, y, "Select bridge station", WHITE);
+    g_game->Print20(target, x, y, "Select bridge station", WHITE);
 
     // draw buttons for each command
     for (int i = 0; i < 11; i++) {
-        btn_controls[i]->Run(g_game->GetBackBuffer());
+        btn_controls[i]->Run(target);
     }
 
     // draw fullscreen toggle
-    btn_fullscreen->Run(g_game->GetBackBuffer());
+    btn_fullscreen->Run(target);
     x = btn_fullscreen->GetX() + 60;
     y = btn_fullscreen->GetY();
-    g_game->Print24(g_game->GetBackBuffer(), x, y, "FULLSCREEN", WHITE);
+    g_game->Print24(target, x, y, "FULLSCREEN", WHITE);
+
+    return true;
 }
 
 #pragma region INPUT
 
-void
-ModuleSettings::OnKeyReleased(int keyCode) {
-    if (keyCode == ALLEGRO_KEY_ESCAPE) {
+bool
+ModuleSettings::on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event) {
+    if (event->keycode == ALLEGRO_KEY_ESCAPE) {
         g_game->LoadModule(MODULE_TITLESCREEN);
-        return;
+        return false;
     }
-
-    if (keyCode != 0 && cmd_selected != 0) {
-        cmd_selected = 0;
-    }
+    return true;
 }
 
-void
-ModuleSettings::OnMouseMove(int x, int y) {
+bool
+ModuleSettings::on_mouse_move(ALLEGRO_MOUSE_EVENT *event) {
+    int x = event->x;
+    int y = event->y;
+
     resScrollbox->OnMouseMove(x, y);
     btn_exit->OnMouseMove(x, y);
     btn_save->OnMouseMove(x, y);
     btn_fullscreen->OnMouseMove(x, y);
+
+    if (is_mouse_wheel_down(event)) {
+        resScrollbox->OnMouseWheelDown(x, y);
+    } else if (is_mouse_wheel_up(event)) {
+        resScrollbox->OnMouseWheelUp(x, y);
+    }
+    return true;
 }
 
-void
-ModuleSettings::OnMouseClick(int button, int x, int y) {
-    resScrollbox->OnMouseClick(button, x, y);
-}
+bool
+ModuleSettings::on_mouse_button_down(ALLEGRO_MOUSE_EVENT *event) {
+    int button = event->button - 1;
+    int x = event->x;
+    int y = event->y;
 
-void
-ModuleSettings::OnMousePressed(int button, int x, int y) {
     resScrollbox->OnMousePressed(button, x, y);
+
+    return true;
 }
 
-void
-ModuleSettings::OnMouseReleased(int button, int x, int y) {
+bool
+ModuleSettings::on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) {
+    int button = event->button - 1;
+    int x = event->x;
+    int y = event->y;
+
     resScrollbox->OnMouseReleased(button, x, y);
     btn_exit->OnMouseReleased(button, x, y);
     btn_save->OnMouseReleased(button, x, y);
     btn_fullscreen->OnMouseReleased(button, x, y);
-}
-void
-ModuleSettings::OnMouseWheelUp(int x, int y) {
-    resScrollbox->OnMouseWheelUp(x, y);
-}
 
-void
-ModuleSettings::OnMouseWheelDown(int x, int y) {
-    resScrollbox->OnMouseWheelDown(x, y);
+    if (is_mouse_click(event)) {
+        resScrollbox->OnMouseClick(button, x, y);
+    }
+    return true;
 }
 
 #pragma endregion
@@ -341,8 +344,8 @@ ModuleSettings::SaveConfigurationFile() {
         fullscreen = "true";
 
     std::ofstream configfile;
-    configfile.open("data/config.lua",
-                    std::ofstream::out | std::ofstream::trunc);
+    configfile.open(
+        "data/config.lua", std::ofstream::out | std::ofstream::trunc);
     if (!configfile.is_open()) {
         ALLEGRO_DEBUG("ModuleSettings: error opening config.lua\n");
         return false;
@@ -375,11 +378,11 @@ ModuleSettings::SaveConfigurationFile() {
     return true;
 }
 
-void
-ModuleSettings::OnEvent(Event *event) {
+bool
+ModuleSettings::on_event(ALLEGRO_EVENT *event) {
     string text;
-    switch (event->getEventType()) {
-    case EVENT_RES_CHANGE:
+    switch (event->type) {
+    case EVENT_SETTINGS_CHANGE_RESOLUTION:
         if (resScrollbox->GetSelectedItem().length() > 0) {
             old_resolution = chosenResolution;
             chosenResolution = resScrollbox->GetSelectedItem();
@@ -387,7 +390,7 @@ ModuleSettings::OnEvent(Event *event) {
         }
         break;
 
-    case EVENT_FULLSCREEN_BUTTON:
+    case EVENT_SETTINGS_TOGGLE_FULLSCREEN:
         text = btn_fullscreen->GetButtonText();
         if (text == "X")
             text = "";
@@ -396,7 +399,7 @@ ModuleSettings::OnEvent(Event *event) {
         btn_fullscreen->SetButtonText(text);
         break;
 
-    case EVENT_SAVESETTINGS:
+    case EVENT_SETTINGS_SAVE:
         // save resolution
         if (chosenResolution != old_resolution) {
             old_resolution = chosenResolution;
@@ -404,11 +407,10 @@ ModuleSettings::OnEvent(Event *event) {
         }
         break;
 
-    case EVENT_EXIT:
+    case EVENT_SETTINGS_EXIT:
         g_game->LoadModule(MODULE_TITLESCREEN);
         break;
     }
-}
 
-void
-ModuleSettings::Update() {}
+    return true;
+}

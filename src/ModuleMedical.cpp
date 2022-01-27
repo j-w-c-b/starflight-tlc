@@ -10,6 +10,7 @@
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
 
+#include "AudioSystem.h"
 #include "DataMgr.h"
 #include "Events.h"
 #include "Game.h"
@@ -35,7 +36,8 @@ ALLEGRO_DEBUG_CHANNEL("ModuleMedical")
 int right_offset = SCREEN_WIDTH, left_offset = -LEFT_TARGET_OFFSET,
     left_offset2 = -LEFT_TARGET_OFFSET;
 
-ModuleMedical::ModuleMedical() : resources(MEDICAL_IMAGES) {}
+ModuleMedical::ModuleMedical()
+    : Module(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT), resources(MEDICAL_IMAGES) {}
 
 ModuleMedical::~ModuleMedical() {}
 
@@ -70,17 +72,17 @@ ModuleMedical::cease_healing() {
     g_game->gameState->officerCom->Recovering(false);
 }
 
-void
-ModuleMedical::OnEvent(Event *event) {
+bool
+ModuleMedical::on_event(ALLEGRO_EVENT *event) {
     Officer *currentDoc = g_game->gameState->getCurrentDoc();
     string med = currentDoc->getLastName() + "-> ";
     string other = "";
 
-    switch (event->getEventType()) {
+    switch (event->type) {
     /**
             CREW SELECTED EVENTS
     **/
-    case -100: // captain selected
+    case EVENT_MEDICAL_CAPTAIN_SELECT:
         if (selected_officer != g_game->gameState->officerCap) {
             selected_officer = g_game->gameState->officerCap;
             disable_others(0);
@@ -89,7 +91,7 @@ ModuleMedical::OnEvent(Event *event) {
             disable_others(-1);
         }
         break;
-    case -101: // science selected
+    case EVENT_MEDICAL_SCIENCE_SELECT:
         if (selected_officer != g_game->gameState->officerSci) {
             selected_officer = g_game->gameState->officerSci;
             disable_others(1);
@@ -98,7 +100,7 @@ ModuleMedical::OnEvent(Event *event) {
             disable_others(-1);
         }
         break;
-    case -102: // navigation selected
+    case EVENT_MEDICAL_NAVIGATION_SELECT:
         if (selected_officer != g_game->gameState->officerNav) {
             selected_officer = g_game->gameState->officerNav;
             disable_others(2);
@@ -107,7 +109,7 @@ ModuleMedical::OnEvent(Event *event) {
             disable_others(-1);
         }
         break;
-    case -103: // tactical selected
+    case EVENT_MEDICAL_TACTICAL_SELECT:
         if (selected_officer != g_game->gameState->officerTac) {
             selected_officer = g_game->gameState->officerTac;
             disable_others(3);
@@ -116,7 +118,7 @@ ModuleMedical::OnEvent(Event *event) {
             disable_others(-1);
         }
         break;
-    case -104: // engineer selected
+    case EVENT_MEDICAL_ENGINEER_SELECT:
         if (selected_officer != g_game->gameState->officerEng) {
             selected_officer = g_game->gameState->officerEng;
             disable_others(4);
@@ -125,7 +127,7 @@ ModuleMedical::OnEvent(Event *event) {
             disable_others(-1);
         }
         break;
-    case -105: // communications selected
+    case EVENT_MEDICAL_COMMUNICATIONS_SELECT:
         if (selected_officer != g_game->gameState->officerCom) {
             selected_officer = g_game->gameState->officerCom;
             disable_others(5);
@@ -134,7 +136,7 @@ ModuleMedical::OnEvent(Event *event) {
             disable_others(-1);
         }
         break;
-    case -106: // medical selected
+    case EVENT_MEDICAL_MEDICAL_SELECT:
         if (selected_officer != g_game->gameState->officerDoc) {
             selected_officer = g_game->gameState->officerDoc;
             disable_others(6);
@@ -147,112 +149,121 @@ ModuleMedical::OnEvent(Event *event) {
     /**
             CREW TREATMENT EVENTS
     **/
-    case -200: // captain treat
+    case EVENT_MEDICAL_CAPTAIN_TREAT:
         cease_healing();
-        if (g_game->gameState->officerCap->isBeingHealed() == false &&
-            g_game->gameState->officerCap->attributes.getVitality() < 100 &&
-            g_game->gameState->officerCap->attributes.getVitality() > 0) {
+        if (g_game->gameState->officerCap->isBeingHealed() == false
+            && g_game->gameState->officerCap->attributes.getVitality() < 100
+            && g_game->gameState->officerCap->attributes.getVitality() > 0) {
             g_game->gameState->officerCap->Recovering(true);
             other = "Captain " + g_game->gameState->officerCap->getLastName();
             (currentDoc == g_game->gameState->officerCap)
-                ? g_game->printout(g_game->g_scrollbox,
-                                   med + "Okay, I'll patch myself up",
-                                   GREEN,
-                                   1000)
-                : g_game->printout(g_game->g_scrollbox,
-                                   med + "Okay, I'm treating " + other,
-                                   GREEN,
-                                   1000);
+                ? g_game->printout(
+                    g_game->g_scrollbox,
+                    med + "Okay, I'll patch myself up",
+                    GREEN,
+                    1000)
+                : g_game->printout(
+                    g_game->g_scrollbox,
+                    med + "Okay, I'm treating " + other,
+                    GREEN,
+                    1000);
         }
         break;
-    case -201: // science treat
+    case EVENT_MEDICAL_SCIENCE_TREAT:
         cease_healing();
-        if (g_game->gameState->officerSci->isBeingHealed() == false &&
-            g_game->gameState->officerSci->attributes.getVitality() < 100 &&
-            g_game->gameState->officerSci->attributes.getVitality() > 0) {
+        if (g_game->gameState->officerSci->isBeingHealed() == false
+            && g_game->gameState->officerSci->attributes.getVitality() < 100
+            && g_game->gameState->officerSci->attributes.getVitality() > 0) {
             g_game->gameState->officerSci->Recovering(true);
-            other = "Science Officer " +
-                    g_game->gameState->officerSci->getLastName();
-            g_game->printout(g_game->g_scrollbox,
-                             med + "Okay, I'm treating " + other,
-                             GREEN,
-                             1000);
+            other = "Science Officer "
+                    + g_game->gameState->officerSci->getLastName();
+            g_game->printout(
+                g_game->g_scrollbox,
+                med + "Okay, I'm treating " + other,
+                GREEN,
+                1000);
         }
         break;
-    case -202: // navigation treat
+    case EVENT_MEDICAL_NAVIGATION_TREAT:
         cease_healing();
-        if (g_game->gameState->officerNav->isBeingHealed() == false &&
-            g_game->gameState->officerNav->attributes.getVitality() < 100 &&
-            g_game->gameState->officerNav->attributes.getVitality() > 0) {
+        if (g_game->gameState->officerNav->isBeingHealed() == false
+            && g_game->gameState->officerNav->attributes.getVitality() < 100
+            && g_game->gameState->officerNav->attributes.getVitality() > 0) {
             g_game->gameState->officerNav->Recovering(true);
             other = "Navigator " + g_game->gameState->officerNav->getLastName();
-            g_game->printout(g_game->g_scrollbox,
-                             med + "Okay, I'm treating " + other,
-                             GREEN,
-                             1000);
+            g_game->printout(
+                g_game->g_scrollbox,
+                med + "Okay, I'm treating " + other,
+                GREEN,
+                1000);
         }
         break;
-    case -203: // tactical treat
+    case EVENT_MEDICAL_TACTICAL_TREAT:
         cease_healing();
-        if (g_game->gameState->officerTac->isBeingHealed() == false &&
-            g_game->gameState->officerTac->attributes.getVitality() < 100 &&
-            g_game->gameState->officerTac->attributes.getVitality() > 0) {
+        if (g_game->gameState->officerTac->isBeingHealed() == false
+            && g_game->gameState->officerTac->attributes.getVitality() < 100
+            && g_game->gameState->officerTac->attributes.getVitality() > 0) {
             g_game->gameState->officerTac->Recovering(true);
-            other = "Tactical Officer " +
-                    g_game->gameState->officerTac->getLastName();
-            g_game->printout(g_game->g_scrollbox,
-                             med + "Okay, I'm treating " + other,
-                             GREEN,
-                             1000);
+            other = "Tactical Officer "
+                    + g_game->gameState->officerTac->getLastName();
+            g_game->printout(
+                g_game->g_scrollbox,
+                med + "Okay, I'm treating " + other,
+                GREEN,
+                1000);
         }
         break;
-    case -204: // engineer treat
+    case EVENT_MEDICAL_ENGINEER_TREAT:
         cease_healing();
-        if (g_game->gameState->officerEng->isBeingHealed() == false &&
-            g_game->gameState->officerEng->attributes.getVitality() < 100 &&
-            g_game->gameState->officerEng->attributes.getVitality() > 0) {
+        if (g_game->gameState->officerEng->isBeingHealed() == false
+            && g_game->gameState->officerEng->attributes.getVitality() < 100
+            && g_game->gameState->officerEng->attributes.getVitality() > 0) {
             g_game->gameState->officerEng->Recovering(true);
             other = "Engineer " + g_game->gameState->officerEng->getLastName();
-            g_game->printout(g_game->g_scrollbox,
-                             med + "Okay, I'm treating " + other,
-                             GREEN,
-                             1000);
+            g_game->printout(
+                g_game->g_scrollbox,
+                med + "Okay, I'm treating " + other,
+                GREEN,
+                1000);
         }
         break;
-    case -205: // communications treat
+    case EVENT_MEDICAL_COMMUNICATIONS_TREAT:
         cease_healing();
-        if (g_game->gameState->officerCom->isBeingHealed() == false &&
-            g_game->gameState->officerCom->attributes.getVitality() < 100 &&
-            g_game->gameState->officerCom->attributes.getVitality() > 0) {
+        if (g_game->gameState->officerCom->isBeingHealed() == false
+            && g_game->gameState->officerCom->attributes.getVitality() < 100
+            && g_game->gameState->officerCom->attributes.getVitality() > 0) {
             g_game->gameState->officerCom->Recovering(true);
             other =
                 "Comm Officer " + g_game->gameState->officerCom->getLastName();
-            g_game->printout(g_game->g_scrollbox,
-                             med + "Okay, I'm treating " + other,
-                             GREEN,
-                             1000);
+            g_game->printout(
+                g_game->g_scrollbox,
+                med + "Okay, I'm treating " + other,
+                GREEN,
+                1000);
         }
         break;
-    case -206: // medical treat
+    case EVENT_MEDICAL_MEDICAL_TREAT:
         cease_healing();
-        if (g_game->gameState->officerDoc->isBeingHealed() == false &&
-            g_game->gameState->officerDoc->attributes.getVitality() < 100 &&
-            g_game->gameState->officerDoc->attributes.getVitality() > 0) {
+        if (g_game->gameState->officerDoc->isBeingHealed() == false
+            && g_game->gameState->officerDoc->attributes.getVitality() < 100
+            && g_game->gameState->officerDoc->attributes.getVitality() > 0) {
             g_game->gameState->officerDoc->Recovering(true);
             other = "Doctor " + g_game->gameState->officerDoc->getLastName();
             (currentDoc == g_game->gameState->officerDoc)
-                ? g_game->printout(g_game->g_scrollbox,
-                                   med + "Okay, I'll patch myself up",
-                                   GREEN,
-                                   1000)
-                : g_game->printout(g_game->g_scrollbox,
-                                   med + "Okay, I'm treating " + other,
-                                   GREEN,
-                                   1000);
+                ? g_game->printout(
+                    g_game->g_scrollbox,
+                    med + "Okay, I'll patch myself up",
+                    GREEN,
+                    1000)
+                : g_game->printout(
+                    g_game->g_scrollbox,
+                    med + "Okay, I'm treating " + other,
+                    GREEN,
+                    1000);
         }
         break;
 
-    case 7001: // EVENT_DOCTOR_TREAT
+    case EVENT_DOCTOR_TREAT:
         if (b_examine == false && viewer_active == false) {
             viewer_active = true;
         } else if (viewer_active == true && b_examine == true) {
@@ -263,7 +274,7 @@ ModuleMedical::OnEvent(Event *event) {
         }
         break;
 
-    case 7000: // EVENT_DOCTOR_EXAMINE
+    case EVENT_DOCTOR_EXAMINE:
         if (b_examine == true) {
             viewer_active = false;
         } else {
@@ -271,14 +282,12 @@ ModuleMedical::OnEvent(Event *event) {
             b_examine = true;
         }
         break;
-    case 0:
-    default:
-        break;
     }
+    return true;
 }
 
 bool
-ModuleMedical::Init() {
+ModuleMedical::on_init() {
     ALLEGRO_DEBUG("  ModuleMedical::Init()\n");
 
     b_examine = false;
@@ -320,17 +329,18 @@ ModuleMedical::Init() {
 
     for (int i = 0; i < 7; i++) {
         // Create and initialize the crew buttons
-        OfficerBtns[i] = new Button(img_button_crew,
-                                    img_button_crew_hov,
-                                    img_button_crew_dis,
-                                    CATBTN_X,
-                                    CATBTN_Y + (i * CATSPACING),
-                                    0,
-                                    -100 - i,
-                                    g_game->font22,
-                                    "",
-                                    al_map_rgb(255, 255, 255),
-                                    "click");
+        OfficerBtns[i] = new Button(
+            img_button_crew,
+            img_button_crew_hov,
+            img_button_crew_dis,
+            CATBTN_X,
+            CATBTN_Y + (i * CATSPACING),
+            0,
+            EVENT_MEDICAL_CAPTAIN_SELECT + i,
+            g_game->font22,
+            "",
+            al_map_rgb(255, 255, 255),
+            "click");
 
         if (OfficerBtns[i] == NULL) {
             return false;
@@ -341,20 +351,20 @@ ModuleMedical::Init() {
     }
 
     // set labels for each crew member
-    OfficerBtns[0]->SetButtonText("CAP. " +
-                                  g_game->gameState->officerCap->name);
-    OfficerBtns[1]->SetButtonText("SCI. " +
-                                  g_game->gameState->officerSci->name);
-    OfficerBtns[2]->SetButtonText("NAV. " +
-                                  g_game->gameState->officerNav->name);
-    OfficerBtns[3]->SetButtonText("TAC. " +
-                                  g_game->gameState->officerTac->name);
-    OfficerBtns[4]->SetButtonText("ENG. " +
-                                  g_game->gameState->officerEng->name);
-    OfficerBtns[5]->SetButtonText("COM. " +
-                                  g_game->gameState->officerCom->name);
-    OfficerBtns[6]->SetButtonText("DOC. " +
-                                  g_game->gameState->officerDoc->name);
+    OfficerBtns[0]->SetButtonText(
+        "CAP. " + g_game->gameState->officerCap->name);
+    OfficerBtns[1]->SetButtonText(
+        "SCI. " + g_game->gameState->officerSci->name);
+    OfficerBtns[2]->SetButtonText(
+        "NAV. " + g_game->gameState->officerNav->name);
+    OfficerBtns[3]->SetButtonText(
+        "TAC. " + g_game->gameState->officerTac->name);
+    OfficerBtns[4]->SetButtonText(
+        "ENG. " + g_game->gameState->officerEng->name);
+    OfficerBtns[5]->SetButtonText(
+        "COM. " + g_game->gameState->officerCom->name);
+    OfficerBtns[6]->SetButtonText(
+        "DOC. " + g_game->gameState->officerDoc->name);
 
     // load plus button images
     img_treat = resources[I_BTN_NORM];
@@ -365,17 +375,18 @@ ModuleMedical::Init() {
     // they share the same location but are unique for each crew to make events
     // simpler
     for (int i = 0; i < 7; i++) {
-        HealBtns[i] = new Button(img_treat,
-                                 img_treat_hov,
-                                 img_treat_dis,
-                                 CATBTN_X + 142,
-                                 2 + CATBTN_Y + (i * CATSPACING),
-                                 0,
-                                 -200 - i,
-                                 g_game->font24,
-                                 "TREAT",
-                                 BLACK,
-                                 "click");
+        HealBtns[i] = new Button(
+            img_treat,
+            img_treat_hov,
+            img_treat_dis,
+            CATBTN_X + 142,
+            2 + CATBTN_Y + (i * CATSPACING),
+            0,
+            EVENT_MEDICAL_CAPTAIN_TREAT + i,
+            g_game->font24,
+            "TREAT",
+            BLACK,
+            "click");
         if (HealBtns[i] == NULL) {
             return false;
         }
@@ -387,8 +398,8 @@ ModuleMedical::Init() {
     return true;
 }
 
-void
-ModuleMedical::Close() {
+bool
+ModuleMedical::on_close() {
     ALLEGRO_DEBUG("*** ModuleMedical::Close()\n");
     resources.unload();
 
@@ -402,13 +413,12 @@ ModuleMedical::Close() {
         HealBtns[i] = NULL;
     }
     selected_officer = NULL;
+
+    return true;
 }
 
-void
-ModuleMedical::Update() {}
-
-void
-ModuleMedical::MedicalUpdate() {
+bool
+ModuleMedical::on_update() {
     Officer *currentDoc = g_game->gameState->getCurrentDoc();
     string med = currentDoc->getLastName() + "-> ";
     string other = "";
@@ -422,10 +432,11 @@ ModuleMedical::MedicalUpdate() {
         currentDoc->attributes.extra_variable = 0;
 
         if (currentDoc->SkillUp(SKILL_MEDICAL))
-            g_game->printout(g_game->g_scrollbox,
-                             med + "I think I'm getting better at this.",
-                             PURPLE,
-                             5000);
+            g_game->printout(
+                g_game->g_scrollbox,
+                med + "I think I'm getting better at this.",
+                PURPLE,
+                5000);
     }
 
     if (g_game->gameState->getCurrentSelectedOfficer() != OFFICER_MEDICAL)
@@ -445,14 +456,16 @@ ModuleMedical::MedicalUpdate() {
             g_game->gameState->officerCap->Recovering(false);
             other = "Captain " + g_game->gameState->officerCap->getLastName();
             (currentDoc == g_game->gameState->officerCap)
-                ? g_game->printout(g_game->g_scrollbox,
-                                   med + "I'm feeling much better now.",
-                                   BLUE,
-                                   1000)
-                : g_game->printout(g_game->g_scrollbox,
-                                   other + " has fully recovered.",
-                                   BLUE,
-                                   1000);
+                ? g_game->printout(
+                    g_game->g_scrollbox,
+                    med + "I'm feeling much better now.",
+                    BLUE,
+                    1000)
+                : g_game->printout(
+                    g_game->g_scrollbox,
+                    other + " has fully recovered.",
+                    BLUE,
+                    1000);
         }
     } else if (g_game->gameState->officerCap->attributes.getVitality() < 30) {
         OfficerBtns[0]->SetTextColor(RED2);
@@ -474,12 +487,13 @@ ModuleMedical::MedicalUpdate() {
         }
         if (g_game->gameState->officerSci->attributes.getVitality() == 100) {
             g_game->gameState->officerSci->Recovering(false);
-            other = "Science Officer " +
-                    g_game->gameState->officerSci->getLastName();
-            g_game->printout(g_game->g_scrollbox,
-                             other + " has fully recovered.",
-                             BLUE,
-                             1000);
+            other = "Science Officer "
+                    + g_game->gameState->officerSci->getLastName();
+            g_game->printout(
+                g_game->g_scrollbox,
+                other + " has fully recovered.",
+                BLUE,
+                1000);
         }
     } else if (g_game->gameState->officerSci->attributes.getVitality() < 30) {
         OfficerBtns[1]->SetTextColor(RED2);
@@ -502,10 +516,11 @@ ModuleMedical::MedicalUpdate() {
         if (g_game->gameState->officerNav->attributes.getVitality() == 100) {
             g_game->gameState->officerNav->Recovering(false);
             other = "Navigator " + g_game->gameState->officerNav->getLastName();
-            g_game->printout(g_game->g_scrollbox,
-                             other + " has fully recovered.",
-                             BLUE,
-                             1000);
+            g_game->printout(
+                g_game->g_scrollbox,
+                other + " has fully recovered.",
+                BLUE,
+                1000);
         }
     } else if (g_game->gameState->officerNav->attributes.getVitality() < 30) {
         OfficerBtns[2]->SetTextColor(RED2);
@@ -527,12 +542,13 @@ ModuleMedical::MedicalUpdate() {
         }
         if (g_game->gameState->officerTac->attributes.getVitality() == 100) {
             g_game->gameState->officerTac->Recovering(false);
-            other = "Tactical Officer " +
-                    g_game->gameState->officerTac->getLastName();
-            g_game->printout(g_game->g_scrollbox,
-                             other + " has fully recovered.",
-                             BLUE,
-                             1000);
+            other = "Tactical Officer "
+                    + g_game->gameState->officerTac->getLastName();
+            g_game->printout(
+                g_game->g_scrollbox,
+                other + " has fully recovered.",
+                BLUE,
+                1000);
         }
     } else if (g_game->gameState->officerTac->attributes.getVitality() < 30) {
         OfficerBtns[3]->SetTextColor(RED2);
@@ -556,10 +572,11 @@ ModuleMedical::MedicalUpdate() {
         if (g_game->gameState->officerEng->attributes.getVitality() == 100) {
             g_game->gameState->officerEng->Recovering(false);
             other = "Engineer " + g_game->gameState->officerEng->getLastName();
-            g_game->printout(g_game->g_scrollbox,
-                             other + " has fully recovered.",
-                             BLUE,
-                             1000);
+            g_game->printout(
+                g_game->g_scrollbox,
+                other + " has fully recovered.",
+                BLUE,
+                1000);
         }
     } else if (g_game->gameState->officerEng->attributes.getVitality() < 30) {
         OfficerBtns[4]->SetTextColor(RED2);
@@ -583,10 +600,11 @@ ModuleMedical::MedicalUpdate() {
             g_game->gameState->officerCom->Recovering(false);
             other =
                 "Comm Officer " + g_game->gameState->officerCom->getLastName();
-            g_game->printout(g_game->g_scrollbox,
-                             other + " has fully recovered.",
-                             BLUE,
-                             1000);
+            g_game->printout(
+                g_game->g_scrollbox,
+                other + " has fully recovered.",
+                BLUE,
+                1000);
         }
     } else if (g_game->gameState->officerCom->attributes.getVitality() < 30) {
         OfficerBtns[5]->SetTextColor(RED2);
@@ -610,14 +628,16 @@ ModuleMedical::MedicalUpdate() {
             g_game->gameState->officerDoc->Recovering(false);
             other = "Doctor " + g_game->gameState->officerDoc->getLastName();
             (currentDoc == g_game->gameState->officerDoc)
-                ? g_game->printout(g_game->g_scrollbox,
-                                   med + "I'm feeling much better now.",
-                                   BLUE,
-                                   1000)
-                : g_game->printout(g_game->g_scrollbox,
-                                   other + " has fully recovered.",
-                                   BLUE,
-                                   1000);
+                ? g_game->printout(
+                    g_game->g_scrollbox,
+                    med + "I'm feeling much better now.",
+                    BLUE,
+                    1000)
+                : g_game->printout(
+                    g_game->g_scrollbox,
+                    other + " has fully recovered.",
+                    BLUE,
+                    1000);
         }
     } else if (g_game->gameState->officerDoc->attributes.getVitality() < 30) {
         OfficerBtns[6]->SetTextColor(RED2);
@@ -627,26 +647,27 @@ ModuleMedical::MedicalUpdate() {
         OfficerBtns[6]->SetTextColor(WHITE);
     }
 #pragma endregion
+    return true;
 }
 
-void
-ModuleMedical::Draw() {
-    static const string skillnames[] = {"science",
-                                        "navigation",
-                                        "engineering",
-                                        "communication",
-                                        "medical",
-                                        "tactical",
-                                        "learning",
-                                        "durability"};
+bool
+ModuleMedical::on_draw(ALLEGRO_BITMAP *target) {
+    static const string skillnames[] = {
+        "science",
+        "navigation",
+        "engineering",
+        "communication",
+        "medical",
+        "tactical",
+        "learning",
+        "durability"};
 
-    al_set_target_bitmap(g_game->GetBackBuffer());
+    al_set_target_bitmap(target);
 
     float percentile = 0.00f;
     char t_buffer[20];
 
     // update medical status
-    MedicalUpdate();
 
     if (right_offset < SCREEN_WIDTH) {
         // draw background
@@ -658,7 +679,7 @@ ModuleMedical::Draw() {
         // crew buttons
         for (int i = 0; i < 7; i++) {
             OfficerBtns[i]->SetX(right_offset + 34);
-            OfficerBtns[i]->Run(g_game->GetBackBuffer());
+            OfficerBtns[i]->Run(target);
         }
     }
 
@@ -669,12 +690,12 @@ ModuleMedical::Draw() {
         al_draw_bitmap(img_right_bg, left_offset2 + 64, 119, 0);
         if (selected_officer != NULL) {
             // print crew person's name
-            g_game->Print22(g_game->GetBackBuffer(),
-                            left_offset2 + 75,
-                            130,
-                            selected_officer->GetTitle() + ": " +
-                                selected_officer->name,
-                            WHITE);
+            g_game->Print22(
+                target,
+                left_offset2 + 75,
+                130,
+                selected_officer->GetTitle() + ": " + selected_officer->name,
+                WHITE);
 
             // print health status
             ALLEGRO_COLOR health_color = BLACK;
@@ -692,16 +713,9 @@ ModuleMedical::Draw() {
                 health_color = GREEN2;
                 status = "HEALTHY";
             }
-            g_game->Print20(g_game->GetBackBuffer(),
-                            left_offset2 + 75,
-                            200,
-                            "STATUS: ",
-                            WHITE);
-            g_game->Print20(g_game->GetBackBuffer(),
-                            left_offset2 + 175,
-                            200,
-                            status,
-                            health_color);
+            g_game->Print20(target, left_offset2 + 75, 200, "STATUS: ", WHITE);
+            g_game->Print20(
+                target, left_offset2 + 175, 200, status, health_color);
 
             // enable treat button based on crew health
             int officer = selected_officer->GetOfficerType() - 1;
@@ -712,19 +726,16 @@ ModuleMedical::Draw() {
 
             // draw the health bar
             percentile = selected_officer->attributes.getVitality();
-            al_draw_filled_rectangle(left_offset2 + 75,
-                                     260,
-                                     left_offset2 + 75 + 260 * percentile / 100,
-                                     315,
-                                     health_color);
+            al_draw_filled_rectangle(
+                left_offset2 + 75,
+                260,
+                left_offset2 + 75 + 260 * percentile / 100,
+                315,
+                health_color);
 
             // print health percentage
             sprintf(t_buffer, "%.0f%%%%", percentile);
-            g_game->Print22(g_game->GetBackBuffer(),
-                            left_offset2 + 185,
-                            280,
-                            t_buffer,
-                            WHITE);
+            g_game->Print22(target, left_offset2 + 185, 280, t_buffer, WHITE);
 
             // display heal button
             int buttonx = left_offset2 + 144;
@@ -732,7 +743,7 @@ ModuleMedical::Draw() {
             for (int i = 0; i < 7; i++) {
                 HealBtns[i]->SetX(buttonx);
                 HealBtns[i]->SetY(buttony);
-                HealBtns[i]->Run(g_game->GetBackBuffer());
+                HealBtns[i]->Run(target);
             }
         }
     }
@@ -751,152 +762,130 @@ ModuleMedical::Draw() {
             // vitality bar
             percentile = selected_officer->attributes.getVitality();
             percentile /= 100;
-            al_draw_bitmap_region(img_health_bar,
-                                  0,
-                                  0,
-                                  al_get_bitmap_width(img_health_bar) *
-                                      percentile,
-                                  al_get_bitmap_height(img_health_bar),
-                                  x,
-                                  46,
-                                  0);
-            g_game->Print22(
-                g_game->GetBackBuffer(), x + 10, 46 + 2, "health", BLACK);
+            al_draw_bitmap_region(
+                img_health_bar,
+                0,
+                0,
+                al_get_bitmap_width(img_health_bar) * percentile,
+                al_get_bitmap_height(img_health_bar),
+                x,
+                46,
+                0);
+            g_game->Print22(target, x + 10, 46 + 2, "health", BLACK);
 
             // science bar
             percentile = selected_officer->attributes.getScience();
             percentile /= 250;
-            al_draw_bitmap_region(img_science_bar,
-                                  0,
-                                  0,
-                                  al_get_bitmap_width(img_science_bar) *
-                                      percentile,
-                                  al_get_bitmap_height(img_science_bar),
-                                  x,
-                                  85,
-                                  0);
-            g_game->Print22(g_game->GetBackBuffer(),
-                            x + 10,
-                            85 + 2,
-                            "science skill",
-                            BLACK);
+            al_draw_bitmap_region(
+                img_science_bar,
+                0,
+                0,
+                al_get_bitmap_width(img_science_bar) * percentile,
+                al_get_bitmap_height(img_science_bar),
+                x,
+                85,
+                0);
+            g_game->Print22(target, x + 10, 85 + 2, "science skill", BLACK);
 
             // navigation bar
             percentile = selected_officer->attributes.getNavigation();
             percentile /= 250;
-            al_draw_bitmap_region(img_nav_bar,
-                                  0,
-                                  0,
-                                  al_get_bitmap_width(img_nav_bar) * percentile,
-                                  al_get_bitmap_height(img_nav_bar),
-                                  x,
-                                  129,
-                                  0);
-            g_game->Print22(g_game->GetBackBuffer(),
-                            x + 10,
-                            129 + 2,
-                            "navigation skill",
-                            BLACK);
+            al_draw_bitmap_region(
+                img_nav_bar,
+                0,
+                0,
+                al_get_bitmap_width(img_nav_bar) * percentile,
+                al_get_bitmap_height(img_nav_bar),
+                x,
+                129,
+                0);
+            g_game->Print22(target, x + 10, 129 + 2, "navigation skill", BLACK);
 
             // engineering bar
             percentile = selected_officer->attributes.getEngineering();
             percentile /= 250;
-            al_draw_bitmap_region(img_engineer_bar,
-                                  0,
-                                  0,
-                                  al_get_bitmap_width(img_engineer_bar) *
-                                      percentile,
-                                  al_get_bitmap_height(img_engineer_bar),
-                                  x,
-                                  177,
-                                  0);
-            g_game->Print22(g_game->GetBackBuffer(),
-                            x + 10,
-                            177 + 2,
-                            "engineering skill",
-                            BLACK);
+            al_draw_bitmap_region(
+                img_engineer_bar,
+                0,
+                0,
+                al_get_bitmap_width(img_engineer_bar) * percentile,
+                al_get_bitmap_height(img_engineer_bar),
+                x,
+                177,
+                0);
+            g_game->Print22(
+                target, x + 10, 177 + 2, "engineering skill", BLACK);
 
             // communications bar
             percentile = selected_officer->attributes.getCommunication();
             percentile /= 250;
-            al_draw_bitmap_region(img_comm_bar,
-                                  0,
-                                  0,
-                                  al_get_bitmap_width(img_comm_bar) *
-                                      percentile,
-                                  al_get_bitmap_height(img_comm_bar),
-                                  x,
-                                  221,
-                                  0);
-            g_game->Print22(g_game->GetBackBuffer(),
-                            x + 10,
-                            221 + 2,
-                            "communications skill",
-                            BLACK);
+            al_draw_bitmap_region(
+                img_comm_bar,
+                0,
+                0,
+                al_get_bitmap_width(img_comm_bar) * percentile,
+                al_get_bitmap_height(img_comm_bar),
+                x,
+                221,
+                0);
+            g_game->Print22(
+                target, x + 10, 221 + 2, "communications skill", BLACK);
 
             // medical bar
             percentile = selected_officer->attributes.getMedical();
             percentile /= 250;
-            al_draw_bitmap_region(img_medical_bar,
-                                  0,
-                                  0,
-                                  al_get_bitmap_width(img_medical_bar) *
-                                      percentile,
-                                  al_get_bitmap_height(img_medical_bar),
-                                  x,
-                                  266,
-                                  0);
-            g_game->Print22(g_game->GetBackBuffer(),
-                            x + 10,
-                            266 + 2,
-                            "medical skill",
-                            BLACK);
+            al_draw_bitmap_region(
+                img_medical_bar,
+                0,
+                0,
+                al_get_bitmap_width(img_medical_bar) * percentile,
+                al_get_bitmap_height(img_medical_bar),
+                x,
+                266,
+                0);
+            g_game->Print22(target, x + 10, 266 + 2, "medical skill", BLACK);
 
             // tactical bar
             percentile = selected_officer->attributes.getTactics();
             percentile /= 250;
-            al_draw_bitmap_region(img_tac_bar,
-                                  0,
-                                  0,
-                                  al_get_bitmap_width(img_tac_bar) * percentile,
-                                  al_get_bitmap_height(img_tac_bar),
-                                  x,
-                                  311,
-                                  0);
-            g_game->Print22(g_game->GetBackBuffer(),
-                            x + 10,
-                            311 + 2,
-                            "tactical skill",
-                            BLACK);
+            al_draw_bitmap_region(
+                img_tac_bar,
+                0,
+                0,
+                al_get_bitmap_width(img_tac_bar) * percentile,
+                al_get_bitmap_height(img_tac_bar),
+                x,
+                311,
+                0);
+            g_game->Print22(target, x + 10, 311 + 2, "tactical skill", BLACK);
 
             // learning rate bar
             percentile = selected_officer->attributes.getLearnRate();
             percentile /= 65;
-            al_draw_bitmap_region(img_learn_bar,
-                                  0,
-                                  0,
-                                  al_get_bitmap_width(img_learn_bar) *
-                                      percentile,
-                                  al_get_bitmap_height(img_learn_bar),
-                                  x,
-                                  357,
-                                  0);
-            g_game->Print22(
-                g_game->GetBackBuffer(), x + 10, 357 + 2, "learning", BLACK);
+            al_draw_bitmap_region(
+                img_learn_bar,
+                0,
+                0,
+                al_get_bitmap_width(img_learn_bar) * percentile,
+                al_get_bitmap_height(img_learn_bar),
+                x,
+                357,
+                0);
+            g_game->Print22(target, x + 10, 357 + 2, "learning", BLACK);
 
             // durability
             percentile = selected_officer->attributes.getDurability();
             percentile /= 65;
-            al_draw_bitmap_region(img_dur_bar,
-                                  0,
-                                  0,
-                                  al_get_bitmap_width(img_dur_bar) * percentile,
-                                  al_get_bitmap_height(img_dur_bar),
-                                  x,
-                                  401,
-                                  0);
-            g_game->Print22(
-                g_game->GetBackBuffer(), x + 10, 401 + 2, "durability", BLACK);
+            al_draw_bitmap_region(
+                img_dur_bar,
+                0,
+                0,
+                al_get_bitmap_width(img_dur_bar) * percentile,
+                al_get_bitmap_height(img_dur_bar),
+                x,
+                401,
+                0);
+            g_game->Print22(target, x + 10, 401 + 2, "durability", BLACK);
         }
     }
 #pragma endregion
@@ -933,26 +922,36 @@ ModuleMedical::Draw() {
         selected_officer = NULL;
         b_examine = false;
     }
+    return true;
 }
 
-void
-ModuleMedical::OnMouseMove(int x, int y) {
+bool
+ModuleMedical::on_mouse_move(ALLEGRO_MOUSE_EVENT *event) {
+    int x = event->x;
+    int y = event->y;
+
     if (g_game->gameState->getCurrentSelectedOfficer() != OFFICER_MEDICAL)
-        return;
+        return true;
 
     for (int i = 0; i < 7; i++) {
         OfficerBtns[i]->OnMouseMove(x, y);
         HealBtns[i]->OnMouseMove(x, y);
     }
+    return true;
 }
 
-void
-ModuleMedical::OnMouseReleased(int button, int x, int y) {
+bool
+ModuleMedical::on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) {
+    int button = event->button - 1;
+    int x = event->x;
+    int y = event->y;
+
     if (g_game->gameState->getCurrentSelectedOfficer() != OFFICER_MEDICAL)
-        return;
+        return true;
 
     for (int i = 0; i < 7; i++) {
         OfficerBtns[i]->OnMouseReleased(button, x, y);
         HealBtns[i]->OnMouseReleased(button, x, y);
     }
+    return true;
 }

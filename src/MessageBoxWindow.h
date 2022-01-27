@@ -1,62 +1,55 @@
 #pragma once
-#include "ResourceManager.h"
-#include <allegro5/allegro.h>
 #include <string>
 
-class Button;
-class Label;
+#include <allegro5/allegro.h>
+
+#include "Button.h"
+#include "Label.h"
+#include "ResourceManager.h"
 
 class MessageBoxWindow {
   public:
     // ctors
-    MessageBoxWindow(const std::string &heading,
-                     const std::string &initText,
-                     int initX,
-                     int initY,
-                     int initWidth,
-                     int initHeight,
-                     ALLEGRO_COLOR initTextColor,
-                     bool initCentered);
+    MessageBoxWindow(
+        const std::string &heading,
+        const std::string &text,
+        int x,
+        int y,
+        int width,
+        int height,
+        ALLEGRO_COLOR text_color,
+        bool centered);
 
     ~MessageBoxWindow();
 
     // accessors
-    int GetX() const;
-    int GetY() const;
-    int GetWidth() const;
-    int GetHeight() const;
-    bool IsVisible() const;
+    bool is_active() const { return m_active; }
 
     // mutators
-    void SetText(const std::string &initText);
-    void SetX(int initX);
-    void SetY(int initY);
-    void SetTextColor(ALLEGRO_COLOR initTextColor);
-    void SetVisible(bool visibility);
+    void set_text(const std::string &text) { m_label_text->set_text(text); }
+    void move(int x, int y) {
+        m_x = x;
+        m_y = y;
+    }
+    void set_active(bool active) { m_active = active; }
 
     // other funcs
-    bool OnMouseMove(int x, int y);
-    bool OnMouseReleased(int button, int x, int y);
-    bool OnMouseClick(int button, int x, int y);
-    bool OnMousePressed(int button, int x, int y);
-    bool OnKeyPress(int keyCode);
+    bool on_mouse_move(ALLEGRO_MOUSE_EVENT *event);
+    bool on_mouse_button_down(ALLEGRO_MOUSE_EVENT *event);
+    bool on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event);
+    bool on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event);
 
-    void Update();
-    void Draw();
+    bool on_draw(ALLEGRO_BITMAP *target);
 
   private:
     Button *m_ok_button;
 
-    std::string heading;
-    std::string text;
-    int x;
-    int y;
-    int width;
-    int height;
-    ALLEGRO_COLOR textColor;
-    bool centered;
-    bool visible;
-    Label *labelText;
-    Label *labelHeading;
+    int m_x;
+    int m_y;
+    int m_width;
+    int m_height;
+    bool m_active;
+    Label *m_label_heading;
+    Label *m_label_text;
     ResourceManager<ALLEGRO_BITMAP> m_resources;
 };

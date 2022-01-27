@@ -27,9 +27,6 @@
 #include <string>
 #include <typeinfo>
 
-class CombatObject;
-enum AlienRaces;
-
 const int NormalScreenHeight = 512;
 const int FullScreenHeight = SCREEN_HEIGHT;
 
@@ -129,20 +126,22 @@ class ModuleEncounter : public Module {
     void enemyFireMissile(CombatObject *ship);
     CombatObject *GetFirstAlienShip();
 
-    void createLaser(CombatObject *laser,
-                     double x,
-                     double y,
-                     float velx,
-                     float vely,
-                     int angle,
-                     int laserDamage);
-    void createMissile(CombatObject *missile,
-                       double x,
-                       double y,
-                       float velx,
-                       float vely,
-                       int angle,
-                       int missileDamage);
+    void createLaser(
+        CombatObject *laser,
+        double x,
+        double y,
+        float velx,
+        float vely,
+        int angle,
+        int laserDamage);
+    void createMissile(
+        CombatObject *missile,
+        double x,
+        double y,
+        float velx,
+        float vely,
+        int angle,
+        int missileDamage);
 
     // shortcuts to crew last names to simplify code
     std::string com;
@@ -170,23 +169,20 @@ class ModuleEncounter : public Module {
     int flag_rotation;
 
   public:
-    ModuleEncounter(void);
-    ~ModuleEncounter(void);
-    bool Init() override;
-    void Update() override;
-    void Draw() override;
+    ModuleEncounter();
+    ~ModuleEncounter();
+    virtual bool on_init() override;
+    virtual bool on_update() override;
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
     void Print(std::string text, int color, long delay);
     void Print(std::string text, ALLEGRO_COLOR color, long delay);
-    void OnKeyPress(int keyCode) override;
-    void OnKeyReleased(int keyCode) override;
-    void OnMouseMove(int x, int y) override;
-    void OnMouseClick(int button, int x, int y) override;
-    void OnMousePressed(int button, int x, int y) override;
-    void OnMouseReleased(int button, int x, int y) override;
-    void OnMouseWheelUp(int x, int y) override;
-    void OnMouseWheelDown(int x, int y) override;
-    void OnEvent(Event *event) override;
-    void Close() override;
+    virtual bool on_key_down(ALLEGRO_KEYBOARD_EVENT *event) override;
+    virtual bool on_key_up(ALLEGRO_KEYBOARD_EVENT *event) override;
+    virtual bool on_mouse_move(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_mouse_button_down(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_event(ALLEGRO_EVENT *) override;
+    virtual bool on_close() override;
     void commInitStatement();
     void commInitQuestion();
     void commInitPosture();
@@ -208,8 +204,7 @@ class ModuleEncounter : public Module {
     void sendGlobalsToScript();
     void readGlobalsFromScript();
 
-    int
-    effectiveScreenHeight() {
+    int effectiveScreenHeight() {
         return g_game->doShowControls() ? NormalScreenHeight : FullScreenHeight;
     }
 
@@ -239,8 +234,11 @@ class ModuleEncounter : public Module {
  *******************************************************/
 
 // NOTE: L_Debug is defined in ModulePlanetSurface.cpp
-int L_Debug(lua_State *luaVM);     // usage: L_Debug("this is a debug message")
-int L_Terminate(lua_State *luaVM); // usage: L_Terminate()
-int L_Attack(lua_State *luaVM);    // usage: L_Attack()
+int
+L_Debug(lua_State *luaVM); // usage: L_Debug("this is a debug message")
+int
+L_Terminate(lua_State *luaVM); // usage: L_Terminate()
+int
+L_Attack(lua_State *luaVM); // usage: L_Attack()
 
 #endif

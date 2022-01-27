@@ -26,10 +26,11 @@ int CMDBUTTONS_UL_Y;
 int OFFICERICON_UL_X;
 int OFFICERICON_UL_Y;
 
-#define TRANSPARENTCLR al_map_rgb(255, 0, 255)
 #define CMDBUTTON_SPACING 0
 
-ModuleControlPanel::ModuleControlPanel(void) : resources(CONTROLPANEL_IMAGES) {
+ModuleControlPanel::ModuleControlPanel()
+    : Module(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT),
+      resources(CONTROLPANEL_IMAGES) {
     controlPanelBackgroundImg = NULL;
     mouseOverOfficer = NULL;
     selectedOfficer = NULL;
@@ -41,7 +42,7 @@ ModuleControlPanel::ModuleControlPanel(void) : resources(CONTROLPANEL_IMAGES) {
 ModuleControlPanel::~ModuleControlPanel(void) {}
 
 bool
-ModuleControlPanel::Init() {
+ModuleControlPanel::on_init() {
     // load the control panel datafile
     if (!resources.load()) {
         g_game->message("ControlPanel: Error loading datafile");
@@ -76,12 +77,13 @@ ModuleControlPanel::Init() {
      * CAPTAIN
      */
     OfficerButton *captainBtn;
-    captainBtn = new OfficerButton(*this,
-                                   OFFICER_CAPTAIN,
-                                   I_CP_CAPTAIN_MO,
-                                   I_CP_CAPTAIN_SELECT,
-                                   officerIconX,
-                                   officerIconY);
+    captainBtn = new OfficerButton(
+        *this,
+        OFFICER_CAPTAIN,
+        I_CP_CAPTAIN_MO,
+        I_CP_CAPTAIN_SELECT,
+        officerIconX,
+        officerIconY);
 
     selectedOfficer = captainBtn;
     officerButtons.push_back(captainBtn);
@@ -121,12 +123,13 @@ ModuleControlPanel::Init() {
      * SCIENCE OFFICER
      */
     officerIconX += officerIconWidth;
-    OfficerButton *scienceBtn = new OfficerButton(*this,
-                                                  OFFICER_SCIENCE,
-                                                  I_CP_SCIENCE_MO,
-                                                  I_CP_SCIENCE_SELECT,
-                                                  officerIconX,
-                                                  officerIconY);
+    OfficerButton *scienceBtn = new OfficerButton(
+        *this,
+        OFFICER_SCIENCE,
+        I_CP_SCIENCE_MO,
+        I_CP_SCIENCE_SELECT,
+        officerIconX,
+        officerIconY);
     officerButtons.push_back(scienceBtn);
 
     cix = CMDBUTTONS_UL_X;
@@ -149,12 +152,13 @@ ModuleControlPanel::Init() {
      * NAVIGATOR
      */
     officerIconX += officerIconWidth;
-    OfficerButton *navBtn = new OfficerButton(*this,
-                                              OFFICER_NAVIGATION,
-                                              I_CP_NAVIGATION_MO,
-                                              I_CP_NAVIGATION_SELECT,
-                                              officerIconX,
-                                              officerIconY);
+    OfficerButton *navBtn = new OfficerButton(
+        *this,
+        OFFICER_NAVIGATION,
+        I_CP_NAVIGATION_MO,
+        I_CP_NAVIGATION_SELECT,
+        officerIconX,
+        officerIconY);
     officerButtons.push_back(navBtn);
 
     cix = CMDBUTTONS_UL_X;
@@ -192,12 +196,13 @@ ModuleControlPanel::Init() {
      * TACTICAL
      */
     officerIconX += officerIconWidth;
-    OfficerButton *tacBtn = new OfficerButton(*this,
-                                              OFFICER_TACTICAL,
-                                              I_CP_TACTICAL_MO,
-                                              I_CP_TACTICAL_SELECT,
-                                              officerIconX,
-                                              officerIconY);
+    OfficerButton *tacBtn = new OfficerButton(
+        *this,
+        OFFICER_TACTICAL,
+        I_CP_TACTICAL_MO,
+        I_CP_TACTICAL_SELECT,
+        officerIconX,
+        officerIconY);
     officerButtons.push_back(tacBtn);
 
     cix = CMDBUTTONS_UL_X;
@@ -221,12 +226,13 @@ ModuleControlPanel::Init() {
      */
     officerIconX = OFFICERICON_UL_X;
     officerIconY = OFFICERICON_UL_Y + officerIconHeight;
-    OfficerButton *engBtn = new OfficerButton(*this,
-                                              OFFICER_ENGINEER,
-                                              I_CP_ENGINEER_MO,
-                                              I_CP_ENGINEER_SELECT,
-                                              officerIconX,
-                                              officerIconY);
+    OfficerButton *engBtn = new OfficerButton(
+        *this,
+        OFFICER_ENGINEER,
+        I_CP_ENGINEER_MO,
+        I_CP_ENGINEER_SELECT,
+        officerIconX,
+        officerIconY);
     officerButtons.push_back(engBtn);
 
     cix = CMDBUTTONS_UL_X;
@@ -249,12 +255,13 @@ ModuleControlPanel::Init() {
      * COMMUNICATIONS
      */
     officerIconX += officerIconWidth;
-    OfficerButton *comBtn = new OfficerButton(*this,
-                                              OFFICER_COMMUNICATION,
-                                              I_CP_COMM_MO,
-                                              I_CP_COMM_SELECT,
-                                              officerIconX,
-                                              officerIconY);
+    OfficerButton *comBtn = new OfficerButton(
+        *this,
+        OFFICER_COMMUNICATION,
+        I_CP_COMM_MO,
+        I_CP_COMM_SELECT,
+        officerIconX,
+        officerIconY);
     officerButtons.push_back(comBtn);
 
     cix = CMDBUTTONS_UL_X;
@@ -299,12 +306,13 @@ ModuleControlPanel::Init() {
      * MEDICAL
      */
     officerIconX += officerIconWidth;
-    OfficerButton *medBtn = new OfficerButton(*this,
-                                              OFFICER_MEDICAL,
-                                              I_CP_MEDICAL_MO,
-                                              I_CP_MEDICAL_SELECT,
-                                              officerIconX,
-                                              officerIconY);
+    OfficerButton *medBtn = new OfficerButton(
+        *this,
+        OFFICER_MEDICAL,
+        I_CP_MEDICAL_MO,
+        I_CP_MEDICAL_SELECT,
+        officerIconX,
+        officerIconY);
     officerButtons.push_back(medBtn);
 
     cix = CMDBUTTONS_UL_X;
@@ -354,10 +362,8 @@ ModuleControlPanel::Init() {
     return true;
 }
 
-void
-ModuleControlPanel::Update() {
-    Module::Update();
-
+bool
+ModuleControlPanel::on_update() {
     /**
      * Set gameState variable to keep track of currently selected officer
      * this is needed by the Status Window module, among other places.
@@ -365,13 +371,15 @@ ModuleControlPanel::Update() {
     if (selectedOfficer != NULL)
         g_game->gameState->setCurrentSelectedOfficer(
             selectedOfficer->GetOfficerType());
+
+    return true;
 }
 
-void
-ModuleControlPanel::Draw() {
-    if (g_game->gameState->getCurrentModule() == MODULE_ENCOUNTER &&
-        g_game->doShowControls() == false)
-        return;
+bool
+ModuleControlPanel::on_draw(ALLEGRO_BITMAP *target) {
+    if (g_game->gameState->getCurrentModule() == MODULE_ENCOUNTER
+        && !g_game->doShowControls())
+        return false;
 
     static int lastMode = 0;
 
@@ -383,7 +391,7 @@ ModuleControlPanel::Draw() {
     // render CP background with transparency
     static int gcpx = (int)g_game->getGlobalNumber("GUI_CONTROLPANEL_POS_X");
     static int gcpy = (int)g_game->getGlobalNumber("GUI_CONTROLPANEL_POS_Y");
-    al_set_target_bitmap(g_game->GetBackBuffer());
+    al_set_target_bitmap(target);
 
     if (controlPanelBackgroundImg)
         al_draw_bitmap(controlPanelBackgroundImg, gcpx, gcpy, 0);
@@ -398,14 +406,14 @@ ModuleControlPanel::Draw() {
 
             if (commandButton->GetEnabled()) {
                 if (selectedCommand == commandButton) {
-                    commandButton->RenderSelected(g_game->GetBackBuffer());
+                    commandButton->RenderSelected(target);
                 } else if (mouseOverCommand == commandButton) {
-                    commandButton->RenderMouseOver(g_game->GetBackBuffer());
+                    commandButton->RenderMouseOver(target);
                 } else {
-                    commandButton->RenderPlain(g_game->GetBackBuffer());
+                    commandButton->RenderPlain(target);
                 }
             } else {
-                commandButton->RenderDisabled(g_game->GetBackBuffer());
+                commandButton->RenderDisabled(target);
             }
         }
     }
@@ -417,21 +425,23 @@ ModuleControlPanel::Draw() {
         OfficerButton *officerButton = *i;
 
         if (officerButton == selectedOfficer) {
-            officerButton->RenderSelected(g_game->GetBackBuffer());
+            officerButton->RenderSelected(target);
         } else if (officerButton == mouseOverOfficer) {
-            officerButton->RenderMouseOver(g_game->GetBackBuffer());
+            officerButton->RenderMouseOver(target);
         } else {
             if (officerButton->imgMouseOver)
-                al_draw_bitmap(officerButton->imgMouseOver,
-                               officerButton->posX,
-                               officerButton->posY,
-                               0);
+                al_draw_bitmap(
+                    officerButton->imgMouseOver,
+                    officerButton->posX,
+                    officerButton->posY,
+                    0);
         }
     }
+    return true;
 }
 
-void
-ModuleControlPanel::Close() {
+bool
+ModuleControlPanel::on_close() {
     for (vector<OfficerButton *>::iterator i = officerButtons.begin();
          i != officerButtons.end();
          ++i) {
@@ -457,14 +467,15 @@ ModuleControlPanel::Close() {
 
     // unload the data file (thus freeing all resources at once)
     resources.unload();
+
+    return true;
 }
 
 #pragma region INPUT
 
-void
-ModuleControlPanel::OnKeyReleased(int keyCode) {
-    Module::OnKeyReleased(keyCode);
-    switch (keyCode) {
+bool
+ModuleControlPanel::on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event) {
+    switch (event->keycode) {
     case ALLEGRO_KEY_F1: // select the captain
         g_game->gameState->setCurrentSelectedOfficer(OFFICER_CAPTAIN);
         for (vector<OfficerButton *>::iterator i = officerButtons.begin();
@@ -569,15 +580,18 @@ ModuleControlPanel::OnKeyReleased(int keyCode) {
                 break;
             }
         }
-        Event e(EVENT_NAVIGATOR_STARMAP);
-        g_game->modeMgr->BroadcastEvent(&e);
+        ALLEGRO_EVENT e = {
+            .type = static_cast<unsigned int>(EVENT_NAVIGATOR_STARMAP)};
+        g_game->broadcast_event(&e);
         break;
     }
+    return true;
 }
 
-void
-ModuleControlPanel::OnMouseMove(int x, int y) {
-    Module::OnMouseMove(x, y);
+bool
+ModuleControlPanel::on_mouse_move(ALLEGRO_MOUSE_EVENT *event) {
+    int x = event->x;
+    int y = event->y;
 
     // look for officer button mouse over
     mouseOverOfficer = NULL;
@@ -605,25 +619,25 @@ ModuleControlPanel::OnMouseMove(int x, int y) {
             }
         }
     }
+    return true;
 }
 
-void
-ModuleControlPanel::OnMouseClick(int button, int x, int y) {
-    Module::OnMouseClick(button, x, y);
-}
+bool
+ModuleControlPanel::on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) {
+    if (!is_mouse_click(event)) {
+        return true;
+    }
+    int button = event->button - 1;
+    int x = event->x;
+    int y = event->y;
 
-void
-ModuleControlPanel::OnMousePressed(int button, int x, int y) {
-    Module::OnMousePressed(button, x, y);
-
-    if (button != 0)
-        return;
+    if (button != 0) {
+        return true;
+    }
 
     // select officer
-    for (vector<OfficerButton *>::iterator i = officerButtons.begin();
-         i != officerButtons.end();
-         ++i) {
-        OfficerButton *officerButton = *i;
+    for (auto &i : officerButtons) {
+        OfficerButton *officerButton = i;
 
         if (officerButton->IsInButton(x, y)) {
             // change the officer
@@ -635,47 +649,28 @@ ModuleControlPanel::OnMousePressed(int button, int x, int y) {
             break;
         }
     }
-    // jjh - maybe here to force navigator when entering hyperspace
-    //  set command to pressed
-    if (selectedOfficer != NULL) {
-        for (vector<CommandButton *>::iterator i =
-                 selectedOfficer->commandButtons.begin();
-             i != selectedOfficer->commandButtons.end();
-             ++i) {
-            CommandButton *commandButton = *i;
+    if (selectedOfficer != nullptr) {
+        for (auto &i : selectedOfficer->commandButtons) {
+            CommandButton *commandButton = i;
 
-            if (commandButton->IsInButton(x, y) &&
-                commandButton->GetEnabled()) {
+            if (commandButton->IsInButton(x, y)
+                && commandButton->GetEnabled()) {
                 selectedCommand = commandButton;
 
                 g_game->audioSystem->Play(sndOfficerCommandSelected);
             }
         }
     }
-}
-
-void
-ModuleControlPanel::OnMouseReleased(int button, int x, int y) {
-    Module::OnMouseReleased(button, x, y);
 
     // launch event based on button ID so all modules in this mode will be
     // notified
     if (selectedCommand) {
-        Event e(selectedCommand->getEventID());
-        g_game->modeMgr->BroadcastEvent(&e);
+        ALLEGRO_EVENT e = {
+            .type = static_cast<unsigned int>(selectedCommand->getEventID())};
+        g_game->broadcast_event(&e);
     }
 
-    selectedCommand = NULL;
-}
-
-void
-ModuleControlPanel::OnMouseWheelUp(int x, int y) {
-    Module::OnMouseWheelUp(x, y);
-}
-
-void
-ModuleControlPanel::OnMouseWheelDown(int x, int y) {
-    Module::OnMouseWheelDown(x, y);
+    return false;
 }
 
 #pragma endregion
@@ -800,8 +795,8 @@ ModuleControlPanel::CommandButton::RenderSelected(ALLEGRO_BITMAP *canvas) {
 
 bool
 ModuleControlPanel::CommandButton::IsInButton(int x, int y) {
-    if ((x >= posX) && (x < posX + al_get_bitmap_width(imgBackground)) &&
-        (y >= posY) && (y < posY + al_get_bitmap_height(imgBackground))) {
+    if ((x >= posX) && (x < posX + al_get_bitmap_width(imgBackground))
+        && (y >= posY) && (y < posY + al_get_bitmap_height(imgBackground))) {
         return true;
     }
 
@@ -819,9 +814,10 @@ ModuleControlPanel::CommandButton::GetEnabled() {
 }
 
 void
-ModuleControlPanel::CommandButton::Render(ALLEGRO_BITMAP *canvas,
-                                          ALLEGRO_BITMAP *imgBackground,
-                                          bool down) {
+ModuleControlPanel::CommandButton::Render(
+    ALLEGRO_BITMAP *canvas,
+    ALLEGRO_BITMAP *imgBackground,
+    bool down) {
     al_set_target_bitmap(canvas);
     // draw button background and command icon image
     al_draw_bitmap(imgBackground, posX, posY, 0);
@@ -829,14 +825,15 @@ ModuleControlPanel::CommandButton::Render(ALLEGRO_BITMAP *canvas,
     if (down)
         al_draw_bitmap(imgCmdIcon, posX, posY, 0);
     else
-        al_draw_bitmap_region(imgCmdIcon,
-                              0,
-                              2,
-                              al_get_bitmap_width(imgCmdIcon),
-                              al_get_bitmap_height(imgCmdIcon),
-                              posX,
-                              posY,
-                              0);
+        al_draw_bitmap_region(
+            imgCmdIcon,
+            0,
+            2,
+            al_get_bitmap_width(imgCmdIcon),
+            al_get_bitmap_height(imgCmdIcon),
+            posX,
+            posY,
+            0);
 }
 
 #pragma endregion
@@ -860,12 +857,13 @@ ModuleControlPanel::CommandButton::Render(ALLEGRO_BITMAP *canvas,
 #define OFFICER_MOUSEOVERTIP_TEXTOFFSET_X 6
 #define OFFICER_MOUSEOVERTIP_TEXTOFFSET_Y 6
 
-ModuleControlPanel::OfficerButton::OfficerButton(ModuleControlPanel &outer,
-                                                 OfficerType officerType,
-                                                 const string &datFileMouseOver,
-                                                 const string &datFileSelected,
-                                                 int posX,
-                                                 int posY)
+ModuleControlPanel::OfficerButton::OfficerButton(
+    ModuleControlPanel &outer,
+    OfficerType officerType,
+    const string &datFileMouseOver,
+    const string &datFileSelected,
+    int posX,
+    int posY)
     : outer(outer) {
     this->officerType = officerType;
     this->datFileMouseOver = datFileMouseOver;
@@ -926,11 +924,12 @@ ModuleControlPanel::OfficerButton::RenderMouseOver(ALLEGRO_BITMAP *canvas) {
     al_draw_filled_rectangle(x, y, x + 165, y + 32, al_map_rgb(57, 59, 134));
 
     // draw tooltip of crew position/name
-    g_game->Print18(canvas,
-                    x + 5,
-                    y,
-                    officer->GetTitle().c_str(),
-                    OFFICER_MOUSEOVERTIP_TEXT_CLR);
+    g_game->Print18(
+        canvas,
+        x + 5,
+        y,
+        officer->GetTitle().c_str(),
+        OFFICER_MOUSEOVERTIP_TEXT_CLR);
     g_game->Print18(
         canvas, x + 5, y + 13, name.c_str(), OFFICER_MOUSEOVERTIP_LABEL_CLR);
 }
@@ -943,8 +942,8 @@ ModuleControlPanel::OfficerButton::RenderSelected(ALLEGRO_BITMAP *canvas) {
 
 bool
 ModuleControlPanel::OfficerButton::IsInButton(int x, int y) {
-    if ((x >= posX) && (x < posX + al_get_bitmap_width(imgMouseOver)) &&
-        (y >= posY) && (y < posY + al_get_bitmap_height(imgMouseOver))) {
+    if ((x >= posX) && (x < posX + al_get_bitmap_width(imgMouseOver))
+        && (y >= posY) && (y < posY + al_get_bitmap_height(imgMouseOver))) {
         return true;
     }
 

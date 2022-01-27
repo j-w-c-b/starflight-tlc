@@ -64,12 +64,14 @@ TerrainVehicleSprite::applythrust() {
     vehicle.setMoveAngle(vehicle.getFaceAngle() - 90);
     if (vehicle.getMoveAngle() < 0)
         vehicle.setMoveAngle(359 + vehicle.getMoveAngle());
-    vehicle.setVelX(vehicle.getVelX() +
-                    vehicle.calcAngleMoveX((double)vehicle.getMoveAngle()) *
-                        forward_thrust);
-    vehicle.setVelY(vehicle.getVelY() +
-                    vehicle.calcAngleMoveY((double)vehicle.getMoveAngle()) *
-                        forward_thrust);
+    vehicle.setVelX(
+        vehicle.getVelX()
+        + vehicle.calcAngleMoveX((double)vehicle.getMoveAngle())
+              * forward_thrust);
+    vehicle.setVelY(
+        vehicle.getVelY()
+        + vehicle.calcAngleMoveY((double)vehicle.getMoveAngle())
+              * forward_thrust);
     limitvelocity();
 }
 

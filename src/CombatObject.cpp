@@ -191,9 +191,11 @@ CombatObject::ApplyThrust() {
     this->setMoveAngle(this->getFaceAngle() - 90);
     if (this->getMoveAngle() < 0)
         this->setMoveAngle(359 + this->getMoveAngle());
-    this->setVelX(this->getVelX() + this->calcAngleMoveX(this->getMoveAngle()) *
-                                        this->getAcceleration());
-    this->setVelY(this->getVelY() + this->calcAngleMoveY(this->getMoveAngle()) *
-                                        this->getAcceleration());
+    this->setVelX(
+        this->getVelX()
+        + this->calcAngleMoveX(this->getMoveAngle()) * this->getAcceleration());
+    this->setVelY(
+        this->getVelY()
+        + this->calcAngleMoveY(this->getMoveAngle()) * this->getAcceleration());
     this->LimitVelocity();
 }

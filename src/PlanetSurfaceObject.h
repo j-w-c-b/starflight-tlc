@@ -21,18 +21,9 @@ struct Animation {
     int end_frame;
     int delay;
 
-    int
-    GetStartFrame() const {
-        return start_frame;
-    }
-    int
-    GetEndFrame() const {
-        return end_frame;
-    }
-    int
-    GetDelay() const {
-        return delay;
-    }
+    int GetStartFrame() const { return start_frame; }
+    int GetEndFrame() const { return end_frame; }
+    int GetDelay() const { return delay; }
 };
 
 class PlanetSurfaceObject {
@@ -71,350 +62,109 @@ class PlanetSurfaceObject {
     static int maxX, minX, maxY, minY;
 
     // accessors
-    int
-    getID() const {
-        return id;
-    }
-    std::string
-    getName() const {
-        return name;
-    }
-    double
-    getValue() const {
-        return value;
-    }
-    double
-    getSize() const {
-        return size;
-    }
-    double
-    getDangerLvl() const {
-        return danger;
-    }
-    double
-    getDamage() const {
-        return damage;
-    }
-    int
-    getHealth() const {
-        return health;
-    }
-    int
-    getMaxHealth() const {
-        return maxHealth;
-    }
-    bool
-    IsShipRepairMetal() const {
-        return shipRepairMetal;
-    }
-    bool
-    IsBlackMarketItem() const {
-        return blackMarketItem;
-    }
-    std::string
-    GetScriptName() const {
-        return scriptName;
-    }
-    bool
-    IsScanned() const {
-        return scanned;
-    }
-    int
-    getStunCount() const {
-        return stunCount;
-    }
-    double
-    getX() const {
-        return x;
-    }
-    double
-    getY() const {
-        return y;
-    }
-    double
-    getXOffset() const {
-        return x + (frameWidth * scale) / 2;
-    }
-    double
-    getYOffset() const {
-        return y + (frameHeight * scale) / 2;
-    }
-    double
-    getSpeed() const {
-        return speed;
-    }
-    double
-    getVelX() const {
-        return velX;
-    }
-    double
-    getVelY() const {
-        return velY;
-    }
-    float
-    getFaceAngle() const {
-        return faceAngle;
-    }
-    float
-    getMoveAngle() const {
-        return moveAngle;
-    }
-    int
-    isAlive() const {
-        return alive;
-    }
-    int
-    getState() const {
-        return state;
-    }
-    int
-    getObjectType() const {
-        return objectType;
-    }
-    int
-    getColHalfWidth() const {
-        return (int)(colHalfWidth * scale);
-    }
-    int
-    getColHalfHeight() const {
-        return (int)(colHalfHeight * scale);
-    }
-    double
-    getScale() const {
-        return scale;
-    }
-    int
-    getCurrFrame() const {
-        return currFrame;
-    }
-    int
-    getTotalFrames() const {
-        return totalFrames;
-    }
-    int
-    getFrameWidth() const {
-        return frameWidth;
-    }
-    int
-    getFrameHeight() const {
-        return frameHeight;
-    }
-    int
-    getCounter1() const {
-        return counter1;
-    }
-    int
-    getCounter2() const {
-        return counter2;
-    }
-    int
-    getCounter3() const {
-        return counter3;
-    }
-    int
-    getThreshold1() const {
-        return threshold1;
-    }
-    int
-    getThreshold2() const {
-        return threshold2;
-    }
-    int
-    getThreshold3() const {
-        return threshold3;
-    }
+    int getID() const { return id; }
+    std::string getName() const { return name; }
+    double getValue() const { return value; }
+    double getSize() const { return size; }
+    double getDangerLvl() const { return danger; }
+    double getDamage() const { return damage; }
+    int getHealth() const { return health; }
+    int getMaxHealth() const { return maxHealth; }
+    bool IsShipRepairMetal() const { return shipRepairMetal; }
+    bool IsBlackMarketItem() const { return blackMarketItem; }
+    std::string GetScriptName() const { return scriptName; }
+    bool IsScanned() const { return scanned; }
+    int getStunCount() const { return stunCount; }
+    double getX() const { return x; }
+    double getY() const { return y; }
+    double getXOffset() const { return x + (frameWidth * scale) / 2; }
+    double getYOffset() const { return y + (frameHeight * scale) / 2; }
+    double getSpeed() const { return speed; }
+    double getVelX() const { return velX; }
+    double getVelY() const { return velY; }
+    float getFaceAngle() const { return faceAngle; }
+    float getMoveAngle() const { return moveAngle; }
+    int isAlive() const { return alive; }
+    int getState() const { return state; }
+    int getObjectType() const { return objectType; }
+    int getColHalfWidth() const { return (int)(colHalfWidth * scale); }
+    int getColHalfHeight() const { return (int)(colHalfHeight * scale); }
+    double getScale() const { return scale; }
+    int getCurrFrame() const { return currFrame; }
+    int getTotalFrames() const { return totalFrames; }
+    int getFrameWidth() const { return frameWidth; }
+    int getFrameHeight() const { return frameHeight; }
+    int getCounter1() const { return counter1; }
+    int getCounter2() const { return counter2; }
+    int getCounter3() const { return counter3; }
+    int getThreshold1() const { return threshold1; }
+    int getThreshold2() const { return threshold2; }
+    int getThreshold3() const { return threshold3; }
 
     ALLEGRO_COLOR
     getMinimapColor() const { return minimapColor; }
-    int
-    getMinimapSize() const {
-        return minimapSize;
-    }
+    int getMinimapSize() const { return minimapSize; }
 
     // mutators
-    void
-    setID(int initID) {
-        id = initID;
-    }
-    void
-    setItemType(ItemType initItemType) {
-        itemType = initItemType;
-    }
-    void
-    setName(std::string initName) {
-        name = initName;
-    }
-    void
-    setScriptName(std::string initName) {
-        scriptName = initName;
-    }
-    void
-    setValue(double initValue) {
-        value = initValue;
-    }
-    void
-    setSize(double initSize) {
-        size = initSize;
-    }
-    void
-    setDangerLvl(double initDangerLvl) {
-        danger = initDangerLvl;
-    }
-    void
-    setDamage(double initDamage) {
-        damage = initDamage;
-    }
-    void
-    setHealth(int initHealth) {
-        health = initHealth;
-    }
-    void
-    setMaxHealth(int initHealth) {
-        maxHealth = initHealth;
-    }
-    void
-    setItemAge(ItemAge initItemAge) {
-        itemAge = initItemAge;
-    }
-    void
-    setAsShipRepairMetal(bool initRepairMetal) {
+    void setID(int initID) { id = initID; }
+    void setItemType(ItemType initItemType) { itemType = initItemType; }
+    void setName(std::string initName) { name = initName; }
+    void setScriptName(std::string initName) { scriptName = initName; }
+    void setValue(double initValue) { value = initValue; }
+    void setSize(double initSize) { size = initSize; }
+    void setDangerLvl(double initDangerLvl) { danger = initDangerLvl; }
+    void setDamage(double initDamage) { damage = initDamage; }
+    void setHealth(int initHealth) { health = initHealth; }
+    void setMaxHealth(int initHealth) { maxHealth = initHealth; }
+    void setItemAge(ItemAge initItemAge) { itemAge = initItemAge; }
+    void setAsShipRepairMetal(bool initRepairMetal) {
         shipRepairMetal = initRepairMetal;
     }
-    void
-    setAsBlackMarketItem(bool initBlackMarket) {
+    void setAsBlackMarketItem(bool initBlackMarket) {
         blackMarketItem = initBlackMarket;
     }
-    void
-    setScanned(bool initScanned) {
-        scanned = initScanned;
-    }
-    void
-    setStunCount(int initStunCount) {
-        stunCount = initStunCount;
-    }
-    void
-    setSelected(bool initSelected) {
-        selected = initSelected;
-    }
+    void setScanned(bool initScanned) { scanned = initScanned; }
+    void setStunCount(int initStunCount) { stunCount = initStunCount; }
+    void setSelected(bool initSelected) { selected = initSelected; }
     // The set positions are in the cpp
     void setX(double initX);
     void setY(double initY);
     void setPos(double initX, double initY);
     void setPosOffset(double initX, double initY);
 
-    void
-    setSpeed(double initSpeed) {
-        speed = initSpeed;
-    }
-    void
-    setVelX(double initVelX) {
-        velX = initVelX;
-    }
-    void
-    setVelY(double initVelY) {
-        velY = initVelY;
-    }
-    void
-    setFaceAngle(float initFaceAngle) {
-        faceAngle = initFaceAngle;
-    }
-    void
-    setMoveAngle(float initMoveAngle) {
-        moveAngle = initMoveAngle;
-    }
-    void
-    setAngleOffset(double initAngleOffset) {
+    void setSpeed(double initSpeed) { speed = initSpeed; }
+    void setVelX(double initVelX) { velX = initVelX; }
+    void setVelY(double initVelY) { velY = initVelY; }
+    void setFaceAngle(float initFaceAngle) { faceAngle = initFaceAngle; }
+    void setMoveAngle(float initMoveAngle) { moveAngle = initMoveAngle; }
+    void setAngleOffset(double initAngleOffset) {
         angleOffset = initAngleOffset;
     }
-    void
-    setAlive(int initAlive) {
-        alive = initAlive;
-    }
-    void
-    setState(int initState) {
-        state = initState;
-    }
-    void
-    setObjectType(int initObjectType) {
-        objectType = initObjectType;
-    }
-    void
-    setWidth(int initWidth) {
-        width = initWidth;
-    }
-    void
-    setHeight(int initHeight) {
-        height = initHeight;
-    }
-    void
-    setColHalfWidth(int initHalfWidth) {
-        colHalfWidth = initHalfWidth;
-    }
-    void
-    setColHalfHeight(int initHalfHeight) {
+    void setAlive(int initAlive) { alive = initAlive; }
+    void setState(int initState) { state = initState; }
+    void setObjectType(int initObjectType) { objectType = initObjectType; }
+    void setWidth(int initWidth) { width = initWidth; }
+    void setHeight(int initHeight) { height = initHeight; }
+    void setColHalfWidth(int initHalfWidth) { colHalfWidth = initHalfWidth; }
+    void setColHalfHeight(int initHalfHeight) {
         colHalfHeight = initHalfHeight;
     }
-    void
-    setScale(double initScale) {
-        scale = initScale;
-    }
-    void
-    setCurrFrame(int initCurrFrame) {
-        currFrame = initCurrFrame;
-    }
-    void
-    setTotalFrames(int initTotalFrames) {
-        totalFrames = initTotalFrames;
-    }
-    void
-    setFrameDelay(int initFrameDelay) {
-        frameDelay = initFrameDelay;
-    }
-    void
-    setFrameWidth(int initFrameWidth) {
-        frameWidth = initFrameWidth;
-    }
-    void
-    setFrameHeight(int initFrameHeight) {
-        frameHeight = initFrameHeight;
-    }
-    void
-    setAnimColumns(int initAnimColumns) {
-        animColumns = initAnimColumns;
-    }
-    void
-    setCounter1(int initCounter1) {
-        counter1 = initCounter1;
-    }
-    void
-    setCounter2(int initCounter2) {
-        counter2 = initCounter2;
-    }
-    void
-    setCounter3(int initCounter3) {
-        counter3 = initCounter3;
-    }
-    void
-    setThreshold1(int initThreshold1) {
-        threshold1 = initThreshold1;
-    }
-    void
-    setThreshold2(int initThreshold2) {
-        threshold2 = initThreshold2;
-    }
-    void
-    setThreshold3(int initThreshold3) {
-        threshold3 = initThreshold3;
-    }
+    void setScale(double initScale) { scale = initScale; }
+    void setCurrFrame(int initCurrFrame) { currFrame = initCurrFrame; }
+    void setTotalFrames(int initTotalFrames) { totalFrames = initTotalFrames; }
+    void setFrameDelay(int initFrameDelay) { frameDelay = initFrameDelay; }
+    void setFrameWidth(int initFrameWidth) { frameWidth = initFrameWidth; }
+    void setFrameHeight(int initFrameHeight) { frameHeight = initFrameHeight; }
+    void setAnimColumns(int initAnimColumns) { animColumns = initAnimColumns; }
+    void setCounter1(int initCounter1) { counter1 = initCounter1; }
+    void setCounter2(int initCounter2) { counter2 = initCounter2; }
+    void setCounter3(int initCounter3) { counter3 = initCounter3; }
+    void setThreshold1(int initThreshold1) { threshold1 = initThreshold1; }
+    void setThreshold2(int initThreshold2) { threshold2 = initThreshold2; }
+    void setThreshold3(int initThreshold3) { threshold3 = initThreshold3; }
 
-    void
-    setMinimapColor(ALLEGRO_COLOR initColor) {
-        minimapColor = initColor;
-    }
-    void
-    setMinimapSize(int initSize) {
-        minimapSize = initSize;
-    }
+    void setMinimapColor(ALLEGRO_COLOR initColor) { minimapColor = initColor; }
+    void setMinimapSize(int initSize) { minimapSize = initSize; }
 
     std::string description;
 

@@ -32,8 +32,9 @@ PlanetSurfaceObject::PlanetSurfaceObject()
     activeAnim = defaultAnim;
 }
 
-PlanetSurfaceObject::PlanetSurfaceObject(lua_State *LuaVM,
-                                         std::string ScriptName)
+PlanetSurfaceObject::PlanetSurfaceObject(
+    lua_State *LuaVM,
+    std::string ScriptName)
     : scriptName(ScriptName), luaVM(LuaVM), id(0), itemType(IT_INVALID),
       name(""), value(0.0), size(0.0), danger(0.0), damage(0.0), health(0),
       itemAge(IA_INVALID), shipRepairMetal(false), blackMarketItem(false),
@@ -271,8 +272,8 @@ PlanetSurfaceObject::CheckCollision(PlanetSurfaceObject *otherPSO) {
 
             // yeah! we have a collision, but now we need to find our projection
             // vector
-            if (psoHalfWidth + otherPSOHalfWidth - xDistance <
-                psoHalfHeight + otherPSOHalfHeight - yDistance) {
+            if (psoHalfWidth + otherPSOHalfWidth - xDistance
+                < psoHalfHeight + otherPSOHalfHeight - yDistance) {
                 // we have a projection vector on the x axis
                 adjustment = psoHalfWidth + otherPSOHalfWidth - xDistance;
                 axis = 0;
@@ -298,8 +299,8 @@ PlanetSurfaceObject::CheckCollision(PlanetSurfaceObject *otherPSO) {
             for (int i = 0;
                  i < (int)g_game->PlanetSurfaceHolder->surfaceObjects.size();
                  ++i) {
-                if (otherPSO ==
-                    g_game->PlanetSurfaceHolder->surfaceObjects[i]) {
+                if (otherPSO
+                    == g_game->PlanetSurfaceHolder->surfaceObjects[i]) {
                     id = i;
                     break;
                 }
@@ -351,8 +352,8 @@ PlanetSurfaceObject::CheckCollision(int x, int y, int width, int height) {
 
             // yeah! we have a collision, but now we need to find our projection
             // vector
-            if (psoHalfWidth + recHalfWidth - xDistance <
-                psoHalfHeight + recHalfHeight - yDistance) {
+            if (psoHalfWidth + recHalfWidth - xDistance
+                < psoHalfHeight + recHalfHeight - yDistance) {
                 // we have a projection vector on the x axis
                 adjustment = psoHalfWidth + recHalfWidth - xDistance;
                 axis = 0;
@@ -397,10 +398,11 @@ PlanetSurfaceObject::CheckCollision(int x, int y, int width, int height) {
 }
 
 void
-PlanetSurfaceObject::AddAnimation(std::string name,
-                                  int startFrame,
-                                  int endFrame,
-                                  int delay) {
+PlanetSurfaceObject::AddAnimation(
+    std::string name,
+    int startFrame,
+    int endFrame,
+    int delay) {
     regAnimations[name] = new Animation(startFrame, endFrame, delay);
 }
 
@@ -471,7 +473,12 @@ PlanetSurfaceObject::Scan() {
 
 int
 PlanetSurfaceObject::Inside(
-    int x, int y, int left, int top, int right, int bottom) {
+    int x,
+    int y,
+    int left,
+    int top,
+    int right,
+    int bottom) {
     if (x > left && x < right && y > top && y < bottom)
         return 1;
     else
@@ -480,12 +487,13 @@ PlanetSurfaceObject::Inside(
 
 int
 PlanetSurfaceObject::PointInside(int px, int py) {
-    return Inside(px,
-                  py,
-                  (int)x,
-                  (int)y,
-                  (int)(x + (width * scale)),
-                  (int)(y + (height * scale)));
+    return Inside(
+        px,
+        py,
+        (int)x,
+        (int)y,
+        (int)(x + (width * scale)),
+        (int)(y + (height * scale)));
 }
 
 void

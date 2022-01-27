@@ -9,7 +9,9 @@
 
 */
 
-#include "ModuleCargoWindow.h"
+#include <sstream>
+#include <string>
+
 #include "AudioSystem.h"
 #include "Button.h"
 #include "DataMgr.h"
@@ -18,12 +20,12 @@
 #include "GameState.h"
 #include "Label.h"
 #include "ModeMgr.h"
-#include "ModuleControlPanel.h"
+#include "ModuleCargoWindow.h"
 #include "ScrollBox.h"
 #include "Util.h"
 #include "cargohold_resources.h"
-#include <sstream>
 
+using namespace std;
 using namespace cargohold_resources;
 
 // gui elements positioning, fonts settings...
@@ -47,16 +49,13 @@ using namespace cargohold_resources;
 #define CARGO_SPACESTATUS_WIDTH 87
 
 // events we generate (and handle)
-#define PLAYERLIST_EVENT 501     /* player clicked on an item line */
-#define CARGO_EVENT_JETTISON 502 /* player clicked on the jettison button */
-// external events we handle
-//	* EVENT_CAPTAIN_CARGO                    /* player asked the CargoWindow
-// to show on/hide away */
-//	* CARGO_EVENT_UPDATE                     /* inventory changed */
+#define EVENT_CARGO_LIST_CLICK 501 /* player clicked on an item line */
+#define EVENT_CARGO_JETTISON 502   /* player clicked on the jettison button */
 
 ALLEGRO_DEBUG_CHANNEL("ModuleCargoWindow")
 
-ModuleCargoWindow::ModuleCargoWindow() : m_resources(CARGOHOLD_IMAGES) {
+ModuleCargoWindow::ModuleCargoWindow()
+    : Module(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT), m_resources(CARGOHOLD_IMAGES) {
     // from data/globals.lua (left=-440 right=-40 speed=12)
     gui_viewer_left = (int)g_game->getGlobalNumber("GUI_VIEWER_LEFT");
     gui_viewer_right = (int)g_game->getGlobalNumber("GUI_VIEWER_RIGHT");
@@ -64,24 +63,36 @@ ModuleCargoWindow::ModuleCargoWindow() : m_resources(CARGOHOLD_IMAGES) {
 
     initialized = false;
 
-    img_viewer = NULL;
+    img_viewer = nullptr;
 
-    m_items = NULL;
-    m_playerItemsFiltered = NULL;
-    m_playerList = NULL;
-    m_playerListNumItems = NULL;
-    m_playerListValue = NULL;
+    m_items = nullptr;
+    m_playerItemsFiltered = nullptr;
+    m_playerList = nullptr;
+    m_playerListNumItems = nullptr;
+    m_playerListValue = nullptr;
 
-    m_jettisonButton = NULL;
-    m_sndButtonClick = NULL;
+    m_jettisonButton = nullptr;
+    m_sndButtonClick = nullptr;
 
-    spaceStatus = NULL;
+    // cargo capacity indicator
+    m_space_status = new Label(
+        "",
+        CARGO_SPACESTATUS_X,
+        CARGO_SPACESTATUS_Y,
+        CARGO_SPACESTATUS_WIDTH,
+        CARGO_SPACESTATUS_HEIGHT,
+        false,
+        0,
+        g_game->font20,
+        LTGREEN);
+    m_space_status->set_active(false);
+    add_child_module(m_space_status);
 }
 
 ModuleCargoWindow::~ModuleCargoWindow() {}
 
 bool
-ModuleCargoWindow::Init() {
+ModuleCargoWindow::on_init() {
     ALLEGRO_DEBUG("  ModuleCargoWindow: initializing...\n");
 
     // load the window "skin"
@@ -97,50 +108,42 @@ ModuleCargoWindow::Init() {
     btnNorm = m_resources[I_CARGO_BTN];
     btnOver = m_resources[I_CARGO_BTN_MO];
 
-    m_jettisonButton = new Button(btnNorm,
-                                  btnOver,
-                                  NULL,
-                                  CARGO_JETTISON_X,
-                                  CARGO_JETTISON_Y,
-                                  EVENT_NONE,
-                                  CARGO_EVENT_JETTISON,
-                                  g_game->font20,
-                                  "JETTISON",
-                                  LTGREEN,
-                                  "",
-                                  true,
-                                  false);
+    m_jettisonButton = new Button(
+        btnNorm,
+        btnOver,
+        nullptr,
+        CARGO_JETTISON_X,
+        CARGO_JETTISON_Y,
+        EVENT_NONE,
+        EVENT_CARGO_JETTISON,
+        g_game->font20,
+        "JETTISON",
+        LTGREEN,
+        "",
+        true,
+        false);
 
     if (!m_jettisonButton || !m_jettisonButton->IsInitialized())
         return false;
 
-    // cargo capacity indicator
     maxSpace = g_game->gameState->m_ship.getTotalSpace();
-    spaceStatus = new Label("",
-                            CARGO_SPACESTATUS_X,
-                            CARGO_SPACESTATUS_Y,
-                            CARGO_SPACESTATUS_WIDTH,
-                            CARGO_SPACESTATUS_HEIGHT,
-                            LTGREEN,
-                            g_game->font20);
-    if (spaceStatus == NULL)
-        return false;
 
     // the items list
     // NOTE: these three scrollboxes are linked. what this means among other
     // things
     //  is that calling the OnMouse* of one will call the other two. in our case
-    //  we are only interested in getting one and only one PLAYERLIST_EVENT when
-    //  the user click on an item line, hence the need to pass EVENT_NONE for
-    //  the other two.
-    m_playerList = new ScrollBox::ScrollBox(g_game->font20,
-                                            ScrollBox::SB_LIST,
-                                            0,
-                                            0,
-                                            PLAYERLIST_WIDTH,
-                                            PLAYERLIST_HEIGHT,
-                                            PLAYERLIST_EVENT);
-    if (m_playerList == NULL)
+    //  we are only interested in getting one and only one
+    //  EVENT_CARGO_LIST_CLICK when the user click on an item line, hence the
+    //  need to pass EVENT_NONE for the other two.
+    m_playerList = new ScrollBox::ScrollBox(
+        g_game->font20,
+        ScrollBox::SB_LIST,
+        0,
+        0,
+        PLAYERLIST_WIDTH,
+        PLAYERLIST_HEIGHT,
+        EVENT_CARGO_LIST_CLICK);
+    if (m_playerList == nullptr)
         return false;
 
     m_playerListNumItems = new ScrollBox::ScrollBox(
@@ -151,17 +154,18 @@ ModuleCargoWindow::Init() {
         PLAYERLIST_VALUE_WIDTH + PLAYERLIST_NUMITEMS_WIDTH,
         PLAYERLIST_HEIGHT,
         EVENT_NONE);
-    if (m_playerListNumItems == NULL)
+    if (m_playerListNumItems == nullptr)
         return false;
 
-    m_playerListValue = new ScrollBox::ScrollBox(g_game->font20,
-                                                 ScrollBox::SB_LIST,
-                                                 0,
-                                                 0,
-                                                 PLAYERLIST_VALUE_WIDTH,
-                                                 PLAYERLIST_HEIGHT,
-                                                 EVENT_NONE);
-    if (m_playerListValue == NULL)
+    m_playerListValue = new ScrollBox::ScrollBox(
+        g_game->font20,
+        ScrollBox::SB_LIST,
+        0,
+        0,
+        PLAYERLIST_VALUE_WIDTH,
+        PLAYERLIST_HEIGHT,
+        EVENT_NONE);
+    if (m_playerListValue == nullptr)
         return false;
 
     m_playerListNumItems->LinkBox(m_playerList);
@@ -257,84 +261,84 @@ ModuleCargoWindow::UpdateLists() {
 
     std::string space;
     int occupiedSpace = g_game->gameState->m_ship.getOccupiedSpace();
-    space = Util::ToString(occupiedSpace) + "/" + Util::ToString(maxSpace);
+    space = to_string(occupiedSpace) + "/" + to_string(maxSpace);
 
-    spaceStatus->SetText(space);
-    spaceStatus->Refresh();
+    m_space_status->set_text(space);
 }
 
-void
-ModuleCargoWindow::OnEvent(Event *event) {
-    int ev = event->getEventType();
+bool
+ModuleCargoWindow::on_event(ALLEGRO_EVENT *event) {
+    int ev = event->type;
 
     switch (ev) {
-
     // player asked the window to show on/hide away
-    case EVENT_CAPTAIN_CARGO: {
-        if (!sliding)
-            sliding = true;
-        sliding_offset = -sliding_offset;
-        break;
-    }
+    case EVENT_CAPTAIN_CARGO:
+        {
+            if (!sliding)
+                sliding = true;
+            sliding_offset = -sliding_offset;
+            break;
+        }
 
     // player clicked on an item line
-    case PLAYERLIST_EVENT: {
-        g_game->audioSystem->Play(m_sndButtonClick);
+    case EVENT_CARGO_LIST_CLICK:
+        {
+            g_game->audioSystem->Play(m_sndButtonClick);
 
-        if (m_playerList->GetSelectedIndex() >= 0)
-            m_jettisonButton->SetVisible(true);
-        else
-            m_jettisonButton->SetVisible(false);
-        break;
-    }
+            if (m_playerList->GetSelectedIndex() >= 0)
+                m_jettisonButton->SetVisible(true);
+            else
+                m_jettisonButton->SetVisible(false);
+            break;
+        }
 
     // player clicked on the jettison button
-    case CARGO_EVENT_JETTISON: {
-        g_game->audioSystem->Play(m_sndButtonClick);
-        m_jettisonButton->SetVisible(false);
+    case EVENT_CARGO_JETTISON:
+        {
+            g_game->audioSystem->Play(m_sndButtonClick);
+            m_jettisonButton->SetVisible(false);
 
-        int itemIdx = m_playerList->GetSelectedIndex();
-        m_playerList->SetSelectedIndex(-1);
-        Item item;
-        int numItems;
-        m_playerItemsFiltered->GetStack(itemIdx, item, numItems);
-        m_items->RemoveItems(item.id, numItems);
+            int itemIdx = m_playerList->GetSelectedIndex();
+            m_playerList->SetSelectedIndex(-1);
+            Item item;
+            int numItems;
+            m_playerItemsFiltered->GetStack(itemIdx, item, numItems);
+            m_items->RemoveItems(item.id, numItems);
 
-        // notify everybody (include ourselves) that the inventory changed
-        Event e(CARGO_EVENT_UPDATE);
-        g_game->modeMgr->BroadcastEvent(&e);
-        break;
-    }
+            // notify everybody (include ourselves) that the inventory
+            // changed
+            ALLEGRO_EVENT e = {
+                .type = static_cast<unsigned int>(EVENT_CARGO_UPDATE)};
+            g_game->broadcast_event(&e);
+            break;
+        }
 
-    // inventory changed due to either the jettison button or an external factor
-    case CARGO_EVENT_UPDATE:
+    // inventory changed due to either the jettison button or an external
+    // factor
+    case EVENT_CARGO_UPDATE:
         this->UpdateLists();
         break;
-
-    default:
-        // NOTE: even after Close(), we still will get at least EVENT_LOAD_GAME
-        // and
-        //  EVENT_QUIT_GAME (Load/Quit) events, so be careful with what you put
-        //  here. Generally speaking, it's probably not a good idea to act upon
-        //  events you don't know anything about.
-        break;
     }
+    return true;
 }
 
-void
-ModuleCargoWindow::Update() {
+bool
+ModuleCargoWindow::on_update() {
     // shut off the window if not in "Captain mode"
-    if (isVisible() &&
-        g_game->gameState->getCurrentSelectedOfficer() != OFFICER_CAPTAIN) {
+    if (isVisible()
+        && g_game->gameState->getCurrentSelectedOfficer() != OFFICER_CAPTAIN) {
         if (!sliding)
             sliding = true;
         if (sliding_offset != -gui_viewer_speed)
             sliding_offset = -gui_viewer_speed;
     }
+    return true;
 }
 
-void
-ModuleCargoWindow::Draw() {
+bool
+ModuleCargoWindow::on_draw(ALLEGRO_BITMAP *target) {
+    al_set_target_bitmap(target);
+
     // sliding the window
     if (sliding) {
         m_x += sliding_offset;
@@ -350,55 +354,55 @@ ModuleCargoWindow::Draw() {
     }
 
     // return early since we are not visible
-    if (!isVisible())
-        return;
+    if (!isVisible()) {
+        m_space_status->set_active(false);
+        return false;
+    }
+
+    m_space_status->set_active(true);
 
     // drawing the window
     al_draw_bitmap(img_viewer, m_x, m_y, 0);
 
     // draw items list header
-    g_game->Print20(
-        g_game->GetBackBuffer(), 108 + m_x, 32 + m_y, "ITEM", LTGREEN, true);
-    g_game->Print20(
-        g_game->GetBackBuffer(), 273 + m_x, 32 + m_y, "QTY", LTGREEN, true);
-    g_game->Print20(
-        g_game->GetBackBuffer(), 324 + m_x, 32 + m_y, "VALUE", LTGREEN, true);
+    g_game->Print20(target, 108 + m_x, 32 + m_y, "ITEM", LTGREEN, true);
+    g_game->Print20(target, 273 + m_x, 32 + m_y, "QTY", LTGREEN, true);
+    g_game->Print20(target, 324 + m_x, 32 + m_y, "VALUE", LTGREEN, true);
 
     // draw items list content
     m_playerList->SetX(PLAYERLIST_X + m_x);
     m_playerList->SetY(PLAYERLIST_Y + m_y);
-    m_playerListNumItems->SetX(PLAYERLIST_X + m_x + PLAYERLIST_WIDTH -
-                               PLAYERLIST_VALUE_WIDTH -
-                               PLAYERLIST_NUMITEMS_WIDTH);
+    m_playerListNumItems->SetX(
+        PLAYERLIST_X + m_x + PLAYERLIST_WIDTH - PLAYERLIST_VALUE_WIDTH
+        - PLAYERLIST_NUMITEMS_WIDTH);
     m_playerListNumItems->SetY(PLAYERLIST_Y + m_y);
-    m_playerListValue->SetX(PLAYERLIST_X + m_x + PLAYERLIST_WIDTH -
-                            PLAYERLIST_VALUE_WIDTH);
+    m_playerListValue->SetX(
+        PLAYERLIST_X + m_x + PLAYERLIST_WIDTH - PLAYERLIST_VALUE_WIDTH);
     m_playerListValue->SetY(PLAYERLIST_Y + m_y);
-    m_playerListValue->Draw(g_game->GetBackBuffer());
+    m_playerListValue->Draw(target);
 
     // draw jettison button
     int relX = m_jettisonButton->GetX();
     int relY = m_jettisonButton->GetY();
     m_jettisonButton->SetX(m_x + relX);
     m_jettisonButton->SetY(m_y + relY);
-    m_jettisonButton->Run(g_game->GetBackBuffer());
+    m_jettisonButton->Run(target);
     m_jettisonButton->SetX(relX);
     m_jettisonButton->SetY(relY);
 
     // draw capacity indicator
-    int relX2 = spaceStatus->GetX();
-    int relY2 = spaceStatus->GetY();
-    spaceStatus->SetX(m_x + relX2);
-    spaceStatus->SetY(m_y + relY2);
-    spaceStatus->Draw(g_game->GetBackBuffer());
-    spaceStatus->SetX(relX2);
-    spaceStatus->SetY(relY2);
+    m_space_status->move(m_x + CARGO_SPACESTATUS_X, m_y + CARGO_SPACESTATUS_Y);
+
+    return true;
 }
 
-void
-ModuleCargoWindow::OnMouseMove(int x, int y) {
+bool
+ModuleCargoWindow::on_mouse_move(ALLEGRO_MOUSE_EVENT *event) {
+    int x = event->x;
+    int y = event->y;
+
     if (!isVisible())
-        return;
+        return false;
 
     m_playerListValue->OnMouseMove(x + m_x, y + m_y);
 
@@ -409,26 +413,31 @@ ModuleCargoWindow::OnMouseMove(int x, int y) {
     m_jettisonButton->OnMouseMove(x + m_x, y + m_y);
     m_jettisonButton->SetX(relX);
     m_jettisonButton->SetY(relY);
+
+    return true;
 }
 
-void
-ModuleCargoWindow::OnMouseClick(int button, int x, int y) {
-    if (!isVisible())
-        return;
-    m_playerListValue->OnMouseClick(button, x + m_x, y + m_y);
-}
+bool
+ModuleCargoWindow::on_mouse_button_down(ALLEGRO_MOUSE_EVENT *event) {
+    int button = event->button - 1;
+    int x = event->x;
+    int y = event->y;
 
-void
-ModuleCargoWindow::OnMousePressed(int button, int x, int y) {
     if (!isVisible())
-        return;
+        return false;
+
     m_playerListValue->OnMousePressed(button, x + m_x, y + m_y);
+    return true;
 }
 
-void
-ModuleCargoWindow::OnMouseReleased(int button, int x, int y) {
+bool
+ModuleCargoWindow::on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) {
+    int button = event->button - 1;
+    int x = event->x;
+    int y = event->y;
+
     if (!isVisible())
-        return;
+        return true;
 
     m_playerListValue->OnMouseReleased(button, x + m_x, y + m_y);
 
@@ -439,10 +448,15 @@ ModuleCargoWindow::OnMouseReleased(int button, int x, int y) {
     m_jettisonButton->OnMouseReleased(button, x + m_x, y + m_y);
     m_jettisonButton->SetX(relX);
     m_jettisonButton->SetY(relY);
+
+    if (is_mouse_click(event)) {
+        m_playerListValue->OnMouseClick(button, x + m_x, y + m_y);
+    }
+    return true;
 }
 
-void
-ModuleCargoWindow::Close() {
+bool
+ModuleCargoWindow::on_close() {
     ALLEGRO_DEBUG("*** ModuleCargoWindow: closing...\n");
 
     // NOTE: this is needed to prevent some sort of race condition which will
@@ -460,32 +474,28 @@ ModuleCargoWindow::Close() {
     // unload the resources
     m_resources.unload();
 
-    m_items = NULL;
+    m_items = nullptr;
 
-    if (m_playerItemsFiltered != NULL) {
+    if (m_playerItemsFiltered != nullptr) {
         delete m_playerItemsFiltered;
-        m_playerItemsFiltered = NULL;
+        m_playerItemsFiltered = nullptr;
     }
 
-    if (m_playerListValue != NULL) {
+    if (m_playerListValue != nullptr) {
         // this will destroy the other m_playerList* too, since they are linked.
         delete m_playerListValue;
-        m_playerListValue = NULL;
+        m_playerListValue = nullptr;
     }
 
-    if (m_jettisonButton != NULL) {
+    if (m_jettisonButton != nullptr) {
         delete m_jettisonButton;
-        m_jettisonButton = NULL;
+        m_jettisonButton = nullptr;
     }
 
     if (m_sndButtonClick != nullptr) {
         m_sndButtonClick.reset();
     }
 
-    if (spaceStatus != NULL) {
-        delete spaceStatus;
-        spaceStatus = NULL;
-    }
-
     ALLEGRO_DEBUG("*** ModuleCargoWindow: closed\n");
+    return true;
 }

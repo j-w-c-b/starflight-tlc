@@ -100,37 +100,29 @@ class Game {
     void shutdown();
     void fatalerror(const std::string &error);
     void message(const std::string &msg);
-    ALLEGRO_BITMAP *
-    GetBackBuffer() {
-        return m_backbuffer;
-    }
-    void
-    setVibration(int value) {
-        vibration = value;
-    }
+    ALLEGRO_BITMAP *GetBackBuffer() { return m_backbuffer; }
+    void setVibration(int value) { vibration = value; }
 
     MessageBoxWindow *messageBox;
     PauseMenu *pauseMenu;
     Sprite *cursor;
     float CrossModuleAngle; // Holds entry angle for systems
 
-    void ShowMessageBoxWindow(const std::string &initHeading = "",
-                              const std::string &initText = "",
-                              int initWidth = 400,
-                              int initHeight = 300,
-                              ALLEGRO_COLOR initTextColor = WHITE,
-                              int initX = SCREEN_WIDTH / 2,
-                              int initY = SCREEN_HEIGHT / 2,
-                              bool initCentered = true,
-                              bool pauseGame = true);
+    void ShowMessageBoxWindow(
+        const std::string &initHeading = "",
+        const std::string &initText = "",
+        int initWidth = 400,
+        int initHeight = 300,
+        ALLEGRO_COLOR initTextColor = WHITE,
+        int initX = SCREEN_WIDTH / 2,
+        int initY = SCREEN_HEIGHT / 2,
+        bool initCentered = true,
+        bool pauseGame = true);
     void KillMessageBoxWindow();
 
     void TogglePauseMenu();
     void SetTimePaused(bool v);
-    bool
-    getTimePaused() {
-        return timePause;
-    }
+    bool getTimePaused() { return timePause; }
     bool ResizeDisplay(int x, int w);
 
     static QuestMgr *questMgr;
@@ -151,54 +143,62 @@ class Game {
     ALLEGRO_FONT *font48;
     ALLEGRO_FONT *font60;
 
-    void PrintDefault(ALLEGRO_BITMAP *dest,
-                      int x,
-                      int y,
-                      const std::string &text,
-                      ALLEGRO_COLOR color = WHITE);
-    void Print(ALLEGRO_BITMAP *dest,
-               ALLEGRO_FONT *_font,
-               int x,
-               int y,
-               const std::string &text,
-               ALLEGRO_COLOR color = al_map_rgb(255, 255, 255),
-               bool shadow = false);
-    void Print12(ALLEGRO_BITMAP *dest,
-                 int x,
-                 int y,
-                 const std::string &text,
-                 ALLEGRO_COLOR color = al_map_rgb(255, 255, 255),
-                 bool shadow = false);
-    void Print18(ALLEGRO_BITMAP *dest,
-                 int x,
-                 int y,
-                 const std::string &text,
-                 ALLEGRO_COLOR color = al_map_rgb(255, 255, 255),
-                 bool shadow = false);
-    void Print20(ALLEGRO_BITMAP *dest,
-                 int x,
-                 int y,
-                 const std::string &text,
-                 ALLEGRO_COLOR color = al_map_rgb(255, 255, 255),
-                 bool shadow = false);
-    void Print22(ALLEGRO_BITMAP *dest,
-                 int x,
-                 int y,
-                 const std::string &text,
-                 ALLEGRO_COLOR color = al_map_rgb(255, 255, 255),
-                 bool shadow = false);
-    void Print24(ALLEGRO_BITMAP *dest,
-                 int x,
-                 int y,
-                 const std::string &text,
-                 ALLEGRO_COLOR color = al_map_rgb(255, 255, 255),
-                 bool shadow = false);
-    void Print32(ALLEGRO_BITMAP *dest,
-                 int x,
-                 int y,
-                 const std::string &text,
-                 ALLEGRO_COLOR color = al_map_rgb(255, 255, 255),
-                 bool shadow = false);
+    void PrintDefault(
+        ALLEGRO_BITMAP *dest,
+        int x,
+        int y,
+        const std::string &text,
+        ALLEGRO_COLOR color = WHITE);
+    void Print(
+        ALLEGRO_BITMAP *dest,
+        ALLEGRO_FONT *_font,
+        int x,
+        int y,
+        const std::string &text,
+        ALLEGRO_COLOR color = al_map_rgb(255, 255, 255),
+        bool shadow = false);
+    void Print12(
+        ALLEGRO_BITMAP *dest,
+        int x,
+        int y,
+        const std::string &text,
+        ALLEGRO_COLOR color = al_map_rgb(255, 255, 255),
+        bool shadow = false);
+    void Print18(
+        ALLEGRO_BITMAP *dest,
+        int x,
+        int y,
+        const std::string &text,
+        ALLEGRO_COLOR color = al_map_rgb(255, 255, 255),
+        bool shadow = false);
+    void Print20(
+        ALLEGRO_BITMAP *dest,
+        int x,
+        int y,
+        const std::string &text,
+        ALLEGRO_COLOR color = al_map_rgb(255, 255, 255),
+        bool shadow = false);
+    void Print22(
+        ALLEGRO_BITMAP *dest,
+        int x,
+        int y,
+        const std::string &text,
+        ALLEGRO_COLOR color = al_map_rgb(255, 255, 255),
+        bool shadow = false);
+    void Print24(
+        ALLEGRO_BITMAP *dest,
+        int x,
+        int y,
+        const std::string &text,
+        ALLEGRO_COLOR color = al_map_rgb(255, 255, 255),
+        bool shadow = false);
+    void Print32(
+        ALLEGRO_BITMAP *dest,
+        int x,
+        int y,
+        const std::string &text,
+        ALLEGRO_COLOR color = al_map_rgb(255, 255, 255),
+        bool shadow = false);
 
     // shared print to ScrollBox in GUI modules
     struct TimedText {
@@ -208,10 +208,11 @@ class Game {
     };
     std::vector<TimedText> messages;
     ScrollBox::ScrollBox *g_scrollbox;
-    void printout(ScrollBox::ScrollBox *scroll,
-                  const std::string &text,
-                  ALLEGRO_COLOR color = WHITE,
-                  long delay = 0);
+    void printout(
+        ScrollBox::ScrollBox *scroll,
+        const std::string &text,
+        ALLEGRO_COLOR color = WHITE,
+        long delay = 0);
     ALLEGRO_COLOR MsgColors[NUM_MSGTYPES];
 
     // used to retrieve global values from script file globals.lua
@@ -227,16 +228,10 @@ class Game {
     bool ControlPanelActivity;
 
     // used by the ModeMgr sanity checks
-    bool
-    IsRunning() {
-        return m_keepRunning;
-    }
+    bool IsRunning() { return m_keepRunning; }
 
     // on/off toggle of some gui elements to reduce vertical visual clutter
-    bool
-    doShowControls() {
-        return showControls;
-    }
+    bool doShowControls() { return showControls; }
     void toggleShowControls();
 
     // used to itemize detected video modes reported by the DirectX driver for
@@ -249,21 +244,19 @@ class Game {
     int actual_width, actual_height;
     bool Initialize_Graphics();
     void LoadModule(const std::string &new_module);
+    void broadcast_event(ALLEGRO_EVENT *event);
 
   protected:
     void Stop();
     virtual bool InitGame();
     virtual void DestroyGame();
     virtual void RunGame();
-    virtual void OnKeyPress(int keyCode);
-    virtual void OnKeyPressed(int keyCode);
-    virtual void OnKeyReleased(int keyCode);
-    virtual void OnMouseMove(int x, int y);
-    virtual void OnMouseClick(int button, int x, int y);
-    virtual void OnMousePressed(int button, int x, int y);
-    virtual void OnMouseReleased(int button, int x, int y);
-    virtual void OnMouseWheelUp(int x, int y);
-    virtual void OnMouseWheelDown(int x, int y);
+    virtual void on_key_down(ALLEGRO_KEYBOARD_EVENT *event);
+    virtual void on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event);
+    virtual void on_key_up(ALLEGRO_KEYBOARD_EVENT *event);
+    virtual void on_mouse_move(ALLEGRO_MOUSE_EVENT *event);
+    virtual void on_mouse_button_down(ALLEGRO_MOUSE_EVENT *event);
+    virtual void on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event);
 
   private:
     void UpdateAlienRaceAttitudes();

@@ -85,6 +85,8 @@ add_library(lib${APP_NAME} STATIC
     Archive.h
     AudioSystem.cpp
     AudioSystem.h
+    Bitmap.cpp
+    Bitmap.h
     Button.cpp
     Button.h
     CombatObject.cpp
@@ -245,6 +247,7 @@ if (${CMAKE_BUILD_TYPE} MATCHES Debug)
 endif()
 
 target_compile_options(${APP_NAME} PRIVATE ${DEBUGMODE} ${STL_TARGET_CXXFLAGS})
+add_compile_definitions(rand=sfrand srand=sfsrand)
 target_compile_options(lib${APP_NAME} PRIVATE ${DEBUGMODE} ${STL_TARGET_CXXFLAGS})
 target_link_options(${APP_NAME} PRIVATE ${STL_TARGET_LDFLAGS})
 target_link_libraries(

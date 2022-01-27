@@ -10,15 +10,19 @@
 #include "noiseutils.h"
 #include <noise/noise.h>
 
-void createPlanetSurface(int width,
-                         int height,
-                         int randomness,
-                         PlanetType planet_type,
-                         std::string filename);
-void createPlanetSurface(int width,
-                         int height,
-                         int randomness,
-                         PlanetType planet_type,
-                         const char *filename);
+void
+createPlanetSurface(
+    int width,
+    int height,
+    int randomness,
+    PlanetType planet_type,
+    std::string filename);
+void
+createPlanetSurface(
+    int width,
+    int height,
+    int randomness,
+    PlanetType planet_type,
+    const char *filename);
 
 #endif

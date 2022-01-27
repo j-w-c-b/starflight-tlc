@@ -25,20 +25,21 @@ class ModuleAuxiliaryDisplay : public Module {
     TileScroller *scroller;
     ResourceManager<ALLEGRO_BITMAP> resources;
 
-    void medical_display(Officer *officer_data,
-                         int x,
-                         int y,
-                         const std::string &additional_data);
+    void medical_display(
+        Officer *officer_data,
+        int x,
+        int y,
+        const std::string &additional_data);
     void DrawBackground();
     void DrawContent();
 
   public:
     ModuleAuxiliaryDisplay();
     virtual ~ModuleAuxiliaryDisplay();
-    virtual bool Init() override;
-    virtual void Draw() override;
-    virtual void OnEvent(Event *event) override;
-    virtual void Close() override;
+    virtual bool on_init() override;
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
+    virtual bool on_event(ALLEGRO_EVENT *event) override;
+    virtual bool on_close() override;
 
     void init_nav();
     void updateCrew();

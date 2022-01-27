@@ -18,11 +18,10 @@ class ModuleQuestLog : public Module {
   public:
     ModuleQuestLog();
     virtual ~ModuleQuestLog();
-    virtual bool Init() override;
-    virtual void Update() override;
-    virtual void Draw() override;
-    virtual void OnEvent(Event *event) override;
-    virtual void Close() override;
+    virtual bool on_init() override;
+    virtual bool on_update() override;
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
+    virtual bool on_event(ALLEGRO_EVENT *event) override;
 
   private:
     bool log_active;
@@ -30,8 +29,10 @@ class ModuleQuestLog : public Module {
 
     ALLEGRO_BITMAP *window;
 
-    Label *questName;
-    Label *questDesc;
+    Label *m_quest_name;
+    Label *m_quest_desc;
+    Label *m_quest_status;
+
     ResourceManager<ALLEGRO_BITMAP> resources;
 };
 

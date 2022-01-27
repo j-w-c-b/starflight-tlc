@@ -1,18 +1,12 @@
-#ifndef _CARGO_WINDOW_H
-#define _CARGO_WINDOW_H
+#ifndef CARGO_WINDOW_H
+#define CARGO_WINDOW_H
 
 #include "AudioSystem.h"
+#include "Button.h"
 #include "DataMgr.h"
+#include "Label.h"
 #include "Module.h"
 #include "ResourceManager.h"
-
-class Items;
-class Button;
-class Label;
-
-namespace ScrollBox {
-class ScrollBox;
-};
 
 /**
  * cargo window
@@ -22,20 +16,17 @@ class ModuleCargoWindow : public Module {
     ModuleCargoWindow();
     virtual ~ModuleCargoWindow();
 
-    virtual bool Init() override;
-    virtual void Update() override;
+    virtual bool on_init() override;
+    virtual bool on_update() override;
     void UpdateLists();
-    virtual void Draw() override;
-    virtual void OnMouseMove(int x, int y) override;
-    virtual void OnMouseClick(int button, int x, int y) override;
-    virtual void OnMousePressed(int button, int x, int y) override;
-    virtual void OnMouseReleased(int button, int x, int y) override;
-    virtual void OnEvent(Event *event) override;
-    virtual void Close() override;
-    bool
-    isVisible(void) {
-        return (m_x > gui_viewer_left && initialized);
-    }
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
+    virtual bool on_mouse_move(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_mouse_button_down(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_event(ALLEGRO_EVENT *event) override;
+    virtual bool on_close() override;
+
+    bool isVisible(void) { return (m_x > gui_viewer_left && initialized); }
 
     // Force the window into it's starting (hidden) state.
     void ResetViewer(void);
@@ -64,9 +55,10 @@ class ModuleCargoWindow : public Module {
     Button *m_jettisonButton;
     std::shared_ptr<Sample> m_sndButtonClick;
 
-    Label *spaceStatus;
+    Label *m_space_status;
     int maxSpace;
     ResourceManager<ALLEGRO_BITMAP> m_resources;
 };
 
-#endif /* _CARGO_WINDOW_H */
+// vi: ft=cpp
+#endif /* CARGO_WINDOW_H */

@@ -41,8 +41,6 @@ class ModuleStarport : public Module {
     };
 
   private:
-    ~ModuleStarport(); // dtor
-
     ALLEGRO_BITMAP *starport;
     Sprite *door;
     Sprite *avatar;
@@ -68,19 +66,14 @@ class ModuleStarport : public Module {
 
   public:
     ModuleStarport();
-    virtual void Close() override;
-    virtual void Update() override;
-    virtual bool Init() override;
-    virtual void OnEvent(Event *event) override;
-    virtual void OnKeyPressed(int keyCode) override;
-    virtual void OnKeyReleased(int keyCode) override;
-    virtual void OnMouseClick(int button, int x, int y) override;
-    virtual void OnMouseMove(int x, int y) override;
-    virtual void OnMousePressed(int button, int x, int y) override;
-    virtual void OnMouseReleased(int button, int x, int y) override;
-    virtual void OnMouseWheelDown(int x, int y) override;
-    virtual void OnMouseWheelUp(int x, int y) override;
-    virtual void Draw() override;
+    virtual ~ModuleStarport();
+
+    virtual bool on_init() override;
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
+    virtual bool on_close() override;
+    virtual bool on_event(ALLEGRO_EVENT *event) override;
+    virtual bool on_key_down(ALLEGRO_KEYBOARD_EVENT *event) override;
+    virtual bool on_key_up(ALLEGRO_KEYBOARD_EVENT *event) override;
 };
 
 #endif

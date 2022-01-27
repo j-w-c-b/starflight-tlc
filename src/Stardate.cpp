@@ -31,8 +31,8 @@ using namespace std;
 #define NOVEMBER 11
 #define DECEMBER 12
 
-int daysPassedByMonth[] = {
-    0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
+int daysPassedByMonth[] =
+    {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
 
 Stardate::Stardate()
     : m_day(DEFAULT_DAY), m_hour(DEFAULT_HOUR), m_month(DEFAULT_MONTH),
@@ -171,8 +171,9 @@ Stardate::GetFullDateString() const {
 
 bool
 Stardate::operator==(const Stardate &stardate) const {
-    return (m_day == stardate.GetDay() && m_hour == stardate.GetHour() &&
-            m_month == stardate.GetMonth() && m_year == stardate.GetYear());
+    return (
+        m_day == stardate.GetDay() && m_hour == stardate.GetHour()
+        && m_month == stardate.GetMonth() && m_year == stardate.GetYear());
 }
 
 bool

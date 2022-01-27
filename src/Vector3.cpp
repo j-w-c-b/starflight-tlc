@@ -61,9 +61,10 @@ Vector3::operator/=(const Vector3 &v) {
 // equality operator comparison includes double rounding
 bool
 Vector3::operator==(const Vector3 &v) const {
-    return ((((v.x - 0.0001f) < x) && (x < (v.x + 0.0001f))) &&
-            (((v.y - 0.0001f) < y) && (y < (v.y + 0.0001f))) &&
-            (((v.z - 0.0001f) < z) && (z < (v.z + 0.0001f))));
+    return (
+        (((v.x - 0.0001f) < x) && (x < (v.x + 0.0001f)))
+        && (((v.y - 0.0001f) < y) && (y < (v.y + 0.0001f)))
+        && (((v.z - 0.0001f) < z) && (z < (v.z + 0.0001f))));
 }
 
 // inequality operator

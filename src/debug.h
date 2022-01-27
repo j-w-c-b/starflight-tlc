@@ -3,9 +3,6 @@
 // The debugging keys are activated by defining the DEBUG_KEYS in
 // the compiler's #def options.
 
-// Starport:
-#define STARPORT_JUMP_LEFT ALLEGRO_KEY_F6
-#define STARPORT_JUMP_RIGHT ALLEGRO_KEY_F7
 // ALLEGRO_KEY_PAD_PLUS, ALLEGRO_KEY_PAD_MINUS
 #define STARPORT_QUEST_PLUS ALLEGRO_KEY_F9
 #define STARPORT_QUEST_MINUS ALLEGRO_KEY_F8

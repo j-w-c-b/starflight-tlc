@@ -9,226 +9,140 @@
 using namespace std;
 using namespace gui_resources;
 
-MessageBoxWindow::MessageBoxWindow(const string &initheading,
-                                   const string &initText,
-                                   int initX,
-                                   int initY,
-                                   int initWidth,
-                                   int initHeight,
-                                   ALLEGRO_COLOR initTextColor,
-                                   bool initCentered)
-    : heading(initheading), text(initText), x(initX), y(initY),
-      width(initWidth), height(initHeight), textColor(initTextColor),
-      centered(initCentered), visible(true), m_resources(GUI_IMAGES) {
+MessageBoxWindow::MessageBoxWindow(
+    const string &heading,
+    const string &text,
+    int x,
+    int y,
+    int width,
+    int height,
+    ALLEGRO_COLOR text_color,
+    bool centered)
+    : m_x(centered ? x - height / 2 : x), m_y(centered ? y - height / 2 : y),
+      m_width(width), m_height(height), m_active(true),
+      m_resources(GUI_IMAGES) {
+    int flags = 0;
 
-    m_ok_button = new Button(m_resources[I_GENERIC_EXIT_BTN_NORM],
-                             m_resources[I_GENERIC_EXIT_BTN_OVER],
-                             m_resources[I_GENERIC_EXIT_BTN_OVER],
-                             x,
-                             y,
-                             EVENT_MOUSEOVER,
-                             EVENT_CLOSE,
-                             g_game->font24,
-                             "Ok",
-                             WHITE);
-
-    int top = y - height / 2;
+    m_ok_button = new Button(
+        m_resources[I_GENERIC_EXIT_BTN_NORM],
+        m_resources[I_GENERIC_EXIT_BTN_OVER],
+        m_resources[I_GENERIC_EXIT_BTN_OVER],
+        m_x,
+        m_y,
+        EVENT_MOUSEOVER,
+        EVENT_CLOSE,
+        g_game->font24,
+        "Ok",
+        WHITE);
 
     if (centered) {
-        m_ok_button->SetX(x - m_ok_button->GetWidth() / 2);
-        m_ok_button->SetY((y + height / 2) - (m_ok_button->GetHeight() + 7));
-        labelText = new Label(text,
-                              (x - width / 2) + 20,
-                              top + 60,
-                              width - 34,
-                              height - 20,
-                              initTextColor,
-                              g_game->font20);
-        labelHeading = new Label(heading,
-                                 (x - width / 2) + 20,
-                                 top + 20,
-                                 width - 34,
-                                 height - 20,
-                                 initTextColor,
-                                 g_game->font20);
-    } else {
-        m_ok_button->SetX((x + width / 2) - (m_ok_button->GetWidth() / 2));
-        m_ok_button->SetY((y + height) - (m_ok_button->GetHeight() + 7));
-        labelText = new Label(text,
-                              x + 20,
-                              y + 30,
-                              width - 34,
-                              height - 20,
-                              initTextColor,
-                              g_game->font20);
-        labelHeading = new Label(heading,
-                                 x + 20,
-                                 y + 10,
-                                 width - 34,
-                                 height - 20,
-                                 initTextColor,
-                                 g_game->font20);
+        flags = ALLEGRO_ALIGN_CENTER;
     }
-
-    labelText->Refresh();
-    labelHeading->Refresh();
+    m_label_heading = new Label(
+        heading,
+        m_x + 20,
+        m_y + 10,
+        width - 34,
+        height - 20,
+        false,
+        flags,
+        g_game->font20,
+        text_color);
+    m_label_text = new Label(
+        text,
+        m_x + 20,
+        m_y + 30,
+        width - 34,
+        height - 20,
+        true,
+        flags,
+        g_game->font20,
+        text_color);
+    m_ok_button->SetX((m_x + width / 2) - (m_ok_button->GetWidth() / 2));
+    m_ok_button->SetY((m_y + height) - (m_ok_button->GetHeight() + 7));
 }
 
 MessageBoxWindow::~MessageBoxWindow() {
-    if (labelText)
-        delete labelText;
-    if (labelHeading)
-        delete labelHeading;
+    delete m_ok_button;
+    delete m_label_heading;
+    delete m_label_text;
 }
 
-// accessors
-int
-MessageBoxWindow::GetX() const {
-    return x;
-}
-int
-MessageBoxWindow::GetY() const {
-    return y;
-}
-int
-MessageBoxWindow::GetWidth() const {
-    return width;
-}
-int
-MessageBoxWindow::GetHeight() const {
-    return height;
-}
 bool
-MessageBoxWindow::IsVisible() const {
-    return visible;
-}
-
-// mutators
-void
-MessageBoxWindow::SetText(const string &initText) {
-    text = initText;
-    labelText->SetText(text);
-    labelText->Refresh();
-}
-void
-MessageBoxWindow::SetX(int initX) {
-    x = initX;
-    labelText->SetX(x);
-    labelText->Refresh();
-}
-void
-MessageBoxWindow::SetY(int initY) {
-    y = initY;
-    labelText->SetY(y);
-    labelText->Refresh();
-}
-void
-MessageBoxWindow::SetTextColor(ALLEGRO_COLOR initTextColor) {
-    textColor = initTextColor;
-}
-void
-MessageBoxWindow::SetVisible(bool visibility) {
-    visible = visibility;
-}
-
-// other funcs
-bool
-MessageBoxWindow::OnMouseMove(int x, int y) {
+MessageBoxWindow::on_mouse_move(ALLEGRO_MOUSE_EVENT *event) {
+    int x = event->x;
+    int y = event->y;
     bool result = false;
 
     if (m_ok_button)
-        result = m_ok_button->OnMouseMove(x, y);
-
-    return result;
-}
-bool
-MessageBoxWindow::OnMouseReleased(int button, int x, int y) {
-    bool result = false;
-
-    if (m_ok_button)
-        result = m_ok_button->OnMouseReleased(button, x, y);
+        result = !m_ok_button->OnMouseMove(x, y);
 
     return result;
 }
 
 bool
-MessageBoxWindow::OnMouseClick(int /*button*/, int x, int y) {
+MessageBoxWindow::on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) {
+    int button = event->button - 1;
+    int x = event->x;
+    int y = event->y;
+
     bool result = false;
 
-    if (m_ok_button)
-        result = m_ok_button->PtInBtn(x, y);
-
-    return result;
-}
-
-bool
-MessageBoxWindow::OnMousePressed(int /*button*/, int x, int y) {
-    bool result = false;
-
-    if (m_ok_button)
-        result = m_ok_button->PtInBtn(x, y);
-
-    return result;
-}
-
-bool
-MessageBoxWindow::OnKeyPress(int keyCode) {
-    if (keyCode == ALLEGRO_KEY_ENTER) {
-        Event e(EVENT_CLOSE);
-        Game::modeMgr->BroadcastEvent(&e);
-        return true;
-    }
-    return false;
-}
-
-void
-MessageBoxWindow::Update() {}
-
-void
-MessageBoxWindow::Draw() {
-
-    ALLEGRO_BITMAP *backBuffer = g_game->GetBackBuffer();
-
-    int left;
-    int top;
-
-    if (centered) {
-        left = x - width / 2;
-        top = y - height / 2;
-    } else {
-        left = x;
-        top = y;
+    if (m_ok_button) {
+        result = !m_ok_button->OnMouseReleased(button, x, y);
     }
 
-    ALLEGRO_BITMAP *temp = al_create_bitmap(width, height);
+    return result;
+}
+
+bool
+MessageBoxWindow::on_mouse_button_down(ALLEGRO_MOUSE_EVENT *event) {
+    int x = event->x;
+    int y = event->y;
+
+    bool result = false;
+
+    if (m_ok_button)
+        result = !m_ok_button->PtInBtn(x, y);
+
+    return result;
+}
+
+bool
+MessageBoxWindow::on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event) {
+    if (event->keycode == ALLEGRO_KEY_ENTER) {
+        ALLEGRO_EVENT e = {.type = static_cast<unsigned int>(EVENT_CLOSE)};
+        g_game->broadcast_event(&e);
+        return false;
+    }
+    return true;
+}
+
+bool
+MessageBoxWindow::on_draw(ALLEGRO_BITMAP *target) {
+    int left = m_x;
+    int top = m_y;
+
+    ALLEGRO_BITMAP *temp = al_create_bitmap(m_width, m_height);
     al_set_target_bitmap(temp);
-    al_draw_scaled_bitmap(m_resources[I_TRANS_BG],
-                          0,
-                          0,
-                          al_get_bitmap_width(m_resources[I_TRANS_BG]),
-                          al_get_bitmap_height(m_resources[I_TRANS_BG]),
-                          0,
-                          0,
-                          width,
-                          height,
-                          0);
-    al_set_target_bitmap(backBuffer);
+    al_draw_scaled_bitmap(
+        m_resources[I_TRANS_BG],
+        0,
+        0,
+        al_get_bitmap_width(m_resources[I_TRANS_BG]),
+        al_get_bitmap_height(m_resources[I_TRANS_BG]),
+        0,
+        0,
+        m_width,
+        m_height,
+        0);
+    al_set_target_bitmap(target);
     al_draw_bitmap(temp, left, top, 0);
 
     if (m_ok_button)
-        m_ok_button->Run(backBuffer);
+        m_ok_button->Run(target);
 
-    al_set_target_bitmap(backBuffer);
-    al_draw_scaled_bitmap(m_resources[I_MESSAGEBOX_BAR],
-                          0,
-                          0,
-                          al_get_bitmap_width(m_resources[I_MESSAGEBOX_BAR]),
-                          al_get_bitmap_height(m_resources[I_MESSAGEBOX_BAR]),
-                          left,
-                          top,
-                          al_get_bitmap_width(temp),
-                          al_get_bitmap_height(m_resources[I_MESSAGEBOX_BAR]),
-                          0);
+    al_set_target_bitmap(target);
     al_draw_scaled_bitmap(
         m_resources[I_MESSAGEBOX_BAR],
         0,
@@ -236,16 +150,27 @@ MessageBoxWindow::Draw() {
         al_get_bitmap_width(m_resources[I_MESSAGEBOX_BAR]),
         al_get_bitmap_height(m_resources[I_MESSAGEBOX_BAR]),
         left,
-        top + al_get_bitmap_height(temp) -
-            al_get_bitmap_height(m_resources[I_MESSAGEBOX_BAR]),
+        top,
+        al_get_bitmap_width(temp),
+        al_get_bitmap_height(m_resources[I_MESSAGEBOX_BAR]),
+        0);
+    al_draw_scaled_bitmap(
+        m_resources[I_MESSAGEBOX_BAR],
+        0,
+        0,
+        al_get_bitmap_width(m_resources[I_MESSAGEBOX_BAR]),
+        al_get_bitmap_height(m_resources[I_MESSAGEBOX_BAR]),
+        left,
+        top + al_get_bitmap_height(temp)
+            - al_get_bitmap_height(m_resources[I_MESSAGEBOX_BAR]),
         al_get_bitmap_width(temp),
         al_get_bitmap_height(m_resources[I_MESSAGEBOX_BAR]),
         0);
 
     al_destroy_bitmap(temp);
 
-    if (labelHeading)
-        labelHeading->Draw(backBuffer);
-    if (labelText)
-        labelText->Draw(backBuffer);
+    m_label_heading->on_draw(target);
+    m_label_text->on_draw(target);
+
+    return true;
 }

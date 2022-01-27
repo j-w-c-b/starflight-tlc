@@ -2,11 +2,10 @@
 #define BUTTON_H
 #pragma once
 
-#include "AudioSystem.h"
-#include "Game.h"
+#include <string>
+
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_font.h>
-#include <string>
 
 /**
  * re-usable button class
@@ -14,55 +13,59 @@
 class Button {
   public:
     // ctors
-    Button(const std::string &initImgFileNormal,
-           const std::string &initImgFileMouseOver,
-           const std::string &initImgFileDisabled,
-           int initX,
-           int initY,
-           int initMouseOverEvent,
-           int initClickEvent,
-           const std::string &initButtonSound = "",
-           bool initEnabled = true,
-           bool initVisible = true);
+    Button(
+        const std::string &initImgFileNormal,
+        const std::string &initImgFileMouseOver,
+        const std::string &initImgFileDisabled,
+        int initX,
+        int initY,
+        int initMouseOverEvent,
+        int initClickEvent,
+        const std::string &initButtonSound = "",
+        bool initEnabled = true,
+        bool initVisible = true);
 
-    Button(const std::string &initImgFileNormal,
-           const std::string &initImgFileMouseOver,
-           const std::string &initImgFileDisabled,
-           int initX,
-           int initY,
-           int initMouseOverEvent,
-           int initClickEvent,
-           ALLEGRO_FONT *initFontPtr,
-           const std::string &initButtonText,
-           ALLEGRO_COLOR initTextColor,
-           const std::string &initButtonSound = "",
-           bool initEnabled = true,
-           bool initVisible = true);
+    Button(
+        const std::string &initImgFileNormal,
+        const std::string &initImgFileMouseOver,
+        const std::string &initImgFileDisabled,
+        int initX,
+        int initY,
+        int initMouseOverEvent,
+        int initClickEvent,
+        ALLEGRO_FONT *initFontPtr,
+        const std::string &initButtonText,
+        ALLEGRO_COLOR initTextColor,
+        const std::string &initButtonSound = "",
+        bool initEnabled = true,
+        bool initVisible = true);
 
-    Button(ALLEGRO_BITMAP *initImgBMPNormal,
-           ALLEGRO_BITMAP *initImgBMPMouseOver,
-           ALLEGRO_BITMAP *initImgBMPDisabled,
-           int initX,
-           int initY,
-           int initMouseOverEvent,
-           int initClickEvent,
-           const std::string &initButtonSound = "",
-           bool initEnabled = true,
-           bool initVisible = true);
+    Button(
+        ALLEGRO_BITMAP *initImgBMPNormal,
+        ALLEGRO_BITMAP *initImgBMPMouseOver,
+        ALLEGRO_BITMAP *initImgBMPDisabled,
+        int initX,
+        int initY,
+        int initMouseOverEvent,
+        int initClickEvent,
+        const std::string &initButtonSound = "",
+        bool initEnabled = true,
+        bool initVisible = true);
 
-    Button(ALLEGRO_BITMAP *initImgBMPNormal,
-           ALLEGRO_BITMAP *initImgBMPMouseOver,
-           ALLEGRO_BITMAP *initImgBMPDisabled,
-           int initX,
-           int initY,
-           int initMouseOverEvent,
-           int initClickEvent,
-           ALLEGRO_FONT *initFontPtr,
-           const std::string &initButtonText,
-           ALLEGRO_COLOR initTextColor,
-           const std::string &initButtonSound = "",
-           bool initEnabled = true,
-           bool initVisible = true);
+    Button(
+        ALLEGRO_BITMAP *initImgBMPNormal,
+        ALLEGRO_BITMAP *initImgBMPMouseOver,
+        ALLEGRO_BITMAP *initImgBMPDisabled,
+        int initX,
+        int initY,
+        int initMouseOverEvent,
+        int initClickEvent,
+        ALLEGRO_FONT *initFontPtr,
+        const std::string &initButtonText,
+        ALLEGRO_COLOR initTextColor,
+        const std::string &initButtonSound = "",
+        bool initEnabled = true,
+        bool initVisible = true);
 
     virtual ~Button();
 

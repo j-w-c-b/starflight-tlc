@@ -16,12 +16,11 @@ class ModuleCredits : public Module {
   public:
     ModuleCredits();
     virtual ~ModuleCredits();
-    virtual bool Init() override;
-    virtual void Update() override;
-    virtual void Draw() override;
-    virtual void OnKeyReleased(int keyCode) override;
-    virtual void OnMouseReleased(int button, int x, int y) override;
-    virtual void Close() override;
+    virtual bool on_init() override;
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
+    virtual bool on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event) override;
+    virtual bool on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_close() override;
 
   private:
     ALLEGRO_BITMAP *background;

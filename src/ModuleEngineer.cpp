@@ -28,16 +28,12 @@ using namespace engineer_resources;
 // bar 5 = Shields (4)
 // bar 6 = Engines (5)
 #define X_OFFSET 120
-#define EVENT_REPAIR_LASERS -9301
-#define EVENT_REPAIR_MISSILES -9302
-#define EVENT_REPAIR_HULL -9303
-#define EVENT_REPAIR_SHIELDS -9304
-#define EVENT_REPAIR_ENGINES -9305
 
 ALLEGRO_DEBUG_CHANNEL("ModuleEngineer")
 
 ModuleEngineer::ModuleEngineer()
-    : img_window(NULL), img_bar_base(NULL), text(NULL), img_bar_laser(NULL),
+    : Module(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT), img_window(NULL),
+      img_bar_base(NULL), text(NULL), img_bar_laser(NULL),
       img_bar_missile(NULL), img_bar_hull(NULL), img_bar_armor(NULL),
       img_bar_shield(NULL), img_ship(NULL), img_button_repair(NULL),
       img_button_repair_over(NULL), resources(ENGINEER_IMAGES) {}
@@ -45,7 +41,7 @@ ModuleEngineer::ModuleEngineer()
 ModuleEngineer::~ModuleEngineer() {}
 
 bool
-ModuleEngineer::Init() {
+ModuleEngineer::on_init() {
     ALLEGRO_DEBUG("  ModuleEngineer Initialize\n");
 
     module_active = false;
@@ -96,61 +92,66 @@ ModuleEngineer::Init() {
     img_button_repair_over = resources[I_AUX_REPAIR_HOVER];
 
     // Create and initialize the crew buttons
-    button[0] = new Button(img_button_repair,
-                           img_button_repair_over,
-                           img_button_repair,
-                           700 + X_OFFSET,
-                           135,
-                           0,
-                           EVENT_REPAIR_LASERS,
-                           g_game->font22,
-                           "",
-                           al_map_rgb(255, 255, 255),
-                           "click");
-    button[1] = new Button(img_button_repair,
-                           img_button_repair_over,
-                           img_button_repair,
-                           150 + X_OFFSET,
-                           180,
-                           0,
-                           EVENT_REPAIR_MISSILES,
-                           g_game->font22,
-                           "",
-                           al_map_rgb(255, 255, 255),
-                           "click");
-    button[2] = new Button(img_button_repair,
-                           img_button_repair_over,
-                           img_button_repair,
-                           683 + X_OFFSET,
-                           230,
-                           0,
-                           EVENT_REPAIR_HULL,
-                           g_game->font22,
-                           "",
-                           al_map_rgb(255, 255, 255),
-                           "click");
-    button[3] = new Button(img_button_repair,
-                           img_button_repair_over,
-                           img_button_repair,
-                           670 + X_OFFSET,
-                           325,
-                           0,
-                           EVENT_REPAIR_SHIELDS,
-                           g_game->font22,
-                           "",
-                           al_map_rgb(255, 255, 255),
-                           "click");
-    button[4] = new Button(img_button_repair,
-                           img_button_repair_over,
-                           img_button_repair,
-                           150 + X_OFFSET,
-                           385,
-                           0,
-                           EVENT_REPAIR_ENGINES,
-                           g_game->font22,
-                           "",
-                           al_map_rgb(255, 255, 255),
-                           "click");
+    button[0] = new Button(
+        img_button_repair,
+        img_button_repair_over,
+        img_button_repair,
+        700 + X_OFFSET,
+        135,
+        0,
+        EVENT_ENGINEER_REPAIR_LASERS,
+        g_game->font22,
+        "",
+        al_map_rgb(255, 255, 255),
+        "click");
+    button[1] = new Button(
+        img_button_repair,
+        img_button_repair_over,
+        img_button_repair,
+        150 + X_OFFSET,
+        180,
+        0,
+        EVENT_ENGINEER_REPAIR_MISSILES,
+        g_game->font22,
+        "",
+        al_map_rgb(255, 255, 255),
+        "click");
+    button[2] = new Button(
+        img_button_repair,
+        img_button_repair_over,
+        img_button_repair,
+        683 + X_OFFSET,
+        230,
+        0,
+        EVENT_ENGINEER_REPAIR_HULL,
+        g_game->font22,
+        "",
+        al_map_rgb(255, 255, 255),
+        "click");
+    button[3] = new Button(
+        img_button_repair,
+        img_button_repair_over,
+        img_button_repair,
+        670 + X_OFFSET,
+        325,
+        0,
+        EVENT_ENGINEER_REPAIR_SHIELDS,
+        g_game->font22,
+        "",
+        al_map_rgb(255, 255, 255),
+        "click");
+    button[4] = new Button(
+        img_button_repair,
+        img_button_repair_over,
+        img_button_repair,
+        150 + X_OFFSET,
+        385,
+        0,
+        EVENT_ENGINEER_REPAIR_ENGINES,
+        g_game->font22,
+        "",
+        al_map_rgb(255, 255, 255),
+        "click");
 
     for (int i = 0; i < 5; i++) {
         if (button[i] == NULL) {
@@ -164,8 +165,8 @@ ModuleEngineer::Init() {
     return true;
 }
 
-void
-ModuleEngineer::Close() {
+bool
+ModuleEngineer::on_close() {
     al_destroy_bitmap(text);
 
     resources.unload();
@@ -174,10 +175,8 @@ ModuleEngineer::Close() {
         delete button[i];
         button[i] = NULL;
     }
+    return true;
 }
-
-void
-ModuleEngineer::Update() {}
 
 // return false if repair ceased due to lack of mineral, true otherwise
 bool
@@ -224,8 +223,9 @@ ModuleEngineer::useMineral(Ship &ship) {
             g_game->printout(g_game->g_scrollbox, msg, GREEN, 1000);
 
             gs->m_items.RemoveItems(mineral.id, 1);
-            Event e(CARGO_EVENT_UPDATE);
-            g_game->modeMgr->BroadcastEvent(&e);
+            ALLEGRO_EVENT e = {
+                .type = static_cast<unsigned int>(EVENT_CARGO_UPDATE)};
+            g_game->broadcast_event(&e);
 
             // roll a new one
             switch (rand() % 5) {
@@ -256,11 +256,11 @@ ModuleEngineer::useMineral(Ship &ship) {
                 currentEngineer->attributes.extra_variable = 0;
 
                 if (currentEngineer->SkillUp(SKILL_ENGINEERING))
-                    g_game->printout(g_game->g_scrollbox,
-                                     eng +
-                                         "I think I'm getting better at this.",
-                                     PURPLE,
-                                     5000);
+                    g_game->printout(
+                        g_game->g_scrollbox,
+                        eng + "I think I'm getting better at this.",
+                        PURPLE,
+                        5000);
             }
 
             // reset the counter
@@ -274,10 +274,10 @@ ModuleEngineer::useMineral(Ship &ship) {
     ALLEGRO_ASSERT(0);
 }
 
-void
-ModuleEngineer::Draw() {
+bool
+ModuleEngineer::on_draw(ALLEGRO_BITMAP *target) {
     std::string s;
-    al_set_target_bitmap(g_game->GetBackBuffer());
+    al_set_target_bitmap(target);
 
     if (g_game->gameState->getCurrentSelectedOfficer() != OFFICER_ENGINEER)
         module_active = false;
@@ -305,137 +305,153 @@ ModuleEngineer::Draw() {
 #pragma region Bars Actual
         float percentage = 0;
         percentage = g_game->gameState->getShip().getLaserIntegrity() / 100.0f;
-        al_draw_bitmap_region(img_bar_laser,
-                              0,
-                              0,
-                              al_get_bitmap_width(img_bar_laser) * percentage,
-                              al_get_bitmap_height(img_bar_base),
-                              580 + X_OFFSET,
-                              135 + viewer_offset_y,
-                              0); // laser
+        al_draw_bitmap_region(
+            img_bar_laser,
+            0,
+            0,
+            al_get_bitmap_width(img_bar_laser) * percentage,
+            al_get_bitmap_height(img_bar_base),
+            580 + X_OFFSET,
+            135 + viewer_offset_y,
+            0); // laser
 
         percentage =
             g_game->gameState->getShip().getMissileLauncherIntegrity() / 100.0f;
-        al_draw_bitmap_region(img_bar_missile,
-                              0,
-                              0,
-                              al_get_bitmap_width(img_bar_missile) * percentage,
-                              al_get_bitmap_height(img_bar_base),
-                              175 + X_OFFSET,
-                              180 + viewer_offset_y,
-                              0); // missile
+        al_draw_bitmap_region(
+            img_bar_missile,
+            0,
+            0,
+            al_get_bitmap_width(img_bar_missile) * percentage,
+            al_get_bitmap_height(img_bar_base),
+            175 + X_OFFSET,
+            180 + viewer_offset_y,
+            0); // missile
 
         percentage = g_game->gameState->getShip().getHullIntegrity() / 100.0f;
-        al_draw_bitmap_region(img_bar_hull,
-                              0,
-                              0,
-                              al_get_bitmap_width(img_bar_hull) * percentage,
-                              al_get_bitmap_height(img_bar_base),
-                              565 + X_OFFSET,
-                              230 + viewer_offset_y,
-                              0); // hull
+        al_draw_bitmap_region(
+            img_bar_hull,
+            0,
+            0,
+            al_get_bitmap_width(img_bar_hull) * percentage,
+            al_get_bitmap_height(img_bar_base),
+            565 + X_OFFSET,
+            230 + viewer_offset_y,
+            0); // hull
 
         if (g_game->gameState->getShip().getMaxArmorIntegrity() <= 0) {
             percentage = 0;
         } else {
-            percentage = g_game->gameState->getShip().getArmorIntegrity() /
-                         g_game->gameState->getShip().getMaxArmorIntegrity();
+            percentage = g_game->gameState->getShip().getArmorIntegrity()
+                         / g_game->gameState->getShip().getMaxArmorIntegrity();
         }
-        al_draw_bitmap_region(img_bar_armor,
-                              0,
-                              0,
-                              al_get_bitmap_width(img_bar_armor) * percentage,
-                              al_get_bitmap_height(img_bar_base),
-                              155 + X_OFFSET,
-                              270 + viewer_offset_y,
-                              0); // Armor
+        al_draw_bitmap_region(
+            img_bar_armor,
+            0,
+            0,
+            al_get_bitmap_width(img_bar_armor) * percentage,
+            al_get_bitmap_height(img_bar_base),
+            155 + X_OFFSET,
+            270 + viewer_offset_y,
+            0); // Armor
 
         percentage = g_game->gameState->getShip().getShieldIntegrity() / 100.0f;
-        al_draw_bitmap_region(img_bar_shield,
-                              0,
-                              0,
-                              al_get_bitmap_width(img_bar_shield) * percentage,
-                              al_get_bitmap_height(img_bar_base),
-                              550 + X_OFFSET,
-                              325 + viewer_offset_y,
-                              0); // shields
+        al_draw_bitmap_region(
+            img_bar_shield,
+            0,
+            0,
+            al_get_bitmap_width(img_bar_shield) * percentage,
+            al_get_bitmap_height(img_bar_base),
+            550 + X_OFFSET,
+            325 + viewer_offset_y,
+            0); // shields
 
         percentage = g_game->gameState->getShip().getEngineIntegrity() / 100.0f;
-        al_draw_bitmap_region(img_bar_engine,
-                              0,
-                              0,
-                              al_get_bitmap_width(img_bar_engine) * percentage,
-                              al_get_bitmap_height(img_bar_base),
-                              170 + X_OFFSET,
-                              385 + viewer_offset_y,
-                              0); // engines
+        al_draw_bitmap_region(
+            img_bar_engine,
+            0,
+            0,
+            al_get_bitmap_width(img_bar_engine) * percentage,
+            al_get_bitmap_height(img_bar_base),
+            170 + X_OFFSET,
+            385 + viewer_offset_y,
+            0); // engines
 #pragma endregion
 #pragma region Lines
-        al_draw_line(407 + X_OFFSET,
-                     104 + viewer_offset_y,
-                     560 + X_OFFSET,
-                     130 + viewer_offset_y,
-                     GREEN,
-                     1); // laser line
-        al_draw_line(560 + X_OFFSET,
-                     130 + viewer_offset_y,
-                     690 + X_OFFSET,
-                     130 + viewer_offset_y,
-                     GREEN,
-                     1); // laser line
+        al_draw_line(
+            407 + X_OFFSET,
+            104 + viewer_offset_y,
+            560 + X_OFFSET,
+            130 + viewer_offset_y,
+            GREEN,
+            1); // laser line
+        al_draw_line(
+            560 + X_OFFSET,
+            130 + viewer_offset_y,
+            690 + X_OFFSET,
+            130 + viewer_offset_y,
+            GREEN,
+            1); // laser line
 
-        al_draw_line(410 + X_OFFSET,
-                     175 + viewer_offset_y,
-                     175 + X_OFFSET,
-                     175 + viewer_offset_y,
-                     GREEN,
-                     1); // missile line
+        al_draw_line(
+            410 + X_OFFSET,
+            175 + viewer_offset_y,
+            175 + X_OFFSET,
+            175 + viewer_offset_y,
+            GREEN,
+            1); // missile line
 
-        al_draw_line(405 + X_OFFSET,
-                     250 + viewer_offset_y,
-                     540 + X_OFFSET,
-                     225 + viewer_offset_y,
-                     GREEN,
-                     1); // hull line
-        al_draw_line(540 + X_OFFSET,
-                     225 + viewer_offset_y,
-                     675 + X_OFFSET,
-                     225 + viewer_offset_y,
-                     GREEN,
-                     1); // hull line
+        al_draw_line(
+            405 + X_OFFSET,
+            250 + viewer_offset_y,
+            540 + X_OFFSET,
+            225 + viewer_offset_y,
+            GREEN,
+            1); // hull line
+        al_draw_line(
+            540 + X_OFFSET,
+            225 + viewer_offset_y,
+            675 + X_OFFSET,
+            225 + viewer_offset_y,
+            GREEN,
+            1); // hull line
 
-        al_draw_line(395 + X_OFFSET,
-                     235 + viewer_offset_y,
-                     280 + X_OFFSET,
-                     265 + viewer_offset_y,
-                     GREEN,
-                     1); // armor line
-        al_draw_line(280 + X_OFFSET,
-                     265 + viewer_offset_y,
-                     155 + X_OFFSET,
-                     265 + viewer_offset_y,
-                     GREEN,
-                     1); // armor line
+        al_draw_line(
+            395 + X_OFFSET,
+            235 + viewer_offset_y,
+            280 + X_OFFSET,
+            265 + viewer_offset_y,
+            GREEN,
+            1); // armor line
+        al_draw_line(
+            280 + X_OFFSET,
+            265 + viewer_offset_y,
+            155 + X_OFFSET,
+            265 + viewer_offset_y,
+            GREEN,
+            1); // armor line
 
-        al_draw_line(408 + X_OFFSET,
-                     320 + viewer_offset_y,
-                     660 + X_OFFSET,
-                     320 + viewer_offset_y,
-                     GREEN,
-                     1); // shield line
+        al_draw_line(
+            408 + X_OFFSET,
+            320 + viewer_offset_y,
+            660 + X_OFFSET,
+            320 + viewer_offset_y,
+            GREEN,
+            1); // shield line
 
-        al_draw_line(408 + X_OFFSET,
-                     355 + viewer_offset_y,
-                     275 + X_OFFSET,
-                     380 + viewer_offset_y,
-                     GREEN,
-                     1); // engine line
-        al_draw_line(275 + X_OFFSET,
-                     380 + viewer_offset_y,
-                     170 + X_OFFSET,
-                     380 + viewer_offset_y,
-                     GREEN,
-                     1); // engine line
+        al_draw_line(
+            408 + X_OFFSET,
+            355 + viewer_offset_y,
+            275 + X_OFFSET,
+            380 + viewer_offset_y,
+            GREEN,
+            1); // engine line
+        al_draw_line(
+            275 + X_OFFSET,
+            380 + viewer_offset_y,
+            170 + X_OFFSET,
+            380 + viewer_offset_y,
+            GREEN,
+            1); // engine line
 #pragma endregion
 #pragma region Buttons
         button[0]->SetY(135 + viewer_offset_y);
@@ -444,7 +460,7 @@ ModuleEngineer::Draw() {
         button[3]->SetY(325 + viewer_offset_y);
         button[4]->SetY(385 + viewer_offset_y);
         for (int i = 0; i < 5; i++) {
-            button[i]->Run(g_game->GetBackBuffer());
+            button[i]->Run(target);
         }
 #pragma endregion
     }
@@ -473,10 +489,11 @@ ModuleEngineer::Draw() {
             }
         } else {
             ship.partInRepair = PART_NONE;
-            g_game->printout(g_game->g_scrollbox,
-                             eng + "The lasers are now fully functional!",
-                             BLUE,
-                             5000);
+            g_game->printout(
+                g_game->g_scrollbox,
+                eng + "The lasers are now fully functional!",
+                BLUE,
+                5000);
         }
         al_draw_text(g_game->font10, LTGREEN, 580, 115, 0, s.c_str());
     } else {
@@ -485,8 +502,8 @@ ModuleEngineer::Draw() {
 
     s = "MISSILES: " + ship.getMissileLauncherClassString();
     if (ship.partInRepair == PART_MISSILES) {
-        if (ship.getMissileLauncherIntegrity() < 100 &&
-            ship.getMissileLauncherIntegrity() > 0) {
+        if (ship.getMissileLauncherIntegrity() < 100
+            && ship.getMissileLauncherIntegrity() > 0) {
             if (currentEngineer->CanSkillCheck() == true) {
                 currentEngineer->FakeSkillCheck();
                 if (useMineral(ship)) {
@@ -498,11 +515,11 @@ ModuleEngineer::Draw() {
             }
         } else {
             ship.partInRepair = PART_NONE;
-            g_game->printout(g_game->g_scrollbox,
-                             eng +
-                                 "The missile system is now fully functional!",
-                             BLUE,
-                             5000);
+            g_game->printout(
+                g_game->g_scrollbox,
+                eng + "The missile system is now fully functional!",
+                BLUE,
+                5000);
         }
         al_draw_text(g_game->font10, LTGREEN, 175, 160, 0, s.c_str());
     } else {
@@ -523,24 +540,27 @@ ModuleEngineer::Draw() {
             }
         } else {
             ship.partInRepair = PART_NONE;
-            g_game->printout(g_game->g_scrollbox,
-                             eng + "The hull is now fully repaired!",
-                             BLUE,
-                             5000);
+            g_game->printout(
+                g_game->g_scrollbox,
+                eng + "The hull is now fully repaired!",
+                BLUE,
+                5000);
         }
-        al_draw_text(g_game->font10,
-                     LTGREEN,
-                     565 + al_get_bitmap_width(img_bar_base) / 2,
-                     210,
-                     ALLEGRO_ALIGN_CENTER,
-                     s.c_str());
+        al_draw_text(
+            g_game->font10,
+            LTGREEN,
+            565 + al_get_bitmap_width(img_bar_base) / 2,
+            210,
+            ALLEGRO_ALIGN_CENTER,
+            s.c_str());
     } else {
-        al_draw_text(g_game->font10,
-                     LTBLUE,
-                     565 + al_get_bitmap_width(img_bar_base) / 2,
-                     210,
-                     ALLEGRO_ALIGN_CENTER,
-                     s.c_str());
+        al_draw_text(
+            g_game->font10,
+            LTBLUE,
+            565 + al_get_bitmap_width(img_bar_base) / 2,
+            210,
+            ALLEGRO_ALIGN_CENTER,
+            s.c_str());
     }
 
     s = "ARMOR: " + ship.getArmorClassString();
@@ -562,10 +582,11 @@ ModuleEngineer::Draw() {
         } else {
             ship.partInRepair = PART_NONE;
             ship.setShieldCapacity(ship.getMaxShieldCapacity());
-            g_game->printout(g_game->g_scrollbox,
-                             eng + "The shields are now fully functional!",
-                             BLUE,
-                             5000);
+            g_game->printout(
+                g_game->g_scrollbox,
+                eng + "The shields are now fully functional!",
+                BLUE,
+                5000);
         }
         al_draw_text(g_game->font10, LTGREEN, 550, 305, 0, s.c_str());
     } else {
@@ -586,17 +607,18 @@ ModuleEngineer::Draw() {
             }
         } else {
             ship.partInRepair = PART_NONE;
-            g_game->printout(g_game->g_scrollbox,
-                             eng + "The engines are now fully repaired!",
-                             BLUE,
-                             5000);
+            g_game->printout(
+                g_game->g_scrollbox,
+                eng + "The engines are now fully repaired!",
+                BLUE,
+                5000);
         }
         al_draw_text(g_game->font10, LTGREEN, 170, 365, 0, s.c_str());
     } else {
         al_draw_text(g_game->font10, LTBLUE, 170, 365, 0, s.c_str());
     }
     g_game->gameState->setShip(ship);
-    al_set_target_bitmap(g_game->GetBackBuffer());
+    al_set_target_bitmap(target);
     al_draw_bitmap(text, X_OFFSET, viewer_offset_y, 0);
 #pragma endregion
 
@@ -607,61 +629,62 @@ ModuleEngineer::Draw() {
         if (viewer_offset_y > -VIEWER_TARGET_OFFSET)
             viewer_offset_y -= VIEWER_MOVE_RATE;
     }
+    return true;
 }
 
-void
-ModuleEngineer::OnEvent(Event *event) {
+bool
+ModuleEngineer::on_event(ALLEGRO_EVENT *event) {
     ShipPart repairing = g_game->gameState->m_ship.partInRepair;
 
-    switch (event->getEventType()) {
-    case 5001: // repair systems button
+    switch (event->type) {
+    case EVENT_ENGINEER_REPAIR:
         module_active = !module_active;
         break;
-    case EVENT_REPAIR_LASERS:
-        if (g_game->gameState->getShip().getLaserIntegrity() > 0 &&
-            g_game->gameState->getShip().getLaserIntegrity() < 100 &&
-            g_game->gameState->officerEng->CanSkillCheck() == true &&
-            repairing != PART_LASERS) {
+    case EVENT_ENGINEER_REPAIR_LASERS:
+        if (g_game->gameState->getShip().getLaserIntegrity() > 0
+            && g_game->gameState->getShip().getLaserIntegrity() < 100
+            && g_game->gameState->officerEng->CanSkillCheck() == true
+            && repairing != PART_LASERS) {
             repairing = PART_LASERS;
         } else {
             repairing = PART_NONE;
         }
         break;
-    case EVENT_REPAIR_MISSILES:
-        if (g_game->gameState->getShip().getMissileLauncherIntegrity() > 0 &&
-            g_game->gameState->getShip().getMissileLauncherIntegrity() < 100 &&
-            g_game->gameState->officerEng->CanSkillCheck() == true &&
-            repairing != PART_MISSILES) {
+    case EVENT_ENGINEER_REPAIR_MISSILES:
+        if (g_game->gameState->getShip().getMissileLauncherIntegrity() > 0
+            && g_game->gameState->getShip().getMissileLauncherIntegrity() < 100
+            && g_game->gameState->officerEng->CanSkillCheck() == true
+            && repairing != PART_MISSILES) {
             repairing = PART_MISSILES;
         } else {
             repairing = PART_NONE;
         }
         break;
-    case EVENT_REPAIR_HULL:
-        if (g_game->gameState->getShip().getHullIntegrity() > 0 &&
-            g_game->gameState->getShip().getHullIntegrity() < 100 &&
-            g_game->gameState->officerEng->CanSkillCheck() == true &&
-            repairing != PART_HULL) {
+    case EVENT_ENGINEER_REPAIR_HULL:
+        if (g_game->gameState->getShip().getHullIntegrity() > 0
+            && g_game->gameState->getShip().getHullIntegrity() < 100
+            && g_game->gameState->officerEng->CanSkillCheck() == true
+            && repairing != PART_HULL) {
             repairing = PART_HULL;
         } else {
             repairing = PART_NONE;
         }
         break;
-    case EVENT_REPAIR_SHIELDS:
-        if (g_game->gameState->getShip().getShieldIntegrity() > 0 &&
-            g_game->gameState->getShip().getShieldIntegrity() < 100 &&
-            g_game->gameState->officerEng->CanSkillCheck() == true &&
-            repairing != PART_SHIELDS) {
+    case EVENT_ENGINEER_REPAIR_SHIELDS:
+        if (g_game->gameState->getShip().getShieldIntegrity() > 0
+            && g_game->gameState->getShip().getShieldIntegrity() < 100
+            && g_game->gameState->officerEng->CanSkillCheck() == true
+            && repairing != PART_SHIELDS) {
             repairing = PART_SHIELDS;
         } else {
             repairing = PART_NONE;
         }
         break;
-    case EVENT_REPAIR_ENGINES:
-        if (g_game->gameState->getShip().getEngineIntegrity() > 0 &&
-            g_game->gameState->getShip().getEngineIntegrity() < 100 &&
-            g_game->gameState->officerEng->CanSkillCheck() == true &&
-            repairing != PART_ENGINES) {
+    case EVENT_ENGINEER_REPAIR_ENGINES:
+        if (g_game->gameState->getShip().getEngineIntegrity() > 0
+            && g_game->gameState->getShip().getEngineIntegrity() < 100
+            && g_game->gameState->officerEng->CanSkillCheck() == true
+            && repairing != PART_ENGINES) {
             repairing = PART_ENGINES;
         } else {
             repairing = PART_NONE;
@@ -674,21 +697,34 @@ ModuleEngineer::OnEvent(Event *event) {
 
     if (g_game->gameState->m_ship.partInRepair != repairing)
         g_game->gameState->m_ship.partInRepair = repairing;
+
+    return true;
 }
 
-void
-ModuleEngineer::OnMouseMove(int x, int y) {
+bool
+ModuleEngineer::on_mouse_move(ALLEGRO_MOUSE_EVENT *event) {
+    int x = event->x;
+    int y = event->y;
+
     if (!module_active)
-        return;
+        return true;
 
     for (int i = 0; i < 5; i++)
         button[i]->OnMouseMove(x, y);
+    return true;
 }
-void
-ModuleEngineer::OnMouseReleased(int button, int x, int y) {
+
+bool
+ModuleEngineer::on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) {
+    int button = event->button - 1;
+    int x = event->x;
+    int y = event->y;
+
     if (!module_active)
-        return;
+        return true;
 
     for (int i = 0; i < 5; i++)
         this->button[i]->OnMouseReleased(button, x, y);
+
+    return true;
 }

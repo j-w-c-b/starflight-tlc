@@ -23,11 +23,11 @@ int gmx, gmy, gmw, gmh, gsx, gsy;
 
 ALLEGRO_DEBUG_CHANNEL("ModuleMessageGUI")
 
-ModuleMessageGUI::ModuleMessageGUI() : resources(MESSAGEGUI_IMAGES) {}
+ModuleMessageGUI::ModuleMessageGUI() : Module(), resources(MESSAGEGUI_IMAGES) {}
 ModuleMessageGUI::~ModuleMessageGUI() {}
 
 bool
-ModuleMessageGUI::Init() {
+ModuleMessageGUI::on_init() {
     // load the datafile
     if (!resources.load()) {
         g_game->message("MessageGUI: Error loading resources");
@@ -48,16 +48,17 @@ ModuleMessageGUI::Init() {
     return true;
 }
 
-void
-ModuleMessageGUI::Close() {
+bool
+ModuleMessageGUI::on_close() {
     resources.unload();
+
+    return true;
 }
 
-void
-ModuleMessageGUI::Update() {}
+bool
+ModuleMessageGUI::on_draw(ALLEGRO_BITMAP *target) {
+    al_set_target_bitmap(target);
 
-void
-ModuleMessageGUI::Draw() {
     // draw message gui
     al_draw_bitmap(img_message, gmx, gmy, 0);
 
@@ -70,13 +71,13 @@ ModuleMessageGUI::Draw() {
     int day = date.GetDay();
     int month = date.GetMonth();
     int year = date.GetYear();
-    string datestr = Util::ToString(year) + "-" + Util::ToString(month, 2) +
-                     "-" + Util::ToString(day, 2) + " " +
-                     Util::ToString(hour % 12);
+    string datestr = Util::ToString(year) + "-" + Util::ToString(month, 2) + "-"
+                     + Util::ToString(day, 2) + " " + Util::ToString(hour % 12);
     if (hour < 12)
         datestr += " AM";
     else
         datestr += " PM";
-    g_game->Print22(
-        g_game->GetBackBuffer(), gsx + 140, gsy + 24, datestr, STEEL);
+    g_game->Print22(target, gsx + 140, gsy + 24, datestr, STEEL);
+
+    return true;
 }

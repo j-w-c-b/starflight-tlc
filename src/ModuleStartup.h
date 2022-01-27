@@ -15,11 +15,9 @@ class ModuleStartup : public Module {
     ModuleStartup();
     virtual ~ModuleStartup();
 
-    virtual bool Init() override;
-    virtual void Update() override;
-    virtual void Draw() override;
-    virtual void OnKeyReleased(int keyCode) override;
-    virtual void Close() override;
+    virtual bool on_close() override;
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
+    virtual bool on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event) override;
 
   private:
     int fadein(ALLEGRO_BITMAP *dest, ALLEGRO_BITMAP *source, int speed);

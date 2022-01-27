@@ -58,7 +58,11 @@ TexturedSphere::SetTexture(ALLEGRO_BITMAP *new_texture) {
 
 void
 TexturedSphere::Spherical2Cartesian(
-    int alpha, int beta, double *x, double *y, double *z) {
+    int alpha,
+    int beta,
+    double *x,
+    double *y,
+    double *z) {
     /* Convert to radians */
     double alpha1 = (double)alpha * 2 * M_PI / MAP_SIZE;
     double beta1 = (double)(beta - MAP_SIZE / 2) * M_PI / MAP_SIZE;
@@ -71,7 +75,11 @@ TexturedSphere::Spherical2Cartesian(
 
 void
 TexturedSphere::Cartesian2Sphere(
-    double x, double y, double z, int *alpha, int *beta) {
+    double x,
+    double y,
+    double z,
+    int *alpha,
+    int *beta) {
     double beta1, alpha1;
 
     /* convert to Spherical Coordinates */
@@ -83,8 +91,8 @@ TexturedSphere::Cartesian2Sphere(
         if (w < -1)
             w = -1; // Check bounds
         alpha1 = acos(w);
-        if (z / cos(beta1) <
-            0) // Check for wrapping around top/bottom of sphere
+        if (z / cos(beta1)
+            < 0) // Check for wrapping around top/bottom of sphere
             alpha1 = 2 * M_PI - alpha1;
     } else
         alpha1 = 0;
@@ -137,8 +145,8 @@ TexturedSphere::CreateTextureTable(ALLEGRO_BITMAP *bmp) {
         for (int j = 0; j < TEX_SIZE + 1; j++) {
             x = i * width / TEX_SIZE; // i and j dictate which pixel is pulled
                                       // from the texture.
-            y = j * height /
-                TEX_SIZE; // so don't change them to solve the problem.
+            y = j * height
+                / TEX_SIZE; // so don't change them to solve the problem.
             p = al_get_pixel(mem_bmp, x, y);
             // map 2D coords into 1D array
             tex_table[testj * TEX_SIZE + testi] = p;
@@ -180,21 +188,21 @@ TexturedSphere::InitSphereLookupTables() {
     Coordinates to the initial Spherical Coordinates */
     for (i = 0; i < TEX_SIZE; i++) {
         screen2sphere_table[i] =
-            (int)(acos((double)(i - TEX_SIZE / 2 + 1) * 2 / TEX_SIZE) *
-                  TEX_SIZE / M_PI);
+            (int)(acos((double)(i - TEX_SIZE / 2 + 1) * 2 / TEX_SIZE) * TEX_SIZE / M_PI);
         screen2sphere_table[i] %= TEX_SIZE;
     }
 }
 
 // phi, theta, psi must be 0-255 due to lookup table
 void
-TexturedSphere::Draw(ALLEGRO_BITMAP *dest,
-                     int phi,
-                     int theta,
-                     int psi,
-                     int radius,
-                     int center_x,
-                     int center_y) {
+TexturedSphere::Draw(
+    ALLEGRO_BITMAP *dest,
+    int phi,
+    int theta,
+    int psi,
+    int radius,
+    int center_x,
+    int center_y) {
     ALLEGRO_ASSERT(phi >= 0 && phi < 256);
     ALLEGRO_ASSERT(theta >= 0 && theta < 256);
     ALLEGRO_ASSERT(psi >= 0 && psi < 256);
@@ -214,14 +222,19 @@ TexturedSphere::Draw(ALLEGRO_BITMAP *dest,
         int xinc, xscaled; // auxiliary variables
         int beta1, alpha1; // initial spherical coordinates
         /* compute the Width of the Sphere in this Scanline */
-        xr = (int)(sqrt((double)(radius * radius - y * y)) *
-                   ASPECT_RATIO); // Can be turned into fixed point
+        xr =
+            (int)(sqrt((double)(radius * radius - y * y)) * ASPECT_RATIO); // Can
+                                                                           // be
+                                                                           // turned
+                                                                           // into
+                                                                           // fixed
+                                                                           // point
         if (xr == 0)
             xr = 1;
 
         /* compute the first Spherical Coordinate beta */
-        beta1 = screen2sphere_table[(y + radius) * TEX_SIZE / (2 * radius)] *
-                TEX_SIZE;
+        beta1 = screen2sphere_table[(y + radius) * TEX_SIZE / (2 * radius)]
+                * TEX_SIZE;
 
         // x << y == x * 2^y
         // xinc = (TEX_SIZE * 65535) / (2*xr);

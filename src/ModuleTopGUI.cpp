@@ -28,39 +28,33 @@ ModuleTopGUI::ModuleTopGUI() : m_resources(TOPGUI_IMAGES) {}
 ModuleTopGUI::~ModuleTopGUI() {}
 
 bool
-ModuleTopGUI::Init() {
-    ggx = (int)g_game->getGlobalNumber("GUI_GAUGES_POS_X");
-    ggy = (int)g_game->getGlobalNumber("GUI_GAUGES_POS_Y");
+ModuleTopGUI::on_init() {
+    ggx = static_cast<int>(g_game->getGlobalNumber("GUI_GAUGES_POS_X"));
+    ggy = static_cast<int>(g_game->getGlobalNumber("GUI_GAUGES_POS_Y"));
 
     return true;
 }
 
-void
-ModuleTopGUI::Close() {}
-
-void
-ModuleTopGUI::Update() {}
-
-void
-ModuleTopGUI::Draw() {
+bool
+ModuleTopGUI::on_draw(ALLEGRO_BITMAP *target) {
     float fuel_percent = g_game->gameState->getShip().getFuel();
     float hull_percent = g_game->gameState->getShip().getHullIntegrity() / 100;
     float armor_percent = 0;
     float shield_percent = 0;
-    al_set_target_bitmap(g_game->GetBackBuffer());
+    al_set_target_bitmap(target);
 
     if (g_game->gameState->getShip().getMaxArmorIntegrity() <= 0) {
         armor_percent = 0;
     } else {
-        armor_percent = g_game->gameState->getShip().getArmorIntegrity() /
-                        g_game->gameState->getShip().getMaxArmorIntegrity();
+        armor_percent = g_game->gameState->getShip().getArmorIntegrity()
+                        / g_game->gameState->getShip().getMaxArmorIntegrity();
     }
 
     if (g_game->gameState->getShip().getMaxShieldCapacity() <= 0) {
         shield_percent = 0;
     } else {
-        shield_percent = g_game->gameState->getShip().getShieldCapacity() /
-                         g_game->gameState->getShip().getMaxShieldCapacity();
+        shield_percent = g_game->gameState->getShip().getShieldCapacity()
+                         / g_game->gameState->getShip().getMaxShieldCapacity();
     }
     /*
      * draw top gauge gui
@@ -102,4 +96,5 @@ ModuleTopGUI::Draw() {
         ggx + 630,
         ggy + 14,
         0);
+    return true;
 }

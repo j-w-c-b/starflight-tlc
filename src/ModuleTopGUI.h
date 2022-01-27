@@ -14,15 +14,13 @@
 class ModuleTopGUI : public Module {
   public:
     ModuleTopGUI();
-    ~ModuleTopGUI();
-    virtual bool Init() override;
-    virtual void Update() override;
-    void UpdateInjector();
-    virtual void Draw() override;
-    virtual void Close() override;
+    virtual ~ModuleTopGUI();
+    virtual bool on_init() override;
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
 
   private:
     ResourceManager<ALLEGRO_BITMAP> m_resources;
+    void UpdateInjector();
 };
 
 #endif

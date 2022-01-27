@@ -61,33 +61,35 @@ string credits[numcredits][2] = {
 
 };
 
-ModuleCredits::ModuleCredits(void) : resources(CREDITS_IMAGES) {
+ModuleCredits::ModuleCredits()
+    : Module(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT), resources(CREDITS_IMAGES) {
     background = NULL;
 }
-ModuleCredits::~ModuleCredits(void) {}
+ModuleCredits::~ModuleCredits() {}
 
-void
-ModuleCredits::OnKeyReleased(int /*keyCode*/) {
+bool
+ModuleCredits::on_key_pressed(ALLEGRO_KEYBOARD_EVENT * /*event*/) {
     g_game->LoadModule(MODULE_TITLESCREEN);
-    return;
+    return false;
 }
 
-void
-ModuleCredits::OnMouseReleased(int /*button*/, int /*x*/, int /*y*/) {
+bool
+ModuleCredits::on_mouse_button_up(ALLEGRO_MOUSE_EVENT * /*event*/) {
     g_game->LoadModule(MODULE_TITLESCREEN);
-    return;
+    return false;
 }
 
-void
-ModuleCredits::Close() {
+bool
+ModuleCredits::on_close() {
     ALLEGRO_DEBUG("Credits Close\n");
 
     // unload the data file
     resources.unload();
+    return true;
 }
 
 bool
-ModuleCredits::Init() {
+ModuleCredits::on_init() {
     ALLEGRO_DEBUG("  ModuleCredits Initialize\n");
 
     // load the datafile
@@ -112,12 +114,10 @@ ModuleCredits::Init() {
     return true;
 }
 
-void
-ModuleCredits::Update() {}
-
-void
-ModuleCredits::Draw() {
+bool
+ModuleCredits::on_draw(ALLEGRO_BITMAP *target) {
     // draw background
-    al_set_target_bitmap(g_game->GetBackBuffer());
+    al_set_target_bitmap(target);
     al_draw_bitmap(background, 0, 0, 0);
+    return true;
 }

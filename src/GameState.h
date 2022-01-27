@@ -157,14 +157,8 @@ class Officer {
     void FakeSkillCheck(); // this function is used to fake a skill check for
                            // the purpose of CanSkillCheck().
 
-    bool
-    isBeingHealed() {
-        return isHealing;
-    }
-    void
-    Recovering(bool recovering) {
-        isHealing = recovering;
-    }
+    bool isBeingHealed() { return isHealing; }
+    void Recovering(bool recovering) { isHealing = recovering; }
 
     std::string getFirstName();
     std::string getLastName();
@@ -182,7 +176,6 @@ class Officer {
 // SHIP CLASS
 #define STARTING_HULL_INTEGRITY 100
 
-// added class 6
 enum ClassType
 {
     NotInstalledType,
@@ -247,16 +240,14 @@ class Ship {
     int getLaserClass() const;
     int getLaserDamage();
     int getLaserFiringRate();
-    bool
-    getHasTV() const {
-        return hasTV;
-    }
+    bool getHasTV() const { return hasTV; }
     float getMaxArmorIntegrity();
     float getMaxShieldCapacity();
 
-    void damageRandomSystemOrCrew(int odds = 33,
-                                  int mindamage = 10,
-                                  int maxdamage = 30);
+    void damageRandomSystemOrCrew(
+        int odds = 33,
+        int mindamage = 10,
+        int maxdamage = 30);
 
     std::string getCargoPodCountString() const;
     std::string getEngineClassString() const;
@@ -266,26 +257,11 @@ class Ship {
     std::string getLaserClassString() const;
     bool HaveEngines() const;
 
-    int
-    getMaxEngineClass() {
-        return maxEngineClass;
-    }
-    int
-    getMaxArmorClass() {
-        return maxArmorClass;
-    }
-    int
-    getMaxShieldClass() {
-        return maxShieldClass;
-    }
-    int
-    getMaxLaserClass() {
-        return maxLaserClass;
-    }
-    int
-    getMaxMissileLauncherClass() {
-        return maxMissileLauncherClass;
-    }
+    int getMaxEngineClass() { return maxEngineClass; }
+    int getMaxArmorClass() { return maxArmorClass; }
+    int getMaxShieldClass() { return maxShieldClass; }
+    int getMaxLaserClass() { return maxLaserClass; }
+    int getMaxMissileLauncherClass() { return maxMissileLauncherClass; }
     float get_maximum_velocity() const;
     float get_fuel_usage(float distance) const;
 
@@ -322,10 +298,7 @@ class Ship {
     void setMaxLaserClass(int laserClass);
     void setMaxMissileLauncherClass(int missileLauncherClass);
 
-    void
-    setHasTV(bool initHasTV) {
-        hasTV = initHasTV;
-    }
+    void setHasTV(bool initHasTV) { hasTV = initHasTV; }
 
     // specials
     void Reset();
@@ -415,27 +388,14 @@ class PlayerInfo {
     Point2D posCombat;
     double currentSpeed;
 
-    double
-    get_galactic_x() {
-        return posHyperspace.x;
-    }
-    double
-    get_galactic_y() {
-        return posHyperspace.y;
-    }
+    double get_galactic_x() { return posHyperspace.x; }
+    double get_galactic_y() { return posHyperspace.y; }
 
-    Point2D
-    get_galactic_pos() {
-        return posHyperspace;
-    }
+    Point2D get_galactic_pos() { return posHyperspace; }
 
-    void
-    set_galactic_pos(Point2D pos) {
-        posHyperspace = pos;
-    }
+    void set_galactic_pos(Point2D pos) { posHyperspace = pos; }
 
-    void
-    set_galactic_pos(double x, double y) {
+    void set_galactic_pos(double x, double y) {
         posHyperspace.x = x;
         posHyperspace.y = y;
     }
@@ -451,74 +411,32 @@ class PlayerInfo {
     std::string getAlienRaceName(AlienRaces race);
     std::string getAlienRaceName(int race);
     std::string getAlienRaceNamePlural(AlienRaces race);
-    AlienRaces
-    getGalacticRegion() {
-        return galacticRegion;
-    }
-    void
-    setGalacticRegion(AlienRaces race) {
-        galacticRegion = race;
-    }
+    AlienRaces getGalacticRegion() { return galacticRegion; }
+    void setGalacticRegion(AlienRaces race) { galacticRegion = race; }
 
     int fleetSize;
-    int
-    getAlienFleetSize() {
-        return fleetSize;
-    }
-    void
-    setAlienFleetSize(int value) {
-        fleetSize = value;
-    }
+    int getAlienFleetSize() { return fleetSize; }
+    void setAlienFleetSize(int value) { fleetSize = value; }
 
     /*
      * END ENCOUNTER RELATED DATA
      */
 
-    double
-    getCurrentSpeed() {
-        return currentSpeed;
-    }
-    void
-    setCurrentSpeed(double value) {
-        currentSpeed = value;
-    }
+    double getCurrentSpeed() { return currentSpeed; }
+    void setCurrentSpeed(double value) { currentSpeed = value; }
 
-    bool
-    hasHyperspacePermit() {
-        return m_bHasHyperspacePermit;
-    }
-    void
-    set_HyperspacePermit(bool status) {
-        m_bHasHyperspacePermit = status;
-    }
-    bool
-    hasOverdueLoan() {
-        return m_bHasOverdueLoan;
-    }
-    void
-    set_OverdueLoan(bool status) {
-        m_bHasOverdueLoan = status;
-    }
+    bool hasHyperspacePermit() { return m_bHasHyperspacePermit; }
+    void set_HyperspacePermit(bool status) { m_bHasHyperspacePermit = status; }
+    bool hasOverdueLoan() { return m_bHasOverdueLoan; }
+    void set_OverdueLoan(bool status) { m_bHasOverdueLoan = status; }
 
-    bool
-    isLost() {
-        return m_is_lost;
-    }
-    void
-    isLost(bool is_lost) {
-        m_is_lost = is_lost;
-    }
+    bool isLost() { return m_is_lost; }
+    void isLost(bool is_lost) { m_is_lost = is_lost; }
 
     // alive property used for encounters
     bool alive;
-    bool
-    getAlive() {
-        return alive;
-    }
-    void
-    setAlive(bool value) {
-        alive = value;
-    }
+    bool getAlive() { return alive; }
+    void setAlive(bool value) { alive = value; }
 };
 
 struct QuestScript {
@@ -600,12 +518,8 @@ class GameState {
     void augCredits(int amount);
     void setShip(const Ship &initShip);
 
-    OfficerType
-    getCurrentSelectedOfficer() {
-        return m_currentSelectedOfficer;
-    }
-    void
-    setCurrentSelectedOfficer(OfficerType value) {
+    OfficerType getCurrentSelectedOfficer() { return m_currentSelectedOfficer; }
+    void setCurrentSelectedOfficer(OfficerType value) {
         m_currentSelectedOfficer = value;
     }
 
@@ -615,24 +529,12 @@ class GameState {
     std::string playerPosture; // for use in Encounters
 
     double m_baseGameTimeSecs; // base starting value for timer
-    double
-    getBaseGameTimeSecs() {
-        return m_baseGameTimeSecs;
-    }
-    void
-    setBaseGameTimeSecs(double value) {
-        m_baseGameTimeSecs = value;
-    }
+    double getBaseGameTimeSecs() { return m_baseGameTimeSecs; }
+    void setBaseGameTimeSecs(double value) { m_baseGameTimeSecs = value; }
 
     double m_gameTimeSecs; //# seconds since the start of the game
-    double
-    getGameTimeSecs() const {
-        return m_gameTimeSecs;
-    }
-    void
-    setGameTimeSecs(double value) {
-        m_gameTimeSecs = value;
-    }
+    double getGameTimeSecs() const { return m_gameTimeSecs; }
+    void setGameTimeSecs(double value) { m_gameTimeSecs = value; }
 
     Stardate stardate; // the current Stardate
 
@@ -660,44 +562,25 @@ class GameState {
 
     // tactical shield up/down status
     bool shieldStatus;
-    bool
-    getShieldStatus() {
-        return shieldStatus;
-    }
-    void
-    setShieldStatus(bool value) {
-        shieldStatus = value;
-    }
+    bool getShieldStatus() { return shieldStatus; }
+    void setShieldStatus(bool value) { shieldStatus = value; }
 
     // tactical weapon arm status
     bool weaponStatus;
-    bool
-    getWeaponStatus() {
-        return weaponStatus;
-    }
-    void
-    setWeaponStatus(bool value) {
-        weaponStatus = value;
-    }
+    bool getWeaponStatus() { return weaponStatus; }
+    void setWeaponStatus(bool value) { weaponStatus = value; }
 
     // the plot stage represents the four stages of the game: INITIAL, VIRUS,
     // WAR, ANCIENTS as defined in the alien script files
     int plotStage;
-    int
-    getPlotStage() {
-        return plotStage;
-    }
-    void
-    setPlotStage(int value) {
+    int getPlotStage() { return plotStage; }
+    void setPlotStage(int value) {
         ALLEGRO_ASSERT(plotStage >= 1 && plotStage <= 4);
         plotStage = value;
     }
     bool dirty; // Does the game state need saving (for Captain's Lounge code)?
 
-    ProfessionType
-    getProfession() {
-        return m_profession;
-    }
+    ProfessionType getProfession() { return m_profession; }
     std::string getProfessionString();
 
     // Accessors & mutator imported from Encounter module to standardize access:
@@ -709,64 +592,36 @@ class GameState {
     // the currently active module
     // Module names are found in ModeMgr.h
     std::string currentModule;
-    std::string
-    getCurrentModule() {
-        return currentModule;
-    }
-    std::string
-    getSavedModule() {
-        return currentModeWhenGameSaved;
-    }
-    void
-    setCurrentModule(const std::string &value) {
-        currentModule = value;
-    }
+    std::string getCurrentModule() { return currentModule; }
+    std::string getSavedModule() { return currentModeWhenGameSaved; }
+    void setCurrentModule(const std::string &value) { currentModule = value; }
 
     // the currently active quest ID
-    int
-    getActiveQuest() {
-        return activeQuest;
-    }
-    int
-    getStoredValue() {
-        return storedValue;
-    }
-    void
-    setStoredValue(int v) {
-        storedValue = v;
-    }
-    void
-    setActiveQuest(int v) {
+    int getActiveQuest() { return activeQuest; }
+    int getStoredValue() { return storedValue; }
+    void setStoredValue(int v) { storedValue = v; }
+    void setActiveQuest(int v) {
         if (v != activeQuest) {
             activeQuest = v;
             storedValue = -1;
             questCompleted = false;
         }
     }
-    bool
-    getQuestCompleted() {
-        return questCompleted;
-    }
-    void
-    setQuestCompleted(bool value) {
-        questCompleted = value;
-    }
+    bool getQuestCompleted() { return questCompleted; }
+    void setQuestCompleted(bool value) { questCompleted = value; }
     bool firstTimeVisitor;
 
-    Point2D
-    getHyperspaceCoordinates() {
-        return Point2D(player->posHyperspace.x / 128.0,
-                       player->posHyperspace.y / 128.0);
+    Point2D getHyperspaceCoordinates() {
+        return Point2D(
+            player->posHyperspace.x / 128.0, player->posHyperspace.y / 128.0);
     }
-    Point2D
-    setHyperspaceCoordinates(const Point2D &pos) {
+    Point2D setHyperspaceCoordinates(const Point2D &pos) {
         return player->posHyperspace = Point2D(pos.x * 128.0, pos.y * 128.0);
     }
 
-    Point2D
-    getSystemCoordinates() {
-        return Point2D(player->posSystem.x / 256.0,
-                       player->posSystem.y / 256.0);
+    Point2D getSystemCoordinates() {
+        return Point2D(
+            player->posSystem.x / 256.0, player->posSystem.y / 256.0);
     }
 
   private:

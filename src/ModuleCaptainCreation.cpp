@@ -39,9 +39,6 @@ ALLEGRO_DEBUG_CHANNEL("ModuleCaptainCreation")
 #define DETAILS_BOX_Y 170
 #define DETAILS_BOX_HEIGHT 480
 
-#define EVENT_NONE 0
-#define EVENT_FINISH 101
-
 #define TEXTCOL al_map_rgb(0, 255, 255)
 
 #define TEXTHEIGHT_TITLES 60
@@ -167,19 +164,43 @@ ALLEGRO_DEBUG_CHANNEL("ModuleCaptainCreation")
 #define INITIAL_AVAIL_PTS 5
 #define INITIAL_AVAIL_PROF_PTS 25
 
-#define EVENT_MINUS 10100
+const string ModuleCaptainCreation::c_prof_info_scientific_text =
+    "Even though the universe regresses towards smaller and smaller "
+    "components, it is still plenty large to hide a few mysteries. The "
+    "Scientific Officer represents the pinnacle of Myrrdanian brainpower. "
+    "Armed with wit, cunning, intelligence... and a stun gun these brave "
+    "souls explore the edges of the galaxy documenting planets and "
+    "capturing life forms for study. Not to mention, the ability to "
+    "recommend a planet for colonization comes with monetary and "
+    "retirement perks. Mostly monetary seeing as distant planet "
+    "construction usually takes some time to kick start.";
+const string ModuleCaptainCreation::c_prof_info_freelance_text =
+    "There is a lot of money to be made in the Gamma Sector and the "
+    "Freelancer's job is to get his hands on some. This jack of all trades "
+    "profession is easily the most versatile Captain type in the galaxy. "
+    "Capable of interstellar combat and properly equipped with modern "
+    "scanning and exploring technology there is ample opportunity for the "
+    "Freelancer to respond to most situations. One distinguishing feature "
+    "is the greatly expanded cargo room which, of course, makes all those "
+    "lowly Glush Cola shipments that much more profitable.";
+const string ModuleCaptainCreation::c_prof_info_military_text =
+    "The galaxy is a rough and tumble place where there is hardly ever a "
+    "shortage of conflict. The Military Officer is the spear point of "
+    "Myrrdan's influence and is often called upon to serve 'for the "
+    "greater good.' Trained in tactical combat and given access to some of "
+    "the highest class weaponry in the sector, it is never a bad time to "
+    "be at the helm of a Wraith class warship. Being in front of it, "
+    "however, is another scenario entirely.";
 
-ModuleCaptainCreation::ModuleCaptainCreation(void)
-    : m_wizPage(WP_NONE), m_profInfoBox(NULL), m_cursorIdx(0),
-      m_cursorIdxDelay(0), m_mouseOverImg(NULL),
-      m_resources(CAPTAINCREATION_IMAGES) {}
+ModuleCaptainCreation::ModuleCaptainCreation()
+    : Module(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT), m_wizPage(WP_NONE),
+      m_prof_info_label(nullptr), m_cursorIdx(0), m_cursorIdxDelay(0),
+      m_mouseOverImg(nullptr), m_resources(CAPTAINCREATION_IMAGES) {}
 
-ModuleCaptainCreation::~ModuleCaptainCreation(void) {}
+ModuleCaptainCreation::~ModuleCaptainCreation() {}
 
 bool
-ModuleCaptainCreation::Init() {
-    // load the datafile
-
+ModuleCaptainCreation::on_init() {
     if (!m_resources.load()) {
         g_game->message("CaptainCreation: Error loading resources");
         return false;
@@ -196,62 +217,16 @@ ModuleCaptainCreation::Init() {
     m_militaryBtn = m_resources[I_CAPTAINCREATION_MILITARY];
     m_militaryBtnMouseOver = m_resources[I_CAPTAINCREATION_MILITARY_MOUSEOVER];
 
-    m_profInfoScientific = new Label(
-        "Even though the universe regresses towards smaller and smaller "
-        "components, it is still plenty large to hide a few mysteries. The "
-        "Scientific Officer represents the pinnacle of Myrrdanian brainpower. "
-        "Armed with wit, cunning, intelligence... and a stun gun these brave "
-        "souls explore the edges of the galaxy documenting planets and "
-        "capturing life forms for study. Not to mention, the ability to "
-        "recommend a planet for colonization comes with monetary and "
-        "retirement perks. Mostly monetary seeing as distant planet "
-        "construction usually takes some time to kick start.",
+    m_prof_info_label = new Label(
+        "",
         PROFESSION_BOX_X + 22,
         PROFESSION_BOX_Y + 22,
         PROFESSION_BOX_WIDTH - 44,
         PROFESSION_BOX_HEIGHT - 44,
-        WHITE,
-        g_game->font22);
-    if (m_profInfoScientific == NULL)
-        return false;
-    m_profInfoScientific->Refresh();
-
-    m_profInfoFreelance = new Label(
-        "There is a lot of money to be made in the Gamma Sector and the "
-        "Freelancer's job is to get his hands on some. This jack of all trades "
-        "profession is easily the most versatile Captain type in the galaxy. "
-        "Capable of interstellar combat and properly equipped with modern "
-        "scanning and exploring technology there is ample opportunity for the "
-        "Freelancer to respond to most situations. One distinguishing feature "
-        "is the greatly expanded cargo room which, of course, makes all those "
-        "lowly Glush Cola shipments that much more profitable.",
-        PROFESSION_BOX_X + 22,
-        PROFESSION_BOX_Y + 22,
-        PROFESSION_BOX_WIDTH - 44,
-        PROFESSION_BOX_HEIGHT - 44,
-        WHITE,
-        g_game->font22);
-    if (m_profInfoFreelance == NULL)
-        return false;
-    m_profInfoFreelance->Refresh();
-
-    m_profInfoMilitary = new Label(
-        "The galaxy is a rough and tumble place where there is hardly ever a "
-        "shortage of conflict. The Military Officer is the spear point of "
-        "Myrrdan's influence and is often called upon to serve 'for the "
-        "greater good.' Trained in tactical combat and given access to some of "
-        "the highest class weaponry in the sector, it is never a bad time to "
-        "be at the helm of a Wraith class warship. Being in front of it, "
-        "however, is another scenario entirely.",
-        PROFESSION_BOX_X + 22,
-        PROFESSION_BOX_Y + 22,
-        PROFESSION_BOX_WIDTH - 44,
-        PROFESSION_BOX_HEIGHT - 44,
-        WHITE,
-        g_game->font22);
-    if (m_profInfoMilitary == NULL)
-        return false;
-    m_profInfoMilitary->Refresh();
+        true,
+        0,
+        g_game->font22,
+        WHITE);
 
     m_detailsBackground = m_resources[I_CAPTAINCREATION_DETAILSBACKGROUND];
     m_resetBtn = m_resources[I_CAPTAINCREATION_RESET];
@@ -263,17 +238,18 @@ ModuleCaptainCreation::Init() {
     btnOver = m_resources[I_CAPTAINCREATION_FINISH_MOUSEOVER];
     btnDis = m_resources[I_CAPTAINCREATION_FINISH_DISABLED];
 
-    m_finishBtn = new Button(btnNorm,
-                             btnOver,
-                             btnDis,
-                             FINISHBTN_X,
-                             FINISHBTN_Y,
-                             EVENT_NONE,
-                             EVENT_FINISH,
-                             "",
-                             false,
-                             true);
-    if (m_finishBtn == NULL)
+    m_finishBtn = new Button(
+        btnNorm,
+        btnOver,
+        btnDis,
+        FINISHBTN_X,
+        FINISHBTN_Y,
+        EVENT_NONE,
+        EVENT_CAPTAINCREATION_FINISH,
+        "",
+        false,
+        true);
+    if (m_finishBtn == nullptr)
         return false;
     if (!m_finishBtn->IsInitialized())
         return false;
@@ -290,73 +266,81 @@ ModuleCaptainCreation::Init() {
     btnNorm = m_resources[I_MINUS];
     btnOver = m_resources[I_MINUS_MOUSEOVER];
     btnDis = m_resources[I_MINUS_DISABLED];
-    m_minusBtns[0] = new Button(btnNorm,
-                                btnOver,
-                                btnDis,
-                                PLUS_DURABILITY_X + 42,
-                                PLUS_DURABILITY_Y,
-                                EVENT_NONE,
-                                EVENT_MINUS + 0,
-                                "");
-    m_minusBtns[1] = new Button(btnNorm,
-                                btnOver,
-                                btnDis,
-                                PLUS_LEARNRATE_X + 42,
-                                PLUS_LEARNRATE_Y,
-                                EVENT_NONE,
-                                EVENT_MINUS + 1,
-                                "");
-    m_minusBtns[2] = new Button(btnNorm,
-                                btnOver,
-                                btnDis,
-                                PLUS_SCIENCE_X + 42,
-                                PLUS_SCIENCE_Y,
-                                EVENT_NONE,
-                                EVENT_MINUS + 2,
-                                "");
-    m_minusBtns[3] = new Button(btnNorm,
-                                btnOver,
-                                btnDis,
-                                PLUS_NAVIGATION_X + 42,
-                                PLUS_NAVIGATION_Y,
-                                EVENT_NONE,
-                                EVENT_MINUS + 3,
-                                "");
-    m_minusBtns[4] = new Button(btnNorm,
-                                btnOver,
-                                btnDis,
-                                PLUS_TACTICS_X + 42,
-                                PLUS_TACTICS_Y,
-                                EVENT_NONE,
-                                EVENT_MINUS + 4,
-                                "");
-    m_minusBtns[5] = new Button(btnNorm,
-                                btnOver,
-                                btnDis,
-                                PLUS_ENGINEERING_X + 42,
-                                PLUS_ENGINEERING_Y,
-                                EVENT_NONE,
-                                EVENT_MINUS + 5,
-                                "");
-    m_minusBtns[6] = new Button(btnNorm,
-                                btnOver,
-                                btnDis,
-                                PLUS_COMMUNICATION_X + 42,
-                                PLUS_COMMUNICATION_Y,
-                                EVENT_NONE,
-                                EVENT_MINUS + 6,
-                                "");
-    m_minusBtns[7] = new Button(btnNorm,
-                                btnOver,
-                                btnDis,
-                                PLUS_MEDICAL_X + 42,
-                                PLUS_MEDICAL_Y,
-                                EVENT_NONE,
-                                EVENT_MINUS + 7,
-                                "");
+    m_minusBtns[0] = new Button(
+        btnNorm,
+        btnOver,
+        btnDis,
+        PLUS_DURABILITY_X + 42,
+        PLUS_DURABILITY_Y,
+        EVENT_NONE,
+        EVENT_CAPTAINCREATION_MINUS_DURABILITY,
+        "");
+    m_minusBtns[1] = new Button(
+        btnNorm,
+        btnOver,
+        btnDis,
+        PLUS_LEARNRATE_X + 42,
+        PLUS_LEARNRATE_Y,
+        EVENT_NONE,
+        EVENT_CAPTAINCREATION_MINUS_LEARNRATE,
+        "");
+    m_minusBtns[2] = new Button(
+        btnNorm,
+        btnOver,
+        btnDis,
+        PLUS_SCIENCE_X + 42,
+        PLUS_SCIENCE_Y,
+        EVENT_NONE,
+        EVENT_CAPTAINCREATION_MINUS_SCIENCE,
+        "");
+    m_minusBtns[3] = new Button(
+        btnNorm,
+        btnOver,
+        btnDis,
+        PLUS_NAVIGATION_X + 42,
+        PLUS_NAVIGATION_Y,
+        EVENT_NONE,
+        EVENT_CAPTAINCREATION_MINUS_NAVIGATION,
+        "");
+    m_minusBtns[4] = new Button(
+        btnNorm,
+        btnOver,
+        btnDis,
+        PLUS_TACTICS_X + 42,
+        PLUS_TACTICS_Y,
+        EVENT_NONE,
+        EVENT_CAPTAINCREATION_MINUS_TACTICS,
+        "");
+    m_minusBtns[5] = new Button(
+        btnNorm,
+        btnOver,
+        btnDis,
+        PLUS_ENGINEERING_X + 42,
+        PLUS_ENGINEERING_Y,
+        EVENT_NONE,
+        EVENT_CAPTAINCREATION_MINUS_ENGINEERING,
+        "");
+    m_minusBtns[6] = new Button(
+        btnNorm,
+        btnOver,
+        btnDis,
+        PLUS_COMMUNICATION_X + 42,
+        PLUS_COMMUNICATION_Y,
+        EVENT_NONE,
+        EVENT_CAPTAINCREATION_MINUS_COMMUNICATION,
+        "");
+    m_minusBtns[7] = new Button(
+        btnNorm,
+        btnOver,
+        btnDis,
+        PLUS_MEDICAL_X + 42,
+        PLUS_MEDICAL_Y,
+        EVENT_NONE,
+        EVENT_CAPTAINCREATION_MINUS_MEDICAL,
+        "");
 
     for (int i = 0; i < 8; i++) {
-        if (m_minusBtns[i] == NULL)
+        if (m_minusBtns[i] == nullptr)
             return false;
         if (!m_minusBtns[i]->IsInitialized())
             return false;
@@ -382,327 +366,321 @@ ModuleCaptainCreation::Init() {
         return false;
     }
 
-    m_mouseOverImg = NULL;
-    m_profInfoBox = NULL;
+    m_mouseOverImg = nullptr;
     m_name = "";
     m_wizPage = WP_PROFESSION_CHOICE;
 
     return true;
 }
 
-void
-ModuleCaptainCreation::Update() {
-    Module::Update();
-}
-
-void
-ModuleCaptainCreation::Draw() {
+bool
+ModuleCaptainCreation::on_draw(ALLEGRO_BITMAP *target) {
     static bool help1 = true;
     static bool help2 = true;
 
-    al_set_target_bitmap(g_game->GetBackBuffer());
+    cout << "Draw captain creation" << endl;
+
+    al_set_target_bitmap(target);
     switch (m_wizPage) {
-    case WP_PROFESSION_CHOICE: {
-        al_draw_bitmap(m_professionChoiceBackground, 0, 0, 0);
-        al_draw_bitmap(
-            m_scientificBtn, PROFBTN_SCIENTIFIC_X, PROFBTN_SCIENTIFIC_Y, 0);
-        al_draw_bitmap(
-            m_freelanceBtn, PROFBTN_FREELANCE_X, PROFBTN_FREELANCE_Y, 0);
-        al_draw_bitmap(
-            m_militaryBtn, PROFBTN_MILITARY_X, PROFBTN_MILITARY_Y, 0);
-        al_draw_bitmap(m_backBtn, BACKBTN_X, BACKBTN_Y, 0);
+    case WP_PROFESSION_CHOICE:
+        {
+            al_draw_bitmap(m_professionChoiceBackground, 0, 0, 0);
+            al_draw_bitmap(
+                m_scientificBtn, PROFBTN_SCIENTIFIC_X, PROFBTN_SCIENTIFIC_Y, 0);
+            al_draw_bitmap(
+                m_freelanceBtn, PROFBTN_FREELANCE_X, PROFBTN_FREELANCE_Y, 0);
+            al_draw_bitmap(
+                m_militaryBtn, PROFBTN_MILITARY_X, PROFBTN_MILITARY_Y, 0);
+            al_draw_bitmap(m_backBtn, BACKBTN_X, BACKBTN_Y, 0);
 
-        if (m_profInfoBox != NULL) {
-            m_profInfoBox->Draw(g_game->GetBackBuffer());
+            if (m_prof_info_label != nullptr) {
+                m_prof_info_label->on_draw(target);
+            }
+
+            if (m_mouseOverImg != nullptr) {
+                al_draw_bitmap(
+                    m_mouseOverImg, m_mouseOverImgX, m_mouseOverImgY, 0);
+            }
+
+            // display tutorial help messages for beginners
+            if ((!g_game->gameState->firstTimeVisitor
+                 || g_game->gameState->getActiveQuest() > 1))
+                help1 = false;
+            if (help1) {
+                help1 = false;
+                string str =
+                    "Okay, let's create a new character for you, starting "
+                    "with your choice of profession. Choose a Science, "
+                    "Freelance, or Military career.";
+                g_game->ShowMessageBoxWindow(
+                    "", str, 400, 300, YELLOW, 600, 400, false);
+            }
+        }
+        break;
+
+    case WP_DETAILS:
+        {
+            al_draw_bitmap(m_detailsBackground, 0, 0, 0);
+
+            al_draw_bitmap(m_backBtn, BACKBTN_X, BACKBTN_Y, 0);
+
+            al_draw_text(
+                g_game->font60,
+                TEXTCOL,
+                SCREEN_WIDTH / 2,
+                30,
+                ALLEGRO_ALIGN_CENTER,
+                "Captain Details");
+
+            string name = "Name: " + m_name;
+            al_draw_text(
+                g_game->font32, TEXTCOL, NAME_X, NAME_Y, 0, name.c_str());
+
+            int nlen = al_get_text_width(g_game->font32, name.c_str());
+            al_draw_bitmap(
+                m_cursor[m_cursorIdx], NAME_X + nlen + 2, CURSOR_Y, 0);
+
+            if (++m_cursorIdxDelay > CURSOR_DELAY) {
+                m_cursorIdxDelay = 0;
+                m_cursorIdx++;
+                if (m_cursorIdx > 1)
+                    m_cursorIdx = 0;
+            }
+
+            al_draw_textf(
+                g_game->font32,
+                TEXTCOL,
+                DURABILITY_X,
+                DURABILITY_Y,
+                0,
+                "Durability");
+            al_draw_text(
+                g_game->font32,
+                TEXTCOL,
+                LEARNRATE_X,
+                LEARNRATE_Y,
+                0,
+                "Learn Rate");
+            al_draw_text(
+                g_game->font32, TEXTCOL, SCIENCE_X, SCIENCE_Y, 0, "Science");
+            al_draw_text(
+                g_game->font32,
+                TEXTCOL,
+                NAVIGATION_X,
+                NAVIGATION_Y,
+                0,
+                "Navigation");
+            al_draw_text(
+                g_game->font32, TEXTCOL, TACTICS_X, TACTICS_Y, 0, "Tactics");
+            al_draw_text(
+                g_game->font32,
+                TEXTCOL,
+                ENGINEERING_X,
+                ENGINEERING_Y,
+                0,
+                "Engineering");
+            al_draw_text(
+                g_game->font32,
+                TEXTCOL,
+                COMMUNICATION_X,
+                COMMUNICATION_Y,
+                0,
+                "Communication");
+            al_draw_text(
+                g_game->font32, TEXTCOL, MEDICAL_X, MEDICAL_Y, 0, "Medical");
+
+            al_draw_textf(
+                g_game->font32,
+                TEXTCOL,
+                ATTS_AVAILPTS_COMMON_X + 20,
+                DURABILITY_Y,
+                ALLEGRO_ALIGN_RIGHT,
+                "%d available",
+                m_availPts);
+            al_draw_textf(
+                g_game->font32,
+                TEXTCOL,
+                ATTS_VALS_COMMON_X,
+                DURABILITY_Y,
+                ALLEGRO_ALIGN_RIGHT,
+                "%d",
+                m_attributes.durability);
+            al_draw_textf(
+                g_game->font32,
+                TEXTCOL,
+                ATTS_VALS_COMMON_X,
+                LEARNRATE_Y,
+                ALLEGRO_ALIGN_RIGHT,
+                "%d",
+                m_attributes.learnRate);
+            al_draw_textf(
+                g_game->font32,
+                TEXTCOL,
+                ATTS_AVAILPTS_COMMON_X + 20,
+                SCIENCE_Y,
+                ALLEGRO_ALIGN_RIGHT,
+                "%d available",
+                m_availProfPts);
+            al_draw_textf(
+                g_game->font32,
+                TEXTCOL,
+                ATTS_VALS_COMMON_X,
+                SCIENCE_Y,
+                ALLEGRO_ALIGN_RIGHT,
+                "%d",
+                m_attributes.science);
+            al_draw_textf(
+                g_game->font32,
+                TEXTCOL,
+                ATTS_VALS_COMMON_X,
+                NAVIGATION_Y,
+                ALLEGRO_ALIGN_RIGHT,
+                "%d",
+                m_attributes.navigation);
+            al_draw_textf(
+                g_game->font32,
+                TEXTCOL,
+                ATTS_VALS_COMMON_X,
+                TACTICS_Y,
+                ALLEGRO_ALIGN_RIGHT,
+                "%d",
+                m_attributes.tactics);
+            al_draw_textf(
+                g_game->font32,
+                TEXTCOL,
+                ATTS_VALS_COMMON_X,
+                ENGINEERING_Y,
+                ALLEGRO_ALIGN_RIGHT,
+                "%d",
+                m_attributes.engineering);
+            al_draw_textf(
+                g_game->font32,
+                TEXTCOL,
+                ATTS_VALS_COMMON_X,
+                COMMUNICATION_Y,
+                ALLEGRO_ALIGN_RIGHT,
+                "%d",
+                m_attributes.communication);
+            al_draw_textf(
+                g_game->font32,
+                TEXTCOL,
+                ATTS_VALS_COMMON_X,
+                MEDICAL_Y,
+                ALLEGRO_ALIGN_RIGHT,
+                "%d",
+                m_attributes.medical);
+
+            al_draw_bitmap(m_plusBtn, PLUS_DURABILITY_X, PLUS_DURABILITY_Y, 0);
+            al_draw_bitmap(m_plusBtn, PLUS_LEARNRATE_X, PLUS_LEARNRATE_Y, 0);
+            al_draw_bitmap(m_plusBtn, PLUS_SCIENCE_X, PLUS_SCIENCE_Y, 0);
+            al_draw_bitmap(m_plusBtn, PLUS_NAVIGATION_X, PLUS_NAVIGATION_Y, 0);
+            al_draw_bitmap(m_plusBtn, PLUS_TACTICS_X, PLUS_TACTICS_Y, 0);
+            al_draw_bitmap(
+                m_plusBtn, PLUS_ENGINEERING_X, PLUS_ENGINEERING_Y, 0);
+            al_draw_bitmap(
+                m_plusBtn, PLUS_COMMUNICATION_X, PLUS_COMMUNICATION_Y, 0);
+            al_draw_bitmap(m_plusBtn, PLUS_MEDICAL_X, PLUS_MEDICAL_Y, 0);
+
+            al_draw_bitmap(m_resetBtn, RESET_X, RESET_Y, 0);
+
+            if ((m_availPts == 0) && (m_availProfPts == 0)
+                && (m_name.size() > 0)) {
+                m_finishBtn->SetEnabled(true);
+            } else {
+                m_finishBtn->SetEnabled(false);
+            }
+
+            m_finishBtn->Run(g_game->GetBackBuffer());
+
+            if (m_mouseOverImg != nullptr) {
+                al_draw_bitmap(
+                    m_mouseOverImg, m_mouseOverImgX, m_mouseOverImgY, 0);
+            }
+            for (int i = 0; i < 8; i++) {
+                m_minusBtns[i]->Run(g_game->GetBackBuffer());
+            }
+
+            // display tutorial help messages for beginners
+            if ((!g_game->gameState->firstTimeVisitor
+                 || g_game->gameState->getActiveQuest() > 1))
+                help2 = false;
+            if (help2) {
+                help2 = false;
+                string str = "Next, you need to enter a name for your "
+                             "captain, and then set "
+                             "your attribute points: 5 points to "
+                             "Durability or Learning "
+                             "Rate, and 25 points to all the rest. You "
+                             "must allocate all of "
+                             "the points before continuing.";
+                g_game->ShowMessageBoxWindow(
+                    "", str, 400, 300, YELLOW, 10, 250, false);
+            }
         }
 
-        if (m_mouseOverImg != NULL) {
-            al_draw_bitmap(m_mouseOverImg, m_mouseOverImgX, m_mouseOverImgY, 0);
-        }
-
-        // display tutorial help messages for beginners
-        if ((!g_game->gameState->firstTimeVisitor ||
-             g_game->gameState->getActiveQuest() > 1))
-            help1 = false;
-        if (help1) {
-            help1 = false;
-            string str = "Okay, let's create a new character for you, starting "
-                         "with your choice of profession. Choose a Science, "
-                         "Freelance, or Military career.";
-            g_game->ShowMessageBoxWindow(
-                "", str, 400, 300, YELLOW, 600, 400, false);
-        }
-
-    } break;
-
-    case WP_DETAILS: {
-        al_draw_bitmap(m_detailsBackground, 0, 0, 0);
-
-        al_draw_bitmap(m_backBtn, BACKBTN_X, BACKBTN_Y, 0);
-
-        al_draw_text(g_game->font60,
-                     TEXTCOL,
-                     SCREEN_WIDTH / 2,
-                     30,
-                     ALLEGRO_ALIGN_CENTER,
-                     "Captain Details");
-
-        string name = "Name: " + m_name;
-        al_draw_text(g_game->font32, TEXTCOL, NAME_X, NAME_Y, 0, name.c_str());
-
-        int nlen = al_get_text_width(g_game->font32, name.c_str());
-        al_draw_bitmap(m_cursor[m_cursorIdx], NAME_X + nlen + 2, CURSOR_Y, 0);
-
-        if (++m_cursorIdxDelay > CURSOR_DELAY) {
-            m_cursorIdxDelay = 0;
-            m_cursorIdx++;
-            if (m_cursorIdx > 1)
-                m_cursorIdx = 0;
-        }
-
-        al_draw_textf(g_game->font32,
-                      TEXTCOL,
-                      DURABILITY_X,
-                      DURABILITY_Y,
-                      0,
-                      "Durability");
-        al_draw_text(
-            g_game->font32, TEXTCOL, LEARNRATE_X, LEARNRATE_Y, 0, "Learn Rate");
-        al_draw_text(
-            g_game->font32, TEXTCOL, SCIENCE_X, SCIENCE_Y, 0, "Science");
-        al_draw_text(g_game->font32,
-                     TEXTCOL,
-                     NAVIGATION_X,
-                     NAVIGATION_Y,
-                     0,
-                     "Navigation");
-        al_draw_text(
-            g_game->font32, TEXTCOL, TACTICS_X, TACTICS_Y, 0, "Tactics");
-        al_draw_text(g_game->font32,
-                     TEXTCOL,
-                     ENGINEERING_X,
-                     ENGINEERING_Y,
-                     0,
-                     "Engineering");
-        al_draw_text(g_game->font32,
-                     TEXTCOL,
-                     COMMUNICATION_X,
-                     COMMUNICATION_Y,
-                     0,
-                     "Communication");
-        al_draw_text(
-            g_game->font32, TEXTCOL, MEDICAL_X, MEDICAL_Y, 0, "Medical");
-
-        al_draw_textf(g_game->font32,
-                      TEXTCOL,
-                      ATTS_AVAILPTS_COMMON_X + 20,
-                      DURABILITY_Y,
-                      ALLEGRO_ALIGN_RIGHT,
-                      "%d available",
-                      m_availPts);
-        al_draw_textf(g_game->font32,
-                      TEXTCOL,
-                      ATTS_VALS_COMMON_X,
-                      DURABILITY_Y,
-                      ALLEGRO_ALIGN_RIGHT,
-                      "%d",
-                      m_attributes.durability);
-        al_draw_textf(g_game->font32,
-                      TEXTCOL,
-                      ATTS_VALS_COMMON_X,
-                      LEARNRATE_Y,
-                      ALLEGRO_ALIGN_RIGHT,
-                      "%d",
-                      m_attributes.learnRate);
-        al_draw_textf(g_game->font32,
-                      TEXTCOL,
-                      ATTS_AVAILPTS_COMMON_X + 20,
-                      SCIENCE_Y,
-                      ALLEGRO_ALIGN_RIGHT,
-                      "%d available",
-                      m_availProfPts);
-        al_draw_textf(g_game->font32,
-                      TEXTCOL,
-                      ATTS_VALS_COMMON_X,
-                      SCIENCE_Y,
-                      ALLEGRO_ALIGN_RIGHT,
-                      "%d",
-                      m_attributes.science);
-        al_draw_textf(g_game->font32,
-                      TEXTCOL,
-                      ATTS_VALS_COMMON_X,
-                      NAVIGATION_Y,
-                      ALLEGRO_ALIGN_RIGHT,
-                      "%d",
-                      m_attributes.navigation);
-        al_draw_textf(g_game->font32,
-                      TEXTCOL,
-                      ATTS_VALS_COMMON_X,
-                      TACTICS_Y,
-                      ALLEGRO_ALIGN_RIGHT,
-                      "%d",
-                      m_attributes.tactics);
-        al_draw_textf(g_game->font32,
-                      TEXTCOL,
-                      ATTS_VALS_COMMON_X,
-                      ENGINEERING_Y,
-                      ALLEGRO_ALIGN_RIGHT,
-                      "%d",
-                      m_attributes.engineering);
-        al_draw_textf(g_game->font32,
-                      TEXTCOL,
-                      ATTS_VALS_COMMON_X,
-                      COMMUNICATION_Y,
-                      ALLEGRO_ALIGN_RIGHT,
-                      "%d",
-                      m_attributes.communication);
-        al_draw_textf(g_game->font32,
-                      TEXTCOL,
-                      ATTS_VALS_COMMON_X,
-                      MEDICAL_Y,
-                      ALLEGRO_ALIGN_RIGHT,
-                      "%d",
-                      m_attributes.medical);
-
-        al_draw_bitmap(m_plusBtn, PLUS_DURABILITY_X, PLUS_DURABILITY_Y, 0);
-        al_draw_bitmap(m_plusBtn, PLUS_LEARNRATE_X, PLUS_LEARNRATE_Y, 0);
-        al_draw_bitmap(m_plusBtn, PLUS_SCIENCE_X, PLUS_SCIENCE_Y, 0);
-        al_draw_bitmap(m_plusBtn, PLUS_NAVIGATION_X, PLUS_NAVIGATION_Y, 0);
-        al_draw_bitmap(m_plusBtn, PLUS_TACTICS_X, PLUS_TACTICS_Y, 0);
-        al_draw_bitmap(m_plusBtn, PLUS_ENGINEERING_X, PLUS_ENGINEERING_Y, 0);
-        al_draw_bitmap(
-            m_plusBtn, PLUS_COMMUNICATION_X, PLUS_COMMUNICATION_Y, 0);
-        al_draw_bitmap(m_plusBtn, PLUS_MEDICAL_X, PLUS_MEDICAL_Y, 0);
-
-        al_draw_bitmap(m_resetBtn, RESET_X, RESET_Y, 0);
-
-        if ((m_availPts == 0) && (m_availProfPts == 0) && (m_name.size() > 0)) {
-            m_finishBtn->SetEnabled(true);
-        } else {
-            m_finishBtn->SetEnabled(false);
-        }
-
-        m_finishBtn->Run(g_game->GetBackBuffer());
-
-        if (m_mouseOverImg != NULL) {
-            al_draw_bitmap(m_mouseOverImg, m_mouseOverImgX, m_mouseOverImgY, 0);
-        }
-        for (int i = 0; i < 8; i++) {
-            m_minusBtns[i]->Run(g_game->GetBackBuffer());
-        }
-
-        // display tutorial help messages for beginners
-        if ((!g_game->gameState->firstTimeVisitor ||
-             g_game->gameState->getActiveQuest() > 1))
-            help2 = false;
-        if (help2) {
-            help2 = false;
-            string str =
-                "Next, you need to enter a name for your captain, and then set "
-                "your attribute points: 5 points to Durability or Learning "
-                "Rate, and 25 points to all the rest. You must allocate all of "
-                "the points before continuing.";
-            g_game->ShowMessageBoxWindow(
-                "", str, 400, 300, YELLOW, 10, 250, false);
-        }
-
-    }
-
-    break;
+        break;
     case WP_NONE:
         break;
     }
+    return true;
 }
 
-void
-ModuleCaptainCreation::Close() {
-    if (m_profInfoScientific != NULL) {
-        delete m_profInfoScientific;
-        m_profInfoScientific = NULL;
+bool
+ModuleCaptainCreation::on_close() {
+    if (m_prof_info_label != nullptr) {
+        delete m_prof_info_label;
+        m_prof_info_label = nullptr;
     }
 
-    if (m_profInfoFreelance != NULL) {
-        delete m_profInfoFreelance;
-        m_profInfoFreelance = NULL;
-    }
-
-    if (m_profInfoMilitary != NULL) {
-        delete m_profInfoMilitary;
-        m_profInfoMilitary = NULL;
-    }
-
-    if (m_finishBtn != NULL) {
+    if (m_finishBtn != nullptr) {
         delete m_finishBtn;
-        m_finishBtn = NULL;
+        m_finishBtn = nullptr;
     }
 
-    if (m_sndBtnClick != NULL) {
-        m_sndBtnClick = NULL;
+    if (m_sndBtnClick != nullptr) {
+        m_sndBtnClick = nullptr;
     }
 
-    if (m_sndClick != NULL) {
-        m_sndClick = NULL;
+    if (m_sndClick != nullptr) {
+        m_sndClick = nullptr;
     }
 
-    if (m_sndErr != NULL) {
-        m_sndErr = NULL;
+    if (m_sndErr != nullptr) {
+        m_sndErr = nullptr;
     }
 
     for (int i = 0; i < 8; i++) {
         delete m_minusBtns[i];
-        m_minusBtns[i] = NULL;
+        m_minusBtns[i] = nullptr;
     }
 
     m_resources.unload();
+    return true;
 }
 
-void
-ModuleCaptainCreation::OnKeyPress(int keyCode) {
-    Module::OnKeyPress(keyCode);
-}
-
-void
-ModuleCaptainCreation::OnKeyPressed(int keyCode) {
-    ALLEGRO_KEYBOARD_STATE keyboard_state;
-
-    Module::OnKeyPressed(keyCode);
-
-    al_get_keyboard_state(&keyboard_state);
-    bool shifted = al_key_down(&keyboard_state, ALLEGRO_KEY_LSHIFT) ||
-                   al_key_down(&keyboard_state, ALLEGRO_KEY_RSHIFT);
-
-    switch (m_wizPage) {
-    case WP_DETAILS: {
+bool
+ModuleCaptainCreation::on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event) {
+    if (m_wizPage == WP_DETAILS) {
         bool playKeySnd = false;
         bool playErrSnd = false;
 
-        if (((keyCode >= ALLEGRO_KEY_A) && (keyCode <= ALLEGRO_KEY_PAD_9)) ||
-            (keyCode == ALLEGRO_KEY_SPACE)) {
+        if (isalnum(event->unichar) || event->unichar == ' ') {
             if (m_name.size() < NAME_MAXLEN) {
-                char c;
-                if (keyCode >= ALLEGRO_KEY_A && keyCode <= ALLEGRO_KEY_Z) {
-                    c = (keyCode - ALLEGRO_KEY_A) + (shifted ? 'A' : 'a');
-                } else if (keyCode >= ALLEGRO_KEY_0 &&
-                           keyCode <= ALLEGRO_KEY_9) {
-                    c = (keyCode - ALLEGRO_KEY_0) + '0';
-                } else if (keyCode >= ALLEGRO_KEY_PAD_0 &&
-                           keyCode <= ALLEGRO_KEY_PAD_9) {
-                    c = (keyCode - ALLEGRO_KEY_PAD_0) + '0';
-                } else {
-                    c = ' ';
-                }
+                char c = event->unichar;
                 m_name.push_back(c);
 
                 playKeySnd = true;
             } else
                 playErrSnd = true;
-        } else if (keyCode == ALLEGRO_KEY_BACKSPACE) {
+        } else if (event->keycode == ALLEGRO_KEY_BACKSPACE) {
             if (m_name.size() > 0) {
                 m_name.erase(--(m_name.end()));
 
                 playKeySnd = true;
             } else
                 playErrSnd = true;
+        } else {
+            playErrSnd = true;
         }
 
         if (playKeySnd) {
@@ -712,156 +690,156 @@ ModuleCaptainCreation::OnKeyPressed(int keyCode) {
         if (playErrSnd) {
             g_game->audioSystem->Play(m_sndErr);
         }
-    } break;
-    case WP_NONE:
-    case WP_PROFESSION_CHOICE:
-        break;
+        return false;
     }
+    return true;
 }
 
-void
-ModuleCaptainCreation::OnKeyReleased(int keyCode) {
-    Module::OnKeyReleased(keyCode);
-}
-
-void
-ModuleCaptainCreation::OnMouseMove(int x, int y) {
-    Module::OnMouseMove(x, y);
+bool
+ModuleCaptainCreation::on_mouse_move(ALLEGRO_MOUSE_EVENT *event) {
+    int x = event->x;
+    int y = event->y;
 
     switch (m_wizPage) {
-    case WP_PROFESSION_CHOICE: {
-        if ((x >= PROFBTN_SCIENTIFIC_X) &&
-            (x < (PROFBTN_SCIENTIFIC_X + PROFBTN_WIDTH)) &&
-            (y >= PROFBTN_SCIENTIFIC_Y) &&
-            (y < (PROFBTN_SCIENTIFIC_Y + PROFBTN_HEIGHT))) {
-            m_mouseOverImg = m_scientificBtnMouseOver;
-            m_profInfoBox = m_profInfoScientific;
-            m_mouseOverImgX = PROFBTN_SCIENTIFIC_X;
-            m_mouseOverImgY = PROFBTN_SCIENTIFIC_Y;
-        } else if ((x >= PROFBTN_FREELANCE_X) &&
-                   (x < (PROFBTN_FREELANCE_X + PROFBTN_WIDTH)) &&
-                   (y >= PROFBTN_FREELANCE_Y) &&
-                   (y < (PROFBTN_FREELANCE_Y + PROFBTN_HEIGHT))) {
-            m_mouseOverImg = m_freelanceBtnMouseOver;
-            m_profInfoBox = m_profInfoFreelance;
-            m_mouseOverImgX = PROFBTN_FREELANCE_X;
-            m_mouseOverImgY = PROFBTN_FREELANCE_Y;
-        } else if ((x >= PROFBTN_MILITARY_X) &&
-                   (x < (PROFBTN_MILITARY_X + PROFBTN_WIDTH)) &&
-                   (y >= PROFBTN_MILITARY_Y) &&
-                   (y < (PROFBTN_MILITARY_Y + PROFBTN_HEIGHT))) {
-            m_mouseOverImg = m_militaryBtnMouseOver;
-            m_profInfoBox = m_profInfoMilitary;
-            m_mouseOverImgX = PROFBTN_MILITARY_X;
-            m_mouseOverImgY = PROFBTN_MILITARY_Y;
-        } else if ((x >= BACKBTN_X) && (x < (BACKBTN_X + BACKBTN_WIDTH)) &&
-                   (y >= BACKBTN_Y) && (y < (BACKBTN_Y + BACKBTN_HEIGHT))) {
-            m_mouseOverImg = m_backBtnMouseOver;
-            m_mouseOverImgX = BACKBTN_X;
-            m_mouseOverImgY = BACKBTN_Y;
-        } else {
-            m_mouseOverImg = NULL;
-            m_profInfoBox = NULL;
+    case WP_PROFESSION_CHOICE:
+        {
+            if ((x >= PROFBTN_SCIENTIFIC_X)
+                && (x < (PROFBTN_SCIENTIFIC_X + PROFBTN_WIDTH))
+                && (y >= PROFBTN_SCIENTIFIC_Y)
+                && (y < (PROFBTN_SCIENTIFIC_Y + PROFBTN_HEIGHT))) {
+                m_mouseOverImg = m_scientificBtnMouseOver;
+                m_prof_info_label->set_text(c_prof_info_scientific_text);
+                m_mouseOverImgX = PROFBTN_SCIENTIFIC_X;
+                m_mouseOverImgY = PROFBTN_SCIENTIFIC_Y;
+            } else if (
+                (x >= PROFBTN_FREELANCE_X)
+                && (x < (PROFBTN_FREELANCE_X + PROFBTN_WIDTH))
+                && (y >= PROFBTN_FREELANCE_Y)
+                && (y < (PROFBTN_FREELANCE_Y + PROFBTN_HEIGHT))) {
+                m_mouseOverImg = m_freelanceBtnMouseOver;
+                m_prof_info_label->set_text(c_prof_info_freelance_text);
+                m_mouseOverImgX = PROFBTN_FREELANCE_X;
+                m_mouseOverImgY = PROFBTN_FREELANCE_Y;
+            } else if (
+                (x >= PROFBTN_MILITARY_X)
+                && (x < (PROFBTN_MILITARY_X + PROFBTN_WIDTH))
+                && (y >= PROFBTN_MILITARY_Y)
+                && (y < (PROFBTN_MILITARY_Y + PROFBTN_HEIGHT))) {
+                m_mouseOverImg = m_militaryBtnMouseOver;
+                m_prof_info_label->set_text(c_prof_info_military_text);
+                m_mouseOverImgX = PROFBTN_MILITARY_X;
+                m_mouseOverImgY = PROFBTN_MILITARY_Y;
+            } else if (
+                (x >= BACKBTN_X) && (x < (BACKBTN_X + BACKBTN_WIDTH))
+                && (y >= BACKBTN_Y) && (y < (BACKBTN_Y + BACKBTN_HEIGHT))) {
+                m_mouseOverImg = m_backBtnMouseOver;
+                m_mouseOverImgX = BACKBTN_X;
+                m_mouseOverImgY = BACKBTN_Y;
+            } else {
+                m_mouseOverImg = nullptr;
+                m_prof_info_label->set_text("");
+            }
         }
-    } break;
+        break;
 
-    case WP_DETAILS: {
-        for (int i = 0; i < 8; i++) {
-            m_minusBtns[i]->OnMouseMove(x, y);
-        }
-        if ((x >= BACKBTN_X) && (x < (BACKBTN_X + BACKBTN_WIDTH)) &&
-            (y >= BACKBTN_Y) && (y < (BACKBTN_Y + BACKBTN_HEIGHT))) {
-            m_mouseOverImg = m_backBtnMouseOver;
-            m_mouseOverImgX = BACKBTN_X;
-            m_mouseOverImgY = BACKBTN_Y;
-        } else if ((x >= PLUS_DURABILITY_X) &&
-                   (x < (PLUS_DURABILITY_X + al_get_bitmap_width(m_plusBtn))) &&
-                   (y >= PLUS_DURABILITY_Y) &&
-                   (y <
-                    (PLUS_DURABILITY_Y + al_get_bitmap_height(m_plusBtn)))) {
-            m_mouseOverImg = m_plusBtnMouseOver;
-            m_mouseOverImgX = PLUS_DURABILITY_X;
-            m_mouseOverImgY = PLUS_DURABILITY_Y;
-        } else if ((x >= PLUS_LEARNRATE_X) &&
-                   (x < (PLUS_LEARNRATE_X + al_get_bitmap_width(m_plusBtn))) &&
-                   (y >= PLUS_LEARNRATE_Y) &&
-                   (y < (PLUS_LEARNRATE_Y + al_get_bitmap_height(m_plusBtn)))) {
-            m_mouseOverImg = m_plusBtnMouseOver;
-            m_mouseOverImgX = PLUS_LEARNRATE_X;
-            m_mouseOverImgY = PLUS_LEARNRATE_Y;
-        } else if ((x >= PLUS_SCIENCE_X) &&
-                   (x < (PLUS_SCIENCE_X + al_get_bitmap_width(m_plusBtn))) &&
-                   (y >= PLUS_SCIENCE_Y) &&
-                   (y < (PLUS_SCIENCE_Y + al_get_bitmap_height(m_plusBtn)))) {
-            m_mouseOverImg = m_plusBtnMouseOver;
-            m_mouseOverImgX = PLUS_SCIENCE_X;
-            m_mouseOverImgY = PLUS_SCIENCE_Y;
-        } else if ((x >= PLUS_NAVIGATION_X) &&
-                   (x < (PLUS_NAVIGATION_X + al_get_bitmap_width(m_plusBtn))) &&
-                   (y >= PLUS_NAVIGATION_Y) &&
-                   (y <
-                    (PLUS_NAVIGATION_Y + al_get_bitmap_height(m_plusBtn)))) {
-            m_mouseOverImg = m_plusBtnMouseOver;
-            m_mouseOverImgX = PLUS_NAVIGATION_X;
-            m_mouseOverImgY = PLUS_NAVIGATION_Y;
-        } else if ((x >= PLUS_TACTICS_X) &&
-                   (x < (PLUS_TACTICS_X + al_get_bitmap_width(m_plusBtn))) &&
-                   (y >= PLUS_TACTICS_Y) &&
-                   (y < (PLUS_TACTICS_Y + al_get_bitmap_height(m_plusBtn)))) {
-            m_mouseOverImg = m_plusBtnMouseOver;
-            m_mouseOverImgX = PLUS_TACTICS_X;
-            m_mouseOverImgY = PLUS_TACTICS_Y;
-        } else if ((x >= PLUS_ENGINEERING_X) &&
-                   (x <
-                    (PLUS_ENGINEERING_X + al_get_bitmap_width(m_plusBtn))) &&
-                   (y >= PLUS_ENGINEERING_Y) &&
-                   (y <
-                    (PLUS_ENGINEERING_Y + al_get_bitmap_height(m_plusBtn)))) {
-            m_mouseOverImg = m_plusBtnMouseOver;
-            m_mouseOverImgX = PLUS_ENGINEERING_X;
-            m_mouseOverImgY = PLUS_ENGINEERING_Y;
-        } else if ((x >= PLUS_COMMUNICATION_X) &&
-                   (x <
-                    (PLUS_COMMUNICATION_X + al_get_bitmap_width(m_plusBtn))) &&
-                   (y >= PLUS_COMMUNICATION_Y) &&
-                   (y <
-                    (PLUS_COMMUNICATION_Y + al_get_bitmap_height(m_plusBtn)))) {
-            m_mouseOverImg = m_plusBtnMouseOver;
-            m_mouseOverImgX = PLUS_COMMUNICATION_X;
-            m_mouseOverImgY = PLUS_COMMUNICATION_Y;
-        } else if ((x >= PLUS_MEDICAL_X) &&
-                   (x < (PLUS_MEDICAL_X + al_get_bitmap_width(m_plusBtn))) &&
-                   (y >= PLUS_MEDICAL_Y) &&
-                   (y < (PLUS_MEDICAL_Y + al_get_bitmap_height(m_plusBtn)))) {
-            m_mouseOverImg = m_plusBtnMouseOver;
-            m_mouseOverImgX = PLUS_MEDICAL_X;
-            m_mouseOverImgY = PLUS_MEDICAL_Y;
-        } else if ((x >= RESET_X) &&
-                   (x < (RESET_X + al_get_bitmap_width(m_resetBtn))) &&
-                   (y >= RESET_Y) &&
-                   (y < (RESET_Y + al_get_bitmap_height(m_resetBtn)))) {
-            m_mouseOverImg = m_resetBtnMouseOver;
-            m_mouseOverImgX = RESET_X;
-            m_mouseOverImgY = RESET_Y;
-        } else {
-            m_mouseOverImg = NULL;
-        }
+    case WP_DETAILS:
+        {
+            for (int i = 0; i < 8; i++) {
+                m_minusBtns[i]->OnMouseMove(x, y);
+            }
+            if ((x >= BACKBTN_X) && (x < (BACKBTN_X + BACKBTN_WIDTH))
+                && (y >= BACKBTN_Y) && (y < (BACKBTN_Y + BACKBTN_HEIGHT))) {
+                m_mouseOverImg = m_backBtnMouseOver;
+                m_mouseOverImgX = BACKBTN_X;
+                m_mouseOverImgY = BACKBTN_Y;
+            } else if (
+                (x >= PLUS_DURABILITY_X)
+                && (x < (PLUS_DURABILITY_X + al_get_bitmap_width(m_plusBtn)))
+                && (y >= PLUS_DURABILITY_Y)
+                && (y
+                    < (PLUS_DURABILITY_Y + al_get_bitmap_height(m_plusBtn)))) {
+                m_mouseOverImg = m_plusBtnMouseOver;
+                m_mouseOverImgX = PLUS_DURABILITY_X;
+                m_mouseOverImgY = PLUS_DURABILITY_Y;
+            } else if (
+                (x >= PLUS_LEARNRATE_X)
+                && (x < (PLUS_LEARNRATE_X + al_get_bitmap_width(m_plusBtn)))
+                && (y >= PLUS_LEARNRATE_Y)
+                && (y < (PLUS_LEARNRATE_Y + al_get_bitmap_height(m_plusBtn)))) {
+                m_mouseOverImg = m_plusBtnMouseOver;
+                m_mouseOverImgX = PLUS_LEARNRATE_X;
+                m_mouseOverImgY = PLUS_LEARNRATE_Y;
+            } else if (
+                (x >= PLUS_SCIENCE_X)
+                && (x < (PLUS_SCIENCE_X + al_get_bitmap_width(m_plusBtn)))
+                && (y >= PLUS_SCIENCE_Y)
+                && (y < (PLUS_SCIENCE_Y + al_get_bitmap_height(m_plusBtn)))) {
+                m_mouseOverImg = m_plusBtnMouseOver;
+                m_mouseOverImgX = PLUS_SCIENCE_X;
+                m_mouseOverImgY = PLUS_SCIENCE_Y;
+            } else if (
+                (x >= PLUS_NAVIGATION_X)
+                && (x < (PLUS_NAVIGATION_X + al_get_bitmap_width(m_plusBtn)))
+                && (y >= PLUS_NAVIGATION_Y)
+                && (y
+                    < (PLUS_NAVIGATION_Y + al_get_bitmap_height(m_plusBtn)))) {
+                m_mouseOverImg = m_plusBtnMouseOver;
+                m_mouseOverImgX = PLUS_NAVIGATION_X;
+                m_mouseOverImgY = PLUS_NAVIGATION_Y;
+            } else if (
+                (x >= PLUS_TACTICS_X)
+                && (x < (PLUS_TACTICS_X + al_get_bitmap_width(m_plusBtn)))
+                && (y >= PLUS_TACTICS_Y)
+                && (y < (PLUS_TACTICS_Y + al_get_bitmap_height(m_plusBtn)))) {
+                m_mouseOverImg = m_plusBtnMouseOver;
+                m_mouseOverImgX = PLUS_TACTICS_X;
+                m_mouseOverImgY = PLUS_TACTICS_Y;
+            } else if (
+                (x >= PLUS_ENGINEERING_X)
+                && (x < (PLUS_ENGINEERING_X + al_get_bitmap_width(m_plusBtn)))
+                && (y >= PLUS_ENGINEERING_Y)
+                && (y
+                    < (PLUS_ENGINEERING_Y + al_get_bitmap_height(m_plusBtn)))) {
+                m_mouseOverImg = m_plusBtnMouseOver;
+                m_mouseOverImgX = PLUS_ENGINEERING_X;
+                m_mouseOverImgY = PLUS_ENGINEERING_Y;
+            } else if (
+                (x >= PLUS_COMMUNICATION_X)
+                && (x < (PLUS_COMMUNICATION_X + al_get_bitmap_width(m_plusBtn)))
+                && (y >= PLUS_COMMUNICATION_Y)
+                && (y
+                    < (PLUS_COMMUNICATION_Y
+                       + al_get_bitmap_height(m_plusBtn)))) {
+                m_mouseOverImg = m_plusBtnMouseOver;
+                m_mouseOverImgX = PLUS_COMMUNICATION_X;
+                m_mouseOverImgY = PLUS_COMMUNICATION_Y;
+            } else if (
+                (x >= PLUS_MEDICAL_X)
+                && (x < (PLUS_MEDICAL_X + al_get_bitmap_width(m_plusBtn)))
+                && (y >= PLUS_MEDICAL_Y)
+                && (y < (PLUS_MEDICAL_Y + al_get_bitmap_height(m_plusBtn)))) {
+                m_mouseOverImg = m_plusBtnMouseOver;
+                m_mouseOverImgX = PLUS_MEDICAL_X;
+                m_mouseOverImgY = PLUS_MEDICAL_Y;
+            } else if (
+                (x >= RESET_X)
+                && (x < (RESET_X + al_get_bitmap_width(m_resetBtn)))
+                && (y >= RESET_Y)
+                && (y < (RESET_Y + al_get_bitmap_height(m_resetBtn)))) {
+                m_mouseOverImg = m_resetBtnMouseOver;
+                m_mouseOverImgX = RESET_X;
+                m_mouseOverImgY = RESET_Y;
+            } else {
+                m_mouseOverImg = nullptr;
+            }
 
-        m_finishBtn->OnMouseMove(x, y);
-    } break;
+            m_finishBtn->OnMouseMove(x, y);
+        }
+        break;
     case WP_NONE:
         break;
     }
-}
-
-void
-ModuleCaptainCreation::OnMouseClick(int button, int x, int y) {
-    Module::OnMouseClick(button, x, y);
-}
-
-void
-ModuleCaptainCreation::OnMousePressed(int button, int x, int y) {
-    Module::OnMousePressed(button, x, y);
+    return true;
 }
 
 void
@@ -1080,199 +1058,213 @@ ModuleCaptainCreation::chooseScience() {
     g_game->gameState->setShip(ship);
 }
 
-void
-ModuleCaptainCreation::OnMouseReleased(int button, int x, int y) {
-    Module::OnMouseReleased(button, x, y);
+bool
+ModuleCaptainCreation::on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) {
+    int x = event->x;
+    int y = event->y;
+    int button = event->button - 1;
+
+    if (!is_mouse_click(event)) {
+        return true;
+    }
 
     switch (m_wizPage) {
-    case WP_PROFESSION_CHOICE: {
-        if ((x >= PROFBTN_SCIENTIFIC_X) &&
-            (x < (PROFBTN_SCIENTIFIC_X + PROFBTN_WIDTH)) &&
-            (y >= PROFBTN_SCIENTIFIC_Y) &&
-            (y < (PROFBTN_SCIENTIFIC_Y + PROFBTN_HEIGHT))) {
-            g_game->audioSystem->Play(m_sndBtnClick);
-            m_wizPage = WP_DETAILS;
-            m_mouseOverImg = NULL;
-            chooseScience();
-        } else if ((x >= PROFBTN_FREELANCE_X) &&
-                   (x < (PROFBTN_FREELANCE_X + PROFBTN_WIDTH)) &&
-                   (y >= PROFBTN_FREELANCE_Y) &&
-                   (y < (PROFBTN_FREELANCE_Y + PROFBTN_HEIGHT))) {
-            g_game->audioSystem->Play(m_sndBtnClick);
-            m_wizPage = WP_DETAILS;
-            m_mouseOverImg = NULL;
-            chooseFreelance();
-        } else if ((x >= PROFBTN_MILITARY_X) &&
-                   (x < (PROFBTN_MILITARY_X + PROFBTN_WIDTH)) &&
-                   (y >= PROFBTN_MILITARY_Y) &&
-                   (y < (PROFBTN_MILITARY_Y + PROFBTN_HEIGHT))) {
-            g_game->audioSystem->Play(m_sndBtnClick);
-            m_wizPage = WP_DETAILS;
-            m_mouseOverImg = NULL;
-            chooseMilitary();
-        } else if ((x >= BACKBTN_X) && (x < (BACKBTN_X + BACKBTN_WIDTH)) &&
-                   (y >= BACKBTN_Y) && (y < (BACKBTN_Y + BACKBTN_HEIGHT))) {
-            g_game->audioSystem->Play(m_sndBtnClick);
-            m_wizPage = WP_PROFESSION_CHOICE;
-            m_mouseOverImg = NULL;
+    case WP_PROFESSION_CHOICE:
+        {
+            if ((x >= PROFBTN_SCIENTIFIC_X)
+                && (x < (PROFBTN_SCIENTIFIC_X + PROFBTN_WIDTH))
+                && (y >= PROFBTN_SCIENTIFIC_Y)
+                && (y < (PROFBTN_SCIENTIFIC_Y + PROFBTN_HEIGHT))) {
+                g_game->audioSystem->Play(m_sndBtnClick);
+                m_wizPage = WP_DETAILS;
+                m_mouseOverImg = nullptr;
+                chooseScience();
+            } else if (
+                (x >= PROFBTN_FREELANCE_X)
+                && (x < (PROFBTN_FREELANCE_X + PROFBTN_WIDTH))
+                && (y >= PROFBTN_FREELANCE_Y)
+                && (y < (PROFBTN_FREELANCE_Y + PROFBTN_HEIGHT))) {
+                g_game->audioSystem->Play(m_sndBtnClick);
+                m_wizPage = WP_DETAILS;
+                m_mouseOverImg = nullptr;
+                chooseFreelance();
+            } else if (
+                (x >= PROFBTN_MILITARY_X)
+                && (x < (PROFBTN_MILITARY_X + PROFBTN_WIDTH))
+                && (y >= PROFBTN_MILITARY_Y)
+                && (y < (PROFBTN_MILITARY_Y + PROFBTN_HEIGHT))) {
+                g_game->audioSystem->Play(m_sndBtnClick);
+                m_wizPage = WP_DETAILS;
+                m_mouseOverImg = nullptr;
+                chooseMilitary();
+            } else if (
+                (x >= BACKBTN_X) && (x < (BACKBTN_X + BACKBTN_WIDTH))
+                && (y >= BACKBTN_Y) && (y < (BACKBTN_Y + BACKBTN_HEIGHT))) {
+                g_game->audioSystem->Play(m_sndBtnClick);
+                m_wizPage = WP_PROFESSION_CHOICE;
+                m_mouseOverImg = nullptr;
 
-            // return player to previous screen
-            g_game->LoadModule(g_game->modeMgr->GetPrevModuleName());
-            return;
+                // return player to previous screen
+                g_game->LoadModule(g_game->modeMgr->GetPrevModuleName());
+                return false;
+            }
         }
-    } break;
+        break;
 
-    case WP_DETAILS: {
-        bool playSnd = false;
-        bool playErrSnd = false;
+    case WP_DETAILS:
+        {
+            bool playSnd = false;
+            bool playErrSnd = false;
 
-        for (int i = 0; i < 8; i++) {
-            m_minusBtns[i]->OnMouseReleased(button, x, y);
+            for (int i = 0; i < 8; i++) {
+                m_minusBtns[i]->OnMouseReleased(button, x, y);
+            }
+
+            if ((x >= BACKBTN_X) && (x < (BACKBTN_X + BACKBTN_WIDTH))
+                && (y >= BACKBTN_Y) && (y < (BACKBTN_Y + BACKBTN_HEIGHT))) {
+                playSnd = true;
+                m_wizPage = WP_PROFESSION_CHOICE;
+                m_mouseOverImg = nullptr;
+                m_prof_info_label->set_text("");
+            } else if (
+                (x >= PLUS_DURABILITY_X)
+                && (x < (PLUS_DURABILITY_X + al_get_bitmap_width(m_plusBtn)))
+                && (y >= PLUS_DURABILITY_Y)
+                && (y
+                    < (PLUS_DURABILITY_Y + al_get_bitmap_height(m_plusBtn)))) {
+                if ((m_availPts > 0)
+                    && (m_attributes.durability < m_attributesMax.durability)) {
+                    playSnd = true;
+                    m_attributes.durability++;
+                    m_availPts--;
+                } else
+                    playErrSnd = true;
+            } else if (
+                (x >= PLUS_LEARNRATE_X)
+                && (x < (PLUS_LEARNRATE_X + al_get_bitmap_width(m_plusBtn)))
+                && (y >= PLUS_LEARNRATE_Y)
+                && (y < (PLUS_LEARNRATE_Y + al_get_bitmap_height(m_plusBtn)))) {
+                if ((m_availPts > 0)
+                    && (m_attributes.learnRate < m_attributesMax.learnRate)) {
+                    playSnd = true;
+                    m_attributes.learnRate++;
+                    m_availPts--;
+                } else
+                    playErrSnd = true;
+            } else if (
+                (x >= PLUS_SCIENCE_X)
+                && (x < (PLUS_SCIENCE_X + al_get_bitmap_width(m_plusBtn)))
+                && (y >= PLUS_SCIENCE_Y)
+                && (y < (PLUS_SCIENCE_Y + al_get_bitmap_height(m_plusBtn)))) {
+                if ((m_availProfPts > 0)
+                    && (m_attributes.science < m_attributesMax.science)) {
+                    playSnd = true;
+                    m_attributes.science++;
+                    m_availProfPts--;
+                } else
+                    playErrSnd = true;
+            } else if (
+                (x >= PLUS_NAVIGATION_X)
+                && (x < (PLUS_NAVIGATION_X + al_get_bitmap_width(m_plusBtn)))
+                && (y >= PLUS_NAVIGATION_Y)
+                && (y
+                    < (PLUS_NAVIGATION_Y + al_get_bitmap_height(m_plusBtn)))) {
+                if ((m_availProfPts > 0)
+                    && (m_attributes.navigation < m_attributesMax.navigation)) {
+                    playSnd = true;
+                    m_attributes.navigation++;
+                    m_availProfPts--;
+                } else
+                    playErrSnd = true;
+            } else if (
+                (x >= PLUS_TACTICS_X)
+                && (x < (PLUS_TACTICS_X + al_get_bitmap_width(m_plusBtn)))
+                && (y >= PLUS_TACTICS_Y)
+                && (y < (PLUS_TACTICS_Y + al_get_bitmap_height(m_plusBtn)))) {
+                if ((m_availProfPts > 0)
+                    && (m_attributes.tactics < m_attributesMax.tactics)) {
+                    playSnd = true;
+                    m_attributes.tactics++;
+                    m_availProfPts--;
+                } else
+                    playErrSnd = true;
+            } else if (
+                (x >= PLUS_ENGINEERING_X)
+                && (x < (PLUS_ENGINEERING_X + al_get_bitmap_width(m_plusBtn)))
+                && (y >= PLUS_ENGINEERING_Y)
+                && (y
+                    < (PLUS_ENGINEERING_Y + al_get_bitmap_height(m_plusBtn)))) {
+                if ((m_availProfPts > 0)
+                    && (m_attributes.engineering
+                        < m_attributesMax.engineering)) {
+                    playSnd = true;
+                    m_attributes.engineering++;
+                    m_availProfPts--;
+                } else
+                    playErrSnd = true;
+            } else if (
+                (x >= PLUS_COMMUNICATION_X)
+                && (x < (PLUS_COMMUNICATION_X + al_get_bitmap_width(m_plusBtn)))
+                && (y >= PLUS_COMMUNICATION_Y)
+                && (y
+                    < (PLUS_COMMUNICATION_Y
+                       + al_get_bitmap_height(m_plusBtn)))) {
+                if ((m_availProfPts > 0)
+                    && (m_attributes.communication
+                        < m_attributesMax.communication)) {
+                    playSnd = true;
+                    m_attributes.communication++;
+                    m_availProfPts--;
+                } else
+                    playErrSnd = true;
+            } else if (
+                (x >= PLUS_MEDICAL_X)
+                && (x < (PLUS_MEDICAL_X + al_get_bitmap_width(m_plusBtn)))
+                && (y >= PLUS_MEDICAL_Y)
+                && (y < (PLUS_MEDICAL_Y + al_get_bitmap_height(m_plusBtn)))) {
+                if ((m_availProfPts > 0)
+                    && (m_attributes.medical < m_attributesMax.medical)) {
+                    playSnd = true;
+                    m_attributes.medical++;
+                    m_availProfPts--;
+                } else
+                    playErrSnd = true;
+            } else if (
+                (x >= RESET_X)
+                && (x < (RESET_X + al_get_bitmap_width(m_resetBtn)))
+                && (y >= RESET_Y)
+                && (y < (RESET_Y + al_get_bitmap_height(m_resetBtn)))) {
+                playSnd = true;
+                m_attributes = m_attributesInitial;
+                m_availPts = INITIAL_AVAIL_PTS;
+                m_availProfPts = INITIAL_AVAIL_PROF_PTS;
+            }
+
+            m_finishBtn->OnMouseReleased(button, x, y);
+
+            if (playSnd) {
+                g_game->audioSystem->Play(m_sndBtnClick);
+            }
+
+            if (playErrSnd) {
+                g_game->audioSystem->Play(m_sndErr);
+            }
         }
-
-        if ((x >= BACKBTN_X) && (x < (BACKBTN_X + BACKBTN_WIDTH)) &&
-            (y >= BACKBTN_Y) && (y < (BACKBTN_Y + BACKBTN_HEIGHT))) {
-            playSnd = true;
-            m_wizPage = WP_PROFESSION_CHOICE;
-            m_mouseOverImg = NULL;
-            m_profInfoBox = NULL;
-        } else if ((x >= PLUS_DURABILITY_X) &&
-                   (x < (PLUS_DURABILITY_X + al_get_bitmap_width(m_plusBtn))) &&
-                   (y >= PLUS_DURABILITY_Y) &&
-                   (y <
-                    (PLUS_DURABILITY_Y + al_get_bitmap_height(m_plusBtn)))) {
-            if ((m_availPts > 0) &&
-                (m_attributes.durability < m_attributesMax.durability)) {
-                playSnd = true;
-                m_attributes.durability++;
-                m_availPts--;
-            } else
-                playErrSnd = true;
-        } else if ((x >= PLUS_LEARNRATE_X) &&
-                   (x < (PLUS_LEARNRATE_X + al_get_bitmap_width(m_plusBtn))) &&
-                   (y >= PLUS_LEARNRATE_Y) &&
-                   (y < (PLUS_LEARNRATE_Y + al_get_bitmap_height(m_plusBtn)))) {
-            if ((m_availPts > 0) &&
-                (m_attributes.learnRate < m_attributesMax.learnRate)) {
-                playSnd = true;
-                m_attributes.learnRate++;
-                m_availPts--;
-            } else
-                playErrSnd = true;
-        } else if ((x >= PLUS_SCIENCE_X) &&
-                   (x < (PLUS_SCIENCE_X + al_get_bitmap_width(m_plusBtn))) &&
-                   (y >= PLUS_SCIENCE_Y) &&
-                   (y < (PLUS_SCIENCE_Y + al_get_bitmap_height(m_plusBtn)))) {
-            if ((m_availProfPts > 0) &&
-                (m_attributes.science < m_attributesMax.science)) {
-                playSnd = true;
-                m_attributes.science++;
-                m_availProfPts--;
-            } else
-                playErrSnd = true;
-        } else if ((x >= PLUS_NAVIGATION_X) &&
-                   (x < (PLUS_NAVIGATION_X + al_get_bitmap_width(m_plusBtn))) &&
-                   (y >= PLUS_NAVIGATION_Y) &&
-                   (y <
-                    (PLUS_NAVIGATION_Y + al_get_bitmap_height(m_plusBtn)))) {
-            if ((m_availProfPts > 0) &&
-                (m_attributes.navigation < m_attributesMax.navigation)) {
-                playSnd = true;
-                m_attributes.navigation++;
-                m_availProfPts--;
-            } else
-                playErrSnd = true;
-        } else if ((x >= PLUS_TACTICS_X) &&
-                   (x < (PLUS_TACTICS_X + al_get_bitmap_width(m_plusBtn))) &&
-                   (y >= PLUS_TACTICS_Y) &&
-                   (y < (PLUS_TACTICS_Y + al_get_bitmap_height(m_plusBtn)))) {
-            if ((m_availProfPts > 0) &&
-                (m_attributes.tactics < m_attributesMax.tactics)) {
-                playSnd = true;
-                m_attributes.tactics++;
-                m_availProfPts--;
-            } else
-                playErrSnd = true;
-        } else if ((x >= PLUS_ENGINEERING_X) &&
-                   (x <
-                    (PLUS_ENGINEERING_X + al_get_bitmap_width(m_plusBtn))) &&
-                   (y >= PLUS_ENGINEERING_Y) &&
-                   (y <
-                    (PLUS_ENGINEERING_Y + al_get_bitmap_height(m_plusBtn)))) {
-            if ((m_availProfPts > 0) &&
-                (m_attributes.engineering < m_attributesMax.engineering)) {
-                playSnd = true;
-                m_attributes.engineering++;
-                m_availProfPts--;
-            } else
-                playErrSnd = true;
-        } else if ((x >= PLUS_COMMUNICATION_X) &&
-                   (x <
-                    (PLUS_COMMUNICATION_X + al_get_bitmap_width(m_plusBtn))) &&
-                   (y >= PLUS_COMMUNICATION_Y) &&
-                   (y <
-                    (PLUS_COMMUNICATION_Y + al_get_bitmap_height(m_plusBtn)))) {
-            if ((m_availProfPts > 0) &&
-                (m_attributes.communication < m_attributesMax.communication)) {
-                playSnd = true;
-                m_attributes.communication++;
-                m_availProfPts--;
-            } else
-                playErrSnd = true;
-        } else if ((x >= PLUS_MEDICAL_X) &&
-                   (x < (PLUS_MEDICAL_X + al_get_bitmap_width(m_plusBtn))) &&
-                   (y >= PLUS_MEDICAL_Y) &&
-                   (y < (PLUS_MEDICAL_Y + al_get_bitmap_height(m_plusBtn)))) {
-            if ((m_availProfPts > 0) &&
-                (m_attributes.medical < m_attributesMax.medical)) {
-                playSnd = true;
-                m_attributes.medical++;
-                m_availProfPts--;
-            } else
-                playErrSnd = true;
-        } else if ((x >= RESET_X) &&
-                   (x < (RESET_X + al_get_bitmap_width(m_resetBtn))) &&
-                   (y >= RESET_Y) &&
-                   (y < (RESET_Y + al_get_bitmap_height(m_resetBtn)))) {
-            playSnd = true;
-            m_attributes = m_attributesInitial;
-            m_availPts = INITIAL_AVAIL_PTS;
-            m_availProfPts = INITIAL_AVAIL_PROF_PTS;
-        }
-
-        m_finishBtn->OnMouseReleased(button, x, y);
-
-        if (playSnd) {
-            g_game->audioSystem->Play(m_sndBtnClick);
-        }
-
-        if (playErrSnd) {
-            g_game->audioSystem->Play(m_sndErr);
-        }
-    } break;
+        break;
     case WP_NONE:
         break;
     }
+    return true;
 }
 
-void
-ModuleCaptainCreation::OnMouseWheelUp(int x, int y) {
-    Module::OnMouseWheelUp(x, y);
-}
-
-void
-ModuleCaptainCreation::OnMouseWheelDown(int x, int y) {
-    Module::OnMouseWheelDown(x, y);
-}
-
-void
-ModuleCaptainCreation::OnEvent(Event *event) {
+bool
+ModuleCaptainCreation::on_event(ALLEGRO_EVENT *event) {
     bool playBtnSnd = false;
     bool creationComplete = false;
     bool playErrSnd = false;
 
     if (m_availPts < INITIAL_AVAIL_PTS) {
-        if (event->getEventType() == EVENT_MINUS) {
+        if (event->type == EVENT_CAPTAINCREATION_MINUS_DURABILITY) {
             // durability
             if (m_attributes.durability > m_attributesInitial.durability) {
                 playBtnSnd = true;
@@ -1281,7 +1273,7 @@ ModuleCaptainCreation::OnEvent(Event *event) {
             } else {
                 playErrSnd = true;
             }
-        } else if (event->getEventType() == EVENT_MINUS + 1) {
+        } else if (event->type == EVENT_CAPTAINCREATION_MINUS_LEARNRATE) {
             // learn rate
             if (m_attributes.learnRate > m_attributesInitial.learnRate) {
                 playBtnSnd = true;
@@ -1292,13 +1284,13 @@ ModuleCaptainCreation::OnEvent(Event *event) {
             }
         }
     } else {
-        if (event->getEventType() == EVENT_MINUS ||
-            event->getEventType() == EVENT_MINUS + 1) {
+        if (event->type == EVENT_CAPTAINCREATION_MINUS_DURABILITY
+            || event->type == EVENT_CAPTAINCREATION_MINUS_LEARNRATE) {
             playErrSnd = true;
         }
     }
     if (m_availProfPts < INITIAL_AVAIL_PROF_PTS) {
-        if (event->getEventType() == EVENT_MINUS + 2) {
+        if (event->type == EVENT_CAPTAINCREATION_MINUS_SCIENCE) {
             // science
             if (m_attributes.science > m_attributesInitial.science) {
                 playBtnSnd = true;
@@ -1307,7 +1299,7 @@ ModuleCaptainCreation::OnEvent(Event *event) {
             } else {
                 playErrSnd = true;
             }
-        } else if (event->getEventType() == EVENT_MINUS + 3) {
+        } else if (event->type == EVENT_CAPTAINCREATION_MINUS_NAVIGATION) {
             // navigation
             if (m_attributes.navigation > m_attributesInitial.navigation) {
                 playBtnSnd = true;
@@ -1316,7 +1308,7 @@ ModuleCaptainCreation::OnEvent(Event *event) {
             } else {
                 playErrSnd = true;
             }
-        } else if (event->getEventType() == EVENT_MINUS + 4) {
+        } else if (event->type == EVENT_CAPTAINCREATION_MINUS_TACTICS) {
             // tactics
             if (m_attributes.tactics > m_attributesInitial.tactics) {
                 playBtnSnd = true;
@@ -1325,7 +1317,7 @@ ModuleCaptainCreation::OnEvent(Event *event) {
             } else {
                 playErrSnd = true;
             }
-        } else if (event->getEventType() == EVENT_MINUS + 5) {
+        } else if (event->type == EVENT_CAPTAINCREATION_MINUS_ENGINEERING) {
             // engineering
             if (m_attributes.engineering > m_attributesInitial.engineering) {
                 playBtnSnd = true;
@@ -1334,17 +1326,17 @@ ModuleCaptainCreation::OnEvent(Event *event) {
             } else {
                 playErrSnd = true;
             }
-        } else if (event->getEventType() == EVENT_MINUS + 6) {
+        } else if (event->type == EVENT_CAPTAINCREATION_MINUS_COMMUNICATION) {
             // communication
-            if (m_attributes.communication >
-                m_attributesInitial.communication) {
+            if (m_attributes.communication
+                > m_attributesInitial.communication) {
                 playBtnSnd = true;
                 m_attributes.communication--;
                 m_availProfPts++;
             } else {
                 playErrSnd = true;
             }
-        } else if (event->getEventType() == EVENT_MINUS + 7) {
+        } else if (event->type == EVENT_CAPTAINCREATION_MINUS_MEDICAL) {
             // medical
             if (m_attributes.medical > m_attributesInitial.medical) {
                 playBtnSnd = true;
@@ -1355,10 +1347,14 @@ ModuleCaptainCreation::OnEvent(Event *event) {
             }
         }
     } else {
-        for (int i = 2; i < 8; i++) {
-            if (event->getEventType() == EVENT_MINUS + i) {
-                playErrSnd = true;
-            }
+        switch (event->type) {
+        case EVENT_CAPTAINCREATION_MINUS_SCIENCE:
+        case EVENT_CAPTAINCREATION_MINUS_NAVIGATION:
+        case EVENT_CAPTAINCREATION_MINUS_TACTICS:
+        case EVENT_CAPTAINCREATION_MINUS_ENGINEERING:
+        case EVENT_CAPTAINCREATION_MINUS_COMMUNICATION:
+        case EVENT_CAPTAINCREATION_MINUS_MEDICAL:
+            playErrSnd = true;
         }
     }
 
@@ -1366,7 +1362,7 @@ ModuleCaptainCreation::OnEvent(Event *event) {
         g_game->audioSystem->Play(m_sndErr);
     }
 
-    if (event->getEventType() == EVENT_FINISH) {
+    if (event->type == EVENT_CAPTAINCREATION_FINISH) {
         playBtnSnd = true;
 
         // this ends up calling g_game->gameState->m_ship.Reset()
@@ -1388,6 +1384,7 @@ ModuleCaptainCreation::OnEvent(Event *event) {
     if (creationComplete) {
         g_game->gameState->m_captainSelected = true;
         g_game->LoadModule(MODULE_CAPTAINSLOUNGE);
-        return;
+        return false;
     }
+    return true;
 }

@@ -42,21 +42,30 @@ ALLEGRO_DEBUG_CHANNEL("ModuleInterPlanetaryTravel")
 const int FlyingHoursBeforeSkillUp = 168;
 
 ModuleInterPlanetaryTravel::ModuleInterPlanetaryTravel(void)
-    : resources(SPACETRAVEL_IMAGES) {}
+    : Module(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT), resources(SPACETRAVEL_IMAGES) {
+
+    m_planet_label =
+        new Label("", 0, 0, 100, 22, false, 0, g_game->font18, ORANGE);
+
+    add_child_module(m_planet_label);
+}
+
 ModuleInterPlanetaryTravel::~ModuleInterPlanetaryTravel(void) {}
 
 #pragma endregion
 
 #pragma region INPUT
 
-void
-ModuleInterPlanetaryTravel::OnKeyPress(int keyCode) {
+bool
+ModuleInterPlanetaryTravel::on_key_down(ALLEGRO_KEYBOARD_EVENT *event) {
+    int keyCode = event->keycode;
+
     // Note: fuel consumption in a star system should be negligible since its
     // the impulse engine whereas we're using the hyperspace engine outside the
     // system
     if (g_game->gameState->m_ship.getFuel() == 0) {
         ship->cruise();
-        return;
+        return true;
     }
     switch (keyCode) {
     case ALLEGRO_KEY_D:
@@ -93,18 +102,19 @@ ModuleInterPlanetaryTravel::OnKeyPress(int keyCode) {
         g_game->gameState->m_ship.ConsumeFuel();
         break;
     }
+    return true;
 }
 
-void
-ModuleInterPlanetaryTravel::OnKeyReleased(int keyCode) {
-    Module::OnKeyReleased(keyCode);
+bool
+ModuleInterPlanetaryTravel::on_key_up(ALLEGRO_KEYBOARD_EVENT *event) {
+    int keyCode = event->keycode;
+
     if (g_game->gameState->m_ship.getFuel() == 0) {
         ship->cruise();
-        return;
+        return true;
     }
 
     switch (keyCode) {
-
     case ALLEGRO_KEY_D:
     case ALLEGRO_KEY_A:
     case ALLEGRO_KEY_LEFT:
@@ -128,38 +138,33 @@ ModuleInterPlanetaryTravel::OnKeyReleased(int keyCode) {
         ship->cruise();
         break;
     }
+    return true;
 }
 
-void
-ModuleInterPlanetaryTravel::OnMouseMove(int x, int y) {
-    Module::OnMouseMove(x, y);
+bool
+ModuleInterPlanetaryTravel::on_mouse_move(ALLEGRO_MOUSE_EVENT *event) {
+    int x = event->x;
+    int y = event->y;
+
+    if (is_mouse_wheel_down(event)) {
+        text->OnMouseWheelDown(x, y);
+    } else if (is_mouse_wheel_up(event)) {
+        text->OnMouseWheelUp(x, y);
+    }
     text->OnMouseMove(x, y);
-
-    //*** need to add a flag that skips all this time consuming code unless
-    // mouse is actually in
-    // the aux window for the planet name tooltip to be useful
-
-    // check if mouse is over a planet
-
-    // debug
-
-    std::string dian4 = "";
 
     for (int i = 0; i < star->GetNumPlanets(); i++) {
         int planet = planets[i].tilenum;
         if (planet > 0) {
             // the various negative offsets after the parenthesized expressions
             // are mere empirical tweaks, so don't expect too much of them
-            if (x > (asx + planets[i].tilex * 2.3) - 4 - planets[i].radius &&
-                x < (asx + planets[i].tilex * 2.3) - 2 + planets[i].radius &&
-                y > (asy + planets[i].tiley * 2.3) - 2 - planets[i].radius &&
-                y < (asy + planets[i].tiley * 2.3) + planets[i].radius) {
-                planet_label->SetX(x + 10);
-                planet_label->SetY(y);
-                planet_label->SetText(
-                    star->GetPlanetByID(planets[i].planetid)->name); // jjh
-
-                dian4 = star->GetPlanetByID(planets[i].planetid)->name;
+            if (x > (asx + planets[i].tilex * 2.3) - 4 - planets[i].radius
+                && x < (asx + planets[i].tilex * 2.3) - 2 + planets[i].radius
+                && y > (asy + planets[i].tiley * 2.3) - 2 - planets[i].radius
+                && y < (asy + planets[i].tiley * 2.3) + planets[i].radius) {
+                m_planet_label->move(x + 10, y);
+                m_planet_label->set_text(
+                    star->GetPlanetByID(planets[i].planetid)->name);
 
                 m_bOver_Planet = true;
                 break;
@@ -172,58 +177,54 @@ ModuleInterPlanetaryTravel::OnMouseMove(int x, int y) {
     if (m_bOver_Planet == false) {
         int systemCenterTileX = PLANETTILESACROSS / 2;
         int systemCenterTileY = PLANETTILESDOWN / 2;
-        if (x > (asx + systemCenterTileX * 2.3) - 6 &&
-            x < (asx + systemCenterTileX * 2.3) + 6 &&
-            y > (asy + systemCenterTileY * 2.3) - 6 &&
-            y < (asy + systemCenterTileY * 2.3) + 6) {
-            planet_label->SetX(x + 10);
-            planet_label->SetY(y);
-            planet_label->SetText(star->name);
+        if (x > (asx + systemCenterTileX * 2.3) - 6
+            && x < (asx + systemCenterTileX * 2.3) + 6
+            && y > (asy + systemCenterTileY * 2.3) - 6
+            && y < (asy + systemCenterTileY * 2.3) + 6) {
+            m_planet_label->move(x + 10, y);
+            m_planet_label->set_text(star->name);
             m_bOver_Planet = true;
         } else {
             m_bOver_Planet = false;
         }
     }
+    return true;
 }
 
-void
-ModuleInterPlanetaryTravel::OnMouseClick(int button, int x, int y) {
-    Module::OnMouseClick(button, x, y);
-    text->OnMouseClick(button, x, y);
-}
+bool
+ModuleInterPlanetaryTravel::on_mouse_button_down(ALLEGRO_MOUSE_EVENT *event) {
+    int button = event->button - 1;
+    int x = event->x;
+    int y = event->y;
 
-void
-ModuleInterPlanetaryTravel::OnMousePressed(int button, int x, int y) {
-    Module::OnMousePressed(button, x, y);
     text->OnMousePressed(button, x, y);
+
+    return true;
 }
 
-void
-ModuleInterPlanetaryTravel::OnMouseReleased(int button, int x, int y) {
-    Module::OnMouseReleased(button, x, y);
+bool
+ModuleInterPlanetaryTravel::on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) {
+    int button = event->button - 1;
+    int x = event->x;
+    int y = event->y;
+
     text->OnMouseReleased(button, x, y);
-}
 
-void
-ModuleInterPlanetaryTravel::OnMouseWheelUp(int x, int y) {
-    Module::OnMouseWheelUp(x, y);
-    text->OnMouseWheelUp(x, y);
-}
-
-void
-ModuleInterPlanetaryTravel::OnMouseWheelDown(int x, int y) {
-    Module::OnMouseWheelDown(x, y);
-    text->OnMouseWheelDown(x, y);
+    if (is_mouse_click(event)) {
+        text->OnMouseClick(button, x, y);
+    }
+    return true;
 }
 
 #pragma endregion
 
-void
-ModuleInterPlanetaryTravel::OnEvent(Event *event) {
+bool
+ModuleInterPlanetaryTravel::on_event(ALLEGRO_EVENT *event) {
     Ship ship;
     std::string escape = "";
 
-    int evtype = event->getEventType();
+    int evtype = event->type;
+
     switch (evtype) {
     case EVENT_SAVE_GAME: // save game
         g_game->gameState->AutoSave();
@@ -250,10 +251,11 @@ ModuleInterPlanetaryTravel::OnEvent(Event *event) {
         break;
 
     case EVENT_SCIENCE_SCAN:
-        g_game->printout(text,
-                         sci + "Sir, we are not near any planets or vessels.",
-                         BLUE,
-                         8000);
+        g_game->printout(
+            text,
+            sci + "Sir, we are not near any planets or vessels.",
+            BLUE,
+            8000);
         break;
     case EVENT_SCIENCE_ANALYSIS:
         g_game->printout(
@@ -271,10 +273,11 @@ ModuleInterPlanetaryTravel::OnEvent(Event *event) {
         break;
 
     case EVENT_TACTICAL_COMBAT:
-        g_game->printout(text,
-                         tac + "Sir, we are not in range of any other ships.",
-                         BLUE,
-                         8000);
+        g_game->printout(
+            text,
+            tac + "Sir, we are not in range of any other ships.",
+            BLUE,
+            8000);
         break;
     case EVENT_TACTICAL_SHIELDS:
         g_game->printout(text, tac + "Sir, we are not in combat.", BLUE, 8000);
@@ -321,12 +324,13 @@ ModuleInterPlanetaryTravel::OnEvent(Event *event) {
     default:
         break;
     }
+    return true;
 }
 
 #pragma region INIT_CLOSE
 
-void
-ModuleInterPlanetaryTravel::Close() {
+bool
+ModuleInterPlanetaryTravel::on_close() {
     ALLEGRO_DEBUG("*** Interplanetary Closing\n\n");
 
     if (text != NULL) {
@@ -336,16 +340,12 @@ ModuleInterPlanetaryTravel::Close() {
     delete scroller;
     delete ship;
 
-    if (planet_label != NULL) {
-        delete planet_label;
-        planet_label = NULL;
-    }
-
     resources.unload();
+    return true;
 }
 
 bool
-ModuleInterPlanetaryTravel::Init() {
+ModuleInterPlanetaryTravel::on_init() {
     g_game->SetTimePaused(false); // game-time normal in this module.
 
     ALLEGRO_DEBUG("  Interplanetary Initialize\n");
@@ -373,7 +373,6 @@ ModuleInterPlanetaryTravel::Init() {
     burning = 0;
     g_game->setVibration(0);
     m_bOver_Planet = false;
-    planet_label = new Label("", 0, 0, 100, 22, ORANGE, g_game->font18);
 
     // create the ScrollBox for message window
     static int gmx = (int)g_game->getGlobalNumber("GUI_MESSAGE_POS_X");
@@ -381,13 +380,14 @@ ModuleInterPlanetaryTravel::Init() {
     static int gmw = (int)g_game->getGlobalNumber("GUI_MESSAGE_WIDTH");
     static int gmh = (int)g_game->getGlobalNumber("GUI_MESSAGE_HEIGHT");
 
-    text = new ScrollBox::ScrollBox(g_game->font20,
-                                    ScrollBox::SB_TEXT,
-                                    gmx + 38,
-                                    gmy + 18,
-                                    gmw - 38,
-                                    gmh - 32,
-                                    999);
+    text = new ScrollBox::ScrollBox(
+        g_game->font20,
+        ScrollBox::SB_TEXT,
+        gmx + 38,
+        gmy + 18,
+        gmw - 38,
+        gmh - 32,
+        999);
     text->DrawScrollBar(false);
 
     // point global scrollbox to local one in this module for sub-module access
@@ -400,12 +400,13 @@ ModuleInterPlanetaryTravel::Init() {
     // create tile scroller object
     TileSet ts(resources[I_IP_TILES], PLANETTILESIZE, PLANETTILESIZE, 9, 1);
 
-    scroller = new TileScroller(ts,
-                                PLANETTILESACROSS,
-                                PLANETTILESDOWN,
-                                PLANET_SCROLL_WIDTH,
-                                PLANET_SCROLL_HEIGHT,
-                                ship->get_screen_position() - Point2D(96, 96));
+    scroller = new TileScroller(
+        ts,
+        PLANETTILESACROSS,
+        PLANETTILESDOWN,
+        PLANET_SCROLL_WIDTH,
+        PLANET_SCROLL_HEIGHT,
+        ship->get_screen_position() - Point2D(96, 96));
 
     // try to read star system data...
     star = g_game->dataMgr->GetStarByID(g_game->gameState->player->currentStar);
@@ -424,18 +425,18 @@ ModuleInterPlanetaryTravel::Init() {
     g_game->questMgr->raiseEvent(10, g_game->gameState->player->currentStar);
 
     // shortcuts to crew last names to simplify code
-    com = "Com. Off. " + g_game->gameState->getCurrentCom()->getLastName() +
-          "-> ";
-    sci = "Sci. Off. " + g_game->gameState->getCurrentSci()->getLastName() +
-          "-> ";
-    nav = "Nav. Off. " + g_game->gameState->getCurrentNav()->getLastName() +
-          "-> ";
-    tac = "Tac. Off. " + g_game->gameState->getCurrentTac()->getLastName() +
-          "-> ";
-    eng = "Eng. Off. " + g_game->gameState->getCurrentEng()->getLastName() +
-          "-> ";
-    doc = "Med. Off. " + g_game->gameState->getCurrentDoc()->getLastName() +
-          "-> ";
+    com = "Com. Off. " + g_game->gameState->getCurrentCom()->getLastName()
+          + "-> ";
+    sci = "Sci. Off. " + g_game->gameState->getCurrentSci()->getLastName()
+          + "-> ";
+    nav = "Nav. Off. " + g_game->gameState->getCurrentNav()->getLastName()
+          + "-> ";
+    tac = "Tac. Off. " + g_game->gameState->getCurrentTac()->getLastName()
+          + "-> ";
+    eng = "Eng. Off. " + g_game->gameState->getCurrentEng()->getLastName()
+          + "-> ";
+    doc = "Med. Off. " + g_game->gameState->getCurrentDoc()->getLastName()
+          + "-> ";
 
     return true;
 }
@@ -445,12 +446,13 @@ ModuleInterPlanetaryTravel::Init() {
 bool
 ModuleInterPlanetaryTravel::checkSystemBoundary(int x, int y) {
     /* FIXME: use system coordinates directly */
-    return !(x <= 0 || x >= PLANETTILESACROSS * PLANETTILESIZE || y <= 0 ||
-             y >= PLANETTILESDOWN * PLANETTILESIZE);
+    return !(
+        x <= 0 || x >= PLANETTILESACROSS * PLANETTILESIZE || y <= 0
+        || y >= PLANETTILESDOWN * PLANETTILESIZE);
 }
 
-void
-ModuleInterPlanetaryTravel::Update() {
+bool
+ModuleInterPlanetaryTravel::on_update() {
     std::ostringstream s;
 
     // update the ship's position based on velocity
@@ -462,7 +464,7 @@ ModuleInterPlanetaryTravel::Update() {
     if (!checkSystemBoundary(f.x, f.y)) {
         ship->allstop();
         flag_DoHyperspace = true;
-        return;
+        return true;
     }
 
     // store ship position
@@ -487,10 +489,11 @@ ModuleInterPlanetaryTravel::Update() {
             s << nav << "Captain, planet " << planet->name
               << " is not in our data banks.";
         }
-        g_game->printout(text,
-                         s.str() + " Awaiting order to establish orbit.",
-                         ORANGE,
-                         15000);
+        g_game->printout(
+            text,
+            s.str() + " Awaiting order to establish orbit.",
+            ORANGE,
+            15000);
     }
     // getting too close to the star?
     else if (burning) {
@@ -501,7 +504,7 @@ ModuleInterPlanetaryTravel::Update() {
             if (Util::ReentrantDelay(2000)) {
                 g_game->setVibration(0);
                 g_game->LoadModule(MODULE_GAMEOVER);
-                return;
+                return false;
             }
         } else if (burning > 160) {
             g_game->setVibration(14);
@@ -517,17 +520,18 @@ ModuleInterPlanetaryTravel::Update() {
                 text, sci + "Captain! We're getting too close!", ORANGE, 8000);
         } else if (burning == 2) {
             g_game->setVibration(4);
-            g_game->printout(text,
-                             nav +
-                                 "Sir, we must keep our distance from the sun.",
-                             LTGREEN,
-                             8000);
+            g_game->printout(
+                text,
+                nav + "Sir, we must keep our distance from the sun.",
+                LTGREEN,
+                8000);
         } else {
             g_game->setVibration(2);
-            g_game->printout(text,
-                             nav + "Captain, we should steer clear of the sun.",
-                             LTGREEN,
-                             8000);
+            g_game->printout(
+                text,
+                nav + "Captain, we should steer clear of the sun.",
+                LTGREEN,
+                8000);
         }
     }
 
@@ -537,10 +541,11 @@ ModuleInterPlanetaryTravel::Update() {
     if (flag_DoOrbit) {
         checkShipPosition();
         if (!planetFound) {
-            g_game->printout(text,
-                             nav + "Unable to comply. Nothing to orbit here.",
-                             ORANGE,
-                             8000);
+            g_game->printout(
+                text,
+                nav + "Unable to comply. Nothing to orbit here.",
+                ORANGE,
+                8000);
             if (Util::ReentrantDelay(2000)) {
                 flag_DoOrbit = false;
             }
@@ -551,7 +556,7 @@ ModuleInterPlanetaryTravel::Update() {
                 g_game->printout(
                     text, nav + "Entering orbital trajectory.", ORANGE, 2000);
                 g_game->LoadModule(MODULE_ORBIT);
-                return;
+                return false;
             }
         }
     }
@@ -563,20 +568,24 @@ ModuleInterPlanetaryTravel::Update() {
         Ship ship = g_game->gameState->getShip();
 
         if (g_game->gameState->player->hasHyperspacePermit() == false) {
-            g_game->printout(text,
-                             nav + "Captain, we can't enter hyperspace without "
-                                   "a hyperspace permit.",
-                             ORANGE,
-                             30000);
+            g_game->printout(
+                text,
+                nav
+                    + "Captain, we can't enter hyperspace without "
+                      "a hyperspace permit.",
+                ORANGE,
+                30000);
             if (Util::ReentrantDelay(2000)) {
                 flag_DoHyperspace = false;
             }
         } else if (planetFound) {
-            g_game->printout(text,
-                             nav + "Captain, we can't enter hyperspace due to "
-                                   "the nearby planet's gravity well.",
-                             ORANGE,
-                             8000);
+            g_game->printout(
+                text,
+                nav
+                    + "Captain, we can't enter hyperspace due to "
+                      "the nearby planet's gravity well.",
+                ORANGE,
+                8000);
             if (Util::ReentrantDelay(2000)) {
                 flag_DoHyperspace = false;
             }
@@ -591,18 +600,19 @@ ModuleInterPlanetaryTravel::Update() {
             }
         } else {
             // okay we're not near a planet
-            g_game->printout(text,
-                             nav + "Yes, sir! Engaging hyperspace engine.",
-                             ORANGE,
-                             8000);
+            g_game->printout(
+                text,
+                nav + "Yes, sir! Engaging hyperspace engine.",
+                ORANGE,
+                8000);
             if (Util::ReentrantDelay(2000)) {
-                if (g_game->gameState->getShip().getFuel() >=
-                    0.01f) // 1% of fuel required
+                if (g_game->gameState->getShip().getFuel()
+                    >= 0.01f) // 1% of fuel required
                 {
                     g_game->gameState->m_ship.ConsumeFuel(
                         20); // hyperspace engine consumes 20 units
                     g_game->LoadModule(MODULE_HYPERSPACE);
-                    return;
+                    return false;
                 } else {
                     g_game->printout(
                         text,
@@ -620,14 +630,15 @@ ModuleInterPlanetaryTravel::Update() {
             // planet id #8 = Myrrdan in the database
             if (g_game->gameState->player->currentPlanet == 8) {
                 // okay we're near myredan - however it's spelled
-                g_game->printout(text,
-                                 nav + "Yes, sir! Docking with Starport.",
-                                 ORANGE,
-                                 8000);
+                g_game->printout(
+                    text,
+                    nav + "Yes, sir! Docking with Starport.",
+                    ORANGE,
+                    8000);
                 text->ScrollToBottom();
                 if (Util::ReentrantDelay(1000)) {
                     g_game->LoadModule(MODULE_STARPORT);
-                    return;
+                    return false;
                 }
             } else {
                 // okay we're near a planet without a starport
@@ -641,11 +652,13 @@ ModuleInterPlanetaryTravel::Update() {
             }
         } else {
             // okay we're not near a planet
-            g_game->printout(text,
-                             nav + "Sorry sir! We are not close enough to a "
-                                   "planet to scan for Starports.",
-                             ORANGE,
-                             8000);
+            g_game->printout(
+                text,
+                nav
+                    + "Sorry sir! We are not close enough to a "
+                      "planet to scan for Starports.",
+                ORANGE,
+                8000);
             text->ScrollToBottom();
             flag_DoDock = false;
         }
@@ -667,10 +680,11 @@ ModuleInterPlanetaryTravel::Update() {
         if (currentNav->attributes.extra_variable >= FlyingHoursBeforeSkillUp) {
             currentNav->attributes.extra_variable = 0;
             if (currentNav->SkillUp(SKILL_NAVIGATION))
-                g_game->printout(text,
-                                 nav + "I think I'm getting better at this.",
-                                 PURPLE,
-                                 5000);
+                g_game->printout(
+                    text,
+                    nav + "I think I'm getting better at this.",
+                    PURPLE,
+                    5000);
         }
     }
 
@@ -694,31 +708,34 @@ ModuleInterPlanetaryTravel::Update() {
 
     // refresh messages
     text->ScrollToBottom();
+
+    return true;
 }
 
-void
-ModuleInterPlanetaryTravel::Draw() {
+bool
+ModuleInterPlanetaryTravel::on_draw(ALLEGRO_BITMAP *target) {
     static bool help1 = true;
 
     // draw the scrolling view
-    scroller->draw_scroll_window(g_game->GetBackBuffer(),
-                                 PLANET_SCROLL_X,
-                                 PLANET_SCROLL_Y,
-                                 PLANET_SCROLL_WIDTH,
-                                 PLANET_SCROLL_HEIGHT);
+    scroller->draw_scroll_window(
+        target,
+        PLANET_SCROLL_X,
+        PLANET_SCROLL_Y,
+        PLANET_SCROLL_WIDTH,
+        PLANET_SCROLL_HEIGHT);
 
     // draw the ship
-    ship->draw(g_game->GetBackBuffer());
+    ship->draw(target);
 
     // draw message window gui
-    text->Draw(g_game->GetBackBuffer());
+    text->Draw(target);
 
     // redraw the mini map
     updateMiniMap();
 
     // display tutorial help messages for beginners
-    if ((!g_game->gameState->firstTimeVisitor ||
-         g_game->gameState->getActiveQuest() > 10))
+    if ((!g_game->gameState->firstTimeVisitor
+         || g_game->gameState->getActiveQuest() > 10))
         help1 = false;
     if (help1) {
         help1 = false;
@@ -733,48 +750,46 @@ ModuleInterPlanetaryTravel::Draw() {
 
     if (g_game->getGlobalBoolean("DEBUG_OUTPUT") == true) {
         int y = 90;
-        g_game->PrintDefault(g_game->GetBackBuffer(),
-                             850,
-                             y,
-                             "flag_nav: " + Util::ToString(flag_nav));
-        y += 10;
-        g_game->PrintDefault(g_game->GetBackBuffer(),
-                             850,
-                             y,
-                             "flag_thrusting: " +
-                                 Util::ToString(flag_thrusting));
+        g_game->PrintDefault(
+            target, 850, y, "flag_nav: " + Util::ToString(flag_nav));
         y += 10;
         g_game->PrintDefault(
-            g_game->GetBackBuffer(),
+            target,
             850,
             y,
-            "velocity: " + Util::ToString(ship->getVelocityX()) + "," +
-                Util::ToString(ship->getVelocityY()));
-        y += 10;
-        g_game->PrintDefault(g_game->GetBackBuffer(),
-                             850,
-                             y,
-                             "speed: " +
-                                 Util::ToString(ship->getCurrentSpeed()));
-        y += 10;
-        g_game->PrintDefault(g_game->GetBackBuffer(),
-                             850,
-                             y,
-                             "planetFound: " + Util::ToString(planetFound));
+            "flag_thrusting: " + Util::ToString(flag_thrusting));
         y += 10;
         g_game->PrintDefault(
-            g_game->GetBackBuffer(),
+            target,
             850,
             y,
-            "navcounter: " + Util::ToString(g_game->gameState->getCurrentNav()
-                                                ->attributes.extra_variable));
+            "velocity: " + Util::ToString(ship->getVelocityX()) + ","
+                + Util::ToString(ship->getVelocityY()));
         y += 10;
-        g_game->PrintDefault(g_game->GetBackBuffer(),
-                             850,
-                             y,
-                             "angle: " +
-                                 Util::ToString(ship->getRotationAngle()));
+        g_game->PrintDefault(
+            target,
+            850,
+            y,
+            "speed: " + Util::ToString(ship->getCurrentSpeed()));
+        y += 10;
+        g_game->PrintDefault(
+            target, 850, y, "planetFound: " + Util::ToString(planetFound));
+        y += 10;
+        g_game->PrintDefault(
+            target,
+            850,
+            y,
+            "navcounter: "
+                + Util::ToString(g_game->gameState->getCurrentNav()
+                                     ->attributes.extra_variable));
+        y += 10;
+        g_game->PrintDefault(
+            target,
+            850,
+            y,
+            "angle: " + Util::ToString(ship->getRotationAngle()));
     }
+    return true;
 }
 
 void
@@ -802,8 +817,8 @@ ModuleInterPlanetaryTravel::checkShipPosition() {
     planetFound = false;
     for (int i = 0; i < 10 && !planetFound; i++) {
         // check tilex,tiley,and tilenum for a planet match
-        if (static_cast<int>(round(pos.x)) == planets[i].tilex &&
-            static_cast<int>(round(pos.y)) == planets[i].tiley) {
+        if (static_cast<int>(round(pos.x)) == planets[i].tilex
+            && static_cast<int>(round(pos.y)) == planets[i].tiley) {
             planet = star->GetPlanetByID(planets[i].planetid);
             if (planet) {
                 planetFound = 1;
@@ -930,11 +945,7 @@ ModuleInterPlanetaryTravel::updateMiniMap() {
         }
     }
 
-    // draw text
-    if (m_bOver_Planet == true) {
-        planet_label->Refresh();
-        planet_label->Draw(g_game->GetBackBuffer());
-    }
+    m_planet_label->set_active(m_bOver_Planet);
 
     // draw player's location on minimap
     float fx = asx + g_game->gameState->player->posSystem.x / 256 * 2.3;

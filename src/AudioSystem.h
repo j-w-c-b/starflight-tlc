@@ -38,16 +38,18 @@ class AudioSystem {
 
     bool Init();
 
-    bool Load(const std::string &filename,
-              const std::string &name,
-              float volume = 1.0f);
-    std::shared_ptr<Sample> Load(const std::string &filename,
-                                 float volume = 1.0f);
-    bool LoadMusic(const std::string &filename,
-                   const std::string &name,
-                   float volume = 0.4f);
-    std::shared_ptr<Sample> LoadMusic(const std::string &filename,
-                                      float volume = 0.4f);
+    bool Load(
+        const std::string &filename,
+        const std::string &name,
+        float volume = 1.0f);
+    std::shared_ptr<Sample>
+    Load(const std::string &filename, float volume = 1.0f);
+    bool LoadMusic(
+        const std::string &filename,
+        const std::string &name,
+        float volume = 0.4f);
+    std::shared_ptr<Sample>
+    LoadMusic(const std::string &filename, float volume = 0.4f);
     bool Play(const std::string &name, bool doLoop = false);
     bool Play(std::shared_ptr<Sample> sample, bool doLoop = false);
     bool PlayMusic(const std::string &name, bool doLoop = true);

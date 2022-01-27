@@ -89,31 +89,24 @@ class ScrollBox {
     void drawTrack(ALLEGRO_BITMAP *buffer);
     void drawScrollBar(ALLEGRO_BITMAP *buffer);
     void setHover(int index, bool TrueOrFalse);
-    int
-    getLinkedWidth() {
+    int getLinkedWidth() {
         return (sbLinkedBox) ? sbLinkedBox->getLinkedWidth() : sbWidth;
     }
-    int
-    getLinkedHeight() {
+    int getLinkedHeight() {
         return (sbLinkedBox) ? sbLinkedBox->getLinkedHeight() : sbHeight;
     }
-    int
-    getLinkedX() {
-        return (sbLinkedBox) ? sbLinkedBox->getLinkedX() : sbX;
-    }
-    int
-    getLinkedY() {
-        return (sbLinkedBox) ? sbLinkedBox->getLinkedY() : sbY;
-    }
+    int getLinkedX() { return (sbLinkedBox) ? sbLinkedBox->getLinkedX() : sbX; }
+    int getLinkedY() { return (sbLinkedBox) ? sbLinkedBox->getLinkedY() : sbY; }
 
   public:
-    ScrollBox(ALLEGRO_FONT *Font,
-              ScrollBoxType initScrollBoxType = SB_TEXT,
-              int X = 0,
-              int Y = 0,
-              int Width = 200,
-              int Height = 200,
-              int EventID = 66);
+    ScrollBox(
+        ALLEGRO_FONT *Font,
+        ScrollBoxType initScrollBoxType = SB_TEXT,
+        int X = 0,
+        int Y = 0,
+        int Width = 200,
+        int Height = 200,
+        int EventID = 66);
     ~ScrollBox();
     void Clear();
     void Draw(ALLEGRO_BITMAP *buffer);
@@ -123,25 +116,16 @@ class ScrollBox {
     void OnMouseWheelDown(int x, int y);
     void OnMouseWheelUp(int x, int y);
     void OnMouseClick(int button, int x, int y);
-    void Write(std::string text,
-               ALLEGRO_COLOR color = al_map_rgb(255, 255, 255));
+    void
+    Write(std::string text, ALLEGRO_COLOR color = al_map_rgb(255, 255, 255));
     void Write(ColoredString String);
     void ScrollToBottom();
     void ScrollToTop();
     void LinkBox(ScrollBox *scrollBox);
-    void
-    DrawScrollBar(bool TrueOrFalse) {
-        sbDrawBar = TrueOrFalse;
-    };
+    void DrawScrollBar(bool TrueOrFalse) { sbDrawBar = TrueOrFalse; };
     void setLines(int lines);
-    int
-    getLines() {
-        return sbLines;
-    }
-    int
-    GetSelectedIndex() {
-        return sbSelectedItem;
-    }
+    int getLines() { return sbLines; }
+    int GetSelectedIndex() { return sbSelectedItem; }
     std::string GetSelectedItem();
     void SetSelectedIndex(int index);
     void SetParent(ScrollBox *parent);
@@ -153,30 +137,16 @@ class ScrollBox {
     ALLEGRO_COLOR ColorSelectedBackground;
     ALLEGRO_COLOR ColorSelectedHighlight;
     ALLEGRO_COLOR ColorSelectedText;
-    void
-    SetColorBackground(ALLEGRO_COLOR color) {
-        ColorBackground = color;
-    };
-    void
-    SetColorControls(ALLEGRO_COLOR color) {
-        ColorControls = color;
-    };
-    void
-    SetColorHover(ALLEGRO_COLOR color) {
-        ColorHover = color;
-    };
-    void
-    SetColorSelectedBackground(ALLEGRO_COLOR color) {
+    void SetColorBackground(ALLEGRO_COLOR color) { ColorBackground = color; };
+    void SetColorControls(ALLEGRO_COLOR color) { ColorControls = color; };
+    void SetColorHover(ALLEGRO_COLOR color) { ColorHover = color; };
+    void SetColorSelectedBackground(ALLEGRO_COLOR color) {
         ColorSelectedBackground = color;
     };
-    void
-    SetColorSelectedHighlight(ALLEGRO_COLOR color) {
+    void SetColorSelectedHighlight(ALLEGRO_COLOR color) {
         ColorSelectedHighlight = color;
     };
-    void
-    SetColorItemBorder(ALLEGRO_COLOR color) {
-        ColorItemBorder = color;
-    };
+    void SetColorItemBorder(ALLEGRO_COLOR color) { ColorItemBorder = color; };
     void PaintNormalImage();
     void PaintHoverImage();
     void PaintSelectedImage();

@@ -39,7 +39,8 @@ using namespace planetorbit_resources;
 ALLEGRO_DEBUG_CHANNEL("ModulePlanetOrbit")
 
 ModulePlanetOrbit::ModulePlanetOrbit()
-    : flag_DoDock(false), m_resources(PLANETORBIT_IMAGES) {}
+    : Module(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT), flag_DoDock(false),
+      m_resources(PLANETORBIT_IMAGES) {}
 
 ModulePlanetOrbit::~ModulePlanetOrbit() {}
 
@@ -47,64 +48,73 @@ ModulePlanetOrbit::~ModulePlanetOrbit() {}
 
 #pragma region INPUT
 
-void
-ModulePlanetOrbit::OnMouseMove(int x, int y) {
+bool
+ModulePlanetOrbit::on_mouse_move(ALLEGRO_MOUSE_EVENT *event) {
+    int x = event->x;
+    int y = event->y;
+
     text->OnMouseMove(x, y);
+
+    if (is_mouse_wheel_down(event)) {
+        text->OnMouseWheelDown(x, y);
+    } else if (is_mouse_wheel_up(event)) {
+        text->OnMouseWheelUp(x, y);
+    }
+    return true;
 }
 
-void
-ModulePlanetOrbit::OnMouseClick(int button, int x, int y) {
-    text->OnMouseClick(button, x, y);
-}
+bool
+ModulePlanetOrbit::on_mouse_button_down(ALLEGRO_MOUSE_EVENT *event) {
+    int button = event->button - 1;
+    int x = event->x;
+    int y = event->y;
 
-void
-ModulePlanetOrbit::OnMousePressed(int button, int x, int y) {
     text->OnMousePressed(button, x, y);
+
+    return true;
 }
 
-void
-ModulePlanetOrbit::OnMouseReleased(int button, int x, int y) {
+bool
+ModulePlanetOrbit::on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) {
+    int button = event->button - 1;
+    int x = event->x;
+    int y = event->y;
+
     text->OnMouseReleased(button, x, y);
-}
 
-void
-ModulePlanetOrbit::OnMouseWheelUp(int x, int y) {
-    text->OnMouseWheelUp(x, y);
-}
+    if (is_mouse_click(event)) {
+        text->OnMouseClick(button, x, y);
+    }
 
-void
-ModulePlanetOrbit::OnMouseWheelDown(int x, int y) {
-    text->OnMouseWheelDown(x, y);
+    return true;
 }
 
 #pragma endregion
 
-void
-ModulePlanetOrbit::OnEvent(Event *event) {
+bool
+ModulePlanetOrbit::on_event(ALLEGRO_EVENT *event) {
     string escape;
-    switch (event->getEventType()) {
+    switch (event->type) {
         // pause menu events
     case EVENT_SAVE_GAME: // save game
         g_game->gameState->AutoSave();
         g_game->printout(text, "<Game Saved>", WHITE, 5000);
-        return;
         break;
+
     case EVENT_LOAD_GAME: // load game
         g_game->gameState->AutoLoad();
-        return; // this must come after any LoadModule call
         break;
+
     case EVENT_QUIT_GAME: // quit game
         g_game->setVibration(0);
         escape = g_game->getGlobalString("ESCAPEMODULE");
         g_game->LoadModule(escape);
-        return; // this must come after any LoadModule call
         break;
 
     case EVENT_CAPTAIN_LAUNCH:
         g_game->printout(
             text, nav + "Yes, sir, leaving planet orbit...", ORANGE);
         g_game->LoadModule(MODULE_INTERPLANETARY);
-        return; // this must come after any LoadModule call
         break;
 
     case EVENT_CAPTAIN_DESCEND:
@@ -114,16 +124,19 @@ ModulePlanetOrbit::OnEvent(Event *event) {
                 ? // planet #429 is Cermait VI, in Cermait system (247,218)
                 g_game->printout(
                     text,
-                    nav + "Sir, a force field is repelling the ship and "
+                    nav
+                        + "Sir, a force field is repelling the ship and "
                           "preventing us from entering the gravity well!",
                     RED,
                     5000)
-                : g_game->printout(text,
-                                   nav + "Sir, we are prohibited from landing "
-                                         "on this protected world!",
-                                   RED,
-                                   5000);
-            return;
+                : g_game->printout(
+                    text,
+                    nav
+                        + "Sir, we are prohibited from landing "
+                          "on this protected world!",
+                    RED,
+                    5000);
+            break;
         }
 
         if (planet->type != PT_GASGIANT) {
@@ -131,45 +144,53 @@ ModulePlanetOrbit::OnEvent(Event *event) {
             if (g_game->gameState->m_ship.getFuel() >= 0.1f) {
                 g_game->gameState->m_ship.ConsumeFuel(100);
                 g_game->LoadModule(MODULE_SURFACE);
-                return; // this must come after any LoadModule call
+                break;
             } else {
-                g_game->printout(text,
-                                 nav + "We do not have enough fuel to land and "
-                                       "return to orbit.",
-                                 RED,
-                                 5000);
+                g_game->printout(
+                    text,
+                    nav
+                        + "We do not have enough fuel to land and "
+                          "return to orbit.",
+                    RED,
+                    5000);
             }
         } else {
-            g_game->printout(text,
-                             nav + "Sir, we cannot survive the atmospheric "
-                                   "entry of this planet!",
-                             RED,
-                             5000);
+            g_game->printout(
+                text,
+                nav
+                    + "Sir, we cannot survive the atmospheric "
+                      "entry of this planet!",
+                RED,
+                5000);
         }
         break;
 
     case EVENT_CAPTAIN_CARGO:
-        g_game->printout(text,
-                         "Please break orbit before visiting the cargo hold",
-                         YELLOW,
-                         -1);
+        g_game->printout(
+            text,
+            "Please break orbit before visiting the cargo hold",
+            YELLOW,
+            -1);
         break;
 
     case EVENT_CAPTAIN_QUESTLOG:
-        g_game->printout(text,
-                         "Please break orbit before viewing the mission log",
-                         YELLOW,
-                         -1);
+        g_game->printout(
+            text,
+            "Please break orbit before viewing the mission log",
+            YELLOW,
+            -1);
         break;
 
     case EVENT_SCIENCE_SCAN:
         if ((planetScan == 0 || planetScan == 3) && planetAnalysis == 0) {
-            // clear the message window only when user clicks the scan button
+            // clear the message window only when user clicks the scan
+            // button
             text->Clear();
-            g_game->printout(text,
-                             sci + "Affirmative, Captain. Scanning planet...",
-                             LTGREEN,
-                             2000);
+            g_game->printout(
+                text,
+                sci + "Affirmative, Captain. Scanning planet...",
+                LTGREEN,
+                2000);
             scanplanet();
         }
         break;
@@ -186,10 +207,11 @@ ModulePlanetOrbit::OnEvent(Event *event) {
         break;
 
     case EVENT_NAVIGATOR_STARMAP:
-        g_game->printout(text,
-                         nav + "Starmap not available while orbiting a planet.",
-                         YELLOW,
-                         -1);
+        g_game->printout(
+            text,
+            nav + "Starmap not available while orbiting a planet.",
+            YELLOW,
+            -1);
         break;
 
     case EVENT_NAVIGATOR_DOCK:
@@ -214,10 +236,11 @@ ModulePlanetOrbit::OnEvent(Event *event) {
         break;
 
     case EVENT_NAVIGATOR_HYPERSPACE:
-        g_game->printout(text,
-                         nav + "We can't enter hyperspace while in orbit!",
-                         YELLOW,
-                         -1);
+        g_game->printout(
+            text,
+            nav + "We can't enter hyperspace while in orbit!",
+            YELLOW,
+            -1);
         break;
 
     case EVENT_TACTICAL_SHIELDS:
@@ -229,17 +252,19 @@ ModulePlanetOrbit::OnEvent(Event *event) {
         break;
 
     case EVENT_TACTICAL_COMBAT:
-        g_game->printout(text,
-                         tac + "With WHOM shall we engage in combat, sir?",
-                         YELLOW,
-                         -1);
+        g_game->printout(
+            text,
+            tac + "With WHOM shall we engage in combat, sir?",
+            YELLOW,
+            -1);
         break;
 
     case EVENT_ENGINEER_REPAIR:
-        g_game->printout(text,
-                         eng + "Please break orbit to access damage control",
-                         YELLOW,
-                         -1);
+        g_game->printout(
+            text,
+            eng + "Please break orbit to access damage control",
+            YELLOW,
+            -1);
         break;
 
     case EVENT_ENGINEER_INJECT:
@@ -252,17 +277,19 @@ ModulePlanetOrbit::OnEvent(Event *event) {
         break;
 
     case EVENT_COMM_DISTRESS:
-        g_game->printout(text,
-                         "<This feature won't be installed until Tuesday>",
-                         YELLOW,
-                         -1);
+        g_game->printout(
+            text,
+            "<This feature won't be installed until Tuesday>",
+            YELLOW,
+            -1);
         break;
 
     case EVENT_COMM_STATEMENT:
-        g_game->printout(text,
-                         com + "We are not in contact with any other ship",
-                         YELLOW,
-                         -1);
+        g_game->printout(
+            text,
+            com + "We are not in contact with any other ship",
+            YELLOW,
+            -1);
         break;
 
     case EVENT_COMM_QUESTION:
@@ -271,10 +298,11 @@ ModulePlanetOrbit::OnEvent(Event *event) {
         break;
 
     case EVENT_COMM_POSTURE:
-        g_game->printout(text,
-                         "<This feature won't be installed until Tuesday>",
-                         YELLOW,
-                         -1);
+        g_game->printout(
+            text,
+            "<This feature won't be installed until Tuesday>",
+            YELLOW,
+            -1);
         break;
 
     case EVENT_COMM_TERMINATE:
@@ -298,6 +326,7 @@ ModulePlanetOrbit::OnEvent(Event *event) {
             -1);
         break;
     }
+    return true;
 }
 
 bool
@@ -340,19 +369,21 @@ ModulePlanetOrbit::CreatePlanetTexture() {
     planet_texture = al_load_bitmap(orbitFilename.c_str());
     if (!planet_texture) {
         // generate planet texture for ORBIT render 256x256
-        createPlanetSurface(TEX_SIZE_ORBIT,
-                            TEX_SIZE_ORBIT,
-                            randomness,
-                            planetType,
-                            orbitFilename);
+        createPlanetSurface(
+            TEX_SIZE_ORBIT,
+            TEX_SIZE_ORBIT,
+            randomness,
+            planetType,
+            orbitFilename);
 
         // generate planet texture for SURFACE tilemap 500x500 (used in
         // ModulePlanetSurface)
-        createPlanetSurface(TEX_SIZE_SURFACE,
-                            TEX_SIZE_SURFACE,
-                            randomness,
-                            planetType,
-                            surfaceFilename);
+        createPlanetSurface(
+            TEX_SIZE_SURFACE,
+            TEX_SIZE_SURFACE,
+            randomness,
+            planetType,
+            surfaceFilename);
 
         // load newly generated planet texture
         planet_texture =
@@ -376,16 +407,17 @@ ModulePlanetOrbit::CreatePlanetTexture() {
     // pixels from top/bottom)
 
     al_set_target_bitmap(planet_topography);
-    al_draw_scaled_bitmap(planet_texture,
-                          0,
-                          10,
-                          al_get_bitmap_width(planet_texture),
-                          al_get_bitmap_height(planet_texture) - 20,
-                          1,
-                          1,
-                          al_get_bitmap_width(planet_topography) - 2,
-                          al_get_bitmap_height(planet_topography) - 2,
-                          0);
+    al_draw_scaled_bitmap(
+        planet_texture,
+        0,
+        10,
+        al_get_bitmap_width(planet_texture),
+        al_get_bitmap_height(planet_texture) - 20,
+        1,
+        1,
+        al_get_bitmap_width(planet_topography) - 2,
+        al_get_bitmap_height(planet_topography) - 2,
+        0);
 
     // now create a scratch image as a duplicate of topography used for sensor
     // scans
@@ -403,8 +435,8 @@ ModulePlanetOrbit::CreatePlanetTexture() {
     return true;
 }
 
-void
-ModulePlanetOrbit::Close() {
+bool
+ModulePlanetOrbit::on_close() {
     ALLEGRO_DEBUG("PlanetOrbit Destroy\n");
 
     if (lightmap_overlay) {
@@ -430,11 +462,11 @@ ModulePlanetOrbit::Close() {
         delete text;
         text = NULL;
     }
+    return true;
 }
 
-// Init is a good place to load resources
 bool
-ModulePlanetOrbit::Init() {
+ModulePlanetOrbit::on_init() {
     g_game->SetTimePaused(false); // game-time normal in this module.
     ALLEGRO_DEBUG("  PlanetOrbit Initialize\n");
 
@@ -458,13 +490,14 @@ ModulePlanetOrbit::Init() {
     static int gmy = (int)g_game->getGlobalNumber("GUI_MESSAGE_POS_Y");
     static int gmw = (int)g_game->getGlobalNumber("GUI_MESSAGE_WIDTH");
     static int gmh = (int)g_game->getGlobalNumber("GUI_MESSAGE_HEIGHT");
-    text = new ScrollBox::ScrollBox(g_game->font20,
-                                    ScrollBox::SB_TEXT,
-                                    gmx + 38,
-                                    gmy + 18,
-                                    gmw - 38,
-                                    gmh - 32,
-                                    999);
+    text = new ScrollBox::ScrollBox(
+        g_game->font20,
+        ScrollBox::SB_TEXT,
+        gmx + 38,
+        gmy + 18,
+        gmw - 38,
+        gmh - 32,
+        999);
     text->DrawScrollBar(false);
 
     // point global scrollbox to local one in this module for access by
@@ -552,18 +585,18 @@ ModulePlanetOrbit::Init() {
     }
 
     // shortcuts to crew last names to simplify code
-    com = "Comm. Off. " + g_game->gameState->getCurrentCom()->getLastName() +
-          "-> ";
-    sci = "Sci. Off. " + g_game->gameState->getCurrentSci()->getLastName() +
-          "-> ";
-    nav = "Nav. Off. " + g_game->gameState->getCurrentNav()->getLastName() +
-          "-> ";
-    tac = "Tac. Off. " + g_game->gameState->getCurrentTac()->getLastName() +
-          "-> ";
-    eng = "Eng. Off. " + g_game->gameState->getCurrentEng()->getLastName() +
-          "-> ";
-    doc = "Med. Off. " + g_game->gameState->getCurrentDoc()->getLastName() +
-          "-> ";
+    com = "Comm. Off. " + g_game->gameState->getCurrentCom()->getLastName()
+          + "-> ";
+    sci = "Sci. Off. " + g_game->gameState->getCurrentSci()->getLastName()
+          + "-> ";
+    nav = "Nav. Off. " + g_game->gameState->getCurrentNav()->getLastName()
+          + "-> ";
+    tac = "Tac. Off. " + g_game->gameState->getCurrentTac()->getLastName()
+          + "-> ";
+    eng = "Eng. Off. " + g_game->gameState->getCurrentEng()->getLastName()
+          + "-> ";
+    doc = "Med. Off. " + g_game->gameState->getCurrentDoc()->getLastName()
+          + "-> ";
 
     // tell questmgr that orbit event has occurred
     g_game->questMgr->raiseEvent(12, g_game->gameState->player->currentPlanet);
@@ -581,8 +614,8 @@ ModulePlanetOrbit::Init() {
     return true;
 }
 
-void
-ModulePlanetOrbit::Update() {
+bool
+ModulePlanetOrbit::on_update() {
     std::string temp;
     Officer *currentSci = g_game->gameState->getCurrentSci();
 
@@ -614,19 +647,20 @@ ModulePlanetOrbit::Update() {
     } else if (planetScan == 2) {
         // roll on crewman's skill with this operation
         if (g_game->gameState->SkillCheck(SKILL_SCIENCE)) {
-            g_game->printout(text,
-                             sci +
-                                 "Planetary scan complete. Ready for analysis.",
-                             LTGREEN,
-                             1000);
+            g_game->printout(
+                text,
+                sci + "Planetary scan complete. Ready for analysis.",
+                LTGREEN,
+                1000);
             // after success, increase skill
             if (Util::Random(1, 100) > 50) // 50% of the time
             {
                 if (currentSci->SkillUp(SKILL_SCIENCE)) {
                     g_game->printout(
                         text,
-                        sci +
-                            "I think I'm getting the hang of this (SKILL UP).",
+                        sci
+                            + "I think I'm getting the hang of this (SKILL "
+                              "UP).",
                         PURPLE,
                         1000);
                 }
@@ -640,8 +674,8 @@ ModulePlanetOrbit::Update() {
             planetAnalysis++;
 
             if (g_game->gameState->SkillCheck(SKILL_SCIENCE)) {
-                if (Util::Random(1, 100) > 50 &&
-                    currentSci->SkillUp(SKILL_SCIENCE))
+                if (Util::Random(1, 100) > 50
+                    && currentSci->SkillUp(SKILL_SCIENCE))
                     g_game->printout(
                         text,
                         sci + "I think I'm getting better at this (SKILL UP).",
@@ -663,9 +697,9 @@ ModulePlanetOrbit::Update() {
         }
 
         // build size and gravity description
-        temp += "It is " + Planet::PlanetSizeToString(planet->size) +
-                " in size, and gravity is " +
-                Planet::PlanetGravityToString(planet->gravity) + ". ";
+        temp += "It is " + Planet::PlanetSizeToString(planet->size)
+                + " in size, and gravity is "
+                + Planet::PlanetGravityToString(planet->gravity) + ". ";
 
         // build the atmosphere description
         switch (planet->atmosphere) {
@@ -750,8 +784,8 @@ ModulePlanetOrbit::Update() {
             Item *item = g_game->dataMgr->GetItem(n);
 
             // is this item an artifact?
-            if (item->itemType == IT_ARTIFACT ||
-                item->itemType == IT_RUIN) // jjh
+            if (item->itemType == IT_ARTIFACT
+                || item->itemType == IT_RUIN) // jjh
             {
                 // artifact located on this planet?
                 if (item->planetid == planetid) {
@@ -803,24 +837,27 @@ ModulePlanetOrbit::Update() {
         g_game->printout(text, nav + "Orbit established.", LTGREEN, -1);
         switch (planet->size) {
         case PS_SMALL:
-            temp = sci + "Captain, this planetoid is tiny. Shall I perform a "
-                         "full sensor scan?";
+            temp = sci
+                   + "Captain, this planetoid is tiny. Shall I perform a "
+                     "full sensor scan?";
             break;
         case PS_MEDIUM:
-            temp = sci + "Captain, this looks like an average planet. Want a "
-                         "full sensor scan?";
+            temp = sci
+                   + "Captain, this looks like an average planet. Want a "
+                     "full sensor scan?";
             break;
         case PS_LARGE:
             temp = sci + "Captain, we've got a large planet here. Sensors?";
             break;
         case PS_HUGE:
-            temp = sci + "It's huge! We have to scan it! Er, on your command, "
-                         "of course.";
+            temp = sci
+                   + "It's huge! We have to scan it! Er, on your command, "
+                     "of course.";
             break;
         default:
-            temp =
-                sci +
-                "Our sensors can't measure the planet's size for some reason!";
+            temp = sci
+                   + "Our sensors can't measure the planet's size for "
+                     "some reason!";
             break;
         }
         g_game->printout(text, temp, ORANGE, -1);
@@ -856,17 +893,19 @@ ModulePlanetOrbit::Update() {
     if (flag_DoDock) {
         if (Util::ReentrantDelay(2000)) {
             g_game->LoadModule(MODULE_STARPORT);
-            return;
+            return false;
         }
     }
 
     // update message list
     text->ScrollToBottom();
+
+    return true;
 }
 
-void
-ModulePlanetOrbit::Draw() {
-    al_set_target_bitmap(g_game->GetBackBuffer());
+bool
+ModulePlanetOrbit::on_draw(ALLEGRO_BITMAP *target) {
+    al_set_target_bitmap(target);
     al_draw_bitmap(m_resources[I_STARFIELD], 0, 0, 0);
 
     // clear aux window
@@ -881,7 +920,7 @@ ModulePlanetOrbit::Draw() {
     al_draw_bitmap(planet_topography, asx, asy, 0);
 
     // draw message window
-    text->Draw(g_game->GetBackBuffer());
+    text->Draw(target);
 
     // draw rotating planet as textured sphere
     static double rot = 0.0;
@@ -895,13 +934,7 @@ ModulePlanetOrbit::Draw() {
         planetRotation = 255 - static_cast<int>(planetRotation) % 256;
     }
 
-    texsphere->Draw(g_game->GetBackBuffer(),
-                    0,
-                    0,
-                    (int)planetRotation,
-                    planetRadius,
-                    cx,
-                    cy);
+    texsphere->Draw(target, 0, 0, (int)planetRotation, planetRadius, cx, cy);
     rot += 0.2;
     rot = Util::WrapValue(rot, 0.0, 256.0);
 
@@ -911,16 +944,13 @@ ModulePlanetOrbit::Draw() {
 
 #ifdef DEBUGMODE
     int y = 0;
-    g_game->PrintDefault(g_game->GetBackBuffer(),
-                         850,
-                         y,
-                         "planetScan: " + Util::ToString(planetScan));
+    g_game->PrintDefault(
+        target, 850, y, "planetScan: " + Util::ToString(planetScan));
     y += 10;
-    g_game->PrintDefault(g_game->GetBackBuffer(),
-                         850,
-                         y,
-                         "planetAnalysis: " + Util::ToString(planetAnalysis));
+    g_game->PrintDefault(
+        target, 850, y, "planetAnalysis: " + Util::ToString(planetAnalysis));
 #endif
+    return true;
 }
 
 void

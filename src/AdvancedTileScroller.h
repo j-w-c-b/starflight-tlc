@@ -17,31 +17,20 @@ struct AdvancedTileSet {
     int variations;
     ALLEGRO_BITMAP *tiles;
 
-    AdvancedTileSet(ALLEGRO_BITMAP *Tiles,
-                    int Variations,
-                    bool GroundNavigation = true,
-                    bool AirNavigation = true)
+    AdvancedTileSet(
+        ALLEGRO_BITMAP *Tiles,
+        int Variations,
+        bool GroundNavigation = true,
+        bool AirNavigation = true)
         : groundNavigation(GroundNavigation), airNavigation(AirNavigation),
           variations(Variations), tiles(Tiles) {}
 
     ~AdvancedTileSet() {}
 
-    bool
-    IsGroundNavigatable() {
-        return groundNavigation;
-    }
-    bool
-    IsAirNavigatable() {
-        return airNavigation;
-    }
-    ALLEGRO_BITMAP *
-    getTiles() {
-        return tiles;
-    }
-    int
-    getVariations() {
-        return variations;
-    }
+    bool IsGroundNavigatable() { return groundNavigation; }
+    bool IsAirNavigatable() { return airNavigation; }
+    ALLEGRO_BITMAP *getTiles() { return tiles; }
+    int getVariations() { return variations; }
 };
 
 class AdvancedTileScroller {
@@ -66,22 +55,25 @@ class AdvancedTileScroller {
     ALLEGRO_BITMAP *FindTile(int key);
 
   public:
-    AdvancedTileScroller(int TilesAcross,
-                         int TilesDown,
-                         int TileWidth,
-                         int TileHeight);
+    AdvancedTileScroller(
+        int TilesAcross,
+        int TilesDown,
+        int TileWidth,
+        int TileHeight);
     ~AdvancedTileScroller();
 
     void Destroy();
     int CreateScrollBuffer(int Width, int Height);
-    bool LoadTileSet(char *FileName,
-                     int Variations,
-                     bool GroundNavigation = true,
-                     bool AirNavigation = true);
-    bool LoadTileSet(ALLEGRO_BITMAP *tileImage,
-                     int Variations,
-                     bool GroundNavigation = true,
-                     bool AirNavigation = true);
+    bool LoadTileSet(
+        char *FileName,
+        int Variations,
+        bool GroundNavigation = true,
+        bool AirNavigation = true);
+    bool LoadTileSet(
+        ALLEGRO_BITMAP *tileImage,
+        int Variations,
+        bool GroundNavigation = true,
+        bool AirNavigation = true);
     bool GenerateTiles();
 
     void ResetTiles();
@@ -94,56 +86,32 @@ class AdvancedTileScroller {
     void ConvertCoordstoNearestPoint(int &X, int &Y);
 
     // Accessors
-    int
-    getTileWidth() const {
-        return tileWidth;
-    }
-    int
-    getTileHeight() const {
-        return tileHeight;
-    }
-    int
-    getTilesAcross() const {
-        return tilesAcross;
-    }
-    int
-    getTilesDown() const {
-        return tilesDown;
-    }
-    short
-    getPointData(int Column, int Row) const {
+    int getTileWidth() const { return tileWidth; }
+    int getTileHeight() const { return tileHeight; }
+    int getTilesAcross() const { return tilesAcross; }
+    int getTilesDown() const { return tilesDown; }
+    short getPointData(int Column, int Row) const {
         return pointData[pdIndex(Column, Row)];
     }
-    float
-    getScrollX() const {
-        return scrollX;
-    }
-    float
-    getScrollY() const {
-        return scrollY;
-    }
+    float getScrollX() const { return scrollX; }
+    float getScrollY() const { return scrollY; }
 
     // Mutators
-    void
-    setTileSize(int Width, int Height) {
+    void setTileSize(int Width, int Height) {
         tileWidth = Width;
         tileHeight = Height;
     }
-    void
-    setScrollPosition(float X, float Y) {
+    void setScrollPosition(float X, float Y) {
         scrollX = X;
         scrollY = Y;
     }
-    void
-    setTileImage(ALLEGRO_BITMAP *image, int Column, int Row) {
+    void setTileImage(ALLEGRO_BITMAP *image, int Column, int Row) {
         tileData[tdIndex(Column, Row)] = image;
     }
-    void
-    setPointData(int Column, int Row, short Value) {
+    void setPointData(int Column, int Row, short Value) {
         pointData[pdIndex(Column, Row)] = Value;
     }
-    void
-    setRegionSize(int Width, int Height) {
+    void setRegionSize(int Width, int Height) {
         if (Width >= 0 && Width <= 2500)
             tilesAcross = Width;
         if (Height >= 0 && Height <= 2500)

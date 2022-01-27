@@ -8,26 +8,26 @@
 #ifndef MODULECANTINA_H
 #define MODULECANTINA_H
 
+#include <allegro5/allegro.h>
+
 #include "Button.h"
 #include "GameState.h"
 #include "Label.h"
 #include "Module.h"
 #include "ResourceManager.h"
 #include "ScrollBox.h"
-#include <allegro5/allegro.h>
 
 class ModuleCantina : public Module {
   public:
     ModuleCantina();
     virtual ~ModuleCantina();
-    virtual bool Init() override;
-    virtual void Update() override;
-    virtual void Draw() override;
-    virtual void OnKeyReleased(int keyCode) override;
-    virtual void OnMouseMove(int x, int y) override;
-    virtual void OnMouseReleased(int button, int x, int y) override;
-    virtual void OnEvent(Event *event) override;
-    virtual void Close() override;
+    virtual bool on_init() override;
+    virtual bool on_update() override;
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
+    virtual bool on_mouse_move(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_event(ALLEGRO_EVENT *event) override;
+    virtual bool on_close() override;
 
   private:
     ALLEGRO_BITMAP *m_background;
@@ -37,12 +37,12 @@ class ModuleCantina : public Module {
     Label *questTitle;
     Label *questLong;
     Label *questReward;
+    Label *m_title_label;
+    Label *m_description_label;
+    Label *m_reward_label;
+    Label *m_requirement_label;
 
-    std::string label1, label2, label3, label4;
-    ALLEGRO_COLOR labelcolor, textcolor;
     bool selectedQuestCompleted;
-    std::string requirementLabel;
-    ALLEGRO_COLOR requirementColor;
     ResourceManager<ALLEGRO_BITMAP> resources;
 };
 

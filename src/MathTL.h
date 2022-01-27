@@ -17,10 +17,20 @@ class Math {
     static double Length(Vector3 &vec);
     static double Length(double x, double y, double z);
     static double DotProduct(
-        double x1, double y1, double z1, double x2, double y2, double z2);
+        double x1,
+        double y1,
+        double z1,
+        double x2,
+        double y2,
+        double z2);
     static double DotProduct(Vector3 &vec1, Vector3 &vec2);
     static Vector3 CrossProduct(
-        double x1, double y1, double z1, double x2, double y2, double z2);
+        double x1,
+        double y1,
+        double z1,
+        double x2,
+        double y2,
+        double z2);
     static Vector3 CrossProduct(Vector3 &vec1, Vector3 &vec2);
     static Vector3 Normal(double x, double y, double z);
     static Vector3 Normal(Vector3 &vec);

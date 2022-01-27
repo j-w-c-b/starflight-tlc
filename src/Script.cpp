@@ -45,9 +45,10 @@ Script::load(const string &scriptfile) {
         string luaError = lua_tostring(luaState, -1);
         lua_pop(luaState, 1);
         errorMessage = luaError.c_str();
-        ALLEGRO_DEBUG("Script load error: return= %d, message= %s.\n",
-                      ret,
-                      errorMessage.c_str());
+        ALLEGRO_DEBUG(
+            "Script load error: return= %d, message= %s.\n",
+            ret,
+            errorMessage.c_str());
         return false;
     }
 
@@ -112,8 +113,8 @@ Script::runFunction(const string &name) {
     int result = lua_pcall(luaState, 0, 0, 0);
     if (result != 0) {
         luaError = lua_tostring(luaState, -1);
-        ALLEGRO_DEBUG("Script run error:  Lua error message= %s\n",
-                      errorMessage.c_str());
+        ALLEGRO_DEBUG(
+            "Script run error:  Lua error message= %s\n", errorMessage.c_str());
         lua_pop(luaState, 1);
         errorMessage = luaError;
         return false;

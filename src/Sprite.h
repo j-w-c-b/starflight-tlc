@@ -57,202 +57,62 @@ class Sprite {
     bool DebugMode;
 
     // accessors
-    double
-    getX() {
-        return x;
-    }
-    double
-    getY() {
-        return y;
-    }
-    double
-    getSpeed() {
-        return speed;
-    }
-    double
-    getVelX() {
-        return velX;
-    }
-    double
-    getVelY() {
-        return velY;
-    }
-    float
-    getFaceAngle() {
-        return faceAngle;
-    }
-    float
-    getMoveAngle() {
-        return moveAngle;
-    }
-    int
-    isAlive() {
-        return alive;
-    }
-    int
-    getState() {
-        return state;
-    }
-    int
-    getObjectType() {
-        return objectType;
-    }
-    int
-    getCurrFrame() {
-        return currFrame;
-    }
-    int
-    getTotalFrames() {
-        return totalFrames;
-    }
-    int
-    getFrameWidth() {
-        return frameWidth;
-    }
-    int
-    getFrameHeight() {
-        return frameHeight;
-    }
-    int
-    getCounter1() {
-        return counter1;
-    }
-    int
-    getCounter2() {
-        return counter2;
-    }
-    int
-    getCounter3() {
-        return counter3;
-    }
-    int
-    getThreshold1() {
-        return threshold1;
-    }
-    int
-    getThreshold2() {
-        return threshold2;
-    }
-    int
-    getThreshold3() {
-        return threshold3;
-    }
+    double getX() { return x; }
+    double getY() { return y; }
+    double getSpeed() { return speed; }
+    double getVelX() { return velX; }
+    double getVelY() { return velY; }
+    float getFaceAngle() { return faceAngle; }
+    float getMoveAngle() { return moveAngle; }
+    int isAlive() { return alive; }
+    int getState() { return state; }
+    int getObjectType() { return objectType; }
+    int getCurrFrame() { return currFrame; }
+    int getTotalFrames() { return totalFrames; }
+    int getFrameWidth() { return frameWidth; }
+    int getFrameHeight() { return frameHeight; }
+    int getCounter1() { return counter1; }
+    int getCounter2() { return counter2; }
+    int getCounter3() { return counter3; }
+    int getThreshold1() { return threshold1; }
+    int getThreshold2() { return threshold2; }
+    int getThreshold3() { return threshold3; }
 
     // mutators
-    void
-    setX(double value) {
-        x = value;
-    }
-    void
-    setX(int value) {
-        x = (double)value;
-    }
-    void
-    setY(double value) {
-        y = value;
-    }
-    void
-    setY(int value) {
-        y = (double)value;
-    }
-    void
-    setPos(double x, double y) {
+    void setX(double value) { x = value; }
+    void setX(int value) { x = (double)value; }
+    void setY(double value) { y = value; }
+    void setY(int value) { y = (double)value; }
+    void setPos(double x, double y) {
         setX(x);
         setY(y);
     }
-    void
-    setPos(Point2D p) {
+    void setPos(Point2D p) {
         x = p.x;
         y = p.y;
     }
-    void
-    setSpeed(double value) {
-        speed = value;
-    }
-    void
-    setVelX(double value) {
-        velX = value;
-    }
-    void
-    setVelY(double value) {
-        velY = value;
-    }
-    void
-    setFaceAngle(float value) {
-        faceAngle = value;
-    }
-    void
-    setMoveAngle(float value) {
-        moveAngle = value;
-    }
-    void
-    setAlive(bool value) {
-        alive = value;
-    }
-    void
-    setState(int value) {
-        state = value;
-    }
-    void
-    setObjectType(int value) {
-        objectType = value;
-    }
-    void
-    setWidth(int value) {
-        width = value;
-    }
-    void
-    setHeight(int value) {
-        height = value;
-    }
-    void
-    setCurrFrame(int value) {
-        currFrame = value;
-    }
-    void
-    setTotalFrames(int value) {
-        totalFrames = value;
-    }
-    void
-    setFrameDelay(int value) {
-        frameDelay = value;
-    }
-    void
-    setFrameWidth(int value) {
-        frameWidth = value;
-    }
-    void
-    setFrameHeight(int value) {
-        frameHeight = value;
-    }
-    void
-    setAnimColumns(int value) {
-        animColumns = value;
-    }
-    void
-    setCounter1(int value) {
-        counter1 = value;
-    }
-    void
-    setCounter2(int value) {
-        counter2 = value;
-    }
-    void
-    setCounter3(int value) {
-        counter3 = value;
-    }
-    void
-    setThreshold1(int value) {
-        threshold1 = value;
-    }
-    void
-    setThreshold2(int value) {
-        threshold2 = value;
-    }
-    void
-    setThreshold3(int value) {
-        threshold3 = value;
-    }
+    void setSpeed(double value) { speed = value; }
+    void setVelX(double value) { velX = value; }
+    void setVelY(double value) { velY = value; }
+    void setFaceAngle(float value) { faceAngle = value; }
+    void setMoveAngle(float value) { moveAngle = value; }
+    void setAlive(bool value) { alive = value; }
+    void setState(int value) { state = value; }
+    void setObjectType(int value) { objectType = value; }
+    void setWidth(int value) { width = value; }
+    void setHeight(int value) { height = value; }
+    void setCurrFrame(int value) { currFrame = value; }
+    void setTotalFrames(int value) { totalFrames = value; }
+    void setFrameDelay(int value) { frameDelay = value; }
+    void setFrameWidth(int value) { frameWidth = value; }
+    void setFrameHeight(int value) { frameHeight = value; }
+    void setAnimColumns(int value) { animColumns = value; }
+    void setCounter1(int value) { counter1 = value; }
+    void setCounter2(int value) { counter2 = value; }
+    void setCounter3(int value) { counter3 = value; }
+    void setThreshold1(int value) { threshold1 = value; }
+    void setThreshold2(int value) { threshold2 = value; }
+    void setThreshold3(int value) { threshold3 = value; }
 
     // METHODS
   private:

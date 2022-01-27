@@ -38,8 +38,5 @@ class Script {
     static int L_LoadScript(lua_State *luaVM);
 
     std::string errorMessage;
-    lua_State *
-    getState() {
-        return luaState;
-    }
+    lua_State *getState() { return luaState; }
 };

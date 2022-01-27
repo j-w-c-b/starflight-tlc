@@ -811,36 +811,36 @@ float
 Ship::getMaxShieldCapacity() {
     switch (shieldClass) {
     case 1:
-        return g_game->getGlobalNumber("SHIELD1_STRENGTH") * shieldIntegrity /
-               100.0f;
+        return g_game->getGlobalNumber("SHIELD1_STRENGTH") * shieldIntegrity
+               / 100.0f;
         break;
     case 2:
-        return g_game->getGlobalNumber("SHIELD2_STRENGTH") * shieldIntegrity /
-               100.0f;
+        return g_game->getGlobalNumber("SHIELD2_STRENGTH") * shieldIntegrity
+               / 100.0f;
         break;
     case 3:
-        return g_game->getGlobalNumber("SHIELD3_STRENGTH") * shieldIntegrity /
-               100.0f;
+        return g_game->getGlobalNumber("SHIELD3_STRENGTH") * shieldIntegrity
+               / 100.0f;
         break;
     case 4:
-        return g_game->getGlobalNumber("SHIELD4_STRENGTH") * shieldIntegrity /
-               100.0f;
+        return g_game->getGlobalNumber("SHIELD4_STRENGTH") * shieldIntegrity
+               / 100.0f;
         break;
     case 5:
-        return g_game->getGlobalNumber("SHIELD5_STRENGTH") * shieldIntegrity /
-               100.0f;
+        return g_game->getGlobalNumber("SHIELD5_STRENGTH") * shieldIntegrity
+               / 100.0f;
         break;
     case 6:
-        return g_game->getGlobalNumber("SHIELD6_STRENGTH") * shieldIntegrity /
-               100.0f;
+        return g_game->getGlobalNumber("SHIELD6_STRENGTH") * shieldIntegrity
+               / 100.0f;
         break;
     case 7:
-        return g_game->getGlobalNumber("SHIELD7_STRENGTH") * shieldIntegrity /
-               100.0f;
+        return g_game->getGlobalNumber("SHIELD7_STRENGTH") * shieldIntegrity
+               / 100.0f;
         break;
     case 8:
-        return g_game->getGlobalNumber("SHIELD8_STRENGTH") * shieldIntegrity /
-               100.0f;
+        return g_game->getGlobalNumber("SHIELD8_STRENGTH") * shieldIntegrity
+               / 100.0f;
         break;
     default:
         return 0;
@@ -962,18 +962,20 @@ Ship::injectEndurium() {
         // reduce endurium
         number_of_endurium--;
         g_game->gameState->m_items.RemoveItems(54, 1);
-        g_game->printout(g_game->g_scrollbox,
-                         "Consuming Endurium crystal... We have " +
-                             Util::ToString(number_of_endurium) + " left.",
-                         ORANGE,
-                         5000);
+        g_game->printout(
+            g_game->g_scrollbox,
+            "Consuming Endurium crystal... We have "
+                + Util::ToString(number_of_endurium) + " left.",
+            ORANGE,
+            5000);
 
         // use it to fill the fuel tank
         g_game->gameState->m_ship.augFuel(1.0f);
 
         // notify CargoHold to update itself
-        Event e(CARGO_EVENT_UPDATE);
-        g_game->modeMgr->BroadcastEvent(&e);
+        ALLEGRO_EVENT e = {
+            .type = static_cast<unsigned int>(EVENT_CARGO_UPDATE)};
+        g_game->broadcast_event(&e);
     } else
         g_game->printout(
             g_game->g_scrollbox, "We have no Endurium!", ORANGE, 5000);
@@ -1157,15 +1159,16 @@ Ship::SendDistressSignal() {
     string message =
         "Myrrdan Port Authority has dispatched a tow ship to bring us in. ";
     message += "The cost of the rescue is " + Util::ToString(cost) + " MU.";
-    g_game->ShowMessageBoxWindow("",
-                                 message,
-                                 500,
-                                 300,
-                                 BLUE,
-                                 SCREEN_WIDTH / 2,
-                                 SCREEN_HEIGHT / 2,
-                                 true,
-                                 false);
+    g_game->ShowMessageBoxWindow(
+        "",
+        message,
+        500,
+        300,
+        BLUE,
+        SCREEN_WIDTH / 2,
+        SCREEN_HEIGHT / 2,
+        true,
+        false);
 
     // charge player's account for the tow
     g_game->gameState->m_credits -= cost;
@@ -1323,16 +1326,18 @@ Ship::damageRandomSystemOrCrew(int odds, int mindamage, int maxdamage) {
             amount -= damage;
             if (amount < 0) {
                 amount = 0;
-                g_game->printout(g_game->g_scrollbox,
-                                 "Ship's Hull has been destroyed.",
-                                 RED,
-                                 1000);
+                g_game->printout(
+                    g_game->g_scrollbox,
+                    "Ship's Hull has been destroyed.",
+                    RED,
+                    1000);
             }
         } else
-            g_game->printout(g_game->g_scrollbox,
-                             "Ship's Hull has been breached!",
-                             YELLOW,
-                             1000);
+            g_game->printout(
+                g_game->g_scrollbox,
+                "Ship's Hull has been breached!",
+                YELLOW,
+                1000);
         setHullIntegrity(amount);
         break;
     case 1:
@@ -1342,15 +1347,17 @@ Ship::damageRandomSystemOrCrew(int odds, int mindamage, int maxdamage) {
             amount -= damage;
             if (amount < 1) {
                 amount = 1;
-                g_game->printout(g_game->g_scrollbox,
-                                 "Your laser has been heavily damaged!",
-                                 RED,
-                                 1000);
+                g_game->printout(
+                    g_game->g_scrollbox,
+                    "Your laser has been heavily damaged!",
+                    RED,
+                    1000);
             } else
-                g_game->printout(g_game->g_scrollbox,
-                                 "Laser is sustaining damage.",
-                                 YELLOW,
-                                 1000);
+                g_game->printout(
+                    g_game->g_scrollbox,
+                    "Laser is sustaining damage.",
+                    YELLOW,
+                    1000);
             setLaserIntegrity(amount);
         }
         break;
@@ -1367,10 +1374,11 @@ Ship::damageRandomSystemOrCrew(int odds, int mindamage, int maxdamage) {
                     RED,
                     1000);
             } else
-                g_game->printout(g_game->g_scrollbox,
-                                 "Missile launcher is sustaining damage.",
-                                 YELLOW,
-                                 1000);
+                g_game->printout(
+                    g_game->g_scrollbox,
+                    "Missile launcher is sustaining damage.",
+                    YELLOW,
+                    1000);
             setMissileLauncherIntegrity(amount);
         }
         break;
@@ -1387,10 +1395,11 @@ Ship::damageRandomSystemOrCrew(int odds, int mindamage, int maxdamage) {
                     RED,
                     1000);
             } else
-                g_game->printout(g_game->g_scrollbox,
-                                 "Shield generator is sustaining damage.",
-                                 YELLOW,
-                                 1000);
+                g_game->printout(
+                    g_game->g_scrollbox,
+                    "Shield generator is sustaining damage.",
+                    YELLOW,
+                    1000);
             setShieldIntegrity(amount);
         }
         break;
@@ -1401,15 +1410,17 @@ Ship::damageRandomSystemOrCrew(int odds, int mindamage, int maxdamage) {
             amount -= damage;
             if (amount < 1) {
                 amount = 1;
-                g_game->printout(g_game->g_scrollbox,
-                                 "The engine has been heavily damaged!",
-                                 RED,
-                                 1000);
+                g_game->printout(
+                    g_game->g_scrollbox,
+                    "The engine has been heavily damaged!",
+                    RED,
+                    1000);
             } else
-                g_game->printout(g_game->g_scrollbox,
-                                 "Engine is sustaining damage.",
-                                 YELLOW,
-                                 1000);
+                g_game->printout(
+                    g_game->g_scrollbox,
+                    "Engine is sustaining damage.",
+                    YELLOW,
+                    1000);
             setEngineIntegrity(amount);
         }
         break;
@@ -1452,8 +1463,9 @@ Attributes::operator[](int i) {
         break;
 
         /*
-            6 & 7 were reversed in the artwork so I'm just reversing them here
-            if this introduces any weird bugs in the game we'll deal with it
+            6 & 7 were reversed in the artwork so I'm just reversing them
+           here if this introduces any weird bugs in the game we'll deal
+           with it
         */
     case 7: // 6:
         return durability;
@@ -2362,8 +2374,8 @@ GameState::Serialize(Archive &ar) {
                 ar >> fi.endpoint_2_visible;
                 ar >> fi.path_visible;
 
-                if (fi.endpoint_1_visible || fi.endpoint_2_visible ||
-                    fi.path_visible) {
+                if (fi.endpoint_1_visible || fi.endpoint_2_visible
+                    || fi.path_visible) {
                     flux_info[i] = fi;
                 }
             }
@@ -2381,8 +2393,8 @@ GameState::Serialize(Archive &ar) {
                 ar >> fi.endpoint_2_visible;
                 ar >> fi.path_visible;
 
-                if (fi.endpoint_1_visible || fi.endpoint_2_visible ||
-                    fi.path_visible) {
+                if (fi.endpoint_1_visible || fi.endpoint_2_visible
+                    || fi.path_visible) {
                     flux_info[i] = fi;
                 }
             }
@@ -2724,13 +2736,15 @@ GameState::getOfficer(const string &officerName) {
         return officerSci;
     else if (officerName == "NAVIGATION" || officerName == "NAVIGATOR")
         return officerNav;
-    else if (officerName == "ENGINEER" || officerName == "ENGINEERING" ||
-             officerName == "ENGINEERING OFFICER")
+    else if (
+        officerName == "ENGINEER" || officerName == "ENGINEERING"
+        || officerName == "ENGINEERING OFFICER")
         return officerEng;
     else if (officerName == "COMMUNICATION" || officerName == "COMMUNICATIONS")
         return officerCom;
-    else if (officerName == "MEDICAL" || officerName == "MEDICAL OFFICER" ||
-             officerName == "DOCTOR")
+    else if (
+        officerName == "MEDICAL" || officerName == "MEDICAL OFFICER"
+        || officerName == "DOCTOR")
         return officerDoc;
     else if (officerName == "TACTICAL" || officerName == "TACTICAL OFFICER")
         return officerTac;
@@ -2810,8 +2824,8 @@ GameState::CalcEffectiveSkill(Skill skill) {
         ALLEGRO_ASSERT(0);
     }
 
-    float res = (off_vitality > 0) ? off_skill * off_vitality / 100 +
-                                         cap_skill / 10 * cap_vitality / 100
+    float res = (off_vitality > 0) ? off_skill * off_vitality / 100
+                                         + cap_skill / 10 * cap_vitality / 100
                                    : cap_skill * cap_vitality / 100;
 
     return res;

@@ -9,7 +9,11 @@
 using namespace std;
 
 TileSet::TileSet(
-    ALLEGRO_BITMAP *tiles, int width, int height, int columns, int rows)
+    ALLEGRO_BITMAP *tiles,
+    int width,
+    int height,
+    int columns,
+    int rows)
     : m_tiles(tiles), m_width(width), m_height(height), m_columns(columns),
       m_rows(rows) {
     ALLEGRO_ASSERT(m_tiles != nullptr);
@@ -32,12 +36,13 @@ TileSet::draw_tile(short tile, int x, int y) const {
         m_tiles, left, top, m_width, m_height, x * m_width, y * m_height, 0);
 }
 
-TileScroller::TileScroller(const TileSet &t,
-                           int tile_max_x,
-                           int tile_max_y,
-                           int region_width,
-                           int region_height,
-                           const Point2D &scroll_offset)
+TileScroller::TileScroller(
+    const TileSet &t,
+    int tile_max_x,
+    int tile_max_y,
+    int region_width,
+    int region_height,
+    const Point2D &scroll_offset)
     : m_tile_data(tile_max_x * tile_max_y, 0), m_tiles(t),
       m_scroll_position(0, 0),
       m_viewport_dimensions(region_width, region_height),
@@ -48,9 +53,9 @@ TileScroller::TileScroller(const TileSet &t,
     ALLEGRO_ASSERT(m_tile_max_x > 0);
     ALLEGRO_ASSERT(m_tile_max_y > 0);
 
-    m_scrollbuffer =
-        al_create_bitmap(region_width + m_tiles.get_tile_width() * 2,
-                         region_height + m_tiles.get_tile_height() * 2);
+    m_scrollbuffer = al_create_bitmap(
+        region_width + m_tiles.get_tile_width() * 2,
+        region_height + m_tiles.get_tile_height() * 2);
 
     ALLEGRO_ASSERT(m_scrollbuffer != nullptr);
 }
@@ -100,7 +105,11 @@ TileScroller::update_scroll_buffer() {
 
 void
 TileScroller::draw_scroll_window(
-    ALLEGRO_BITMAP *dest, int x, int y, int width, int height) {
+    ALLEGRO_BITMAP *dest,
+    int x,
+    int y,
+    int width,
+    int height) {
     if (m_dirty) {
         update_scroll_buffer();
     }

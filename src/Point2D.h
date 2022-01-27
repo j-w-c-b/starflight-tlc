@@ -26,13 +26,9 @@ class Point2D {
     Point2D(const Point2D &p) { *this = p; }
     Point2D(double nx, double ny) { SetPosition(nx, ny); }
 
-    void
-    Reset() {
-        x = y = 0;
-    }
+    void Reset() { x = y = 0; }
 
-    bool
-    Serialize(Archive &ar) {
+    bool Serialize(Archive &ar) {
         std::string ClassName = "Point2D";
         int Schema = 0;
 
@@ -62,54 +58,43 @@ class Point2D {
         return true;
     }
 
-    void
-    SetPosition(double nx, double ny) {
+    void SetPosition(double nx, double ny) {
         this->x = nx;
         this->y = ny;
     }
 
-    bool
-    operator==(const Point2D &p) const {
+    bool operator==(const Point2D &p) const {
         const double EPSILON = 0.0001;
 
-        return ((((p.x - EPSILON) < x) && (x < (p.x + EPSILON))) &&
-                (((p.y - EPSILON) < y) && (y < (p.y + EPSILON))));
+        return (
+            (((p.x - EPSILON) < x) && (x < (p.x + EPSILON)))
+            && (((p.y - EPSILON) < y) && (y < (p.y + EPSILON))));
     }
 
-    bool
-    operator!=(const Point2D &p) const {
-        return (!(*this == p));
-    }
+    bool operator!=(const Point2D &p) const { return (!(*this == p)); }
 
-    Point2D &
-    operator=(const Point2D &p) {
+    Point2D &operator=(const Point2D &p) {
         x = p.x;
         y = p.y;
         return *this;
     }
-    Point2D
-    operator+(const Point2D &p) const {
+    Point2D operator+(const Point2D &p) const {
         return Point2D(x + p.x, y + p.y);
     }
-    Point2D
-    operator+(float delta) const {
+    Point2D operator+(float delta) const {
         return Point2D(x + delta, y + delta);
     }
-    Point2D
-    operator-(const Point2D &p) const {
+    Point2D operator-(const Point2D &p) const {
         return Point2D(x - p.x, y - p.y);
     }
-    Point2D
-    operator-(float delta) const {
+    Point2D operator-(float delta) const {
         return Point2D(x - delta, y - delta);
     }
-    Point2D
-    operator/(float scale) const {
+    Point2D operator/(float scale) const {
         return Point2D(x / scale, y / scale);
     }
 
-    static double
-    Distance(const Point2D &a, const Point2D &b) {
+    static double Distance(const Point2D &a, const Point2D &b) {
         return sqrt((b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y));
     }
 };

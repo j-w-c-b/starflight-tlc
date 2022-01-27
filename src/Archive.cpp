@@ -25,8 +25,8 @@ Archive::Open(ALLEGRO_PATH *fileName, ArchiveMode mode) {
         fmode = "rb";
     }
 
-    file = al_fopen(al_path_cstr(fileName, ALLEGRO_NATIVE_PATH_SEP),
-                    fmode.c_str());
+    file = al_fopen(
+        al_path_cstr(fileName, ALLEGRO_NATIVE_PATH_SEP), fmode.c_str());
     if (file == NULL)
         return false;
 

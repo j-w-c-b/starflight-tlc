@@ -59,11 +59,11 @@ Sample::SetLoop(bool doLoop) {
     ALLEGRO_ASSERT(sample_instance != NULL);
 
     if (loop) {
-        return al_set_sample_instance_playmode(sample_instance,
-                                               ALLEGRO_PLAYMODE_LOOP);
+        return al_set_sample_instance_playmode(
+            sample_instance, ALLEGRO_PLAYMODE_LOOP);
     } else {
-        return al_set_sample_instance_playmode(sample_instance,
-                                               ALLEGRO_PLAYMODE_ONCE);
+        return al_set_sample_instance_playmode(
+            sample_instance, ALLEGRO_PLAYMODE_ONCE);
     }
 }
 
@@ -154,9 +154,10 @@ bool
 AudioSystem::Load(const string &filename, const string &name, float volume) {
     auto sample = Load(filename, volume);
     if (!sample) {
-        ALLEGRO_ERROR("Could not load %s, const string &%s\n",
-                      filename.c_str(),
-                      name.c_str());
+        ALLEGRO_ERROR(
+            "Could not load %s, const string &%s\n",
+            filename.c_str(),
+            name.c_str());
         return false;
     }
     samples[name] = sample;
@@ -169,9 +170,10 @@ AudioSystem::LoadMusic(const string &filename, float volume) {
 }
 
 bool
-AudioSystem::LoadMusic(const string &filename,
-                       const string &name,
-                       float volume) {
+AudioSystem::LoadMusic(
+    const string &filename,
+    const string &name,
+    float volume) {
     return Load(filename, name, volume);
 }
 
@@ -212,8 +214,8 @@ AudioSystem::Play(shared_ptr<Sample> sample, bool doLoop) {
     if (!bPlay)
         return true;
 
-    return sample && sample->IsInitialized() && sample->SetLoop(doLoop) &&
-           sample->SetPaused(false);
+    return sample && sample->IsInitialized() && sample->SetLoop(doLoop)
+           && sample->SetPaused(false);
 }
 
 bool

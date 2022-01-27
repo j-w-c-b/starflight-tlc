@@ -177,13 +177,14 @@ Sprite::drawframe_rotate(ALLEGRO_BITMAP *dest, int angle) {
     al_draw_bitmap_region(image, fx, fy, frameWidth, frameHeight, 0, 0, 0);
 
     al_set_target_bitmap(dest);
-    al_draw_rotated_bitmap(frame,
-                           al_get_bitmap_width(frame) / 2,
-                           al_get_bitmap_height(frame) / 2,
-                           x + al_get_bitmap_width(frame) / 2,
-                           y + al_get_bitmap_height(frame) / 2,
-                           angle * PI_div_180,
-                           0);
+    al_draw_rotated_bitmap(
+        frame,
+        al_get_bitmap_width(frame) / 2,
+        al_get_bitmap_height(frame) / 2,
+        x + al_get_bitmap_width(frame) / 2,
+        y + al_get_bitmap_height(frame) / 2,
+        angle * PI_div_180,
+        0);
 
     if (DebugMode) {
         al_draw_rectangle(

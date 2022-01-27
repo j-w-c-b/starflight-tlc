@@ -33,7 +33,11 @@ class TileSet {
     ///     Layout of the tiles within bitmap: the number of rows of tile
     ///     images.
     TileSet(
-        ALLEGRO_BITMAP *bitmap, int width, int height, int columns, int rows);
+        ALLEGRO_BITMAP *bitmap,
+        int width,
+        int height,
+        int columns,
+        int rows);
 
     /// Draw a tile to the current target bitmap
     ///
@@ -50,18 +54,12 @@ class TileSet {
     /// Retrieve width
     ///
     /// \return The width of tiles in the tile set.
-    inline int
-    get_tile_width() const {
-        return m_width;
-    }
+    inline int get_tile_width() const { return m_width; }
 
     /// Retrieve height
     ///
     /// \return The height of tiles in the tile set.
-    inline int
-    get_tile_height() const {
-        return m_height;
-    }
+    inline int get_tile_height() const { return m_height; }
 
   protected:
     //! Bitmap containing the tile subimages
@@ -109,12 +107,13 @@ class TileScroller {
     ///     scroll position. Set this value to have this object treat the values
     ///     passed to set_scroll_position() as other than the top left corner of
     ///     the view.
-    TileScroller(const TileSet &t,
-                 int max_x,
-                 int max_y,
-                 int region_width,
-                 int region_height,
-                 const Point2D &scroll_offset = Point2D(0, 0));
+    TileScroller(
+        const TileSet &t,
+        int max_x,
+        int max_y,
+        int region_width,
+        int region_height,
+        const Point2D &scroll_offset = Point2D(0, 0));
     ~TileScroller();
 
     //! Set all tile data in this object to use tile 0.
@@ -131,8 +130,7 @@ class TileScroller {
     /// \param[in] value
     ///     The tile to use at this position.
     /// \return void
-    inline void
-    set_tile(int x, int y, short value) {
+    inline void set_tile(int x, int y, short value) {
         ALLEGRO_ASSERT(x >= 0 && x < m_tile_max_x);
         ALLEGRO_ASSERT(y >= 0 && y < m_tile_max_y);
 
@@ -151,18 +149,17 @@ class TileScroller {
     /// \param[in] p
     ///     The position in tile coordinates to scoll to.
     /// \return void
-    void
-    set_scroll_position(const Point2D &p) {
-        Point2D new_position(p.x * m_tiles.get_tile_width() - m_scroll_offset.x,
-                             p.y * m_tiles.get_tile_height() -
-                                 m_scroll_offset.y);
+    void set_scroll_position(const Point2D &p) {
+        Point2D new_position(
+            p.x * m_tiles.get_tile_width() - m_scroll_offset.x,
+            p.y * m_tiles.get_tile_height() - m_scroll_offset.y);
         int tile_width = m_tiles.get_tile_width();
         int tile_height = m_tiles.get_tile_height();
 
-        if (static_cast<int>(new_position.x / tile_width) !=
-                static_cast<int>(m_scroll_position.x / tile_width) ||
-            static_cast<int>(new_position.y / tile_height) !=
-                static_cast<int>(m_scroll_position.y / tile_height)) {
+        if (static_cast<int>(new_position.x / tile_width)
+                != static_cast<int>(m_scroll_position.x / tile_width)
+            || static_cast<int>(new_position.y / tile_height)
+                   != static_cast<int>(m_scroll_position.y / tile_height)) {
             m_dirty = true;
         }
         m_scroll_position = new_position;
@@ -185,7 +182,11 @@ class TileScroller {
     ///     The height (in pixels) of the scroll buffer to draw to the bitmap.
     /// \return void
     void draw_scroll_window(
-        ALLEGRO_BITMAP *dest, int x, int y, int width, int height);
+        ALLEGRO_BITMAP *dest,
+        int x,
+        int y,
+        int width,
+        int height);
 
   private:
     /// Get the tile value at a position
@@ -198,8 +199,7 @@ class TileScroller {
     /// \param y
     ///     Tile y coordinate.
     /// \return The value of the tile or 0 if the position is out of bounds.
-    inline short
-    get_tile(int x, int y) {
+    inline short get_tile(int x, int y) {
         if (x < 0 || x >= m_tile_max_x || y < 0 || y >= m_tile_max_y) {
             return 0;
         }

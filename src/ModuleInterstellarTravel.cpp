@@ -62,52 +62,63 @@ PoliticalBoundary boundaries[] = {
 #pragma region STATIC EVENTS
 
 ModuleInterstellarTravel::ModuleInterstellarTravel(void)
-    : resources(SPACETRAVEL_IMAGES) {}
+    : Module(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT), resources(SPACETRAVEL_IMAGES) {
+}
 ModuleInterstellarTravel::~ModuleInterstellarTravel(void) {}
 
-void
-ModuleInterstellarTravel::OnMouseMove(int x, int y) {
+bool
+ModuleInterstellarTravel::on_mouse_move(ALLEGRO_MOUSE_EVENT *event) {
+    int x = event->x;
+    int y = event->y;
+
     text->OnMouseMove(x, y);
+
+    if (is_mouse_wheel_down(event)) {
+        text->OnMouseWheelDown(x, y);
+    } else if (is_mouse_wheel_up(event)) {
+        text->OnMouseWheelUp(x, y);
+    }
+    return true;
 }
 
-void
-ModuleInterstellarTravel::OnMouseClick(int button, int x, int y) {
-    text->OnMouseClick(button, x, y);
-}
+bool
+ModuleInterstellarTravel::on_mouse_button_down(ALLEGRO_MOUSE_EVENT *event) {
+    int button = event->button - 1;
+    int x = event->x;
+    int y = event->y;
 
-void
-ModuleInterstellarTravel::OnMousePressed(int button, int x, int y) {
     text->OnMousePressed(button, x, y);
+    return true;
 }
 
-void
-ModuleInterstellarTravel::OnMouseReleased(int button, int x, int y) {
+bool
+ModuleInterstellarTravel::on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) {
+    int button = event->button - 1;
+    int x = event->x;
+    int y = event->y;
+
     text->OnMouseReleased(button, x, y);
+    if (is_mouse_click(event)) {
+        text->OnMouseClick(button, x, y);
+    }
+
+    return true;
 }
 
-void
-ModuleInterstellarTravel::OnMouseWheelUp(int x, int y) {
-    text->OnMouseWheelUp(x, y);
-}
-
-void
-ModuleInterstellarTravel::OnMouseWheelDown(int x, int y) {
-    text->OnMouseWheelDown(x, y);
-}
-
-void
-ModuleInterstellarTravel::Draw() {
+bool
+ModuleInterstellarTravel::on_draw(ALLEGRO_BITMAP *target) {
     // draw tile scroller
-    scroller->draw_scroll_window(g_game->GetBackBuffer(),
-                                 GALAXY_SCROLL_X,
-                                 GALAXY_SCROLL_Y,
-                                 GALAXY_SCROLL_WIDTH,
-                                 GALAXY_SCROLL_HEIGHT);
+    scroller->draw_scroll_window(
+        target,
+        GALAXY_SCROLL_X,
+        GALAXY_SCROLL_Y,
+        GALAXY_SCROLL_WIDTH,
+        GALAXY_SCROLL_HEIGHT);
 
     // draw the ship
-    ship->draw(g_game->GetBackBuffer());
+    ship->draw(target);
 
-    text->Draw(g_game->GetBackBuffer());
+    text->Draw(target);
 
     // JJH - added CrossModuleAngle so that ship's heading stays consistent
     // between entering/leaving systems.  Checking Encounters next :-)... same
@@ -117,54 +128,56 @@ ModuleInterstellarTravel::Draw() {
     if (g_game->getGlobalBoolean("DEBUG_OUTPUT") == true) {
         // DEBUG CODE -- do not delete
         int y = 90;
-        g_game->PrintDefault(g_game->GetBackBuffer(),
-                             850,
-                             y,
-                             "flag_nav: " + Util::ToString(flag_nav));
-        y += 10;
-        g_game->PrintDefault(g_game->GetBackBuffer(),
-                             850,
-                             y,
-                             "flag_thrusting: " +
-                                 Util::ToString(flag_thrusting));
+        g_game->PrintDefault(
+            target, 850, y, "flag_nav: " + Util::ToString(flag_nav));
         y += 10;
         g_game->PrintDefault(
-            g_game->GetBackBuffer(),
+            target,
             850,
             y,
-            "velocity: " + Util::ToString(ship->getVelocityX()) + "," +
-                Util::ToString(ship->getVelocityY()));
-        y += 10;
-        g_game->PrintDefault(g_game->GetBackBuffer(),
-                             850,
-                             y,
-                             "speed: " +
-                                 Util::ToString(ship->getCurrentSpeed()));
+            "flag_thrusting: " + Util::ToString(flag_thrusting));
         y += 10;
         g_game->PrintDefault(
-            g_game->GetBackBuffer(),
+            target,
             850,
             y,
-            "navcounter: " + Util::ToString(g_game->gameState->getCurrentNav()
-                                                ->attributes.extra_variable));
+            "velocity: " + Util::ToString(ship->getVelocityX()) + ","
+                + Util::ToString(ship->getVelocityY()));
         y += 10;
-        g_game->PrintDefault(g_game->GetBackBuffer(),
-                             850,
-                             y,
-                             "angle:      " +
-                                 Util::ToString(ship->getRotationAngle()));
+        g_game->PrintDefault(
+            target,
+            850,
+            y,
+            "speed: " + Util::ToString(ship->getCurrentSpeed()));
+        y += 10;
+        g_game->PrintDefault(
+            target,
+            850,
+            y,
+            "navcounter: "
+                + Util::ToString(g_game->gameState->getCurrentNav()
+                                     ->attributes.extra_variable));
+        y += 10;
+        g_game->PrintDefault(
+            target,
+            850,
+            y,
+            "angle:      " + Util::ToString(ship->getRotationAngle()));
     }
+    return true;
 }
 
 #pragma endregion
 
 #pragma region KEYBOARD
 
-void
-ModuleInterstellarTravel::OnKeyPress(int keyCode) {
+bool
+ModuleInterstellarTravel::on_key_down(ALLEGRO_KEYBOARD_EVENT *event) {
+    int keyCode = event->keycode;
+
     if (g_game->gameState->m_ship.getFuel() == 0) {
         ship->cruise();
-        return;
+        return true;
     }
     switch (keyCode) {
     case ALLEGRO_KEY_D:
@@ -206,16 +219,18 @@ ModuleInterstellarTravel::OnKeyPress(int keyCode) {
         g_game->gameState->m_ship.ConsumeFuel(2);
         break;
     }
+    return true;
 }
 
-void
-ModuleInterstellarTravel::OnKeyReleased(int keyCode) {
+bool
+ModuleInterstellarTravel::on_key_up(ALLEGRO_KEYBOARD_EVENT *event) {
     if (g_game->gameState->m_ship.getFuel() == 0) {
         ship->cruise();
-        return;
+        return true;
     }
-    switch (keyCode) {
+    int keyCode = event->keycode;
 
+    switch (keyCode) {
 #ifdef DEBUGMODE
         // test encounters:
     case FORCE_ENCOUNTER_PIRATE:
@@ -246,27 +261,31 @@ ModuleInterstellarTravel::OnKeyReleased(int keyCode) {
         RollEncounter(ALIEN_COALITION);
         break;
 
-    case IST_QUEST_PLUS: {
-        int questnum = g_game->gameState->getActiveQuest();
-        g_game->gameState->setActiveQuest(questnum + 1);
-        break;
-    }
-    case IST_QUEST_MINUS: {
-        int questnum = g_game->gameState->getActiveQuest();
-        g_game->gameState->setActiveQuest(questnum - 1);
-        break;
-    }
+    case IST_QUEST_PLUS:
+        {
+            int questnum = g_game->gameState->getActiveQuest();
+            g_game->gameState->setActiveQuest(questnum + 1);
+            break;
+        }
+    case IST_QUEST_MINUS:
+        {
+            int questnum = g_game->gameState->getActiveQuest();
+            g_game->gameState->setActiveQuest(questnum - 1);
+            break;
+        }
 
-    case IST_STAGE_PLUS: {
-        int plotStage = g_game->gameState->getPlotStage();
-        g_game->gameState->setPlotStage(plotStage + 1);
-        break;
-    }
-    case IST_STAGE_MINUS: {
-        int plotStage = g_game->gameState->getPlotStage();
-        g_game->gameState->setPlotStage(plotStage - 1);
-        break;
-    }
+    case IST_STAGE_PLUS:
+        {
+            int plotStage = g_game->gameState->getPlotStage();
+            g_game->gameState->setPlotStage(plotStage + 1);
+            break;
+        }
+    case IST_STAGE_MINUS:
+        {
+            int plotStage = g_game->gameState->getPlotStage();
+            g_game->gameState->setPlotStage(plotStage - 1);
+            break;
+        }
 
 #endif
 
@@ -307,50 +326,56 @@ ModuleInterstellarTravel::OnKeyReleased(int keyCode) {
     case ALLEGRO_KEY_ESCAPE:
         break;
     }
+    return true;
 }
 
 #pragma endregion
 
-void
-ModuleInterstellarTravel::OnEvent(Event *event) {
+bool
+ModuleInterstellarTravel::on_event(ALLEGRO_EVENT *event) {
     Ship ship;
     std::string escape;
 
-    int evtype = event->getEventType();
+    int evtype = event->type;
+
     switch (evtype) {
     case EVENT_SAVE_GAME:
         g_game->gameState->AutoSave();
         g_game->printout(text, "<Game Saved>", WHITE, 5000);
-        return;
-        break;
+        return true;
+
     case EVENT_LOAD_GAME:
         g_game->gameState->AutoLoad();
-        return;
-        break;
+        return true;
+
     case EVENT_QUIT_GAME:
         g_game->setVibration(0);
         escape = g_game->getGlobalString("ESCAPEMODULE");
         g_game->LoadModule(escape);
-        return;
-        break;
+        return false;
 
     case EVENT_ENGINEER_INJECT:
         g_game->gameState->getShip().injectEndurium();
         break;
+
     case EVENT_CAPTAIN_LAUNCH:
         g_game->printout(
             text, nav + "Sir, we are not on a planet.", BLUE, 2000);
         break;
+
     case EVENT_CAPTAIN_DESCEND:
         g_game->printout(
             text, nav + "Sir, we are not orbiting a planet.", BLUE, 2000);
         break;
+
     case EVENT_SCIENCE_SCAN:
-        g_game->printout(text,
-                         sci + "Sir, we are not near any planets or vessels.",
-                         BLUE,
-                         2000);
+        g_game->printout(
+            text,
+            sci + "Sir, we are not near any planets or vessels.",
+            BLUE,
+            2000);
         break;
+
     case EVENT_SCIENCE_ANALYSIS:
         g_game->printout(
             text, sci + "Sir, I have not scanned anything.", BLUE, 2000);
@@ -360,23 +385,29 @@ ModuleInterstellarTravel::OnEvent(Event *event) {
         g_game->printout(
             text, nav + "But sir, we are in hyperspace!", BLUE, 2000);
         break;
+
     case EVENT_NAVIGATOR_DOCK:
         g_game->printout(
             text, nav + "The starport is nowhere in sight, sir!", BLUE, 2000);
         break;
+
     case EVENT_NAVIGATOR_HYPERSPACE:
         if (starFound)
             flag_DoNormalSpace = true;
         break;
+
     case EVENT_TACTICAL_COMBAT:
-        g_game->printout(text,
-                         tac + "Sir, we are not in range of any other ships.",
-                         BLUE,
-                         2000);
+        g_game->printout(
+            text,
+            tac + "Sir, we are not in range of any other ships.",
+            BLUE,
+            2000);
         break;
+
     case EVENT_TACTICAL_SHIELDS:
         g_game->printout(text, tac + "Sir, we are not in combat.", BLUE, 2000);
         break;
+
     case EVENT_TACTICAL_WEAPONS:
         g_game->printout(text, tac + "Sir, we are not in combat.", BLUE, 2000);
         break;
@@ -385,32 +416,38 @@ ModuleInterstellarTravel::OnEvent(Event *event) {
         g_game->printout(
             text, com + "We are not in range of any other ships.", BLUE, 2000);
         break;
+
     case EVENT_COMM_STATEMENT:
         g_game->printout(
             text, com + "We are not communicating with anyone!", BLUE, 2000);
         break;
+
     case EVENT_COMM_QUESTION:
         g_game->printout(
             text, com + "We are not communicating with anyone!", BLUE, 2000);
         break;
+
     case EVENT_COMM_POSTURE:
         g_game->printout(
             text, com + "We are not communicating with anyone!", BLUE, 2000);
         break;
+
     case EVENT_COMM_TERMINATE:
         g_game->printout(
             text, com + "We are not communicating with anyone!", BLUE, 2000);
         break;
+
     case EVENT_COMM_DISTRESS:
         g_game->gameState->m_ship.SendDistressSignal();
         break;
     }
+    return true;
 }
 
 #pragma region INIT_CLOSE
 
 bool
-ModuleInterstellarTravel::Init() {
+ModuleInterstellarTravel::on_init() {
     g_game->SetTimePaused(false); // game-time normal in this module.
 
     ALLEGRO_DEBUG("  Hyperspace Initialize\n");
@@ -451,13 +488,14 @@ ModuleInterstellarTravel::Init() {
     int gmy = (int)g_game->getGlobalNumber("GUI_MESSAGE_POS_Y");
     int gmw = (int)g_game->getGlobalNumber("GUI_MESSAGE_WIDTH");
     int gmh = (int)g_game->getGlobalNumber("GUI_MESSAGE_HEIGHT");
-    text = new ScrollBox::ScrollBox(g_game->font20,
-                                    ScrollBox::SB_TEXT,
-                                    gmx + 38,
-                                    gmy + 18,
-                                    gmw - 38,
-                                    gmh - 32,
-                                    999);
+    text = new ScrollBox::ScrollBox(
+        g_game->font20,
+        ScrollBox::SB_TEXT,
+        gmx + 38,
+        gmy + 18,
+        gmw - 38,
+        gmh - 32,
+        999);
     text->DrawScrollBar(false);
 
     // point global scrollbox to local one in this module for sub-module access
@@ -496,16 +534,17 @@ ModuleInterstellarTravel::Init() {
     return true;
 }
 
-void
-ModuleInterstellarTravel::Close() {
+bool
+ModuleInterstellarTravel::on_close() {
     ALLEGRO_DEBUG("*** Hyperspace closing\n\n");
 
     delete text;
     delete scroller;
     delete ship;
 
-    // unload the data file (thus freeing all resources at once)
     resources.unload();
+
+    return true;
 }
 
 #pragma endregion
@@ -708,11 +747,11 @@ ModuleInterstellarTravel::RollEncounter(AlienRaces forceThisRace) {
         case 3: // third "hit" could randomly reset the counter
             if (rand() % 100 < 5) {
                 movement_counter = 0;
-                g_game->printout(text,
-                                 sci +
-                                     "The contact is now out of sensor range.",
-                                 STEEL,
-                                 8000);
+                g_game->printout(
+                    text,
+                    sci + "The contact is now out of sensor range.",
+                    STEEL,
+                    8000);
                 break;
             }
 
@@ -743,18 +782,18 @@ ModuleInterstellarTravel::RollEncounter(AlienRaces forceThisRace) {
                 if (ship.getShieldClass() == 0) {
                     // no shields installed--random freak out
                     if (rand() % 100 < 20) {
-                        name = g_game->gameState->officerTac->getLastName() +
-                               "-> ";
-                        g_game->printout(text,
-                                         name + "Argh! We have no shields!!",
-                                         RED,
-                                         8000);
+                        name = g_game->gameState->officerTac->getLastName()
+                               + "-> ";
+                        g_game->printout(
+                            text,
+                            name + "Argh! We have no shields!!",
+                            RED,
+                            8000);
 
                         // random criticism from another crew
                         if (rand() % 100 < 20) {
-                            name =
-                                g_game->gameState->officerSci->getLastName() +
-                                "-> ";
+                            name = g_game->gameState->officerSci->getLastName()
+                                   + "-> ";
                             os.str("");
                             os << name
                                << g_game->gameState->officerTac->getFirstName()
@@ -786,11 +825,10 @@ ModuleInterstellarTravel::calculateEnemyFleetSize() {
         // give newbie players a break..
         // if player's ship sucks, reduce the enemy fleet
         Ship ship = g_game->gameState->m_ship;
-        float average_class = (float)ship.getLaserClass() +
-                              (float)ship.getMissileLauncherClass() +
-                              (float)ship.getArmorClass() +
-                              (float)ship.getShieldClass() +
-                              (float)ship.getEngineClass();
+        float average_class =
+            (float)ship.getLaserClass() + (float)ship.getMissileLauncherClass()
+            + (float)ship.getArmorClass() + (float)ship.getShieldClass()
+            + (float)ship.getEngineClass();
         average_class /= 5.0f;
 
         // is player's ship weak?
@@ -887,8 +925,8 @@ ModuleInterstellarTravel::getFleetSizeByRace(bool small_fleet) {
     }
 }
 
-void
-ModuleInterstellarTravel::Update() {
+bool
+ModuleInterstellarTravel::on_update() {
     static bool flag_MiscComment = false;
     static string miscComment = "";
     ostringstream os;
@@ -898,7 +936,7 @@ ModuleInterstellarTravel::Update() {
         // pause for encounter sound clip
         al_rest(2500 * 0.001);
         g_game->LoadModule(MODULE_ENCOUNTER);
-        return;
+        return true;
     }
 
     // update the ship's position based on velocity
@@ -966,13 +1004,14 @@ ModuleInterstellarTravel::Update() {
             text, nav + "Sir, I think we are lost...", ORANGE, 8000);
         g_game->printout(text, cap + "...Oh no.", LTGREEN, 4000);
 
-        if (tempOfficer->CanSkillCheck() == true &&
-            g_game->gameState->SkillCheck(SKILL_NAVIGATION) == true) {
+        if (tempOfficer->CanSkillCheck() == true
+            && g_game->gameState->SkillCheck(SKILL_NAVIGATION) == true) {
             g_game->gameState->player->isLost(false);
-            g_game->printout(text,
-                             nav + "Oh, wait... I've got our position now!",
-                             ORANGE,
-                             8000);
+            g_game->printout(
+                text,
+                nav + "Oh, wait... I've got our position now!",
+                ORANGE,
+                8000);
             g_game->printout(text, cap + "...", LTGREEN, 1000);
             g_game->gameState->flux_info[flux->get_id()].path_visible = true;
             flux = nullptr;
@@ -980,7 +1019,7 @@ ModuleInterstellarTravel::Update() {
     }
 
     if (enter_flux()) {
-        return;
+        return true;
     }
 
     // locate any flux at players position
@@ -996,14 +1035,14 @@ ModuleInterstellarTravel::Update() {
      * Return value causes break when encounter module is launched
      */
     if (!RollEncounter())
-        return;
+        return true;
 
     // enter star system
     if (flag_DoNormalSpace) {
         g_game->printout(
             text, nav + "Aye, dropping out of hyperspace...", ORANGE, 4000);
         EnterStarSystem();
-        return;
+        return true;
     }
 
     // arm or disarm weapons
@@ -1024,8 +1063,9 @@ ModuleInterstellarTravel::Update() {
             //  disarmed, rewording it slightly
             g_game->printout(
                 text,
-                tac +
-                    "...Verifying weapon optics as depolarized and secured...",
+                tac
+                    + "...Verifying weapon optics as depolarized and "
+                      "secured...",
                 ORANGE,
                 2000);
 
@@ -1051,10 +1091,11 @@ ModuleInterstellarTravel::Update() {
         if (currentNav->attributes.extra_variable >= FlyingHoursBeforeSkillUp) {
             currentNav->attributes.extra_variable = 0;
             if (currentNav->SkillUp(SKILL_NAVIGATION))
-                g_game->printout(text,
-                                 nav + "I think I'm getting better at this.",
-                                 PURPLE,
-                                 5000);
+                g_game->printout(
+                    text,
+                    nav + "I think I'm getting better at this.",
+                    PURPLE,
+                    5000);
         }
     }
 
@@ -1077,6 +1118,8 @@ ModuleInterstellarTravel::Update() {
 
     // refresh text list
     text->ScrollToBottom();
+
+    return true;
 }
 
 #pragma region FLUX STUFF
@@ -1149,8 +1192,8 @@ ModuleInterstellarTravel::enter_flux() {
                 valid_exits.push_back(make_pair(1, 1));
             }
         }
-        if (((exiting_coords.x + 1) < GALAXYTILESACROSS) ||
-            ((exiting_coords.x - 1) > 0)) {
+        if (((exiting_coords.x + 1) < GALAXYTILESACROSS)
+            || ((exiting_coords.x - 1) > 0)) {
 
             // 1
             if ((exiting_coords.y - 1) > 0) {
@@ -1163,9 +1206,9 @@ ModuleInterstellarTravel::enter_flux() {
         }
         pair<int, int> random_exit = valid_exits[rand() % valid_exits.size()];
 
-        ALLEGRO_ASSERT((random_exit.first == random_exit.second &&
-                        random_exit.first != 0) ||
-                       random_exit.first != random_exit.second);
+        ALLEGRO_ASSERT(
+            (random_exit.first == random_exit.second && random_exit.first != 0)
+            || random_exit.first != random_exit.second);
         g_game->gameState->player->set_galactic_pos(
             (exiting_coords.x + random_exit.first) * GALAXYTILESIZE,
             (exiting_coords.y + random_exit.second) * GALAXYTILESIZE);
@@ -1175,8 +1218,8 @@ ModuleInterstellarTravel::enter_flux() {
         // you'll be able to see the path on the map, as well as
         // both endpoints. If not, you'll be lost.
         tempOfficer->SkillUp(SKILL_NAVIGATION, 10);
-        if (g_game->gameState->SkillCheck(SKILL_NAVIGATION) &&
-            entering_ep_visible) {
+        if (g_game->gameState->SkillCheck(SKILL_NAVIGATION)
+            && entering_ep_visible) {
             fi.endpoint_1_visible = true;
             fi.endpoint_2_visible = true;
             fi.path_visible = true;
@@ -1200,8 +1243,8 @@ ModuleInterstellarTravel::identify_flux() {
     flag_FoundFlux = false;
 
     if (g_game->gameState->player->isLost() == false) {
-        Point2D location = {static_cast<double>(tilex),
-                            static_cast<double>(tiley)};
+        Point2D location = {
+            static_cast<double>(tilex), static_cast<double>(tiley)};
 
         for (int i = 0; i < g_game->dataMgr->GetNumFlux(); i++) {
             const Flux *f = g_game->dataMgr->GetFlux(i);
@@ -1214,8 +1257,8 @@ ModuleInterstellarTravel::identify_flux() {
 
             if (f->distance_to_endpoint_1(location) < 10) {
                 if (!fi.endpoint_1_visible) {
-                    if (tempOfficer->CanSkillCheck() &&
-                        g_game->gameState->SkillCheck(SKILL_NAVIGATION)) {
+                    if (tempOfficer->CanSkillCheck()
+                        && g_game->gameState->SkillCheck(SKILL_NAVIGATION)) {
                         // detecting a flux
                         fi.endpoint_1_visible = true;
                         endpoint = f->get_endpoint1();
@@ -1229,8 +1272,8 @@ ModuleInterstellarTravel::identify_flux() {
             }
             if (f->distance_to_endpoint_2(location) < 10) {
                 if (!fi.endpoint_2_visible) {
-                    if (tempOfficer->CanSkillCheck() &&
-                        g_game->gameState->SkillCheck(SKILL_NAVIGATION)) {
+                    if (tempOfficer->CanSkillCheck()
+                        && g_game->gameState->SkillCheck(SKILL_NAVIGATION)) {
                         // detecting a flux
                         fi.endpoint_2_visible = true;
                         endpoint = f->get_endpoint2();
@@ -1307,12 +1350,13 @@ void
 ModuleInterstellarTravel::createGalaxy() {
     TileSet ts(resources[I_IS_TILES], GALAXYTILESIZE, GALAXYTILESIZE, 5, 2);
 
-    scroller = new TileScroller(ts,
-                                GALAXYTILESACROSS,
-                                GALAXYTILESDOWN,
-                                GALAXY_SCROLL_WIDTH,
-                                GALAXY_SCROLL_HEIGHT,
-                                ship->get_screen_position() - Point2D(32, 32));
+    scroller = new TileScroller(
+        ts,
+        GALAXYTILESACROSS,
+        GALAXYTILESDOWN,
+        GALAXY_SCROLL_WIDTH,
+        GALAXY_SCROLL_HEIGHT,
+        ship->get_screen_position() - Point2D(32, 32));
 
     scroller->set_scroll_position(
         g_game->gameState->getHyperspaceCoordinates());

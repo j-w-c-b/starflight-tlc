@@ -16,20 +16,17 @@ It isn't showing up, or if the order is changed another button doesn't show.
 */
 class ModuleSettings : public Module {
   public:
-    ModuleSettings(void);
-    virtual ~ModuleSettings(void);
-    virtual bool Init() override;
-    virtual void Update() override;
-    virtual void Draw() override;
-    virtual void OnKeyReleased(int keyCode) override;
-    virtual void OnMouseMove(int x, int y) override;
-    virtual void OnMouseClick(int button, int x, int y) override;
-    virtual void OnMousePressed(int button, int x, int y) override;
-    virtual void OnMouseReleased(int button, int x, int y) override;
-    virtual void OnMouseWheelUp(int x, int y) override;
-    virtual void OnMouseWheelDown(int x, int y) override;
-    virtual void OnEvent(Event *event) override;
-    virtual void Close() override;
+    ModuleSettings();
+    virtual ~ModuleSettings();
+    virtual bool on_init() override;
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
+    virtual bool on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event) override;
+    virtual bool on_mouse_move(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_mouse_button_down(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_event(ALLEGRO_EVENT *event) override;
+    virtual bool on_close() override;
+
     bool SaveConfigurationFile();
 
   private:
@@ -38,6 +35,6 @@ class ModuleSettings : public Module {
 
     ScrollBox::ScrollBox *resScrollbox;
     std::string chosenResolution;
-    int cmd_selected, button_selected;
+    int button_selected;
     ResourceManager<ALLEGRO_BITMAP> m_resources;
 };

@@ -66,14 +66,6 @@ ALLEGRO_DEBUG_CHANNEL("ModulePlanetSurface")
 #define SCROLLEROFFSETY                                                        \
     (SCREEN_HEIGHT / 2 - 128 - activeVessel->getFrameHeight() / 2)
 
-#define BIGBTN1_CLICK 100
-#define BIGBTN2_CLICK 101
-// If you change the CARGO_CLICK make sure you change it in the Game.cpp also
-#define CARGO_CLICK 102
-#define BIGBTN1_HOVER 103
-#define BIGBTN2_HOVER 104
-#define CARGO_HOVER 105
-
 #define TIMER_X 408
 #define TIMER_Y 512
 
@@ -91,7 +83,77 @@ ALLEGRO_DEBUG_CHANNEL("ModulePlanetSurface")
 
 #define SHOWPORTRAITLENGTH 200
 
-#define TIMER_EXPIRED_EVENT 70196 /*0x0ddba11*/
+PlanetSurfaceTimer::PlanetSurfaceTimer(
+    int x,
+    int y,
+    int width,
+    int height,
+    int duration,
+    const std::string &text,
+    ResourceManager<ALLEGRO_BITMAP> &resources)
+    : Module(x, y, width, height), m_count(0), m_duration(duration),
+      m_text(nullptr) {
+    set_active(false);
+
+    m_gauge_background = new Bitmap(resources[I_ELEMENT_BIGGAUGE_EMPTY], x, y);
+    add_child_module(m_gauge_background);
+
+    m_gauge_background->get_size(m_gauge_width, m_gauge_height);
+
+    m_text = new Label(
+        text,
+        x,
+        y,
+        m_gauge_width,
+        m_gauge_height,
+        false,
+        0,
+        g_game->font18,
+        BLACK);
+    add_child_module(m_text);
+
+    m_gauge_filled = new Bitmap(resources[I_ELEMENT_BIGGAUGE_YELLOW], x, y);
+    m_gauge_filled->set_visible_region(0, 0, 0, 0);
+
+    add_child_module(m_gauge_filled);
+}
+
+bool
+PlanetSurfaceTimer::on_update() {
+    if (m_duration <= ++m_count) {
+        stop();
+
+        ALLEGRO_EVENT e = {
+            .type =
+                static_cast<unsigned int>(EVENT_PLANETSURFACE_TIMER_EXPIRED)};
+        g_game->broadcast_event(&e);
+    }
+    return true;
+}
+
+bool
+PlanetSurfaceTimer::on_draw(ALLEGRO_BITMAP * /*target*/) {
+    ALLEGRO_ASSERT(m_duration != 0);
+
+    int filled = static_cast<int>(double(m_gauge_width) * m_count / m_duration);
+
+    m_gauge_filled->set_visible_region(0, 0, filled, m_gauge_height);
+    return true;
+}
+
+void
+PlanetSurfaceTimer::reset(int duration) {
+    m_duration = duration;
+    m_count = 0;
+    set_active(true);
+}
+
+void
+PlanetSurfaceTimer::stop() {
+    m_duration = 0;
+    m_count = 0;
+    set_active(false);
+}
 
 ModulePlanetSurface::ModulePlanetSurface(void)
     : scroller(NULL), LuaVM(NULL), cargoBtn(NULL), img_messages(NULL),
@@ -100,16 +162,32 @@ ModulePlanetSurface::ModulePlanetSurface(void)
       btnMouseOver(NULL), btnSelect(NULL), btnBigNormal(NULL),
       btnBigDisabled(NULL), btnBigMouseOver(NULL), btnBigSelect(NULL),
       Static(NULL), Cargo(NULL), Cargo_BarFill(NULL), CargoMouseOver(NULL),
-      Timer_BarFill(NULL), Fuel(NULL), FuelBar(NULL), Armor(NULL),
-      ArmorBar(NULL), Hull(NULL), HullBar(NULL),
-      resources(PLANETSURFACE_IMAGES), cinematicShip(NULL),
+      Fuel(NULL), FuelBar(NULL), Armor(NULL), ArmorBar(NULL), Hull(NULL),
+      HullBar(NULL), resources(PLANETSURFACE_IMAGES), cinematicShip(NULL),
       psObjectHolder(NULL), playerShip(NULL), playerTV(NULL),
       activeVessel(NULL), panFocus(NULL), TVwasMoving(false),
       TVwasDamaged(false), selectedPSO(NULL), messages(NULL),
       runPlanetLoadScripts(true), runPlanetPopulate(true), vibration(0),
-      panCamera(false), timerOn(false), timerLength(0), TimerText(NULL),
-      activeButtons(0), label(NULL) {
+      panCamera(false), activeButtons(0) {
     g_game->PlanetSurfaceHolder = this;
+
+    m_timer =
+        new PlanetSurfaceTimer(TIMER_X, TIMER_Y, -1, -1, 0, "", resources);
+
+    add_child_module(m_timer);
+
+    // Initialize label
+    m_label = new Label(
+        SHIP_TEXT,
+        CMDBUTTONS_UL_X + 10,
+        CMDBUTTONS_UL_Y + 10,
+        175,
+        200,
+        true,
+        0,
+        g_game->font24,
+        BLACK);
+    add_child_module(m_label);
 }
 
 ModulePlanetSurface::~ModulePlanetSurface(void) {}
@@ -117,9 +195,9 @@ ModulePlanetSurface::~ModulePlanetSurface(void) {}
 #pragma endregion
 
 #pragma region INPUT
-void
-ModulePlanetSurface::OnKeyPress(int keyCode) {
-    switch (keyCode) {
+bool
+ModulePlanetSurface::on_key_down(ALLEGRO_KEYBOARD_EVENT *event) {
+    switch (event->keycode) {
     case ALLEGRO_KEY_UP:
         activeVessel->ForwardThrust(true);
         break;
@@ -133,11 +211,12 @@ ModulePlanetSurface::OnKeyPress(int keyCode) {
         activeVessel->TurnLeft(true);
         break;
     }
+    return true;
 }
 
-void
-ModulePlanetSurface::OnKeyReleased(int keyCode) {
-    switch (keyCode) {
+bool
+ModulePlanetSurface::on_key_up(ALLEGRO_KEYBOARD_EVENT *event) {
+    switch (event->keycode) {
     // reset ship anim frame when key released
     case ALLEGRO_KEY_LEFT:
         activeVessel->TurnLeft(false);
@@ -151,13 +230,15 @@ ModulePlanetSurface::OnKeyReleased(int keyCode) {
     case ALLEGRO_KEY_DOWN:
         activeVessel->ReverseThrust(false);
         break;
-    case ALLEGRO_KEY_ESCAPE:
-        break;
     }
+    return true;
 }
 
-void
-ModulePlanetSurface::OnMouseMove(int x, int y) {
+bool
+ModulePlanetSurface::on_mouse_move(ALLEGRO_MOUSE_EVENT *event) {
+    int x = event->x;
+    int y = event->y;
+
     messages->OnMouseMove(x, y);
 
     for (int i = 0; i < 2; ++i)
@@ -167,36 +248,50 @@ ModulePlanetSurface::OnMouseMove(int x, int y) {
         Btns[i]->OnMouseMove(x, y);
 
     cargoBtn->OnMouseMove(x, y);
+
+    if (is_mouse_wheel_down(event)) {
+        messages->OnMouseWheelDown(x, y);
+    } else if (is_mouse_wheel_up(event)) {
+        messages->OnMouseWheelUp(x, y);
+    }
+
+    return true;
 }
 
-void
-ModulePlanetSurface::OnMouseClick(int button, int x, int y) {
-    messages->OnMouseClick(button, x, y);
-}
+bool
+ModulePlanetSurface::on_mouse_button_down(ALLEGRO_MOUSE_EVENT *event) {
+    int button = event->button - 1;
+    int x = event->x;
+    int y = event->y;
 
-void
-ModulePlanetSurface::OnMousePressed(int button, int x, int y) {
     messages->OnMousePressed(button, x, y);
+
+    return true;
 }
 
-void
-ModulePlanetSurface::OnMouseReleased(int button, int x, int y) {
+bool
+ModulePlanetSurface::on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) {
+    int button = event->button - 1;
+    int x = event->x;
+    int y = event->y;
+
     messages->OnMouseReleased(button, x, y);
 
     for (int i = 0; i < 2; ++i) {
         if (BigBtns[i]->OnMouseReleased(button, x, y))
-            return;
-    } // Stop passing on if click landed
+            return false;
+    }
 
     for (int i = 0; i < activeButtons; ++i) {
         if (Btns[i]->OnMouseReleased(button, x, y))
-            return;
-    } // Stop passing on if click landed
+            return false;
+    }
 
     if (cargoBtn->OnMouseReleased(button, x, y)) {
-        Event e(EVENT_CAPTAIN_CARGO);
-        g_game->modeMgr->BroadcastEvent(&e);
-        return;
+        ALLEGRO_EVENT e = {
+            .type = static_cast<unsigned int>(EVENT_CAPTAIN_CARGO)};
+        g_game->broadcast_event(&e);
+        return false;
     }
 
     if (y <= 540) // Make sure that the click was in the play area, otherwise
@@ -207,227 +302,218 @@ ModulePlanetSurface::OnMouseReleased(int button, int x, int y) {
             y += (int)scroller->getScrollY();
             for (int i = 0; i < (int)surfaceObjects.size(); ++i) {
                 if (surfaceObjects[i]->OnMouseReleased(button, x, y)) {
-                    return;
-                } // Stop passing on if click landed
+                    return false;
+                }
             }
         }
     }
+    if (is_mouse_click(event)) {
+        messages->OnMouseClick(button, x, y);
+    }
+    return true;
 }
-
-void
-ModulePlanetSurface::OnMouseWheelUp(int x, int y) {
-    messages->OnMouseWheelUp(x, y);
-}
-
-void
-ModulePlanetSurface::OnMouseWheelDown(int x, int y) {
-    messages->OnMouseWheelDown(x, y);
-}
-
 #pragma endregion
 
 #pragma region EVENTS
-void
-ModulePlanetSurface::OnEvent(Event *event) {
+bool
+ModulePlanetSurface::on_event(ALLEGRO_EVENT *event) {
+    if (selectedPSO != NULL) {
+        if (event->type == EVENT_PLANETSURFACE_TIMER_EXPIRED) {
+            selectedPSO->OnEvent(70196);
+        } else {
+            selectedPSO->OnEvent(event->type - EVENT_PLANETSURFACE_COMMAND1);
+        }
+    }
 
-    if (selectedPSO != NULL)
-        selectedPSO->OnEvent(event->getEventType());
-
-    switch (event->getEventType()) {
-    case EVENT_SAVE_GAME: // save game
+    switch (event->type) {
+    case EVENT_SAVE_GAME:
         g_game->gameState->AutoSave();
         break;
-    case EVENT_LOAD_GAME: // load game
+
+    case EVENT_LOAD_GAME:
         g_game->gameState->AutoLoad();
-        return;
+        return false;
+
+    case EVENT_QUIT_GAME:
+        {
+            g_game->setVibration(0);
+            string escape = g_game->getGlobalString("ESCAPEMODULE");
+            g_game->LoadModule(escape);
+            return false;
+        }
         break;
-    case EVENT_QUIT_GAME: // quit game
-    {
-        g_game->setVibration(0);
-        string escape = g_game->getGlobalString("ESCAPEMODULE");
-        g_game->LoadModule(escape);
-        return;
-    } break;
 
-    case CARGO_EVENT_UPDATE: {
-        updateCargoFillPercent();
-        break;
-    }
-
-    case BIGBTN1_CLICK: {
-        // Landing
-        if (vessel_mode == 0) {
-            // in some rare circumstances panCamera is not properly reset to
-            // false in Draw() we need to force it here otherwise scrolling
-            // won't happen
-            panCamera = false;
-
-            if (!g_game->gameState->getShip().getHasTV()) {
-                g_game->ShowMessageBoxWindow(
-                    "",
-                    "You can't land--no Terrain Vehicle! Acquire one at the "
-                    "Starport.");
-                return;
-            }
-
-            // do a 4 point valid tile check
-            if (!IsValidTile((int)playerShip->getX(),
-                             (int)playerShip->getY()) ||
-                !IsValidTile(
-                    (int)(playerShip->getX() + playerShip->getFrameWidth()),
-                    (int)playerShip->getY()) ||
-                !IsValidTile(
-                    (int)(playerShip->getX() + playerShip->getFrameWidth()),
-                    (int)(playerShip->getY() + playerShip->getFrameHeight())) ||
-                !IsValidTile(
-                    (int)playerShip->getX(),
-                    (int)(playerShip->getY() + playerShip->getFrameHeight()))) {
-                g_game->ShowMessageBoxWindow(
-                    "", "You can't land here!", 400, 200);
-                return;
-            }
-
-            // check that the player has enough fuel
-            if (g_game->gameState->getShip().getFuel() <= 0.00f) {
-                int number_of_endurium =
-                    g_game->gameState->m_ship.getEnduriumOnBoard();
-                if (number_of_endurium <= 0) {
-                    g_game->ShowMessageBoxWindow("",
-                                                 "You can't land--no fuel!");
-                    return;
-                } else
-                    g_game->gameState->getShip().injectEndurium();
-            }
-            g_game->gameState->m_ship.ConsumeFuel(10);
-
-            vessel_mode = 1;
-            playerTV->setFaceAngle(playerShip->getFaceAngle());
-            playerTV->setPosOffset(playerShip->getXOffset(),
-                                   playerShip->getYOffset());
-            playerTV->setSpeed(8); // This gives the TV a little boost when it
-                                   // comes out of the ship
-            activeButtons = 0;
-
-            BigBtns[0]->SetButtonText("Dock");
-            BigBtns[1]->SetButtonText("Scan");
-
-            label->SetText(TV_NONESELECTED_TEXT);
-            label->Refresh();
-
-            // Clear any leftover movement residue
-            playerTV->ResetNav();
-            playerTV->setCounter3(100);
-            activeVessel = playerTV;
-
-            g_game->gameState->m_ship.setHasTV(false);
-
-            if (g_game->audioSystem->SampleExists("launchtv"))
-                g_game->audioSystem->Play("launchtv");
+    case EVENT_CARGO_UPDATE:
+        {
+            updateCargoFillPercent();
+            break;
         }
 
-        // Docking
-        else if (vessel_mode == 1) {
-            if (CalcDistance(playerTV, playerShip) < 80) {
-                vessel_mode = 0;
-                activeVessel = playerShip;
+    case EVENT_PLANETSURFACE_ACTION1:
+        {
+            // Landing
+            if (vessel_mode == 0) {
+                // in some rare circumstances panCamera is not properly
+                // reset to false in Draw() we need to force it here
+                // otherwise scrolling won't happen
+                panCamera = false;
+
+                if (!g_game->gameState->getShip().getHasTV()) {
+                    g_game->ShowMessageBoxWindow(
+                        "",
+                        "You can't land--no Terrain Vehicle! Acquire one "
+                        "at the "
+                        "Starport.");
+                    return false;
+                }
+
+                // do a 4 point valid tile check
+                if (!IsValidTile(
+                        (int)playerShip->getX(), (int)playerShip->getY())
+                    || !IsValidTile(
+                        (int)(playerShip->getX() + playerShip->getFrameWidth()),
+                        (int)playerShip->getY())
+                    || !IsValidTile(
+                        (int)(playerShip->getX() + playerShip->getFrameWidth()),
+                        (int)(playerShip->getY() + playerShip->getFrameHeight()))
+                    || !IsValidTile(
+                        (int)playerShip->getX(),
+                        (int)(playerShip->getY() + playerShip->getFrameHeight()))) {
+                    g_game->ShowMessageBoxWindow(
+                        "", "You can't land here!", 400, 200);
+                    return false;
+                }
+
+                // check that the player has enough fuel
+                if (g_game->gameState->getShip().getFuel() <= 0.00f) {
+                    int number_of_endurium =
+                        g_game->gameState->m_ship.getEnduriumOnBoard();
+                    if (number_of_endurium <= 0) {
+                        g_game->ShowMessageBoxWindow(
+                            "", "You can't land--no fuel!");
+                        return false;
+                    } else
+                        g_game->gameState->getShip().injectEndurium();
+                }
+                g_game->gameState->m_ship.ConsumeFuel(10);
+
+                vessel_mode = 1;
+                playerTV->setFaceAngle(playerShip->getFaceAngle());
+                playerTV->setPosOffset(
+                    playerShip->getXOffset(), playerShip->getYOffset());
+                playerTV->setSpeed(8); // This gives the TV a little boost
+                                       // when it comes out of the ship
                 activeButtons = 0;
 
-                // Clear the selected PSO when docking
-                if (selectedPSO != NULL) {
-                    selectedPSO->setSelected(false);
-                    selectedPSO = NULL;
-                }
+                BigBtns[0]->SetButtonText("Dock");
+                BigBtns[1]->SetButtonText("Scan");
 
-                playerShip->setSpeed(0); // This stops the ship from moving
-                                         // right after docking the TV
-                playerShip->ResetNav();
-                playerTV->setCounter3(100); // refuel the TV
+                m_label->set_text(TV_NONESELECTED_TEXT);
 
-                BigBtns[0]->SetButtonText("Land");
-                BigBtns[1]->SetButtonText("Launch");
+                // Clear any leftover movement residue
+                playerTV->ResetNav();
+                playerTV->setCounter3(100);
+                activeVessel = playerTV;
 
-                label->SetText(SHIP_TEXT);
-                label->Refresh();
+                g_game->gameState->m_ship.setHasTV(false);
 
-                if (g_game->PlanetSurfaceHolder->timerOn) {
-                    g_game->PlanetSurfaceHolder->timerOn = false;
-                    g_game->PlanetSurfaceHolder->timerCount = 0;
-                    g_game->PlanetSurfaceHolder->timerLength = 0;
-
-                    // stop scan/pickuplifeform/mining sound effects
-                    g_game->audioSystem->Stop("scanning");
-                    g_game->audioSystem->Stop("pickuplifeform");
-                    g_game->audioSystem->Stop("mining");
-                }
-
-                g_game->gameState->m_ship.setHasTV(true);
-
-                // stop the TV moving sound effects
-                g_game->audioSystem->Stop("TVmove");
-                g_game->audioSystem->Stop("damagedTV");
-                TVwasMoving = false;
-
-                if (g_game->audioSystem->SampleExists("dockingtv"))
-                    g_game->audioSystem->Play("dockingtv");
-            } else {
-                g_game->ShowMessageBoxWindow(
-                    "",
-                    "You are not close enough to the ship yet to dock",
-                    400,
-                    200);
+                if (g_game->audioSystem->SampleExists("launchtv"))
+                    g_game->audioSystem->Play("launchtv");
             }
+
+            // Docking
+            else if (vessel_mode == 1) {
+                if (CalcDistance(playerTV, playerShip) < 80) {
+                    vessel_mode = 0;
+                    activeVessel = playerShip;
+                    activeButtons = 0;
+
+                    // Clear the selected PSO when docking
+                    if (selectedPSO != NULL) {
+                        selectedPSO->setSelected(false);
+                        selectedPSO = NULL;
+                    }
+
+                    playerShip->setSpeed(0); // This stops the ship from moving
+                                             // right after docking the TV
+                    playerShip->ResetNav();
+                    playerTV->setCounter3(100); // refuel the TV
+
+                    BigBtns[0]->SetButtonText("Land");
+                    BigBtns[1]->SetButtonText("Launch");
+
+                    m_label->set_text(SHIP_TEXT);
+
+                    m_timer->stop();
+
+                    g_game->gameState->m_ship.setHasTV(true);
+
+                    // stop the TV moving sound effects
+                    g_game->audioSystem->Stop("TVmove");
+                    g_game->audioSystem->Stop("damagedTV");
+                    TVwasMoving = false;
+
+                    if (g_game->audioSystem->SampleExists("dockingtv"))
+                        g_game->audioSystem->Play("dockingtv");
+                } else {
+                    g_game->ShowMessageBoxWindow(
+                        "",
+                        "You are not close enough to the ship yet to dock",
+                        400,
+                        200);
+                }
+            }
+
+            // Picking Up TV
+            else if (vessel_mode == 2) {
+                if (CalcDistance(playerTV, playerShip) < 100) {
+                    vessel_mode = 0;
+                    activeVessel = playerShip;
+                    activeButtons = 0;
+
+                    // Clear the selected PSO when docking
+                    if (selectedPSO != NULL) {
+                        selectedPSO->setSelected(false);
+                        selectedPSO = NULL;
+                    }
+
+                    playerShip->setSpeed(0); // This stops the ship from moving
+                                             // right after docking the TV
+                    playerShip->ResetNav();
+                    playerTV->setCounter3(100); // Fill up the TV
+
+                    BigBtns[0]->SetButtonText("Land");
+                    BigBtns[1]->SetButtonText("Launch");
+
+                    m_label->set_text(SHIP_TEXT);
+
+                    g_game->gameState->m_ship.setHasTV(true);
+
+                    if (g_game->audioSystem->SampleExists("dockingtv"))
+                        g_game->audioSystem->Play("dockingtv");
+
+                } else {
+                    g_game->ShowMessageBoxWindow(
+                        "",
+                        "You are not close enough to pick up the Terrain "
+                        "Vehicle",
+                        400,
+                        200);
+                }
+            }
+            break;
         }
 
-        // Picking Up TV
-        else if (vessel_mode == 2) {
-            if (CalcDistance(playerTV, playerShip) < 100) {
-                vessel_mode = 0;
-                activeVessel = playerShip;
-                activeButtons = 0;
-
-                // Clear the selected PSO when docking
-                if (selectedPSO != NULL) {
-                    selectedPSO->setSelected(false);
-                    selectedPSO = NULL;
-                }
-
-                playerShip->setSpeed(0); // This stops the ship from moving
-                                         // right after docking the TV
-                playerShip->ResetNav();
-                playerTV->setCounter3(100); // Fill up the TV
-
-                BigBtns[0]->SetButtonText("Land");
-                BigBtns[1]->SetButtonText("Launch");
-
-                label->SetText(SHIP_TEXT);
-                label->Refresh();
-
-                g_game->gameState->m_ship.setHasTV(true);
-
-                if (g_game->audioSystem->SampleExists("dockingtv"))
-                    g_game->audioSystem->Play("dockingtv");
-
-            } else {
-                g_game->ShowMessageBoxWindow(
-                    "",
-                    "You are not close enough to pick up the Terrain Vehicle",
-                    400,
-                    200);
-            }
-        }
-        break;
-    }
-
-    case BIGBTN2_CLICK: {
+    case EVENT_PLANETSURFACE_ACTION2:
         if (vessel_mode == 0) {
             if (player_stranded == false) {
                 if (!exitCinematicRunning) {
                     // Leaving
                     exitCinematicRunning = true;
 
-                    // correction for ship getting stuck in corner of map when
-                    // lifting off--issue 172 see fix at exitCinematicRunning
-                    // code
+                    // correction for ship getting stuck in corner of
+                    // map when lifting off--issue 172 see fix at
+                    // exitCinematicRunning code
                     double x = playerShip->getX();
                     double y = playerShip->getY();
                     cinematicShip->setX(x);
@@ -447,8 +533,10 @@ ModulePlanetSurface::OnEvent(Event *event) {
             } else {
                 g_game->ShowMessageBoxWindow(
                     "",
-                    "You need to select something to scan first! You can "
-                    "select objects on the planet surface by clicking on "
+                    "You need to select something to scan first! You "
+                    "can "
+                    "select objects on the planet surface by clicking "
+                    "on "
                     "them.");
             }
         } else if (vessel_mode == 2) {
@@ -472,8 +560,7 @@ ModulePlanetSurface::OnEvent(Event *event) {
                 BigBtns[0]->SetButtonText("Land");
                 BigBtns[1]->SetButtonText("Launch");
 
-                label->SetText(SHIP_TEXT);
-                label->Refresh();
+                m_label->set_text(SHIP_TEXT);
 
                 g_game->gameState->m_ship.setHasTV(true);
 
@@ -482,18 +569,29 @@ ModulePlanetSurface::OnEvent(Event *event) {
             } else {
                 g_game->ShowMessageBoxWindow(
                     "",
-                    "You are not close enough to pick up the Terrain Vehicle");
+                    "You are not close enough to pick up the Terrain "
+                    "Vehicle");
             }
         }
         break;
+
+    case EVENT_PLANETSURFACE_TIMER_EXPIRED:
+        // stop playback of the sound effects
+        if (g_game->audioSystem->SampleExists("scanning"))
+            g_game->audioSystem->Stop("scanning");
+        if (g_game->audioSystem->SampleExists("pickuplifeform"))
+            g_game->audioSystem->Stop("pickuplifeform");
+        if (g_game->audioSystem->SampleExists("mining"))
+            g_game->audioSystem->Stop("mining");
+        break;
     }
-    }
+    return true;
 }
 #pragma endregion
 
 #pragma region INIT_CLOSE
-void
-ModulePlanetSurface::Close() {
+bool
+ModulePlanetSurface::on_close() {
     ALLEGRO_DEBUG("PlanetSurface Destroy\n");
 
     // unload the data file (thus freeing all resources at once)
@@ -562,11 +660,6 @@ ModulePlanetSurface::Close() {
         Btns[i] = NULL;
     }
 
-    if (label != NULL) {
-        delete label;
-        label = NULL;
-    }
-
     // force the looping sound effects to stop
     if (g_game->audioSystem->SampleExists("TVmove"))
         g_game->audioSystem->Stop("TVmove");
@@ -578,11 +671,19 @@ ModulePlanetSurface::Close() {
         g_game->audioSystem->Stop("pickuplifeform");
     if (g_game->audioSystem->SampleExists("mining"))
         g_game->audioSystem->Stop("mining");
+
+    return true;
+}
+
+void
+ModulePlanetSurface::create_timer(int length, const string &name) {
+    m_timer->set_label(name);
+    m_timer->reset(length);
 }
 
 // Init is a good place to load resources
 bool
-ModulePlanetSurface::Init() {
+ModulePlanetSurface::on_init() {
     g_game->SetTimePaused(false); // game-time normal in this module.
 
     ALLEGRO_DEBUG("  PlanetSurface Initialize\n");
@@ -645,57 +746,57 @@ ModulePlanetSurface::Init() {
         }
     }
     if (!g_game->audioSystem->SampleExists("scanning")) {
-        if (!g_game->audioSystem->Load("data/planetsurface/scanning.wav",
-                                       "scanning")) {
+        if (!g_game->audioSystem->Load(
+                "data/planetsurface/scanning.wav", "scanning")) {
             ALLEGRO_DEBUG("PlanetSurface: Error loading "
                           "data/planetsurface/scanning.wav\n");
         }
     }
     if (!g_game->audioSystem->SampleExists("pickuplifeform")) {
-        if (!g_game->audioSystem->Load("data/planetsurface/pickuplifeform.wav",
-                                       "pickuplifeform")) {
+        if (!g_game->audioSystem->Load(
+                "data/planetsurface/pickuplifeform.wav", "pickuplifeform")) {
             ALLEGRO_DEBUG("PlanetSurface: Error loading "
                           "data/planetsurface/pickuplifeform.wav\n");
         }
     }
     if (!g_game->audioSystem->SampleExists("mining")) {
-        if (!g_game->audioSystem->Load("data/planetsurface/mining.wav",
-                                       "mining")) {
+        if (!g_game->audioSystem->Load(
+                "data/planetsurface/mining.wav", "mining")) {
             ALLEGRO_DEBUG(
                 "PlanetSurface: Error loading data/planetsurface/mining.wav\n");
         }
     }
     if (!g_game->audioSystem->SampleExists("stunner")) {
-        if (!g_game->audioSystem->Load("data/planetsurface/stunner.wav",
-                                       "stunner")) {
+        if (!g_game->audioSystem->Load(
+                "data/planetsurface/stunner.wav", "stunner")) {
             ALLEGRO_DEBUG("PlanetSurface: Error loading "
                           "data/planetsurface/stunner.wav\n");
         }
     }
     if (!g_game->audioSystem->SampleExists("launchtv")) {
-        if (!g_game->audioSystem->Load("data/planetsurface/launchtv.wav",
-                                       "launchtv")) {
+        if (!g_game->audioSystem->Load(
+                "data/planetsurface/launchtv.wav", "launchtv")) {
             ALLEGRO_DEBUG("PlanetSurface: Error loading "
                           "data/planetsurface/launchtv.wav\n");
         }
     }
     if (!g_game->audioSystem->SampleExists("dockingtv")) {
-        if (!g_game->audioSystem->Load("data/planetsurface/dockingtv.wav",
-                                       "dockingtv")) {
+        if (!g_game->audioSystem->Load(
+                "data/planetsurface/dockingtv.wav", "dockingtv")) {
             ALLEGRO_DEBUG("PlanetSurface: Error loading "
                           "data/planetsurface/dockingtv.wav\n");
         }
     }
     if (!g_game->audioSystem->SampleExists("lifeformattack")) {
-        if (!g_game->audioSystem->Load("data/planetsurface/lifeformattack.wav",
-                                       "lifeformattack")) {
+        if (!g_game->audioSystem->Load(
+                "data/planetsurface/lifeformattack.wav", "lifeformattack")) {
             ALLEGRO_DEBUG("PlanetSurface: Error loading "
                           "data/planetsurface/lifeformattack.wav\n");
         }
     }
     if (!g_game->audioSystem->SampleExists("lifeformkilled")) {
-        if (!g_game->audioSystem->Load("data/planetsurface/lifeformkilled.wav",
-                                       "lifeformkilled")) {
+        if (!g_game->audioSystem->Load(
+                "data/planetsurface/lifeformkilled.wav", "lifeformkilled")) {
             ALLEGRO_DEBUG("PlanetSurface: Error loading "
                           "data/planetsurface/lifeformkilled.wav\n");
         }
@@ -741,18 +842,8 @@ ModulePlanetSurface::Init() {
     // load the hull graphic
     HullBar = resources[I_ELEMENT_GAUGE_GREEN];
 
-    // load timer bar fill
-    Timer_BarFill = resources[I_ELEMENT_BIGGAUGE_YELLOW];
-
-    // load timer bar empty
-    Timer_BarEmpty = resources[I_ELEMENT_BIGGAUGE_EMPTY];
-
     // load lifeforms HP bar
     HP_Bar = resources[I_ELEMENT_SMALLGAUGE_GREEN];
-
-    // create the label for the timer
-    TimerText =
-        new Label("", TIMERTEXT_X, TIMERTEXT_Y, 247, 19, BLACK, g_game->font18);
 
     // Load Cargo Images
     Cargo = resources[I_CARGO_BAR];
@@ -766,13 +857,14 @@ ModulePlanetSurface::Init() {
     static int gmy = (int)g_game->getGlobalNumber("GUI_MESSAGE_POS_Y");
     static int gmw = (int)g_game->getGlobalNumber("GUI_MESSAGE_WIDTH");
     static int gmh = (int)g_game->getGlobalNumber("GUI_MESSAGE_HEIGHT");
-    messages = new ScrollBox::ScrollBox(g_game->font18,
-                                        ScrollBox::SB_TEXT,
-                                        gmx + 38,
-                                        gmy + 18,
-                                        gmw - 53,
-                                        gmh - 32,
-                                        999);
+    messages = new ScrollBox::ScrollBox(
+        g_game->font18,
+        ScrollBox::SB_TEXT,
+        gmx + 38,
+        gmy + 18,
+        gmw - 53,
+        gmh - 32,
+        999);
     messages->DrawScrollBar(true);
 
     // point global scrollbox to local one in this module for access by external
@@ -790,25 +882,16 @@ ModulePlanetSurface::Init() {
     CARGOFILL_X = OFFICERICON_UL_X + 47;
     CARGOFILL_Y = OFFICERICON_UL_Y - 38;
 
-    cargoBtn = new Button(Cargo,
-                          CargoMouseOver,
-                          NULL,
-                          OFFICERICON_UL_X - 15,
-                          OFFICERICON_UL_Y - 43,
-                          CARGO_HOVER,
-                          CARGO_CLICK);
+    cargoBtn = new Button(
+        Cargo,
+        CargoMouseOver,
+        NULL,
+        OFFICERICON_UL_X - 15,
+        OFFICERICON_UL_Y - 43,
+        EVENT_NONE,
+        EVENT_CARGO_LIST_CLICK);
 
     updateCargoFillPercent();
-
-    // Initialize label
-    label = new Label(SHIP_TEXT,
-                      CMDBUTTONS_UL_X + 10,
-                      CMDBUTTONS_UL_Y + 10,
-                      175,
-                      200,
-                      BLACK,
-                      g_game->font24);
-    label->Refresh();
 
     // Load command btn images
     btnNormal = resources[I_COMMAND_BUTTON_BG];
@@ -819,108 +902,117 @@ ModulePlanetSurface::Init() {
     // Create command btns
     int cbx = CMDBUTTONS_UL_X;
     int cby = CMDBUTTONS_UL_Y;
-    Btns[0] = new Button(btnNormal,
-                         btnMouseOver,
-                         btnDisabled,
-                         cbx,
-                         cby,
-                         9,
-                         0,
-                         g_game->font18,
-                         "",
-                         BLACK);
+    Btns[0] = new Button(
+        btnNormal,
+        btnMouseOver,
+        btnDisabled,
+        cbx,
+        cby,
+        EVENT_NONE,
+        EVENT_PLANETSURFACE_COMMAND1,
+        g_game->font18,
+        "",
+        BLACK);
     cbx += al_get_bitmap_width(btnNormal);
-    Btns[1] = new Button(btnNormal,
-                         btnMouseOver,
-                         btnDisabled,
-                         cbx,
-                         cby,
-                         10,
-                         1,
-                         g_game->font18,
-                         "",
-                         BLACK);
+    Btns[1] = new Button(
+        btnNormal,
+        btnMouseOver,
+        btnDisabled,
+        cbx,
+        cby,
+        EVENT_NONE,
+        EVENT_PLANETSURFACE_COMMAND2,
+        g_game->font18,
+        "",
+        BLACK);
     cbx += al_get_bitmap_width(btnNormal);
-    Btns[2] = new Button(btnNormal,
-                         btnMouseOver,
-                         btnDisabled,
-                         cbx,
-                         cby,
-                         11,
-                         2,
-                         g_game->font18,
-                         "",
-                         BLACK);
+    Btns[2] = new Button(
+        btnNormal,
+        btnMouseOver,
+        btnDisabled,
+        cbx,
+        cby,
+        EVENT_NONE,
+        EVENT_PLANETSURFACE_COMMAND3,
+        g_game->font18,
+        "",
+        BLACK);
 
     cby += al_get_bitmap_height(btnNormal);
     cbx = CMDBUTTONS_UL_X;
-    Btns[3] = new Button(btnNormal,
-                         btnMouseOver,
-                         btnDisabled,
-                         cbx,
-                         cby,
-                         12,
-                         3,
-                         g_game->font18,
-                         "",
-                         BLACK);
+    Btns[3] = new Button(
+        btnNormal,
+        btnMouseOver,
+        btnDisabled,
+        cbx,
+        cby,
+        EVENT_NONE,
+        EVENT_PLANETSURFACE_COMMAND4,
+        g_game->font18,
+        "",
+        BLACK);
     cbx += al_get_bitmap_width(btnNormal);
-    Btns[4] = new Button(btnNormal,
-                         btnMouseOver,
-                         btnDisabled,
-                         cbx,
-                         cby,
-                         13,
-                         4,
-                         g_game->font18,
-                         "",
-                         BLACK);
+    Btns[4] = new Button(
+        btnNormal,
+        btnMouseOver,
+        btnDisabled,
+        cbx,
+        cby,
+        EVENT_NONE,
+        EVENT_PLANETSURFACE_COMMAND5,
+        g_game->font18,
+        "",
+        BLACK);
     cbx += al_get_bitmap_width(btnNormal);
-    Btns[5] = new Button(btnNormal,
-                         btnMouseOver,
-                         btnDisabled,
-                         cbx,
-                         cby,
-                         14,
-                         5,
-                         g_game->font18,
-                         "",
-                         BLACK);
+    Btns[5] = new Button(
+        btnNormal,
+        btnMouseOver,
+        btnDisabled,
+        cbx,
+        cby,
+        EVENT_NONE,
+        EVENT_PLANETSURFACE_COMMAND6,
+        g_game->font18,
+        "",
+        BLACK);
 
     cby += al_get_bitmap_height(btnNormal);
     cbx = CMDBUTTONS_UL_X;
-    Btns[6] = new Button(btnNormal,
-                         btnMouseOver,
-                         btnDisabled,
-                         cbx,
-                         cby,
-                         15,
-                         6,
-                         g_game->font18,
-                         "",
-                         BLACK);
+    Btns[6] = new Button(
+        btnNormal,
+        btnMouseOver,
+        btnDisabled,
+        cbx,
+        cby,
+        EVENT_NONE,
+        EVENT_PLANETSURFACE_COMMAND7,
+        g_game->font18,
+        "",
+        BLACK);
     cbx += al_get_bitmap_width(btnNormal);
-    Btns[7] = new Button(btnNormal,
-                         btnMouseOver,
-                         btnDisabled,
-                         cbx,
-                         cby,
-                         16,
-                         7,
-                         g_game->font18,
-                         "",
-                         BLACK);
+    Btns[7] = new Button(
+        btnNormal,
+        btnMouseOver,
+        btnDisabled,
+        cbx,
+        cby,
+        EVENT_NONE,
+        EVENT_PLANETSURFACE_COMMAND8,
+        g_game->font18,
+        "",
+        BLACK);
     cbx += al_get_bitmap_width(btnNormal);
-    Btns[8] = new Button(btnNormal,
-                         btnMouseOver,
-                         btnDisabled,
-                         cbx,
-                         cby,
-                         17,
-                         8,
-                         g_game->font18,
-                         "",
-                         BLACK);
+    Btns[8] = new Button(
+        btnNormal,
+        btnMouseOver,
+        btnDisabled,
+        cbx,
+        cby,
+        EVENT_NONE,
+        EVENT_PLANETSURFACE_COMMAND9,
+        g_game->font18,
+        "",
+        BLACK);
 
     // Load big command btn images
     btnBigNormal = resources[I_COMMAND_BIGBUTTON_BG];
@@ -928,27 +1020,28 @@ ModulePlanetSurface::Init() {
     btnBigMouseOver = resources[I_COMMAND_BIGBUTTON_BG_MO];
     btnBigSelect = resources[I_COMMAND_BIGBUTTON_BG_SELECT];
 
-    BigBtns[0] = new Button(btnBigNormal,
-                            btnBigMouseOver,
-                            btnBigDisabled,
-                            OFFICERICON_UL_X,
-                            OFFICERICON_UL_Y,
-                            BIGBTN1_HOVER,
-                            BIGBTN1_CLICK,
-                            g_game->font18,
-                            "Land",
-                            BLACK);
-    BigBtns[1] =
-        new Button(btnBigNormal,
-                   btnBigMouseOver,
-                   btnBigDisabled,
-                   OFFICERICON_UL_X + al_get_bitmap_width(btnBigNormal),
-                   OFFICERICON_UL_Y,
-                   BIGBTN2_HOVER,
-                   BIGBTN2_CLICK,
-                   g_game->font18,
-                   "Launch",
-                   BLACK);
+    BigBtns[0] = new Button(
+        btnBigNormal,
+        btnBigMouseOver,
+        btnBigDisabled,
+        OFFICERICON_UL_X,
+        OFFICERICON_UL_Y,
+        EVENT_NONE,
+        EVENT_PLANETSURFACE_ACTION1,
+        g_game->font18,
+        "Land",
+        BLACK);
+    BigBtns[1] = new Button(
+        btnBigNormal,
+        btnBigMouseOver,
+        btnBigDisabled,
+        OFFICERICON_UL_X + al_get_bitmap_width(btnBigNormal),
+        OFFICERICON_UL_Y,
+        EVENT_NONE,
+        EVENT_PLANETSURFACE_ACTION2,
+        g_game->font18,
+        "Launch",
+        BLACK);
 
     // Load all the Lua Scripts and Register all the Lua->C++ functions
     SetupLua();
@@ -973,11 +1066,11 @@ ModulePlanetSurface::Init() {
     cinematicShip->setFaceAngle(playerShip->getFaceAngle());
     // Adjust for fly in position
     cinematicShip->setX(
-        cinematicShip->getX() -
-        (cos(cinematicShip->getFaceAngle() * 0.0174532925) * 900));
+        cinematicShip->getX()
+        - (cos(cinematicShip->getFaceAngle() * 0.0174532925) * 900));
     cinematicShip->setY(
-        cinematicShip->getY() -
-        (sin(cinematicShip->getFaceAngle() * 0.0174532925) * 900));
+        cinematicShip->getY()
+        - (sin(cinematicShip->getFaceAngle() * 0.0174532925) * 900));
     cinematicShip->setScale(5);
 
     // create the TV object
@@ -1007,10 +1100,12 @@ ModulePlanetSurface::Init() {
                 // Also, y = lat, x = long, so invert values
                 // 154W 154E  156N 156S
 
-                int itemy = CENTERX + (int)((float)(item->x + 3) *
-                                            ((float)MAPW / (154.0 * 2.0)));
-                int itemx = CENTERY + (int)((float)(item->y - 1) *
-                                            ((float)MAPH / (156.0 * 2.0)));
+                int itemy =
+                    CENTERX
+                    + (int)((float)(item->x + 3) * ((float)MAPW / (154.0 * 2.0)));
+                int itemx =
+                    CENTERY
+                    + (int)((float)(item->y - 1) * ((float)MAPH / (156.0 * 2.0)));
 
                 CreatePSObyItemID("artifact", item->id, itemx, itemy);
             }
@@ -1019,10 +1114,12 @@ ModulePlanetSurface::Init() {
             if (item->planetid == g_game->gameState->player->currentPlanet) {
                 // convert longitude +/- value to tilemap coords
 
-                int itemy = CENTERX + (int)((float)(item->x + 3) *
-                                            ((float)MAPW / (154.0 * 2.0)));
-                int itemx = CENTERY + (int)((float)(item->y - 1) *
-                                            ((float)MAPH / (156.0 * 2.0)));
+                int itemy =
+                    CENTERX
+                    + (int)((float)(item->x + 3) * ((float)MAPW / (154.0 * 2.0)));
+                int itemx =
+                    CENTERY
+                    + (int)((float)(item->y - 1) * ((float)MAPH / (156.0 * 2.0)));
 
                 CreatePSObyItemID("ruin", item->id, itemx, itemy);
             }
@@ -1037,10 +1134,11 @@ ModulePlanetSurface::Init() {
 #pragma endregion
 
 void
-ModulePlanetSurface::CreatePSObyItemID(std::string scriptName,
-                                       int itemid,
-                                       int itemx,
-                                       int itemy) {
+ModulePlanetSurface::CreatePSObyItemID(
+    std::string scriptName,
+    int itemid,
+    int itemx,
+    int itemy) {
     int x, y;
 
     Item *item = NULL;
@@ -1164,8 +1262,8 @@ ModulePlanetSurface::fabTilemap() {
         return false;
     }
 
-    if (al_get_bitmap_width(surface) != 500 &&
-        al_get_bitmap_height(surface) != 500) {
+    if (al_get_bitmap_width(surface) != 500
+        && al_get_bitmap_height(surface) != 500) {
         g_game->message("PlanetSurface: Planet texture is invalid");
         return false;
     }
@@ -1185,8 +1283,8 @@ ModulePlanetSurface::fabTilemap() {
     lua_pushstring(
         LuaVM, Planet::PlanetTemperatureToString(planet->temperature).c_str());
     lua_setglobal(LuaVM, "TEMPERATURE");
-    lua_pushstring(LuaVM,
-                   Planet::PlanetGravityToString(planet->gravity).c_str());
+    lua_pushstring(
+        LuaVM, Planet::PlanetGravityToString(planet->gravity).c_str());
     lua_setglobal(LuaVM, "GRAVITY");
     lua_pushstring(
         LuaVM, Planet::PlanetAtmosphereToString(planet->atmosphere).c_str());
@@ -1661,13 +1759,12 @@ ModulePlanetSurface::fabAcidic() {
 }
 #pragma endregion
 
-void
-ModulePlanetSurface::Update() {
+bool
+ModulePlanetSurface::on_update() {
     char s[80];
     char sLong[20];
-    int centerx =
-        ((scroller->getTilesAcross() - 16) * scroller->getTileWidth()) /
-        2; //-16 accomodates right edge adj
+    int centerx = ((scroller->getTilesAcross() - 16) * scroller->getTileWidth())
+                  / 2; //-16 accomodates right edge adj
     int x = (centerx - (int)scroller->getScrollX()) / 100;
     if (x < 0)
         sprintf(sLong, "%iE", -x);
@@ -1677,12 +1774,11 @@ ModulePlanetSurface::Update() {
         sprintf(sLong, "%iW", x);
 
     char sLat[20];
-    int centery =
-        ((scroller->getTilesDown() - 10) * scroller->getTileHeight()) /
-        2; //-10 accomodates bottom edge adj
+    int centery = ((scroller->getTilesDown() - 10) * scroller->getTileHeight())
+                  / 2; //-10 accomodates bottom edge adj
 
-    int y = (centery - (int)scroller->getScrollY()) / 100 +
-            4; // for some reason it's off by 4?
+    int y = (centery - (int)scroller->getScrollY()) / 100
+            + 4; // for some reason it's off by 4?
 
     if (y < 0)
         sprintf(sLat, "%iS", -y);
@@ -1751,16 +1847,18 @@ ModulePlanetSurface::Update() {
             g_game->TogglePauseMenu();
         }
         // break out of update function
-        return;
+        return false;
     }
 
     // update message window
     messages->ScrollToBottom();
+
+    return true;
 }
 
-void
-ModulePlanetSurface::Draw() {
-    al_set_target_bitmap(g_game->GetBackBuffer());
+bool
+ModulePlanetSurface::on_draw(ALLEGRO_BITMAP *target) {
+    al_set_target_bitmap(target);
     al_clear_to_color(BLACK);
 
     if (vibration > 0)
@@ -1783,15 +1881,17 @@ ModulePlanetSurface::Draw() {
         int scrX = (int)scroller->getScrollX();
         int scrY = (int)scroller->getScrollY();
 
-        int desiredX = (int)panFocus->getX() -
-                       (SCREEN_WIDTH / 2 - panFocus->getFrameWidth() / 2);
-        int desiredY = (int)panFocus->getY() - (SCREEN_HEIGHT / 2 - 128 -
-                                                panFocus->getFrameHeight() / 2);
+        int desiredX = (int)panFocus->getX()
+                       - (SCREEN_WIDTH / 2 - panFocus->getFrameWidth() / 2);
+        int desiredY =
+            (int)panFocus->getY()
+            - (SCREEN_HEIGHT / 2 - 128 - panFocus->getFrameHeight() / 2);
 
-        double angle = atan2((double)desiredY - scrY, (double)desiredX - scrX) *
-                       180 / 3.1415926535;
-        double distance = sqrt((double)((desiredX - scrX) * (desiredX - scrX)) +
-                               ((desiredY - scrY) * (desiredY - scrY)));
+        double angle = atan2((double)desiredY - scrY, (double)desiredX - scrX)
+                       * 180 / 3.1415926535;
+        double distance = sqrt(
+            (double)((desiredX - scrX) * (desiredX - scrX))
+            + ((desiredY - scrY) * (desiredY - scrY)));
         double Increment = distance / 10;
         if (Increment < 5)
             Increment = distance;
@@ -1800,7 +1900,7 @@ ModulePlanetSurface::Draw() {
         scrY += (int)(sin(angle * 0.0174532925) * Increment);
 
         // this misses some cases, so we have to force panCamera=false on
-        // BIGBTN1_CLICK event
+        // EVENT_PLANETSURFACE_ACTION1 event
         if (scrX == desiredX && scrY == desiredY) {
             panCamera = false;
             panFocus = NULL;
@@ -1820,11 +1920,11 @@ ModulePlanetSurface::Draw() {
 
         // keep scroll view from going off the "edge of the world"
         int maxwidth =
-            ((scroller->getTilesAcross() - 9) * scroller->getTileWidth()) -
-            SCROLLEROFFSETX;
+            ((scroller->getTilesAcross() - 9) * scroller->getTileWidth())
+            - SCROLLEROFFSETX;
         int maxheight =
-            ((scroller->getTilesDown() - 6) * scroller->getTileHeight()) -
-            SCROLLEROFFSETY;
+            ((scroller->getTilesDown() - 6) * scroller->getTileHeight())
+            - SCROLLEROFFSETY;
         scrX = (int)Util::ClampValue<float>(scrX, 0, maxwidth);
         scrY = (int)Util::ClampValue<float>(scrY, 0, maxheight);
 
@@ -1836,14 +1936,14 @@ ModulePlanetSurface::Draw() {
     scroller->UpdateScrollBuffer();
 
     // draw scroll buffer
-    scroller->DrawScrollWindow(
-        g_game->GetBackBuffer(), 0, 0, SCREEN_WIDTH, 540);
+    scroller->DrawScrollWindow(target, 0, 0, SCREEN_WIDTH, 540);
 
     // TV goes on bottom so projectiles and lifeforms appear to crawl on top of
     // it
     if (vessel_mode > 0) {
-        bool TVisMoving = (playerTV->getSpeed() != 0 || playerTV->TurnLeft() ||
-                           playerTV->TurnRight());
+        bool TVisMoving =
+            (playerTV->getSpeed() != 0 || playerTV->TurnLeft()
+             || playerTV->TurnRight());
         bool TVisDamaged = (playerTV->getHealth() < 75);
 
         // the TV just passed under 75% health, and is moving
@@ -1885,24 +1985,24 @@ ModulePlanetSurface::Draw() {
                           (playerShip->getX() - cinematicShip->getX())) +
                  ((playerShip->getY() - cinematicShip->getY()) *
                   (playerShip->getY() - cinematicShip->getY())));
-        double angle =
-            atan2((double)playerShip->getY() - cinematicShip->getY(),
-                  (double)playerShip->getX() - cinematicShip->getX()) *
-            180 / 3.1415926535;
+        double angle = atan2(
+                           (double)playerShip->getY() - cinematicShip->getY(),
+                           (double)playerShip->getX() - cinematicShip->getX())
+                       * 180 / 3.1415926535;
 
         double Increment = distance / 10;
         if (Increment < 1)
             Increment = distance;
-        cinematicShip->setX(cinematicShip->getX() +
-                            (cos(angle * 0.0174532925) * Increment));
-        cinematicShip->setY(cinematicShip->getY() +
-                            (sin(angle * 0.0174532925) * Increment));
+        cinematicShip->setX(
+            cinematicShip->getX() + (cos(angle * 0.0174532925) * Increment));
+        cinematicShip->setY(
+            cinematicShip->getY() + (sin(angle * 0.0174532925) * Increment));
 
         if (cinematicShip->getScale() > playerShip->getScale())
             cinematicShip->setScale(cinematicShip->getScale() - .1);
 
-        if (cinematicShip->getX() == playerShip->getX() &&
-            cinematicShip->getY() == playerShip->getY()) {
+        if (cinematicShip->getX() == playerShip->getX()
+            && cinematicShip->getY() == playerShip->getY()) {
             introCinematicRunning = false;
         }
         cinematicShip->Draw();
@@ -1914,11 +2014,11 @@ ModulePlanetSurface::Draw() {
         cinematicShip->setSpeed(cinematicShip->getSpeed() * 1.05);
 
         cinematicShip->setX(
-            cinematicShip->getX() +
-            (cos(angle * 0.0174532925) * cinematicShip->getSpeed()));
+            cinematicShip->getX()
+            + (cos(angle * 0.0174532925) * cinematicShip->getSpeed()));
         cinematicShip->setY(
-            cinematicShip->getY() +
-            (sin(angle * 0.0174532925) * cinematicShip->getSpeed()));
+            cinematicShip->getY()
+            + (sin(angle * 0.0174532925) * cinematicShip->getSpeed()));
 
         cinematicShip->setScale(cinematicShip->getScale() + .15);
 
@@ -1936,7 +2036,7 @@ ModulePlanetSurface::Draw() {
             introCinematicRunning = false;
             g_game->gameState->m_ship.ConsumeFuel(100);
             g_game->LoadModule(MODULE_ORBIT);
-            return;
+            return true;
         }
     } else {
         playerShip->TimedUpdate();
@@ -1955,62 +2055,65 @@ ModulePlanetSurface::Draw() {
         if (g_game->gameState->getShip().getMaxArmorIntegrity() <= 0) {
             percentage = 0;
         } else {
-            percentage = g_game->gameState->getShip().getArmorIntegrity() /
-                         g_game->gameState->getShip().getMaxArmorIntegrity();
+            percentage = g_game->gameState->getShip().getArmorIntegrity()
+                         / g_game->gameState->getShip().getMaxArmorIntegrity();
         }
         al_draw_bitmap(Armor, 476, 10, 0);
-        al_draw_bitmap_region(ArmorBar,
-                              0,
-                              0,
-                              al_get_bitmap_width(ArmorBar) * percentage,
-                              al_get_bitmap_height(ArmorBar),
-                              536,
-                              11,
-                              0);
+        al_draw_bitmap_region(
+            ArmorBar,
+            0,
+            0,
+            al_get_bitmap_width(ArmorBar) * percentage,
+            al_get_bitmap_height(ArmorBar),
+            536,
+            11,
+            0);
 
         percentage = g_game->gameState->getShip().getFuel();
         al_draw_bitmap(Fuel, 666, 11, 0);
-        al_draw_bitmap_region(FuelBar,
-                              0,
-                              0,
-                              al_get_bitmap_width(FuelBar) * percentage,
-                              al_get_bitmap_height(FuelBar),
-                              709,
-                              11,
-                              0);
+        al_draw_bitmap_region(
+            FuelBar,
+            0,
+            0,
+            al_get_bitmap_width(FuelBar) * percentage,
+            al_get_bitmap_height(FuelBar),
+            709,
+            11,
+            0);
 
         percentage = g_game->gameState->getShip().getHullIntegrity() / 100;
         al_draw_bitmap(Hull, 300, 11, 0);
-        al_draw_bitmap_region(HullBar,
-                              0,
-                              0,
-                              al_get_bitmap_width(HullBar) * percentage,
-                              al_get_bitmap_height(HullBar),
-                              342,
-                              13,
-                              0);
+        al_draw_bitmap_region(
+            HullBar,
+            0,
+            0,
+            al_get_bitmap_width(HullBar) * percentage,
+            al_get_bitmap_height(HullBar),
+            342,
+            13,
+            0);
     } else {
         al_draw_bitmap(Fuel, 666, 11, 0);
-        al_draw_bitmap_region(FuelBar,
-                              0,
-                              0,
-                              (int)(al_get_bitmap_width(FuelBar) *
-                                    ((double)playerTV->getCounter3() / 100)),
-                              al_get_bitmap_height(FuelBar),
-                              709,
-                              11,
-                              0);
+        al_draw_bitmap_region(
+            FuelBar,
+            0,
+            0,
+            (int)(al_get_bitmap_width(FuelBar) * ((double)playerTV->getCounter3() / 100)),
+            al_get_bitmap_height(FuelBar),
+            709,
+            11,
+            0);
 
         al_draw_bitmap(Hull, 300, 11, 0);
-        al_draw_bitmap_region(HullBar,
-                              0,
-                              0,
-                              (int)(al_get_bitmap_width(HullBar) *
-                                    ((double)playerTV->getHealth() / 100)),
-                              al_get_bitmap_height(HullBar),
-                              342,
-                              13,
-                              0);
+        al_draw_bitmap_region(
+            HullBar,
+            0,
+            0,
+            (int)(al_get_bitmap_width(HullBar) * ((double)playerTV->getHealth() / 100)),
+            al_get_bitmap_height(HullBar),
+            342,
+            13,
+            0);
     }
 
     // draw the aux gui
@@ -2022,35 +2125,39 @@ ModulePlanetSurface::Draw() {
     static int gmx = (int)g_game->getGlobalNumber("GUI_MESSAGE_POS_X");
     static int gmy = (int)g_game->getGlobalNumber("GUI_MESSAGE_POS_Y");
     al_draw_bitmap(img_messages, gmx, gmy, 0);
-    messages->Draw(g_game->GetBackBuffer());
+    messages->Draw(target);
 
     // draw socket gui
     static int gsx = (int)g_game->getGlobalNumber("GUI_SOCKET_POS_X");
     static int gsy = (int)g_game->getGlobalNumber("GUI_SOCKET_POS_Y");
-    al_draw_bitmap_region(img_socket,
-                          0,
-                          0,
-                          al_get_bitmap_width(img_socket),
-                          al_get_bitmap_height(img_socket),
-                          gsx,
-                          gsy,
-                          0);
+    al_draw_bitmap_region(
+        img_socket,
+        0,
+        0,
+        al_get_bitmap_width(img_socket),
+        al_get_bitmap_height(img_socket),
+        gsx,
+        gsy,
+        0);
 
     static int gcpx = (int)g_game->getGlobalNumber("GUI_CONTROLPANEL_POS_X");
     static int gcpy = (int)g_game->getGlobalNumber("GUI_CONTROLPANEL_POS_Y");
     al_draw_bitmap(img_control, gcpx, gcpy, 0);
 
     // always draw help text unless it would interfere with buttons
-    if (!activeButtons)
-        label->Draw(g_game->GetBackBuffer());
+    if (!activeButtons) {
+        m_label->set_active(true);
+    } else {
+        m_label->set_active(false);
+    }
 
     for (int i = 0; i < 2; ++i)
-        BigBtns[i]->Run(g_game->GetBackBuffer());
+        BigBtns[i]->Run(target);
 
     for (int i = 0; i < activeButtons; ++i)
-        Btns[i]->Run(g_game->GetBackBuffer());
+        Btns[i]->Run(target);
 
-    cargoBtn->Run(g_game->GetBackBuffer());
+    cargoBtn->Run(target);
 
     al_draw_bitmap_region(
         Cargo_BarFill,
@@ -2062,42 +2169,12 @@ ModulePlanetSurface::Draw() {
         CARGOFILL_Y,
         0);
 
-    if (timerOn) {
-        al_draw_bitmap(Timer_BarEmpty, TIMER_X, TIMER_Y, 0);
-        al_draw_bitmap_region(Timer_BarFill,
-                              0,
-                              0,
-                              (int)(al_get_bitmap_width(Timer_BarFill) *
-                                    ((double)timerCount / timerLength)),
-                              al_get_bitmap_height(Timer_BarFill),
-                              TIMER_X,
-                              TIMER_Y,
-                              0);
-        TimerText->Draw(g_game->GetBackBuffer());
-
-        if (timerLength <= ++timerCount) {
-            timerOn = false;
-            timerCount = 0;
-            timerLength = 0;
-
-            // stop playback of the sound effects
-            if (g_game->audioSystem->SampleExists("scanning"))
-                g_game->audioSystem->Stop("scanning");
-            if (g_game->audioSystem->SampleExists("pickuplifeform"))
-                g_game->audioSystem->Stop("pickuplifeform");
-            if (g_game->audioSystem->SampleExists("mining"))
-                g_game->audioSystem->Stop("mining");
-
-            Event e(TIMER_EXPIRED_EVENT);
-            g_game->modeMgr->BroadcastEvent(&e);
-        }
-    }
-
     if (player_stranded == true && vessel_mode == 0) {
         BigBtns[1]->SetButtonText("S.O.S.");
     }
 
     drawMinimap();
+    return true;
 }
 
 void
@@ -2106,35 +2183,36 @@ ModulePlanetSurface::drawMinimap() {
     al_clear_to_color(BLACK);
 
     // draw the planet scanner image
-    al_draw_scaled_bitmap(surface,
-                          0,
-                          0,
-                          al_get_bitmap_width(surface),
-                          al_get_bitmap_height(surface),
-                          0,
-                          0,
-                          al_get_bitmap_width(minimap),
-                          al_get_bitmap_height(minimap),
-                          0);
+    al_draw_scaled_bitmap(
+        surface,
+        0,
+        0,
+        al_get_bitmap_width(surface),
+        al_get_bitmap_height(surface),
+        0,
+        0,
+        al_get_bitmap_width(minimap),
+        al_get_bitmap_height(minimap),
+        0);
 
     // draw the player's position on the minimap
-    float x = playerShip->getX() /
-              (scroller->getTilesAcross() * scroller->getTileWidth()) *
-              al_get_bitmap_width(minimap);
-    float y = playerShip->getY() /
-              (scroller->getTilesDown() * scroller->getTileHeight()) *
-              al_get_bitmap_height(minimap);
+    float x = playerShip->getX()
+              / (scroller->getTilesAcross() * scroller->getTileWidth())
+              * al_get_bitmap_width(minimap);
+    float y = playerShip->getY()
+              / (scroller->getTilesDown() * scroller->getTileHeight())
+              * al_get_bitmap_height(minimap);
     al_draw_filled_circle(x, y, 3, LTRED);
     al_draw_circle(x, y, 3, BLACK, 1);
 
     // draw terrain vehicle on minimap
     if (vessel_mode > 0) {
-        x = (playerTV->getX()) /
-            (scroller->getTilesAcross() * scroller->getTileWidth()) *
-            al_get_bitmap_width(minimap);
-        y = (playerTV->getY()) /
-            (scroller->getTilesDown() * scroller->getTileHeight()) *
-            al_get_bitmap_height(minimap);
+        x = (playerTV->getX())
+            / (scroller->getTilesAcross() * scroller->getTileWidth())
+            * al_get_bitmap_width(minimap);
+        y = (playerTV->getY())
+            / (scroller->getTilesDown() * scroller->getTileHeight())
+            * al_get_bitmap_height(minimap);
         al_draw_filled_circle(x, y, 3, YELLOW);
         al_draw_circle(x, y, 3, BLACK, 1);
     }
@@ -2155,12 +2233,12 @@ ModulePlanetSurface::drawMinimap() {
                 break; // mineral
             }
 
-            x = surfaceObjects[i]->getX() /
-                (scroller->getTilesAcross() * scroller->getTileWidth()) *
-                al_get_bitmap_width(minimap);
-            y = surfaceObjects[i]->getY() /
-                (scroller->getTilesDown() * scroller->getTileHeight()) *
-                al_get_bitmap_height(minimap);
+            x = surfaceObjects[i]->getX()
+                / (scroller->getTilesAcross() * scroller->getTileWidth())
+                * al_get_bitmap_width(minimap);
+            y = surfaceObjects[i]->getY()
+                / (scroller->getTilesDown() * scroller->getTileHeight())
+                * al_get_bitmap_height(minimap);
             al_draw_filled_circle(x, y, 2, color);
             al_draw_circle(x, y, 2, BLACK, 1);
         }
@@ -2190,11 +2268,12 @@ ModulePlanetSurface::drawHPBar(PlanetSurfaceObject *PSO) {
 }
 
 double
-ModulePlanetSurface::CalcDistance(PlanetSurfaceObject *PSO1,
-                                  PlanetSurfaceObject *PSO2) {
+ModulePlanetSurface::CalcDistance(
+    PlanetSurfaceObject *PSO1,
+    PlanetSurfaceObject *PSO2) {
     return sqrt(
-        ((PSO2->getX() - PSO1->getX()) * (PSO2->getX() - PSO1->getX())) +
-        ((PSO2->getY() - PSO1->getY()) * (PSO2->getY() - PSO1->getY())));
+        ((PSO2->getX() - PSO1->getX()) * (PSO2->getX() - PSO1->getX()))
+        + ((PSO2->getY() - PSO1->getY()) * (PSO2->getY() - PSO1->getY())));
 }
 
 void
@@ -2210,9 +2289,10 @@ ModulePlanetSurface::PostMessage(std::string text, ALLEGRO_COLOR color) {
 }
 
 void
-ModulePlanetSurface::PostMessage(std::string text,
-                                 ALLEGRO_COLOR color,
-                                 int blanksBefore) {
+ModulePlanetSurface::PostMessage(
+    std::string text,
+    ALLEGRO_COLOR color,
+    int blanksBefore) {
     for (int i = 0; i < blanksBefore; ++i)
         messages->Write("");
     messages->Write(text, color);
@@ -2220,10 +2300,11 @@ ModulePlanetSurface::PostMessage(std::string text,
 }
 
 void
-ModulePlanetSurface::PostMessage(std::string text,
-                                 ALLEGRO_COLOR color,
-                                 int blanksBefore,
-                                 int blanksAfter) {
+ModulePlanetSurface::PostMessage(
+    std::string text,
+    ALLEGRO_COLOR color,
+    int blanksBefore,
+    int blanksAfter) {
     for (int i = 0; i < blanksBefore; ++i)
         messages->Write("");
     messages->Write(text, color);
@@ -2284,9 +2365,10 @@ ModulePlanetSurface::CheckForCollisions(PlanetSurfaceObject *PSO) {
 }
 
 void
-ModulePlanetSurface::CheckTileCollision(PlanetSurfaceObject *PSO,
-                                        int x,
-                                        int y) {
+ModulePlanetSurface::CheckTileCollision(
+    PlanetSurfaceObject *PSO,
+    int x,
+    int y) {
     if (scroller->CheckCollisionbyCoords(x, y)) {
         scroller->ConvertCoordstoNearestPoint(x, y);
         PSO->CheckCollision(
@@ -2521,8 +2603,8 @@ L_SetActions(lua_State *luaVM) {
     }
     g_game->PlanetSurfaceHolder->activeButtons = i;
     if (i == 0) {
-        g_game->PlanetSurfaceHolder->label->SetText(OBJECT_NEEDS_SCANNED_TEXT);
-        g_game->PlanetSurfaceHolder->label->Refresh();
+        g_game->PlanetSurfaceHolder->m_label->set_text(
+            OBJECT_NEEDS_SCANNED_TEXT);
     }
     return 0;
 }
@@ -2605,8 +2687,8 @@ L_AddItemtoCargo(lua_State *luaVM) {
 
     g_game->gameState->m_items.AddItems(id, amount); // jjh
 
-    Event e(CARGO_EVENT_UPDATE);
-    g_game->modeMgr->BroadcastEvent(&e);
+    ALLEGRO_EVENT e = {.type = static_cast<unsigned int>(EVENT_CARGO_UPDATE)};
+    g_game->broadcast_event(&e);
 
     return 0;
 }
@@ -2624,8 +2706,8 @@ L_AddArtifactToCargo(lua_State *luaVM) {
     g_game->gameState->m_items.SetItemCount(id, 1);
 
     // notify cargo window to update list
-    Event e(CARGO_EVENT_UPDATE);
-    g_game->modeMgr->BroadcastEvent(&e);
+    ALLEGRO_EVENT e = {.type = static_cast<unsigned int>(EVENT_CARGO_UPDATE)};
+    g_game->broadcast_event(&e);
 
     return 0;
 }
@@ -2634,8 +2716,8 @@ L_AddArtifactToCargo(lua_State *luaVM) {
 int
 L_DeleteSelf(lua_State * /*luaVM*/) {
     if (g_game->PlanetSurfaceHolder->psObjectHolder != NULL) {
-        if (g_game->PlanetSurfaceHolder->selectedPSO ==
-            g_game->PlanetSurfaceHolder->psObjectHolder) {
+        if (g_game->PlanetSurfaceHolder->selectedPSO
+            == g_game->PlanetSurfaceHolder->psObjectHolder) {
             g_game->PlanetSurfaceHolder->selectedPSO = NULL;
             g_game->PlanetSurfaceHolder->activeButtons = 0;
         }
@@ -2655,9 +2737,8 @@ L_LoadPSObyID(lua_State *luaVM) {
     int id = (int)lua_tonumber(luaVM, -1);
     lua_pop(luaVM, 1);
 
-    if (id >= 0 &&
-        id < (int)g_game->PlanetSurfaceHolder->surfaceObjects.size() &&
-        g_game->PlanetSurfaceHolder->surfaceObjects[id] != NULL) {
+    if (id >= 0 && id < (int)g_game->PlanetSurfaceHolder->surfaceObjects.size()
+        && g_game->PlanetSurfaceHolder->surfaceObjects[id] != NULL) {
         g_game->PlanetSurfaceHolder->psObjectHolder =
             g_game->PlanetSurfaceHolder->surfaceObjects[id];
     }
@@ -2669,8 +2750,8 @@ int
 L_CreateNewPSO(lua_State *luaVM) {
     g_game->PlanetSurfaceHolder->AddPlanetSurfaceObject(
         new PlanetSurfaceObject(luaVM, lua_tostring(luaVM, -1)));
-    lua_pushnumber(luaVM,
-                   g_game->PlanetSurfaceHolder->surfaceObjects.size() - 1);
+    lua_pushnumber(
+        luaVM, g_game->PlanetSurfaceHolder->surfaceObjects.size() - 1);
 
     return 1;
 }
@@ -2685,8 +2766,8 @@ L_CreateNewPSObyItemID(lua_State *luaVM) {
     lua_pop(luaVM, 1);
 
     g_game->PlanetSurfaceHolder->CreatePSObyItemID(scriptName, itemid);
-    lua_pushnumber(luaVM,
-                   g_game->PlanetSurfaceHolder->surfaceObjects.size() - 1);
+    lua_pushnumber(
+        luaVM, g_game->PlanetSurfaceHolder->surfaceObjects.size() - 1);
 
     return 1;
 }
@@ -2756,8 +2837,8 @@ L_CheckInventorySpace(lua_State *luaVM) {
     int quantity = (int)lua_tonumber(luaVM, -1);
     lua_pop(luaVM, 1);
 
-    lua_pushboolean(luaVM,
-                    g_game->gameState->m_ship.getAvailableSpace() >= quantity);
+    lua_pushboolean(
+        luaVM, g_game->gameState->m_ship.getAvailableSpace() >= quantity);
 
     return 1;
 }
@@ -2785,9 +2866,8 @@ L_AttackTV(lua_State *luaVM) {
     if (g_game->PlanetSurfaceHolder->playerTV != NULL) {
         int realdamage = damage / 10;
 
-        g_game->PlanetSurfaceHolder->playerTV->setHealth(
-            (int)(g_game->PlanetSurfaceHolder->playerTV->getHealth() -
-                  realdamage));
+        g_game->PlanetSurfaceHolder->playerTV->setHealth((
+            int)(g_game->PlanetSurfaceHolder->playerTV->getHealth() - realdamage));
         g_game->PlanetSurfaceHolder->vibration = 20;
 
         int health = g_game->PlanetSurfaceHolder->playerTV->getHealth();
@@ -2843,8 +2923,7 @@ L_TVDestroyed(lua_State * /*luaVM*/) {
     g_game->PlanetSurfaceHolder->BigBtns[0]->SetButtonText("Land");
     g_game->PlanetSurfaceHolder->BigBtns[1]->SetButtonText("Launch");
 
-    g_game->PlanetSurfaceHolder->label->SetText(SHIP_TEXT);
-    g_game->PlanetSurfaceHolder->label->Refresh();
+    g_game->PlanetSurfaceHolder->m_label->set_text(SHIP_TEXT);
 
     return 0;
 }
@@ -2861,10 +2940,8 @@ L_TVOutofFuel(lua_State * /*luaVM*/) {
     if (g_game->PlanetSurfaceHolder->selectedPSO != NULL)
         g_game->PlanetSurfaceHolder->selectedPSO->setSelected(false);
 
-    if (g_game->PlanetSurfaceHolder->timerOn) {
-        g_game->PlanetSurfaceHolder->timerOn = false;
-        g_game->PlanetSurfaceHolder->timerCount = 0;
-        g_game->PlanetSurfaceHolder->timerLength = 0;
+    if (g_game->PlanetSurfaceHolder->m_timer) {
+        g_game->PlanetSurfaceHolder->m_timer->stop();
     }
 
     g_game->PlanetSurfaceHolder->selectedPSO = NULL;
@@ -2873,8 +2950,7 @@ L_TVOutofFuel(lua_State * /*luaVM*/) {
     g_game->PlanetSurfaceHolder->BigBtns[0]->SetButtonText("Pick Up");
     g_game->PlanetSurfaceHolder->BigBtns[1]->SetButtonText("Pick Up");
 
-    g_game->PlanetSurfaceHolder->label->SetText(TVOUTOFFUEL_TEXT);
-    g_game->PlanetSurfaceHolder->label->Refresh();
+    g_game->PlanetSurfaceHolder->m_label->set_text(TVOUTOFFUEL_TEXT);
 
     g_game->PlanetSurfaceHolder->playerShip->setSpeed(
         0); // This stops the ship from moving right after docking the TV
@@ -2948,7 +3024,7 @@ L_GetPlanetID(lua_State *luaVM) {
 // Lua Example: L_CreateTimer("Extract",100)
 int
 L_CreateTimer(lua_State *luaVM) {
-    g_game->PlanetSurfaceHolder->timerOn = true;
+    g_game->PlanetSurfaceHolder->stop_timer();
 
     int timerLength = (int)lua_tonumber(luaVM, -1);
     lua_pop(luaVM, 1);
@@ -2956,10 +3032,7 @@ L_CreateTimer(lua_State *luaVM) {
     std::string timerName = lua_tostring(luaVM, -1);
     lua_pop(luaVM, 1);
 
-    g_game->PlanetSurfaceHolder->timerCount = 0;
-    g_game->PlanetSurfaceHolder->timerLength = timerLength;
-    g_game->PlanetSurfaceHolder->TimerText->SetText(timerName);
-    g_game->PlanetSurfaceHolder->TimerText->Refresh();
+    g_game->PlanetSurfaceHolder->create_timer(timerLength, timerName);
 
     return 0;
 }
@@ -3012,10 +3085,10 @@ L_GetPlayerProfession(lua_State *luaVM) {
 int
 L_GetPosition(lua_State *luaVM) {
     if (g_game->PlanetSurfaceHolder->psObjectHolder != NULL) {
-        lua_pushnumber(luaVM,
-                       g_game->PlanetSurfaceHolder->psObjectHolder->getX());
-        lua_pushnumber(luaVM,
-                       g_game->PlanetSurfaceHolder->psObjectHolder->getY());
+        lua_pushnumber(
+            luaVM, g_game->PlanetSurfaceHolder->psObjectHolder->getX());
+        lua_pushnumber(
+            luaVM, g_game->PlanetSurfaceHolder->psObjectHolder->getY());
     } else {
         lua_pushnumber(luaVM, 0);
         lua_pushnumber(luaVM, 0);
@@ -3069,8 +3142,8 @@ L_GetScreenDim(lua_State *luaVM) {
 int
 L_GetSpeed(lua_State *luaVM) {
     if (g_game->PlanetSurfaceHolder->psObjectHolder != NULL) {
-        lua_pushnumber(luaVM,
-                       g_game->PlanetSurfaceHolder->psObjectHolder->getSpeed());
+        lua_pushnumber(
+            luaVM, g_game->PlanetSurfaceHolder->psObjectHolder->getSpeed());
     }
 
     return 1;
@@ -3091,14 +3164,14 @@ L_GetFaceAngle(lua_State *luaVM) {
 // L_GetPlayerNavVars()
 int
 L_GetPlayerNavVars(lua_State *luaVM) {
-    lua_pushboolean(luaVM,
-                    g_game->PlanetSurfaceHolder->activeVessel->ForwardThrust());
-    lua_pushboolean(luaVM,
-                    g_game->PlanetSurfaceHolder->activeVessel->ReverseThrust());
-    lua_pushboolean(luaVM,
-                    g_game->PlanetSurfaceHolder->activeVessel->TurnLeft());
-    lua_pushboolean(luaVM,
-                    g_game->PlanetSurfaceHolder->activeVessel->TurnRight());
+    lua_pushboolean(
+        luaVM, g_game->PlanetSurfaceHolder->activeVessel->ForwardThrust());
+    lua_pushboolean(
+        luaVM, g_game->PlanetSurfaceHolder->activeVessel->ReverseThrust());
+    lua_pushboolean(
+        luaVM, g_game->PlanetSurfaceHolder->activeVessel->TurnLeft());
+    lua_pushboolean(
+        luaVM, g_game->PlanetSurfaceHolder->activeVessel->TurnRight());
 
     return 4;
 }
@@ -3107,8 +3180,8 @@ L_GetPlayerNavVars(lua_State *luaVM) {
 int
 L_GetScale(lua_State *luaVM) {
     if (g_game->PlanetSurfaceHolder->psObjectHolder != NULL) {
-        lua_pushnumber(luaVM,
-                       g_game->PlanetSurfaceHolder->psObjectHolder->getScale());
+        lua_pushnumber(
+            luaVM, g_game->PlanetSurfaceHolder->psObjectHolder->getScale());
     }
 
     return 1;
@@ -3163,8 +3236,8 @@ L_IsPlayerMoving(lua_State *luaVM) {
 int
 L_GetItemID(lua_State *luaVM) {
     if (g_game->PlanetSurfaceHolder->psObjectHolder != NULL) {
-        lua_pushnumber(luaVM,
-                       g_game->PlanetSurfaceHolder->psObjectHolder->getID());
+        lua_pushnumber(
+            luaVM, g_game->PlanetSurfaceHolder->psObjectHolder->getID());
     } else
         g_game->fatalerror("GetItemID: psObjectHolder is null!");
 
@@ -3175,8 +3248,8 @@ L_GetItemID(lua_State *luaVM) {
 int
 L_GetState(lua_State *luaVM) {
     if (g_game->PlanetSurfaceHolder->psObjectHolder != NULL) {
-        lua_pushnumber(luaVM,
-                       g_game->PlanetSurfaceHolder->psObjectHolder->getState());
+        lua_pushnumber(
+            luaVM, g_game->PlanetSurfaceHolder->psObjectHolder->getState());
     }
 
     return 1;
@@ -3217,8 +3290,8 @@ L_GetName(lua_State *luaVM) {
 int
 L_GetValue(lua_State *luaVM) {
     if (g_game->PlanetSurfaceHolder->psObjectHolder != NULL) {
-        lua_pushnumber(luaVM,
-                       g_game->PlanetSurfaceHolder->psObjectHolder->getValue());
+        lua_pushnumber(
+            luaVM, g_game->PlanetSurfaceHolder->psObjectHolder->getValue());
     }
 
     return 1;
@@ -3263,8 +3336,8 @@ L_IsShipRepairMetal(lua_State *luaVM) {
 int
 L_IsAlive(lua_State *luaVM) {
     if (g_game->PlanetSurfaceHolder->psObjectHolder != NULL) {
-        lua_pushboolean(luaVM,
-                        g_game->PlanetSurfaceHolder->psObjectHolder->isAlive());
+        lua_pushboolean(
+            luaVM, g_game->PlanetSurfaceHolder->psObjectHolder->isAlive());
     }
 
     return 1;
@@ -3301,8 +3374,8 @@ L_GetID(lua_State *luaVM) {
         for (int i = 0;
              i < (int)g_game->PlanetSurfaceHolder->surfaceObjects.size();
              ++i) {
-            if (g_game->PlanetSurfaceHolder->psObjectHolder ==
-                g_game->PlanetSurfaceHolder->surfaceObjects[i]) {
+            if (g_game->PlanetSurfaceHolder->psObjectHolder
+                == g_game->PlanetSurfaceHolder->surfaceObjects[i]) {
                 lua_pushnumber(luaVM, i);
                 break;
             }
@@ -3362,8 +3435,8 @@ L_GetStunCount(lua_State *luaVM) {
 int
 L_GetItemSize(lua_State *luaVM) {
     if (g_game->PlanetSurfaceHolder->psObjectHolder != NULL) {
-        lua_pushnumber(luaVM,
-                       g_game->PlanetSurfaceHolder->psObjectHolder->getSize());
+        lua_pushnumber(
+            luaVM, g_game->PlanetSurfaceHolder->psObjectHolder->getSize());
     }
 
     return 1;
@@ -3374,8 +3447,8 @@ int
 L_GetSelectedPSOid(lua_State *luaVM) {
     for (int i = 0; i < (int)g_game->PlanetSurfaceHolder->surfaceObjects.size();
          ++i) {
-        if (g_game->PlanetSurfaceHolder->selectedPSO ==
-            g_game->PlanetSurfaceHolder->surfaceObjects[i]) {
+        if (g_game->PlanetSurfaceHolder->selectedPSO
+            == g_game->PlanetSurfaceHolder->surfaceObjects[i]) {
             lua_pushnumber(luaVM, i);
             break;
         }
@@ -3866,3 +3939,4 @@ L_StopSound(lua_State *luaVM) {
     return 0;
 }
 #pragma endregion
+// vi: ft=cpp

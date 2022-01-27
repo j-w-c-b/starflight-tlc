@@ -10,11 +10,10 @@
 #include "DataMgr.h"
 #include "Events.h"
 #include "Game.h"
+#include "Label.h"
 #include "ModeMgr.h"
 #include "QuestMgr.h"
 #include "Util.h"
-//#include "QuestMgr.h"
-#include "Label.h"
 #include "cantina_resources.h"
 
 using namespace std;
@@ -38,8 +37,10 @@ ALLEGRO_DEBUG_CHANNEL("ModuleCantina")
 #define TITLE_H 60
 #define TITLE_W WINDOW_W
 
+#define REQUIREMENT_W 210
+
 #define REWARD_X WINDOW_X
-#define REWARD_Y TITLE_Y + TITLE_H // DETAIL_Y + DETAIL_H
+#define REWARD_Y TITLE_Y + TITLE_H
 #define REWARD_W WINDOW_W
 #define REWARD_H 75
 
@@ -48,65 +49,143 @@ ALLEGRO_DEBUG_CHANNEL("ModuleCantina")
 #define LONG_H 300
 #define LONG_W WINDOW_W
 
-#define EVENT_NONE 0
-#define EVENT_EXIT_CLICK 1
-#define EVENT_TURNIN_CLICK 7
+ModuleCantina::ModuleCantina()
+    : Module(), m_background(nullptr), resources(CANTINA_IMAGES) {
+    // create labels
+    m_title_label = new Label(
+        "",
+        TITLE_X,
+        TITLE_Y,
+        TITLE_W - REQUIREMENT_W,
+        TITLE_H,
+        false,
+        0,
+        g_game->font24,
+        WHITE);
+    add_child_module(m_title_label);
+    questTitle = new Label(
+        "",
+        TITLE_X,
+        TITLE_Y + 23,
+        TITLE_W,
+        TITLE_H,
+        false,
+        0,
+        g_game->font22,
+        WHITE);
+    add_child_module(questTitle);
+    m_requirement_label = new Label(
+        "",
+        TITLE_X + WINDOW_W - REQUIREMENT_W,
+        TITLE_Y,
+        REQUIREMENT_W,
+        TITLE_H,
+        false,
+        ALLEGRO_ALIGN_RIGHT,
+        g_game->font24,
+        WHITE);
+    add_child_module(m_requirement_label);
 
-ModuleCantina::ModuleCantina(void)
-    : m_background(nullptr), resources(CANTINA_IMAGES) {}
+    // description
+    m_description_label = new Label(
+        "", LONG_X, LONG_Y, LONG_W, LONG_H, true, 0, g_game->font24, WHITE);
+    add_child_module(m_description_label);
+    questLong = new Label(
+        "",
+        LONG_X,
+        LONG_Y + 23,
+        LONG_W,
+        LONG_H,
+        true,
+        0,
+        g_game->font22,
+        WHITE);
+    add_child_module(questLong);
+
+    // reward
+    m_reward_label = new Label(
+        "",
+        REWARD_X,
+        REWARD_Y,
+        REWARD_W,
+        REWARD_H,
+        true,
+        0,
+        g_game->font24,
+        WHITE);
+    add_child_module(m_reward_label);
+    questReward = new Label(
+        "",
+        REWARD_X,
+        REWARD_Y + 23,
+        REWARD_W,
+        REWARD_H,
+        false,
+        0,
+        g_game->font22,
+        WHITE);
+
+    add_child_module(questReward);
+}
 
 ModuleCantina::~ModuleCantina(void) { ALLEGRO_DEBUG("ModuleCantina Dead\n"); }
 
-void
-ModuleCantina::OnKeyReleased(int keyCode) {
-    switch (keyCode) {
-    case ALLEGRO_KEY_LCTRL:
-        break;
+bool
+ModuleCantina::on_mouse_move(ALLEGRO_MOUSE_EVENT *event) {
+    int x = event->x;
+    int y = event->y;
 
-    case ALLEGRO_KEY_ESCAPE:
-        break;
-    }
-}
-void
-ModuleCantina::OnMouseMove(int x, int y) {
     m_exitBtn->OnMouseMove(x, y);
     m_turninBtn->OnMouseMove(x, y);
-}
-void
-ModuleCantina::OnMouseReleased(int button, int x, int y) {
-    m_turninBtn->OnMouseReleased(button, x, y);
-    m_exitBtn->OnMouseReleased(button, x, y);
-}
 
-void
-ModuleCantina::OnEvent(Event *event) {
-    switch (event->getEventType()) {
-    case EVENT_EXIT_CLICK:
-        g_game->LoadModule(MODULE_STARPORT);
-        return;
-        break;
-
-    case EVENT_TURNIN_CLICK:
-        selectedQuestCompleted = true;
-        break;
-    }
-}
-
-void
-ModuleCantina::Close() {
-    if (m_exitBtn != NULL) {
-        delete m_exitBtn;
-        m_exitBtn = NULL;
-    }
-    if (m_turninBtn != NULL) {
-        delete m_turninBtn;
-        m_turninBtn = NULL;
-    }
-    resources.unload();
+    return true;
 }
 
 bool
-ModuleCantina::Init() {
+ModuleCantina::on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) {
+    int button = event->button - 1;
+    int x = event->x;
+    int y = event->y;
+
+    m_turninBtn->OnMouseReleased(button, x, y);
+    m_exitBtn->OnMouseReleased(button, x, y);
+
+    return true;
+}
+
+bool
+ModuleCantina::on_event(ALLEGRO_EVENT *event) {
+    switch (event->type) {
+    case EVENT_CANTINA_EXIT:
+        g_game->LoadModule(MODULE_STARPORT);
+        return false;
+
+    case EVENT_CANTINA_CLICK:
+        selectedQuestCompleted = true;
+        break;
+    }
+    return true;
+}
+
+bool
+ModuleCantina::on_close() {
+    if (m_exitBtn != nullptr) {
+        delete m_exitBtn;
+        m_exitBtn = nullptr;
+    }
+    if (m_turninBtn != nullptr) {
+        delete m_turninBtn;
+        m_turninBtn = nullptr;
+    }
+    resources.unload();
+    return true;
+}
+
+bool
+ModuleCantina::on_init() {
+    ALLEGRO_COLOR labelcolor, textcolor;
+    string title, description, reward;
+
     ALLEGRO_DEBUG("  Cantina/Research Lab/Military Ops Initialize\n");
 
     // load the datafile
@@ -124,17 +203,18 @@ ModuleCantina::Init() {
 
     btnNorm = resources[I_CANTINA_EXIT_BTN_NORM];
     btnOver = resources[I_CANTINA_EXIT_BTN_OVER];
-    m_exitBtn = new Button(btnNorm,
-                           btnOver,
-                           NULL,
-                           EXITBTN_X,
-                           EXITBTN_Y,
-                           EVENT_NONE,
-                           EVENT_EXIT_CLICK,
-                           g_game->font24,
-                           "Exit",
-                           BLACK,
-                           "click");
+    m_exitBtn = new Button(
+        btnNorm,
+        btnOver,
+        NULL,
+        EXITBTN_X,
+        EXITBTN_Y,
+        EVENT_NONE,
+        EVENT_CANTINA_EXIT,
+        g_game->font24,
+        "Exit",
+        BLACK,
+        "click");
     if (m_exitBtn == NULL)
         return false;
     if (!m_exitBtn->IsInitialized())
@@ -146,17 +226,18 @@ ModuleCantina::Init() {
     btnDis = resources[I_CANTINA_BTN_DIS];
 
     // Create and initialize the TURNIN button for the module
-    m_turninBtn = new Button(btnNorm,
-                             btnOver,
-                             btnDis,
-                             TURNINBTN_X,
-                             TURNINBTN_Y,
-                             EVENT_NONE,
-                             EVENT_TURNIN_CLICK,
-                             g_game->font24,
-                             "SUBMIT",
-                             BLACK,
-                             "click");
+    m_turninBtn = new Button(
+        btnNorm,
+        btnOver,
+        btnDis,
+        TURNINBTN_X,
+        TURNINBTN_Y,
+        EVENT_NONE,
+        EVENT_CANTINA_CLICK,
+        g_game->font24,
+        "SUBMIT",
+        BLACK,
+        "click");
     if (m_turninBtn == NULL)
         return false;
     if (!m_turninBtn->IsInitialized())
@@ -169,9 +250,11 @@ ModuleCantina::Init() {
         m_background = resources[I_RESEARCHLAB_BACKGROUND];
         m_turninBtn->SetButtonText("Breakthrough!");
         m_exitBtn->SetButtonText("Terminate");
-        label1 = "PROJECT TITLE";
-        label2 = "DESCRIPTION";
-        label4 = "REWARD";
+
+        title = "PROJECT TITLE";
+        description = "DESCRIPTION";
+        reward = "REWARD";
+
         labelcolor = LTBLUE;
         textcolor = DODGERBLUE;
         break;
@@ -179,9 +262,10 @@ ModuleCantina::Init() {
         m_background = resources[I_MILITARYOPS_BACKGROUND];
         m_turninBtn->SetButtonText("Accomplished!");
         m_exitBtn->SetButtonText("Dismissed");
-        label1 = "MISSION CODENAME";
-        label2 = "DESCRIPTION";
-        label4 = "REWARD";
+
+        title = "MISSION CODENAME";
+        description = "DESCRIPTION";
+        reward = "REWARD";
         labelcolor = ORANGE;
         textcolor = DKORANGE;
         break;
@@ -189,41 +273,35 @@ ModuleCantina::Init() {
         m_background = resources[I_CANTINA_BACKGROUND];
         m_turninBtn->SetButtonText("Pay Up!");
         m_exitBtn->SetButtonText("Scram");
-        label1 = "JOB NAME";
-        label2 = "DESCRIPTION";
-        label4 = "REWARD";
+        title = "JOB NAME";
+        description = "DESCRIPTION";
+        reward = "REWARD";
         labelcolor = LTYELLOW;
         textcolor = YELLOW;
         break;
     }
+    m_title_label->set_text(title);
+    m_title_label->set_color(labelcolor);
+    questTitle->set_color(textcolor);
+
+    m_description_label->set_text(description);
+    m_description_label->set_color(labelcolor);
+    questLong->set_color(textcolor);
+
+    m_reward_label->set_text(reward);
+    m_reward_label->set_color(labelcolor);
+    questReward->set_color(textcolor);
+
     if (!m_background) {
         g_game->message("Error loading cantina background");
         return false;
     }
 
-    // create labels
-    questTitle = new Label(
-        "", TITLE_X, TITLE_Y + 23, TITLE_W, TITLE_H, textcolor, g_game->font22);
-    questTitle->Refresh();
-
-    questLong = new Label(
-        "", LONG_X, LONG_Y + 23, LONG_W, LONG_H, textcolor, g_game->font22);
-    questLong->Refresh();
-
-    questReward = new Label("",
-                            REWARD_X,
-                            REWARD_Y + 23,
-                            REWARD_W,
-                            REWARD_H,
-                            textcolor,
-                            g_game->font22);
-    questReward->Refresh();
-
     return true;
 }
 
-void
-ModuleCantina::Update() {
+bool
+ModuleCantina::on_update() {
     static int debriefStatus = 0;
 
     // HACK!!!!!
@@ -251,52 +329,81 @@ ModuleCantina::Update() {
     }
 
     g_game->questMgr->getActiveQuest();
-    questTitle->SetText(g_game->questMgr->getName());
-    questTitle->Refresh();
+    questTitle->set_text(g_game->questMgr->getName());
     string desc = g_game->questMgr->getLong();
-    int len = (int)desc.length();
+    int len = desc.length();
 
     // dynamically change font size for long descriptions
     if (len > 600) {
-        questLong->SetFont(g_game->font18);
+        questLong->set_font(g_game->font18);
     } else if (len > 800) {
-        questLong->SetFont(g_game->font20);
-    } else
-        questLong->SetFont(g_game->font22);
+        questLong->set_font(g_game->font20);
+    } else {
+        questLong->set_font(g_game->font22);
+    }
 
-    questLong->SetText(desc);
-    questLong->Refresh();
+    questLong->set_text(desc);
 
     // show requirement status
     if (!selectedQuestCompleted) {
-        int reqAmt = (int)g_game->questMgr->questReqAmt;
-        g_game->questMgr->VerifyRequirements(g_game->questMgr->questReqCode,
-                                             g_game->questMgr->questReqType,
-                                             reqAmt);
+        int reqAmt = static_cast<int>(g_game->questMgr->questReqAmt);
+        g_game->questMgr->VerifyRequirements(
+            g_game->questMgr->questReqCode,
+            g_game->questMgr->questReqType,
+            reqAmt);
     }
     if (g_game->gameState->getQuestCompleted()) {
-        requirementLabel = "(COMPLETE)";
-        requirementColor = GREEN;
+        m_requirement_label->set_text("(COMPLETE)");
+        m_requirement_label->set_color(GREEN);
         m_turninBtn->SetEnabled(true);
     } else {
-        requirementLabel = "(INCOMPLETE)";
-        requirementColor = RED;
+        m_requirement_label->set_text("(INCOMPLETE)");
+        m_requirement_label->set_color(RED);
         m_turninBtn->SetEnabled(false);
     }
+
+    // display reward info
+    string reward = "";
+    int amt = 0;
+    switch (g_game->questMgr->questRewCode) {
+    // 1 = money
+    case 1:
+        amt = static_cast<int>(g_game->questMgr->questRewAmt);
+        reward = Util::ToString(amt, 1, 0) + " MU";
+        break;
+
+    // 2 = item
+    case 2:
+        {
+            amt = static_cast<int>(g_game->questMgr->questRewAmt);
+            int id = g_game->questMgr->questRewType;
+            Item *item = g_game->dataMgr->GetItemByID(id);
+
+            if (item) {
+                reward = item->name + " - " + Util::ToString(amt, 1, 2)
+                         + " cubic meters";
+            } else
+                reward = "";
+            break;
+        }
+    }
+
+    questReward->set_text(reward);
 
     // do we need to show the debriefing and reward?
     if (selectedQuestCompleted)
         debriefStatus = 1;
     if (debriefStatus == 1) {
         if (g_game->questMgr->getDebrief().length() > 0) {
-            g_game->ShowMessageBoxWindow("",
-                                         g_game->questMgr->getDebrief(),
-                                         350,
-                                         300,
-                                         WHITE,
-                                         650,
-                                         440,
-                                         false);
+            g_game->ShowMessageBoxWindow(
+                "",
+                g_game->questMgr->getDebrief(),
+                350,
+                300,
+                WHITE,
+                650,
+                440,
+                false);
         }
         selectedQuestCompleted = false;
         debriefStatus = 2;
@@ -308,66 +415,19 @@ ModuleCantina::Update() {
         g_game->questMgr->getNextQuest();
         debriefStatus = 0;
     }
+    return true;
 }
 
-void
-ModuleCantina::Draw() {
-    Item *item = NULL;
-    int id;
-    al_set_target_bitmap(g_game->GetBackBuffer());
+bool
+ModuleCantina::on_draw(ALLEGRO_BITMAP *target) {
+    al_set_target_bitmap(target);
 
     // draw background
     al_draw_bitmap(m_background, 0, 0, 0);
 
     // draw buttons
-    m_exitBtn->Run(g_game->GetBackBuffer());
-    m_turninBtn->Run(g_game->GetBackBuffer());
+    m_exitBtn->Run(target);
+    m_turninBtn->Run(target);
 
-    // draw labels
-    // title
-    g_game->Print24(
-        g_game->GetBackBuffer(), TITLE_X, TITLE_Y, label1, labelcolor);
-    questTitle->Draw(g_game->GetBackBuffer());
-    al_draw_text(g_game->font24,
-                 requirementColor,
-                 TITLE_X + 625,
-                 TITLE_Y,
-                 ALLEGRO_ALIGN_RIGHT,
-                 requirementLabel.c_str());
-
-    // description
-    g_game->Print24(
-        g_game->GetBackBuffer(), LONG_X, LONG_Y, label2, labelcolor);
-    questLong->Draw(g_game->GetBackBuffer());
-
-    // rewards
-    g_game->Print24(
-        g_game->GetBackBuffer(), REWARD_X, REWARD_Y, label4, labelcolor);
-    questReward->Draw(g_game->GetBackBuffer());
-
-    // display reward info
-    string reward = "";
-    int amt = 0;
-    switch (g_game->questMgr->questRewCode) {
-    // 1 = money
-    case 1:
-        amt = (int)g_game->questMgr->questRewAmt;
-        reward = Util::ToString(amt, 1, 0) + " MU";
-        break;
-
-    // 2 = item
-    case 2:
-        amt = (int)g_game->questMgr->questRewAmt;
-        id = g_game->questMgr->questRewType;
-        item = g_game->dataMgr->GetItemByID(id);
-        if (item) {
-            reward = item->name + " - " + Util::ToString(amt, 1, 2) +
-                     " cubic meters";
-        } else
-            reward = "";
-        break;
-    }
-
-    questReward->SetText(reward);
-    questReward->Refresh();
+    return true;
 }

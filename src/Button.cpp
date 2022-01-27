@@ -5,16 +5,17 @@
 
 using namespace std;
 
-Button::Button(const string &initImgFileNormal,
-               const string &initImgFileMouseOver,
-               const string &initImgFileDisabled,
-               int initX,
-               int initY,
-               int initMouseOverEvent,
-               int initClickEvent,
-               const string &initButtonSound /*= ""*/,
-               bool initEnabled /*= true*/,
-               bool initVisible /*= true*/)
+Button::Button(
+    const string &initImgFileNormal,
+    const string &initImgFileMouseOver,
+    const string &initImgFileDisabled,
+    int initX,
+    int initY,
+    int initMouseOverEvent,
+    int initClickEvent,
+    const string &initButtonSound /*= ""*/,
+    bool initEnabled /*= true*/,
+    bool initVisible /*= true*/)
     : imgNormal(NULL), imgMouseOver(NULL), imgDisabled(NULL),
       buttonSound(initButtonSound), x(initX), y(initY),
       mouseOverEvent(initMouseOverEvent), clickEvent(initClickEvent),
@@ -32,19 +33,20 @@ Button::Button(const string &initImgFileNormal,
         initialized = true;
 }
 
-Button::Button(const string &initImgFileNormal,
-               const string &initImgFileMouseOver,
-               const string &initImgFileDisabled,
-               int initX,
-               int initY,
-               int initMouseOverEvent,
-               int initClickEvent,
-               ALLEGRO_FONT *initFontPtr,
-               const string &initButtonText,
-               ALLEGRO_COLOR initTextColor,
-               const string &initButtonSound /*= ""*/,
-               bool initEnabled /*= true*/,
-               bool initVisible /*= true*/)
+Button::Button(
+    const string &initImgFileNormal,
+    const string &initImgFileMouseOver,
+    const string &initImgFileDisabled,
+    int initX,
+    int initY,
+    int initMouseOverEvent,
+    int initClickEvent,
+    ALLEGRO_FONT *initFontPtr,
+    const string &initButtonText,
+    ALLEGRO_COLOR initTextColor,
+    const string &initButtonSound /*= ""*/,
+    bool initEnabled /*= true*/,
+    bool initVisible /*= true*/)
     : imgNormal(NULL), imgMouseOver(NULL), imgDisabled(NULL),
       buttonSound(initButtonSound), x(initX), y(initY),
       mouseOverEvent(initMouseOverEvent), clickEvent(initClickEvent),
@@ -62,16 +64,17 @@ Button::Button(const string &initImgFileNormal,
         initialized = true;
 }
 
-Button::Button(ALLEGRO_BITMAP *initImgBMPNormal,
-               ALLEGRO_BITMAP *initImgBMPMouseOver,
-               ALLEGRO_BITMAP *initImgBMPDisabled,
-               int initX,
-               int initY,
-               int initMouseOverEvent,
-               int initClickEvent,
-               const string &initButtonSound /*= ""*/,
-               bool initEnabled /*= true*/,
-               bool initVisible /*= true*/)
+Button::Button(
+    ALLEGRO_BITMAP *initImgBMPNormal,
+    ALLEGRO_BITMAP *initImgBMPMouseOver,
+    ALLEGRO_BITMAP *initImgBMPDisabled,
+    int initX,
+    int initY,
+    int initMouseOverEvent,
+    int initClickEvent,
+    const string &initButtonSound /*= ""*/,
+    bool initEnabled /*= true*/,
+    bool initVisible /*= true*/)
     : imgNormal(initImgBMPNormal), imgMouseOver(initImgBMPMouseOver),
       imgDisabled(initImgBMPDisabled), buttonSound(initButtonSound), x(initX),
       y(initY), mouseOverEvent(initMouseOverEvent), clickEvent(initClickEvent),
@@ -82,19 +85,20 @@ Button::Button(ALLEGRO_BITMAP *initImgBMPNormal,
         initialized = true;
 }
 
-Button::Button(ALLEGRO_BITMAP *initImgBMPNormal,
-               ALLEGRO_BITMAP *initImgBMPMouseOver,
-               ALLEGRO_BITMAP *initImgBMPDisabled,
-               int initX,
-               int initY,
-               int initMouseOverEvent,
-               int initClickEvent,
-               ALLEGRO_FONT *initFontPtr,
-               const string &initButtonText,
-               ALLEGRO_COLOR initTextColor,
-               const string &initButtonSound /*= ""*/,
-               bool initEnabled /*= true*/,
-               bool initVisible /*= true*/)
+Button::Button(
+    ALLEGRO_BITMAP *initImgBMPNormal,
+    ALLEGRO_BITMAP *initImgBMPMouseOver,
+    ALLEGRO_BITMAP *initImgBMPDisabled,
+    int initX,
+    int initY,
+    int initMouseOverEvent,
+    int initClickEvent,
+    ALLEGRO_FONT *initFontPtr,
+    const string &initButtonText,
+    ALLEGRO_COLOR initTextColor,
+    const string &initButtonSound /*= ""*/,
+    bool initEnabled /*= true*/,
+    bool initVisible /*= true*/)
     : imgNormal(initImgBMPNormal), imgMouseOver(initImgBMPMouseOver),
       imgDisabled(initImgBMPDisabled), buttonSound(initButtonSound), x(initX),
       y(initY), mouseOverEvent(initMouseOverEvent), clickEvent(initClickEvent),
@@ -236,17 +240,18 @@ Button::Run(ALLEGRO_BITMAP *canvas) {
         int textX = x + GetWidth() / 2;
         int textY = y + GetHeight() / 2 - al_get_font_line_height(fontPtr) / 2;
 
-        al_draw_text(fontPtr,
-                     textColor,
-                     textX,
-                     textY,
-                     ALLEGRO_ALIGN_CENTER,
-                     buttonText.c_str());
+        al_draw_text(
+            fontPtr,
+            textColor,
+            textX,
+            textY,
+            ALLEGRO_ALIGN_CENTER,
+            buttonText.c_str());
     }
 
     if (mouseIsOverButton) {
-        Event e(mouseOverEvent);
-        Game::modeMgr->BroadcastEvent(&e);
+        ALLEGRO_EVENT e = {.type = static_cast<unsigned int>(mouseOverEvent)};
+        g_game->broadcast_event(&e);
     }
     return true;
 }
@@ -282,16 +287,16 @@ Button::OnMouseReleased(int /*button*/, int initX, int initY) {
         Game::audioSystem->Play(buttonSound);
     }
 
-    Event e(clickEvent);
-    Game::modeMgr->BroadcastEvent(&e);
+    ALLEGRO_EVENT e = {.type = static_cast<unsigned int>(clickEvent)};
+    g_game->broadcast_event(&e);
 
-    return true; // success
+    return true;
 }
 
 bool
 Button::PtInBtn(int initX, int initY) {
-    if ((initX >= x) && (initX < (x + al_get_bitmap_width(imgNormal))) &&
-        (initY >= y) && (initY < (y + al_get_bitmap_height(imgNormal))))
+    if ((initX >= x) && (initX < (x + al_get_bitmap_width(imgNormal)))
+        && (initY >= y) && (initY < (y + al_get_bitmap_height(imgNormal))))
         return true;
 
     return false;

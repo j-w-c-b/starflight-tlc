@@ -51,23 +51,34 @@ Math::Length(Vector3 &vec) {
 
 double
 Math::DotProduct(
-    double x1, double y1, double z1, double x2, double y2, double z2) {
+    double x1,
+    double y1,
+    double z1,
+    double x2,
+    double y2,
+    double z2) {
     return (x1 * x2 + y1 * y2 + z1 * z2);
 }
 
 double
 Math::DotProduct(Vector3 &vec1, Vector3 &vec2) {
-    return DotProduct(vec1.getX(),
-                      vec1.getY(),
-                      vec1.getZ(),
-                      vec2.getX(),
-                      vec2.getY(),
-                      vec2.getZ());
+    return DotProduct(
+        vec1.getX(),
+        vec1.getY(),
+        vec1.getZ(),
+        vec2.getX(),
+        vec2.getY(),
+        vec2.getZ());
 }
 
 Vector3
 Math::CrossProduct(
-    double x1, double y1, double z1, double x2, double y2, double z2) {
+    double x1,
+    double y1,
+    double z1,
+    double x2,
+    double y2,
+    double z2) {
     double nx = (y1 * z2) - (z1 * y2);
     double ny = (z1 * y2) - (x1 * z2);
     double nz = (x1 * y2) - (y1 * x2);
@@ -76,12 +87,13 @@ Math::CrossProduct(
 
 Vector3
 Math::CrossProduct(Vector3 &vec1, Vector3 &vec2) {
-    return CrossProduct(vec1.getX(),
-                        vec1.getY(),
-                        vec1.getZ(),
-                        vec2.getX(),
-                        vec2.getY(),
-                        vec2.getZ());
+    return CrossProduct(
+        vec1.getX(),
+        vec1.getY(),
+        vec1.getZ(),
+        vec2.getX(),
+        vec2.getY(),
+        vec2.getZ());
 }
 
 Vector3

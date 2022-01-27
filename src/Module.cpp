@@ -13,137 +13,214 @@
 
 using namespace std;
 
-int Module::m_totalNumModules = 0;
-int Module::m_numModulesInitialized = 0;
-
-Module::Module() : m_x(0), m_y(0) {}
-
 Module::~Module() {
-    vector<Module *>::iterator i;
-    for (i = m_modules.begin(); i != m_modules.end(); ++i) {
+    while (!m_modules.empty()) {
+        auto i = m_modules.end() - 1;
         delete *i;
+        m_modules.pop_back();
     }
 }
 
 void
-Module::AddChildModule(Module *m) {
-    ++m_totalNumModules;
+Module::add_child_module(Module *m) {
     m_modules.push_back(m);
 }
 
 bool
-Module::Init() {
-    bool result = true;
+Module::init() {
+    bool result = on_init();
 
-    vector<Module *>::iterator i;
-    for (i = m_modules.begin(); (i != m_modules.end()) && result; ++i) {
-        result = (*i)->Init();
+    for (auto &i : m_modules) {
+        result = i->init();
+
+        if (!result) {
+            break;
+        }
+    }
+    if (result) {
+        m_active = true;
     }
 
     return result;
 }
 
-void
-Module::Close() {
-    vector<Module *>::iterator i;
-    for (i = m_modules.begin(); i != m_modules.end(); ++i) {
-        (*i)->Close();
+bool
+Module::update() {
+    bool result = true;
+
+    if (m_active) {
+        result = on_update();
+
+        for (auto &i : m_modules) {
+            result = i->update();
+            if (!result) {
+                break;
+            }
+        }
     }
+    return result;
 }
 
-void
-Module::Update() {
-    vector<Module *>::iterator i;
-    for (i = m_modules.begin(); i != m_modules.end(); ++i) {
-        (*i)->Update();
+bool
+Module::draw(ALLEGRO_BITMAP *target) {
+    bool result = true;
+    if (m_active) {
+        result = on_draw(target);
+
+        for (auto &i : m_modules) {
+            result = i->draw(target);
+            if (!result) {
+                break;
+            }
+        }
     }
+    return result;
 }
 
-void
-Module::Draw() {
-    vector<Module *>::iterator i;
-    for (i = m_modules.begin(); i != m_modules.end(); ++i) {
-        if (*i)
-            (*i)->Draw();
+bool
+Module::close() {
+    bool result = true;
+
+    if (m_active) {
+        result = on_close();
+
+        for (auto &i : m_modules) {
+            result = i->close();
+            if (!result) {
+                break;
+            }
+        }
+        m_active = false;
     }
+    return result;
 }
 
-// added JH 01-Feb-07
-void
-Module::OnKeyPress(int keyCode) {
-    vector<Module *>::iterator i;
-    for (i = m_modules.begin(); i != m_modules.end(); ++i) {
-        (*i)->OnKeyPress(keyCode);
+bool
+Module::key_pressed(ALLEGRO_KEYBOARD_EVENT *event) {
+    bool result = true;
+    if (m_active) {
+        result = on_key_pressed(event);
+
+        for (auto &i : m_modules) {
+            result = i->on_key_pressed(event);
+            if (!result) {
+                break;
+            }
+        }
     }
+    return result;
 }
 
-void
-Module::OnKeyPressed(int keyCode) {
-    vector<Module *>::iterator i;
-    for (i = m_modules.begin(); i != m_modules.end(); ++i) {
-        (*i)->OnKeyPressed(keyCode);
+bool
+Module::key_down(ALLEGRO_KEYBOARD_EVENT *event) {
+    bool result = true;
+    if (m_active) {
+        result = on_key_down(event);
+
+        for (auto &i : m_modules) {
+            result = i->on_key_down(event);
+            if (!result) {
+                break;
+            }
+        }
     }
+    return result;
 }
 
-void
-Module::OnKeyReleased(int keyCode) {
-    vector<Module *>::iterator i;
-    for (i = m_modules.begin(); i != m_modules.end(); ++i) {
-        (*i)->OnKeyReleased(keyCode);
+bool
+Module::key_up(ALLEGRO_KEYBOARD_EVENT *event) {
+    bool result = true;
+    if (m_active) {
+        result = on_key_up(event);
+
+        for (auto &i : m_modules) {
+            result = i->key_up(event);
+            if (!result) {
+                break;
+            }
+        }
     }
+    return result;
 }
 
-void
-Module::OnMouseMove(int x, int y) {
-    vector<Module *>::iterator i;
-    for (i = m_modules.begin(); i != m_modules.end(); ++i) {
-        (*i)->OnMouseMove(x - (*i)->m_x, y - (*i)->m_y);
+bool
+Module::mouse_move(ALLEGRO_MOUSE_EVENT *event) {
+    bool result = true;
+    if (m_active
+        && (point_within_module(event->x, event->y)
+            || point_within_module(
+                m_last_mouse_move_event.x, m_last_mouse_move_event.y))) {
+        result = on_mouse_move(event);
+
+        for (auto &i : m_modules) {
+            result = i->mouse_move(event);
+            if (!result) {
+                break;
+            }
+        }
     }
+    m_last_mouse_move_event = *event;
+
+    return result;
 }
 
-void
-Module::OnMouseClick(int button, int x, int y) {
-    vector<Module *>::iterator i;
-    for (i = m_modules.begin(); i != m_modules.end(); ++i) {
-        (*i)->OnMouseClick(button, x - (*i)->m_x, y - (*i)->m_y);
+bool
+Module::mouse_button_down(ALLEGRO_MOUSE_EVENT *event) {
+    bool result = true;
+    ALLEGRO_MOUSE_EVENT last_event = get_last_button_event(event);
+
+    if (m_active
+        && (point_within_module(event->x, event->y)
+            || point_within_module(last_event.x, last_event.y))) {
+        result = on_mouse_button_down(event);
+
+        for (auto &i : m_modules) {
+            result = i->mouse_button_down(event);
+            if (!result) {
+                break;
+            }
+        }
     }
+    set_last_button_event(event);
+
+    return result;
 }
 
-void
-Module::OnMousePressed(int button, int x, int y) {
-    vector<Module *>::iterator i;
-    for (i = m_modules.begin(); i != m_modules.end(); ++i) {
-        (*i)->OnMousePressed(button, x - (*i)->m_x, y - (*i)->m_y);
+bool
+Module::mouse_button_up(ALLEGRO_MOUSE_EVENT *event) {
+    bool result = true;
+    ALLEGRO_MOUSE_EVENT last_event = get_last_button_event(event);
+
+    if (m_active
+        && (point_within_module(event->x, event->y)
+            || point_within_module(last_event.x, last_event.y))) {
+        result = on_mouse_button_up(event);
+
+        for (auto &i : m_modules) {
+            result = i->mouse_button_up(event);
+            if (!result) {
+                break;
+            }
+        }
     }
+    clear_last_button_event(event);
+
+    return result;
 }
 
-void
-Module::OnMouseReleased(int button, int x, int y) {
-    vector<Module *>::iterator i;
-    for (i = m_modules.begin(); i != m_modules.end(); ++i) {
-        (*i)->OnMouseReleased(button, x - (*i)->m_x, y - (*i)->m_y);
-    }
-}
+bool
+Module::event(ALLEGRO_EVENT *event) {
+    bool result = true;
+    if (m_active) {
+        result = on_event(event);
 
-void
-Module::OnMouseWheelUp(int x, int y) {
-    vector<Module *>::iterator i;
-    for (i = m_modules.begin(); i != m_modules.end(); ++i) {
-        (*i)->OnMouseWheelUp(x - (*i)->m_x, y - (*i)->m_y);
+        for (auto &i : m_modules) {
+            result = i->event(event);
+            if (!result) {
+                break;
+            }
+        }
     }
-}
 
-void
-Module::OnMouseWheelDown(int x, int y) {
-    vector<Module *>::iterator i;
-    for (i = m_modules.begin(); i != m_modules.end(); ++i) {
-        (*i)->OnMouseWheelDown(x - (*i)->m_x, y - (*i)->m_y);
-    }
-}
-void
-Module::OnEvent(Event *event) {
-    vector<Module *>::iterator i;
-    for (i = m_modules.begin(); i != m_modules.end(); ++i) {
-        (*i)->OnEvent(event);
-    }
+    return result;
 }

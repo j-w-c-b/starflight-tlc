@@ -14,9 +14,11 @@
 #ifndef MODEMGR_H
 #define MODEMGR_H
 
-#include "AudioSystem.h"
 #include <map>
 #include <string>
+
+#include "AudioSystem.h"
+#include "Module.h"
 
 // mode names defined here
 const std::string MODULE_STARTUP = "STARTUP";
@@ -44,13 +46,7 @@ const std::string MODULE_AUXILIARYDISPLAY = "AUXILIARYDISPLAY";
 const std::string MODULE_SETTINGS = "SETTINGS";
 const std::string MODULE_MESSAGEGUI = "MESSAGEGUI";
 
-class Module;
-class GameState;
-struct ALLEGRO_BITMAP;
-class Game;
-class Event;
-
-class Mode {
+class Mode final {
   public:
     Mode(Module *module, const std::string &path);
 
@@ -61,45 +57,31 @@ class Mode {
     friend class ModeMgr;
 };
 
-class ModeMgr {
+class ModeMgr : public Module {
   public:
     explicit ModeMgr(Game *game);
-
     virtual ~ModeMgr();
 
-    void AddMode(const std::string &modeName,
-                 Module *rootModule,
-                 const std::string &musicPath);
+    void AddMode(
+        const std::string &modeName,
+        Module *rootModule,
+        const std::string &musicPath);
     bool LoadModule(const std::string &moduleName);
     void CloseCurrentModule();
 
-    std::string
-    GetCurrentModuleName() {
-        return currentModeName;
-    }
-    std::string
-    GetPrevModuleName() {
-        return prevModeName;
-    }
+    std::string GetCurrentModuleName() { return currentModeName; }
+    std::string GetPrevModuleName() { return prevModeName; }
 
-    void Update();
-    void Draw();
-
-    // call to broadcast the specified event to all modules which are part
-    // of the active mode
-    void BroadcastEvent(Event *event);
-
-    void OnKeyPress(int keyCode);
-    void OnKeyPressed(int keyCode);
-    void OnKeyReleased(int keyCode);
-
-    void OnMouseMove(int x, int y);
-    void OnMouseClick(int button, int x, int y);
-    void OnMousePressed(int button, int x, int y);
-    void OnMouseReleased(int button, int x, int y);
-
-    void OnMouseWheelUp(int x, int y);
-    void OnMouseWheelDown(int x, int y);
+    virtual bool on_update() override;
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
+    virtual bool on_close() override;
+    virtual bool on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event) override;
+    virtual bool on_key_down(ALLEGRO_KEYBOARD_EVENT *event) override;
+    virtual bool on_key_up(ALLEGRO_KEYBOARD_EVENT *event) override;
+    virtual bool on_mouse_move(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_mouse_button_down(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_event(ALLEGRO_EVENT *event) override;
 
   private:
     Module *m_activeRootModule;

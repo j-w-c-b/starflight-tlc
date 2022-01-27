@@ -958,21 +958,21 @@ DataMgr::LoadGalaxy() {
         }
 
         // sanity checks
-        if (newPlanet.size == PS_INVALID || newPlanet.type == PT_INVALID ||
-            newPlanet.temperature == PTMP_INVALID ||
-            newPlanet.gravity == PG_INVALID ||
-            newPlanet.atmosphere == PA_INVALID) {
+        if (newPlanet.size == PS_INVALID || newPlanet.type == PT_INVALID
+            || newPlanet.temperature == PTMP_INVALID
+            || newPlanet.gravity == PG_INVALID
+            || newPlanet.atmosphere == PA_INVALID) {
             std::string msg =
                 "loadGalaxy: error loading planet #" + to_string(newPlanet.id);
             msg += " , name -- " + newPlanet.name + " --";
             msg += " , size " + Planet::PlanetSizeToString(newPlanet.size);
             msg += " , type " + Planet::PlanetTypeToString(newPlanet.type);
-            msg += " , temperature " +
-                   Planet::PlanetTemperatureToString(newPlanet.temperature);
-            msg += " , gravity " +
-                   Planet::PlanetGravityToString(newPlanet.gravity);
-            msg += " , atmosphere " +
-                   Planet::PlanetAtmosphereToString(newPlanet.atmosphere);
+            msg += " , temperature "
+                   + Planet::PlanetTemperatureToString(newPlanet.temperature);
+            msg += " , gravity "
+                   + Planet::PlanetGravityToString(newPlanet.gravity);
+            msg += " , atmosphere "
+                   + Planet::PlanetAtmosphereToString(newPlanet.atmosphere);
             msg += "\n";
             ALLEGRO_DEBUG("%s\n", msg.c_str());
             ALLEGRO_ASSERT(0);
@@ -1035,17 +1035,17 @@ DataMgr::LoadGalaxy() {
         }
 
         // sanity checks
-        if ((flux_id < 0 || flux_id >= MAX_FLUX) ||
-            (endpoint_1.x < 0 || endpoint_1.x >= 250) ||
-            (endpoint_1.y < 0 || endpoint_1.y >= 220) ||
-            (endpoint_2.x < 0 || endpoint_2.x >= 250) ||
-            (endpoint_2.y < 0 || endpoint_2.y >= 220)) {
+        if ((flux_id < 0 || flux_id >= MAX_FLUX)
+            || (endpoint_1.x < 0 || endpoint_1.x >= 250)
+            || (endpoint_1.y < 0 || endpoint_1.y >= 220)
+            || (endpoint_2.x < 0 || endpoint_2.x >= 250)
+            || (endpoint_2.y < 0 || endpoint_2.y >= 220)) {
             std::string msg =
                 "loadGalaxy: error loading flux #" + to_string(flux_id);
-            msg += " , endpoint_1 (" + to_string(endpoint_1.x) + ", " +
-                   to_string(endpoint_1.y) + ")";
-            msg += " , endpoint_2 (" + to_string(endpoint_2.x) + ", " +
-                   to_string(endpoint_2.y) + ")\n";
+            msg += " , endpoint_1 (" + to_string(endpoint_1.x) + ", "
+                   + to_string(endpoint_1.y) + ")";
+            msg += " , endpoint_2 (" + to_string(endpoint_2.x) + ", "
+                   + to_string(endpoint_2.y) + ")\n";
             ALLEGRO_ERROR("%s\n", msg.c_str());
             ALLEGRO_ASSERT(0);
         }

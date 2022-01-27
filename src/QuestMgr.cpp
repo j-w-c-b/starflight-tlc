@@ -229,8 +229,8 @@ QuestMgr::giveReward() {
         }
 
         g_game->gameState->m_items.AddItems(id, amt);
-        reward = "You received " + Util::ToString(amt, 1, 1) +
-                 " cubic meters of " + item->name + ".";
+        reward = "You received " + Util::ToString(amt, 1, 1)
+                 + " cubic meters of " + item->name + ".";
         break;
     }
 

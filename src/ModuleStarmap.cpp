@@ -30,24 +30,28 @@ ModuleStarmap::ModuleStarmap()
     ratioX = 0;
     ratioY = 0;
     dest_active = false;
-    star_label = NULL;
     m_over_star = false;
     star_x = 0;
     star_y = 0;
+
+    m_star_label =
+        new Label("", 0, 0, 100, 22, false, 0, g_game->font18, ORANGE);
+    add_child_module(m_star_label);
 }
 
 ModuleStarmap::~ModuleStarmap() {}
 
-void
-ModuleStarmap::OnMouseMove(int x, int y) {
-    Module::OnMouseMove(x, y);
+bool
+ModuleStarmap::on_mouse_move(ALLEGRO_MOUSE_EVENT *event) {
+    int x = event->x;
+    int y = event->y;
 
     m_cursor_pos.x = static_cast<float>(x - MAP_X - VIEWER_X) / ratioX;
     m_cursor_pos.y = static_cast<float>(y - MAP_Y - VIEWER_Y) / ratioY;
 
-    if (m_cursor_pos.x < 0 || m_cursor_pos.x > GALAXY_WIDTH ||
-        m_cursor_pos.y < 0 || m_cursor_pos.y > GALAXY_HEIGHT) {
-        return;
+    if (m_cursor_pos.x < 0 || m_cursor_pos.x > GALAXY_WIDTH
+        || m_cursor_pos.y < 0 || m_cursor_pos.y > GALAXY_HEIGHT) {
+        return true;
     }
 
     // if the mouse pointer is over a starsystem, we need to remember that
@@ -63,43 +67,51 @@ ModuleStarmap::OnMouseMove(int x, int y) {
             if (star) {
                 star_x = star->x;
                 star_y = star->y;
-                star_label->SetText(star->name);
+                m_star_label->set_text(star->name);
                 m_over_star = true;
             }
         }
     }
+    if (!m_over_star) {
+        m_star_label->set_text("");
+    }
+    return true;
 }
 
-void
-ModuleStarmap::OnMouseClick(int /*button*/, int x, int y) {
-    m_cursor_pos.x = static_cast<float>(x - MAP_X - VIEWER_X) / ratioX;
-    m_cursor_pos.y = static_cast<float>(y - MAP_Y - VIEWER_Y) / ratioY;
+bool
+ModuleStarmap::on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) {
+    if (!is_mouse_click(event)) {
+        return true;
+    }
+    m_cursor_pos.x = static_cast<float>(event->x - MAP_X - VIEWER_X) / ratioX;
+    m_cursor_pos.y = static_cast<float>(event->y - MAP_Y - VIEWER_Y) / ratioY;
 
-    if (m_cursor_pos.x < 0 || m_cursor_pos.x > GALAXY_WIDTH ||
-        m_cursor_pos.y < 0 || m_cursor_pos.y > GALAXY_HEIGHT) {
-        return;
+    if (m_cursor_pos.x < 0 || m_cursor_pos.x > GALAXY_WIDTH
+        || m_cursor_pos.y < 0 || m_cursor_pos.y > GALAXY_HEIGHT) {
+        return true;
     }
 
     if (map_active) {
         // If we're within 2 tiles in any direction of our selected spot,
         // consider this an unselect.
-        if (m_cursor_pos.y > m_dest_pos.y - 2 &&
-            m_cursor_pos.y < m_dest_pos.y + 2 &&
-            m_cursor_pos.x > m_dest_pos.x - 2 &&
-            m_cursor_pos.x < m_dest_pos.x + 2 && dest_active) {
+        if (m_cursor_pos.y > m_dest_pos.y - 2
+            && m_cursor_pos.y < m_dest_pos.y + 2
+            && m_cursor_pos.x > m_dest_pos.x - 2
+            && m_cursor_pos.x < m_dest_pos.x + 2 && dest_active) {
             dest_active = false;
         } else {
             m_dest_pos = m_cursor_pos;
             dest_active = true;
         }
+        return false;
     }
+    return true;
 }
 
-void
-ModuleStarmap::OnEvent(Event *event) {
-    Module::OnEvent(event);
-    switch (event->getEventType()) {
-    case 3001:
+bool
+ModuleStarmap::on_event(ALLEGRO_EVENT *event) {
+    switch (event->type) {
+    case EVENT_NAVIGATOR_STARMAP:
         if (!map_active) {
             map_active = true;
         } else {
@@ -107,10 +119,11 @@ ModuleStarmap::OnEvent(Event *event) {
         }
         break;
     }
+    return true;
 }
 
 bool
-ModuleStarmap::Init() {
+ModuleStarmap::on_init() {
     ALLEGRO_DEBUG("  ModuleStarmap Initialize\n");
 
     // load the datafile
@@ -147,8 +160,6 @@ ModuleStarmap::Init() {
 
     viewer_offset_y = -VIEWER_HEIGHT;
     m_over_star = false;
-
-    star_label = new Label("", 0, 0, 100, 22, ORANGE, g_game->font18);
 
     overlay = al_create_bitmap(VIEWER_WIDTH, VIEWER_HEIGHT);
     starview = al_create_bitmap(MAP_WIDTH, MAP_HEIGHT);
@@ -202,31 +213,34 @@ ModuleStarmap::draw_flux() {
         const int frame_size = 8;
 
         if (fi.endpoint_1_visible) {
-            al_draw_bitmap(resources[I_FLUX_TILE_TRANS],
-                           endpoint1.x * ratioX - frame_size / 2,
-                           endpoint1.y * ratioY - frame_size / 2,
-                           0);
+            al_draw_bitmap(
+                resources[I_FLUX_TILE_TRANS],
+                endpoint1.x * ratioX - frame_size / 2,
+                endpoint1.y * ratioY - frame_size / 2,
+                0);
         }
         if (fi.endpoint_2_visible) {
-            al_draw_bitmap(resources[I_FLUX_TILE_TRANS],
-                           endpoint2.x * ratioX - frame_size / 2,
-                           endpoint2.y * ratioY - frame_size / 2,
-                           0);
+            al_draw_bitmap(
+                resources[I_FLUX_TILE_TRANS],
+                endpoint2.x * ratioX - frame_size / 2,
+                endpoint2.y * ratioY - frame_size / 2,
+                0);
         }
         if (fi.path_visible) {
 
-            al_draw_line((int)(endpoint1.x * ratioX),
-                         (int)(endpoint1.y * ratioY),
-                         (int)(endpoint2.x * ratioX),
-                         (int)(endpoint2.y * ratioY),
-                         al_map_rgb(0, 170, 255),
-                         1);
+            al_draw_line(
+                (int)(endpoint1.x * ratioX),
+                (int)(endpoint1.y * ratioY),
+                (int)(endpoint2.x * ratioX),
+                (int)(endpoint2.y * ratioY),
+                al_map_rgb(0, 170, 255),
+                1);
         }
     }
 }
 
-void
-ModuleStarmap::Close() {
+bool
+ModuleStarmap::on_close() {
     if (starview != NULL) {
         al_destroy_bitmap(starview);
         starview = NULL;
@@ -236,21 +250,16 @@ ModuleStarmap::Close() {
         overlay = NULL;
     }
 
-    if (star_label != NULL) {
-        delete star_label;
-        star_label = NULL;
-    }
-
     // unload the resources
     resources.unload();
+    return true;
 }
 
-void
-ModuleStarmap::Update() {
-    Module::Update();
+bool
+ModuleStarmap::on_update() {
     if (map_active) {
-        if (g_game->gameState->getCurrentSelectedOfficer() !=
-            OFFICER_NAVIGATION) {
+        if (g_game->gameState->getCurrentSelectedOfficer()
+            != OFFICER_NAVIGATION) {
             map_active = false;
         } else if (viewer_offset_y < 0) {
             viewer_offset_y += VIEWER_HEIGHT / VIEWER_MOVE_TICKS;
@@ -266,13 +275,13 @@ ModuleStarmap::Update() {
             }
         }
     }
+    return true;
 }
 
-void
-ModuleStarmap::Draw() {
-    Module::Draw();
+bool
+ModuleStarmap::on_draw(ALLEGRO_BITMAP *target) {
     if (viewer_offset_y == -VIEWER_HEIGHT) {
-        return;
+        return true;
     }
 
     ALLEGRO_COLOR font_color = BLACK;
@@ -343,98 +352,121 @@ ModuleStarmap::Draw() {
     }
 
     if (!g_game->gameState->player->isLost()) {
-        al_draw_circle(static_cast<int>(playerPos.x * ratioX),
-                       static_cast<int>(playerPos.y * ratioY),
-                       4,
-                       al_map_rgb(0, 255, 0),
-                       1);
+        al_draw_circle(
+            static_cast<int>(playerPos.x * ratioX),
+            static_cast<int>(playerPos.y * ratioY),
+            4,
+            al_map_rgb(0, 255, 0),
+            1);
     }
     if (dest_active) {
-        al_draw_circle(static_cast<int>(destination_x * ratioX),
-                       static_cast<int>(destination_y * ratioY),
-                       4,
-                       al_map_rgb(255, 0, 0),
-                       1);
+        al_draw_circle(
+            static_cast<int>(destination_x * ratioX),
+            static_cast<int>(destination_y * ratioY),
+            4,
+            al_map_rgb(255, 0, 0),
+            1);
     }
     // draw text on overlay
-    al_draw_textf(g_game->font10,
-                  font_color,
-                  TEXT_FIELD_X[0] - MAP_X,
-                  TEXT_FIELD_Y,
-                  ALLEGRO_ALIGN_CENTER,
-                  "%s",
-                  position_x.c_str());
-    al_draw_textf(g_game->font10,
-                  font_color,
-                  TEXT_FIELD_X[1] - MAP_X,
-                  TEXT_FIELD_Y,
-                  ALLEGRO_ALIGN_CENTER,
-                  "%s",
-                  position_y.c_str());
-    al_draw_textf(g_game->font10,
-                  font_color,
-                  TEXT_FIELD_X[2] - MAP_X,
-                  TEXT_FIELD_Y,
-                  ALLEGRO_ALIGN_CENTER,
-                  "%d",
-                  destination_x);
-    al_draw_textf(g_game->font10,
-                  font_color,
-                  TEXT_FIELD_X[3] - MAP_X,
-                  TEXT_FIELD_Y,
-                  ALLEGRO_ALIGN_CENTER,
-                  "%d",
-                  destination_y);
+    al_draw_textf(
+        g_game->font10,
+        font_color,
+        TEXT_FIELD_X[0] - MAP_X,
+        TEXT_FIELD_Y,
+        ALLEGRO_ALIGN_CENTER,
+        "%s",
+        position_x.c_str());
+    al_draw_textf(
+        g_game->font10,
+        font_color,
+        TEXT_FIELD_X[1] - MAP_X,
+        TEXT_FIELD_Y,
+        ALLEGRO_ALIGN_CENTER,
+        "%s",
+        position_y.c_str());
+    al_draw_textf(
+        g_game->font10,
+        font_color,
+        TEXT_FIELD_X[2] - MAP_X,
+        TEXT_FIELD_Y,
+        ALLEGRO_ALIGN_CENTER,
+        "%d",
+        destination_x);
+    al_draw_textf(
+        g_game->font10,
+        font_color,
+        TEXT_FIELD_X[3] - MAP_X,
+        TEXT_FIELD_Y,
+        ALLEGRO_ALIGN_CENTER,
+        "%d",
+        destination_y);
     if (distance >= 0) {
-        al_draw_textf(g_game->font10,
-                      font_color,
-                      TEXT_FIELD_X[4] - MAP_X,
-                      TEXT_FIELD_Y,
-                      ALLEGRO_ALIGN_CENTER,
-                      "%.1f",
-                      distance);
+        al_draw_textf(
+            g_game->font10,
+            font_color,
+            TEXT_FIELD_X[4] - MAP_X,
+            TEXT_FIELD_Y,
+            ALLEGRO_ALIGN_CENTER,
+            "%.1f",
+            distance);
     }
     if (fuel >= 0) {
-        al_draw_textf(g_game->font10,
-                      font_color,
-                      TEXT_FIELD_X[5] - MAP_X,
-                      TEXT_FIELD_Y,
-                      ALLEGRO_ALIGN_CENTER,
-                      "%.2f",
-                      distance);
+        al_draw_textf(
+            g_game->font10,
+            font_color,
+            TEXT_FIELD_X[5] - MAP_X,
+            TEXT_FIELD_Y,
+            ALLEGRO_ALIGN_CENTER,
+            "%.2f",
+            distance);
     }
 
     if (m_over_star) {
-        star_label->Refresh();
+        int delta_x;
         int delta_y;
-        if (m_cursor_pos.y > GALAXY_HEIGHT / 2) {
-            delta_y = -star_label->GetHeight();
+        int dummy;
+        int height;
+
+        if (m_cursor_pos.x > GALAXY_WIDTH / 2) {
+            delta_x = -m_star_label->get_text_width();
         } else {
-            delta_y = star_label->GetHeight();
+            delta_x = 0;
         }
-        star_label->SetX((int)(m_cursor_pos.x * ratioX));
-        star_label->SetY((int)(m_cursor_pos.y * ratioY + delta_y));
-        star_label->Draw(overlay);
+
+        m_star_label->get_size(dummy, height);
+
+        if (m_cursor_pos.y > GALAXY_HEIGHT / 2) {
+            delta_y = -height;
+        } else {
+            delta_y = height;
+        }
+
+        m_star_label->move(
+            static_cast<int>(m_cursor_pos.x * ratioX + delta_x),
+            static_cast<int>(m_cursor_pos.y * ratioY + delta_y));
     }
     // draw map
-    al_set_target_bitmap(g_game->GetBackBuffer());
+    al_set_target_bitmap(target);
     al_draw_bitmap(resources[I_STARMAP_VIEWER], VIEWER_X, viewer_offset_y, 0);
-    al_draw_bitmap_region(starview,
-                          0,
-                          -viewer_offset_y,
-                          MAP_WIDTH,
-                          MAP_HEIGHT + viewer_offset_y,
-                          VIEWER_X + MAP_X,
-                          VIEWER_Y + MAP_Y,
-                          0);
+    al_draw_bitmap_region(
+        starview,
+        0,
+        -viewer_offset_y,
+        MAP_WIDTH,
+        MAP_HEIGHT + viewer_offset_y,
+        VIEWER_X + MAP_X,
+        VIEWER_Y + MAP_Y,
+        0);
     // draw overlay
-    al_set_target_bitmap(g_game->GetBackBuffer());
-    al_draw_bitmap_region(overlay,
-                          0,
-                          -viewer_offset_y,
-                          VIEWER_WIDTH,
-                          VIEWER_HEIGHT + viewer_offset_y,
-                          VIEWER_X + MAP_X,
-                          VIEWER_Y + MAP_Y,
-                          0);
+    al_set_target_bitmap(target);
+    al_draw_bitmap_region(
+        overlay,
+        0,
+        -viewer_offset_y,
+        VIEWER_WIDTH,
+        VIEWER_HEIGHT + viewer_offset_y,
+        VIEWER_X + MAP_X,
+        VIEWER_Y + MAP_Y,
+        0);
+    return true;
 }

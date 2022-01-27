@@ -37,15 +37,14 @@ class ModuleMedical : public Module {
 
   public:
     ModuleMedical();
-    ~ModuleMedical();
-    virtual bool Init() override;
-    virtual void Update() override;
-    void MedicalUpdate();
-    virtual void Draw() override;
-    virtual void OnMouseMove(int x, int y) override;
-    virtual void OnMouseReleased(int button, int x, int y) override;
-    virtual void OnEvent(Event *event) override;
-    virtual void Close() override;
+    virtual ~ModuleMedical();
+    virtual bool on_init() override;
+    virtual bool on_update() override;
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
+    virtual bool on_mouse_move(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_event(ALLEGRO_EVENT *event) override;
+    virtual bool on_close() override;
 };
 
 #endif

@@ -31,20 +31,15 @@
 class ModuleBank : public Module {
   public:
     ModuleBank(void);
-    bool Init() override;
-    void Update() override;
-    void Draw() override;
-    void OnKeyPress(int keyCode) override;
-    void OnKeyPressed(int keyCode) override;
-    void OnKeyReleased(int keyCode) override;
-    void OnMouseMove(int x, int y) override;
-    void OnMouseClick(int button, int x, int y) override;
-    void OnMousePressed(int button, int x, int y) override;
-    void OnMouseReleased(int button, int x, int y) override;
-    void OnMouseWheelUp(int x, int y) override;
-    void OnMouseWheelDown(int x, int y) override;
-    void OnEvent(Event *event) override;
-    void Close() override;
+    bool on_init() override;
+    bool on_update() override;
+    bool on_draw(ALLEGRO_BITMAP *target) override;
+    bool on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event) override;
+    bool on_mouse_move(ALLEGRO_MOUSE_EVENT *event) override;
+    bool on_mouse_button_down(ALLEGRO_MOUSE_EVENT *event) override;
+    bool on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) override;
+    bool on_event(ALLEGRO_EVENT *event) override;
+    bool on_close() override;
 
     void take_loan();
     void pay_loan();
