@@ -11,8 +11,8 @@ class Bitmap : public Module {
   public:
     Bitmap(
         ALLEGRO_BITMAP *bitmap,
-        int x,
-        int y,
+        int x = 0,
+        int y = 0,
         int width = -1,
         int height = -1);
     virtual ~Bitmap() {}

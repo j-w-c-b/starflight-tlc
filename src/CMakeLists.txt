@@ -118,6 +118,8 @@ add_library(lib${APP_NAME} STATIC
     ModuleCantina.h
     ModuleCaptainCreation.cpp
     ModuleCaptainCreation.h
+    ModuleCaptainDetails.cpp
+    ModuleCaptainDetails.h
     ModuleCaptainsLounge.cpp
     ModuleCaptainsLounge.h
     ModuleCargoWindow.cpp
@@ -146,6 +148,8 @@ add_library(lib${APP_NAME} STATIC
     ModulePlanetOrbit.h
     ModulePlanetSurface.cpp
     ModulePlanetSurface.h
+    ModuleProfessionChoice.cpp
+    ModuleProfessionChoice.h
     ModuleQuestLog.cpp
     ModuleQuestLog.h
     ModuleSettings.cpp

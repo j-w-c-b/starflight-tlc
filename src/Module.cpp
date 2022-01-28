@@ -31,11 +31,10 @@ Module::init() {
     bool result = on_init();
 
     for (auto &i : m_modules) {
-        result = i->init();
-
         if (!result) {
             break;
         }
+        result = i->init();
     }
     if (result) {
         m_active = true;
@@ -52,10 +51,10 @@ Module::update() {
         result = on_update();
 
         for (auto &i : m_modules) {
-            result = i->update();
             if (!result) {
                 break;
             }
+            result = i->update();
         }
     }
     return result;
@@ -68,10 +67,10 @@ Module::draw(ALLEGRO_BITMAP *target) {
         result = on_draw(target);
 
         for (auto &i : m_modules) {
-            result = i->draw(target);
             if (!result) {
                 break;
             }
+            result = i->draw(target);
         }
     }
     return result;
@@ -85,10 +84,10 @@ Module::close() {
         result = on_close();
 
         for (auto &i : m_modules) {
-            result = i->close();
             if (!result) {
                 break;
             }
+            result = i->close();
         }
         m_active = false;
     }
@@ -102,10 +101,10 @@ Module::key_pressed(ALLEGRO_KEYBOARD_EVENT *event) {
         result = on_key_pressed(event);
 
         for (auto &i : m_modules) {
-            result = i->on_key_pressed(event);
             if (!result) {
                 break;
             }
+            result = i->on_key_pressed(event);
         }
     }
     return result;
@@ -118,10 +117,10 @@ Module::key_down(ALLEGRO_KEYBOARD_EVENT *event) {
         result = on_key_down(event);
 
         for (auto &i : m_modules) {
-            result = i->on_key_down(event);
             if (!result) {
                 break;
             }
+            result = i->on_key_down(event);
         }
     }
     return result;
@@ -134,10 +133,10 @@ Module::key_up(ALLEGRO_KEYBOARD_EVENT *event) {
         result = on_key_up(event);
 
         for (auto &i : m_modules) {
-            result = i->key_up(event);
             if (!result) {
                 break;
             }
+            result = i->key_up(event);
         }
     }
     return result;
@@ -153,10 +152,10 @@ Module::mouse_move(ALLEGRO_MOUSE_EVENT *event) {
         result = on_mouse_move(event);
 
         for (auto &i : m_modules) {
-            result = i->mouse_move(event);
             if (!result) {
                 break;
             }
+            result = i->mouse_move(event);
         }
     }
     m_last_mouse_move_event = *event;
@@ -175,10 +174,10 @@ Module::mouse_button_down(ALLEGRO_MOUSE_EVENT *event) {
         result = on_mouse_button_down(event);
 
         for (auto &i : m_modules) {
-            result = i->mouse_button_down(event);
             if (!result) {
                 break;
             }
+            result = i->mouse_button_down(event);
         }
     }
     set_last_button_event(event);
@@ -197,10 +196,10 @@ Module::mouse_button_up(ALLEGRO_MOUSE_EVENT *event) {
         result = on_mouse_button_up(event);
 
         for (auto &i : m_modules) {
-            result = i->mouse_button_up(event);
             if (!result) {
                 break;
             }
+            result = i->mouse_button_up(event);
         }
     }
     clear_last_button_event(event);
@@ -215,10 +214,10 @@ Module::event(ALLEGRO_EVENT *event) {
         result = on_event(event);
 
         for (auto &i : m_modules) {
-            result = i->event(event);
             if (!result) {
                 break;
             }
+            result = i->event(event);
         }
     }
 

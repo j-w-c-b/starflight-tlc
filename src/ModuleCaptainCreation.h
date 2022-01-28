@@ -10,6 +10,8 @@
 #include "GameState.h"
 #include "Label.h"
 #include "Module.h"
+#include "ModuleCaptainDetails.h"
+#include "ModuleProfessionChoice.h"
 #include "ResourceManager.h"
 
 class ModuleCaptainCreation : public Module {
@@ -29,6 +31,8 @@ class ModuleCaptainCreation : public Module {
     void chooseMilitary();
     void chooseScience();
 
+    ResourceManager<ALLEGRO_BITMAP> m_resources;
+    bool m_click_loaded;
     typedef enum
     {
         WP_NONE = 0,
@@ -38,37 +42,15 @@ class ModuleCaptainCreation : public Module {
 
     WizPage m_wizPage;
 
-    ALLEGRO_BITMAP *m_professionChoiceBackground;
+    ModuleProfessionChoice *m_profession_choice;
+    ModuleCaptainDetails *m_captain_details;
 
-    ALLEGRO_BITMAP *m_scientificBtn;
-    ALLEGRO_BITMAP *m_scientificBtnMouseOver;
-    ALLEGRO_BITMAP *m_freelanceBtn;
-    ALLEGRO_BITMAP *m_freelanceBtnMouseOver;
-    ALLEGRO_BITMAP *m_militaryBtn;
-    ALLEGRO_BITMAP *m_militaryBtnMouseOver;
-
-    Label *m_prof_info_label;
-
-    static const std::string c_prof_info_scientific_text;
-    static const std::string c_prof_info_freelance_text;
-    static const std::string c_prof_info_military_text;
-
-    ALLEGRO_BITMAP *m_detailsBackground;
-
-    ALLEGRO_BITMAP *m_plusBtn;
-    ALLEGRO_BITMAP *m_plusBtnMouseOver;
-
-    ALLEGRO_BITMAP *m_resetBtn;
-    ALLEGRO_BITMAP *m_resetBtnMouseOver;
-
+    NewButton *m_back_button;
     Button *m_finishBtn;
 
     ALLEGRO_BITMAP *m_cursor[2];
     int m_cursorIdx;
     int m_cursorIdxDelay;
-
-    ALLEGRO_BITMAP *m_backBtn;
-    ALLEGRO_BITMAP *m_backBtnMouseOver;
 
     ALLEGRO_BITMAP *m_mouseOverImg;
     int m_mouseOverImgX;
@@ -89,9 +71,7 @@ class ModuleCaptainCreation : public Module {
     Attributes m_attributesInitial;
     int m_availPts;
     int m_availProfPts;
-
-    Button *m_minusBtns[8];
-    ResourceManager<ALLEGRO_BITMAP> m_resources;
 };
 
 #endif
+// vi: ft=cpp
