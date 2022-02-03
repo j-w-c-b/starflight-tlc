@@ -1,4 +1,3 @@
-///*
 //	STARFLIGHT - THE LOST COLONY
 //	ModuleCantina.cpp - ??
 //	Author: Justin Sargent
@@ -23,9 +22,13 @@ ALLEGRO_DEBUG_CHANNEL("ModuleCantina")
 
 #define EXITBTN_X 16
 #define EXITBTN_Y 698
+#define EXITBTN_W 176
+#define EXITBTN_H 74
 
-#define TURNINBTN_X EXITBTN_X + 176 + 40
+#define TURNINBTN_X EXITBTN_X + EXITBTN_W + 40
 #define TURNINBTN_Y EXITBTN_Y
+#define TURNINBTN_W 278
+#define TURNINBTN_H 78
 
 #define WINDOW_X 198
 #define WINDOW_Y 148
@@ -39,146 +42,166 @@ ALLEGRO_DEBUG_CHANNEL("ModuleCantina")
 
 #define REQUIREMENT_W 210
 
-#define REWARD_X WINDOW_X
-#define REWARD_Y TITLE_Y + TITLE_H
-#define REWARD_W WINDOW_W
-#define REWARD_H 75
+#define STATUS_X WINDOW_X
+#define STATUS_Y TITLE_Y + TITLE_H
+#define STATUS_W WINDOW_W
+#define STATUS_H 75
 
 #define LONG_X WINDOW_X
-#define LONG_Y REWARD_Y + REWARD_H
+#define LONG_Y STATUS_Y + STATUS_H
 #define LONG_H 300
 #define LONG_W WINDOW_W
 
+static string
+resolve_sample_name(const string &name) {
+    auto result = find_if(
+        begin(CANTINA_SAMPLES),
+        end(CANTINA_SAMPLES),
+        [name](const ResourceName &rn) { return rn.name == name; });
+    if (result != end(CANTINA_SAMPLES)) {
+        return result->path;
+    }
+    return "";
+}
+
 ModuleCantina::ModuleCantina()
-    : Module(), m_background(nullptr), resources(CANTINA_IMAGES) {
-    // create labels
-    m_title_label = new Label(
-        "",
-        TITLE_X,
-        TITLE_Y,
-        TITLE_W - REQUIREMENT_W,
-        TITLE_H,
-        false,
-        0,
-        g_game->font24,
-        WHITE);
+    : Module(), resources(CANTINA_IMAGES),
+      m_button_click_loaded(g_game->audioSystem->Load(
+          resolve_sample_name(S_BUTTONCLICK),
+          S_BUTTONCLICK)),
+      m_background(
+          make_shared<Bitmap>(nullptr, 0, 0, SCREEN_WIDTH, SCREEN_WIDTH)),
+      m_title_heading_label(make_shared<Label>(
+          "",
+          TITLE_X,
+          TITLE_Y,
+          TITLE_W - REQUIREMENT_W,
+          TITLE_H,
+          false,
+          0,
+          g_game->font24,
+          WHITE)),
+      m_title_label(make_shared<Label>(
+          "",
+          TITLE_X,
+          TITLE_Y + 23,
+          TITLE_W,
+          TITLE_H,
+          false,
+          0,
+          g_game->font22,
+          WHITE)),
+      m_status_label(make_shared<Label>(
+          "",
+          TITLE_X + WINDOW_W - REQUIREMENT_W,
+          TITLE_Y,
+          REQUIREMENT_W,
+          TITLE_H,
+          false,
+          ALLEGRO_ALIGN_RIGHT,
+          g_game->font24,
+          WHITE)),
+      m_description_title_label(make_shared<Label>(
+          "",
+          LONG_X,
+          LONG_Y,
+          LONG_W,
+          LONG_H,
+          true,
+          0,
+          g_game->font24,
+          WHITE)),
+      m_description_label(make_shared<Label>(
+          "",
+          LONG_X,
+          LONG_Y + 23,
+          LONG_W,
+          LONG_H,
+          true,
+          0,
+          g_game->font22,
+          WHITE)),
+      m_reward_title_label(make_shared<Label>(
+          "",
+          STATUS_X,
+          STATUS_Y,
+          STATUS_W,
+          STATUS_H,
+          true,
+          0,
+          g_game->font24,
+          WHITE)),
+      m_reward_label(make_shared<Label>(
+          "",
+          STATUS_X,
+          STATUS_Y + 23,
+          STATUS_W,
+          STATUS_H,
+          false,
+          0,
+          g_game->font22,
+          WHITE)),
+      m_exit_button(make_shared<TextButton>(
+          make_shared<Label>(
+              "Exit",
+              EXITBTN_X,
+              EXITBTN_Y
+                  + (EXITBTN_H - al_get_font_line_height(g_game->font24)) / 2,
+              EXITBTN_W,
+              EXITBTN_H
+                  - (EXITBTN_H - al_get_font_line_height(g_game->font24)) / 2,
+              false,
+              ALLEGRO_ALIGN_CENTER,
+              g_game->font24,
+              BLACK),
+          EXITBTN_X,
+          EXITBTN_Y,
+          EXITBTN_W,
+          EXITBTN_H,
+          EVENT_NONE,
+          EVENT_CANTINA_EXIT,
+          resources[I_CANTINA_EXIT_BTN_NORM],
+          resources[I_CANTINA_EXIT_BTN_OVER],
+          nullptr,
+          S_BUTTONCLICK)),
+      m_turn_in_button(make_shared<TextButton>(
+          make_shared<Label>(
+              "Submit",
+              TURNINBTN_X,
+              TURNINBTN_Y
+                  + (TURNINBTN_H - al_get_font_line_height(g_game->font24)) / 2,
+              TURNINBTN_W,
+              TURNINBTN_H
+                  - (TURNINBTN_H - al_get_font_line_height(g_game->font24)) / 2,
+              false,
+              ALLEGRO_ALIGN_CENTER,
+              g_game->font24,
+              BLACK),
+          TURNINBTN_X,
+          TURNINBTN_Y,
+          TURNINBTN_W,
+          TURNINBTN_H,
+          EVENT_NONE,
+          EVENT_CANTINA_CLICK,
+          resources[I_CANTINA_BTN],
+          resources[I_CANTINA_BTN_HOV],
+          resources[I_CANTINA_BTN_DIS],
+          S_BUTTONCLICK)),
+      m_quest_complete(false), m_debrief_status(0) {
+    add_child_module(m_background);
+
+    add_child_module(m_title_heading_label);
     add_child_module(m_title_label);
-    questTitle = new Label(
-        "",
-        TITLE_X,
-        TITLE_Y + 23,
-        TITLE_W,
-        TITLE_H,
-        false,
-        0,
-        g_game->font22,
-        WHITE);
-    add_child_module(questTitle);
-    m_requirement_label = new Label(
-        "",
-        TITLE_X + WINDOW_W - REQUIREMENT_W,
-        TITLE_Y,
-        REQUIREMENT_W,
-        TITLE_H,
-        false,
-        ALLEGRO_ALIGN_RIGHT,
-        g_game->font24,
-        WHITE);
-    add_child_module(m_requirement_label);
+    add_child_module(m_status_label);
 
-    // description
-    m_description_label = new Label(
-        "", LONG_X, LONG_Y, LONG_W, LONG_H, true, 0, g_game->font24, WHITE);
+    add_child_module(m_description_title_label);
     add_child_module(m_description_label);
-    questLong = new Label(
-        "",
-        LONG_X,
-        LONG_Y + 23,
-        LONG_W,
-        LONG_H,
-        true,
-        0,
-        g_game->font22,
-        WHITE);
-    add_child_module(questLong);
 
-    // reward
-    m_reward_label = new Label(
-        "",
-        REWARD_X,
-        REWARD_Y,
-        REWARD_W,
-        REWARD_H,
-        true,
-        0,
-        g_game->font24,
-        WHITE);
+    add_child_module(m_reward_title_label);
     add_child_module(m_reward_label);
-    questReward = new Label(
-        "",
-        REWARD_X,
-        REWARD_Y + 23,
-        REWARD_W,
-        REWARD_H,
-        false,
-        0,
-        g_game->font22,
-        WHITE);
 
-    add_child_module(questReward);
-}
-
-ModuleCantina::~ModuleCantina(void) { ALLEGRO_DEBUG("ModuleCantina Dead\n"); }
-
-bool
-ModuleCantina::on_mouse_move(ALLEGRO_MOUSE_EVENT *event) {
-    int x = event->x;
-    int y = event->y;
-
-    m_exitBtn->OnMouseMove(x, y);
-    m_turninBtn->OnMouseMove(x, y);
-
-    return true;
-}
-
-bool
-ModuleCantina::on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) {
-    int button = event->button - 1;
-    int x = event->x;
-    int y = event->y;
-
-    m_turninBtn->OnMouseReleased(button, x, y);
-    m_exitBtn->OnMouseReleased(button, x, y);
-
-    return true;
-}
-
-bool
-ModuleCantina::on_event(ALLEGRO_EVENT *event) {
-    switch (event->type) {
-    case EVENT_CANTINA_EXIT:
-        g_game->LoadModule(MODULE_STARPORT);
-        return false;
-
-    case EVENT_CANTINA_CLICK:
-        selectedQuestCompleted = true;
-        break;
-    }
-    return true;
-}
-
-bool
-ModuleCantina::on_close() {
-    if (m_exitBtn != nullptr) {
-        delete m_exitBtn;
-        m_exitBtn = nullptr;
-    }
-    if (m_turninBtn != nullptr) {
-        delete m_turninBtn;
-        m_turninBtn = nullptr;
-    }
-    resources.unload();
-    return true;
+    add_child_module(m_exit_button);
+    add_child_module(m_turn_in_button);
 }
 
 bool
@@ -194,62 +217,14 @@ ModuleCantina::on_init() {
         return false;
     }
 
-    selectedQuestCompleted = false;
-
-    g_game->audioSystem->Load("data/cantina/buttonclick.ogg", "click");
-
-    // Create and initialize the ESC button for the module
-    ALLEGRO_BITMAP *btnNorm, *btnOver, *btnDis;
-
-    btnNorm = resources[I_CANTINA_EXIT_BTN_NORM];
-    btnOver = resources[I_CANTINA_EXIT_BTN_OVER];
-    m_exitBtn = new Button(
-        btnNorm,
-        btnOver,
-        NULL,
-        EXITBTN_X,
-        EXITBTN_Y,
-        EVENT_NONE,
-        EVENT_CANTINA_EXIT,
-        g_game->font24,
-        "Exit",
-        BLACK,
-        "click");
-    if (m_exitBtn == NULL)
-        return false;
-    if (!m_exitBtn->IsInitialized())
-        return false;
-
-    // load button images
-    btnNorm = resources[I_CANTINA_BTN];
-    btnOver = resources[I_CANTINA_BTN_HOV];
-    btnDis = resources[I_CANTINA_BTN_DIS];
-
-    // Create and initialize the TURNIN button for the module
-    m_turninBtn = new Button(
-        btnNorm,
-        btnOver,
-        btnDis,
-        TURNINBTN_X,
-        TURNINBTN_Y,
-        EVENT_NONE,
-        EVENT_CANTINA_CLICK,
-        g_game->font24,
-        "SUBMIT",
-        BLACK,
-        "click");
-    if (m_turninBtn == NULL)
-        return false;
-    if (!m_turninBtn->IsInitialized())
-        return false;
-    m_turninBtn->SetEnabled(true);
+    m_quest_complete = false;
 
     // Load the background image based on profession
     switch (g_game->gameState->getProfession()) {
     case PROFESSION_SCIENTIFIC:
-        m_background = resources[I_RESEARCHLAB_BACKGROUND];
-        m_turninBtn->SetButtonText("Breakthrough!");
-        m_exitBtn->SetButtonText("Terminate");
+        m_background->set_bitmap(resources[I_RESEARCHLAB_BACKGROUND]);
+        m_turn_in_button->set_text("Breakthrough!");
+        m_exit_button->set_text("Terminate");
 
         title = "PROJECT TITLE";
         description = "DESCRIPTION";
@@ -259,9 +234,9 @@ ModuleCantina::on_init() {
         textcolor = DODGERBLUE;
         break;
     case PROFESSION_MILITARY:
-        m_background = resources[I_MILITARYOPS_BACKGROUND];
-        m_turninBtn->SetButtonText("Accomplished!");
-        m_exitBtn->SetButtonText("Dismissed");
+        m_background->set_bitmap(resources[I_MILITARYOPS_BACKGROUND]);
+        m_turn_in_button->set_text("Accomplished!");
+        m_exit_button->set_text("Dismissed");
 
         title = "MISSION CODENAME";
         description = "DESCRIPTION";
@@ -270,9 +245,9 @@ ModuleCantina::on_init() {
         textcolor = DKORANGE;
         break;
     default:
-        m_background = resources[I_CANTINA_BACKGROUND];
-        m_turninBtn->SetButtonText("Pay Up!");
-        m_exitBtn->SetButtonText("Scram");
+        m_background->set_bitmap(resources[I_CANTINA_BACKGROUND]);
+        m_turn_in_button->set_text("Pay Up!");
+        m_exit_button->set_text("Scram");
         title = "JOB NAME";
         description = "DESCRIPTION";
         reward = "REWARD";
@@ -280,42 +255,42 @@ ModuleCantina::on_init() {
         textcolor = YELLOW;
         break;
     }
-    m_title_label->set_text(title);
-    m_title_label->set_color(labelcolor);
-    questTitle->set_color(textcolor);
+    m_title_heading_label->set_text(title);
+    m_title_heading_label->set_color(labelcolor);
+    m_title_label->set_color(textcolor);
 
-    m_description_label->set_text(description);
-    m_description_label->set_color(labelcolor);
-    questLong->set_color(textcolor);
+    m_description_title_label->set_text(description);
+    m_description_title_label->set_color(labelcolor);
+    m_description_label->set_color(textcolor);
 
-    m_reward_label->set_text(reward);
-    m_reward_label->set_color(labelcolor);
-    questReward->set_color(textcolor);
-
-    if (!m_background) {
-        g_game->message("Error loading cantina background");
-        return false;
-    }
+    m_reward_title_label->set_text(reward);
+    m_reward_title_label->set_color(labelcolor);
+    m_reward_label->set_color(textcolor);
 
     return true;
 }
 
 bool
-ModuleCantina::on_update() {
-    static int debriefStatus = 0;
+ModuleCantina::on_event(ALLEGRO_EVENT *event) {
+    switch (event->type) {
+    case EVENT_CANTINA_EXIT:
+        g_game->LoadModule(MODULE_STARPORT);
+        return false;
 
+    case EVENT_CANTINA_CLICK:
+        m_quest_complete = true;
+        break;
+    }
+    return true;
+}
+
+bool
+ModuleCantina::on_update() {
     // HACK!!!!!
     // if player acquires Hypercube, then skip to the 25th quest as a shortcut
     // note: this is dangerous since the quest script could change the quest
     // numbering if already at quest 25, then skip the hypercube check again...
-
-    // FIXed: If Player obtained a 2nd HyperCube, the old code was throwing
-    // Player back to 25/1. Not now.  jjh 2nd Cube could be used in the genetic
-    // samples quest if (g_game->questMgr->getId() != 25) was always returning
-    // -1.
-
-    if (g_game->gameState->getActiveQuest() < 25) // jjh
-    {
+    if (g_game->gameState->getActiveQuest() < 25) {
         Item newitem;
         int amt;
         g_game->gameState->m_items.Get_Item_By_ID(
@@ -324,28 +299,28 @@ ModuleCantina::on_update() {
         if (amt > 0) {
             g_game->questMgr->getQuestByID(25);
             g_game->gameState->m_items.RemoveItems(2, 1);
-            selectedQuestCompleted = true;
+            m_quest_complete = true;
         }
     }
 
     g_game->questMgr->getActiveQuest();
-    questTitle->set_text(g_game->questMgr->getName());
+    m_title_label->set_text(g_game->questMgr->getName());
     string desc = g_game->questMgr->getLong();
     int len = desc.length();
 
     // dynamically change font size for long descriptions
     if (len > 600) {
-        questLong->set_font(g_game->font18);
+        m_description_label->set_font(g_game->font18);
     } else if (len > 800) {
-        questLong->set_font(g_game->font20);
+        m_description_label->set_font(g_game->font20);
     } else {
-        questLong->set_font(g_game->font22);
+        m_description_label->set_font(g_game->font22);
     }
 
-    questLong->set_text(desc);
+    m_description_label->set_text(desc);
 
     // show requirement status
-    if (!selectedQuestCompleted) {
+    if (!m_quest_complete) {
         int reqAmt = static_cast<int>(g_game->questMgr->questReqAmt);
         g_game->questMgr->VerifyRequirements(
             g_game->questMgr->questReqCode,
@@ -353,13 +328,13 @@ ModuleCantina::on_update() {
             reqAmt);
     }
     if (g_game->gameState->getQuestCompleted()) {
-        m_requirement_label->set_text("(COMPLETE)");
-        m_requirement_label->set_color(GREEN);
-        m_turninBtn->SetEnabled(true);
+        m_status_label->set_text("(COMPLETE)");
+        m_status_label->set_color(GREEN);
+        m_turn_in_button->set_enabled(true);
     } else {
-        m_requirement_label->set_text("(INCOMPLETE)");
-        m_requirement_label->set_color(RED);
-        m_turninBtn->SetEnabled(false);
+        m_status_label->set_text("(INCOMPLETE)");
+        m_status_label->set_color(RED);
+        m_turn_in_button->set_enabled(false);
     }
 
     // display reward info
@@ -388,12 +363,12 @@ ModuleCantina::on_update() {
         }
     }
 
-    questReward->set_text(reward);
+    m_reward_label->set_text(reward);
 
     // do we need to show the debriefing and reward?
-    if (selectedQuestCompleted)
-        debriefStatus = 1;
-    if (debriefStatus == 1) {
+    if (m_quest_complete)
+        m_debrief_status = 1;
+    if (m_debrief_status == 1) {
         if (g_game->questMgr->getDebrief().length() > 0) {
             g_game->ShowMessageBoxWindow(
                 "",
@@ -405,29 +380,15 @@ ModuleCantina::on_update() {
                 440,
                 false);
         }
-        selectedQuestCompleted = false;
-        debriefStatus = 2;
-    } else if (debriefStatus == 2) {
+        m_quest_complete = false;
+        m_debrief_status = 2;
+    } else if (m_debrief_status == 2) {
         g_game->questMgr->giveReward();
-        debriefStatus = 3;
-    } else if (debriefStatus == 3) {
+        m_debrief_status = 3;
+    } else if (m_debrief_status == 3) {
         g_game->gameState->setQuestCompleted(false);
         g_game->questMgr->getNextQuest();
-        debriefStatus = 0;
+        m_debrief_status = 0;
     }
-    return true;
-}
-
-bool
-ModuleCantina::on_draw(ALLEGRO_BITMAP *target) {
-    al_set_target_bitmap(target);
-
-    // draw background
-    al_draw_bitmap(m_background, 0, 0, 0);
-
-    // draw buttons
-    m_exitBtn->Run(target);
-    m_turninBtn->Run(target);
-
     return true;
 }

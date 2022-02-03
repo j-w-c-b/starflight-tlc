@@ -9,137 +9,134 @@
 using namespace std;
 using namespace pausemenu_resources;
 
-PauseMenu::PauseMenu() : m_resources(PAUSEMENU_IMAGES) {
-    display = false;
-    enabled = false;
+static const int PAUSEMENU_W = 400;
+static const int PAUSEMENU_H = 400;
+static const int PAUSEMENU_X = (SCREEN_WIDTH - PAUSEMENU_W) / 2;
+static const int PAUSEMENU_Y = (SCREEN_HEIGHT - PAUSEMENU_H) / 2;
+static const int PAUSEMENU_BUTTON_W = 264;
+static const int PAUSEMENU_BUTTON_H = 74;
 
-    // get location of dialog
-    x = (SCREEN_WIDTH - al_get_bitmap_width(m_resources[I_PAUSEMENU_BG])) / 2;
-    y = (SCREEN_HEIGHT - al_get_bitmap_height(m_resources[I_PAUSEMENU_BG])) / 2;
-
-    // SAVE GAME button
-    m_save_button = new Button(
-        m_resources[I_BUTTON],
-        m_resources[I_BUTTON_OVER],
-        m_resources[I_BUTTON_DIS],
-        x + 70,
-        y + 45,
-        EVENT_MOUSEOVER,
-        EVENT_SAVE_GAME,
-        g_game->font20,
-        "SAVE GAME",
-        WHITE);
-
-    // LOAD GAME button
-    m_load_button = new Button(
-        m_resources[I_BUTTON],
-        m_resources[I_BUTTON_OVER],
-        m_resources[I_BUTTON_DIS],
-        x + 70,
-        y + 130,
-        EVENT_MOUSEOVER,
-        EVENT_LOAD_GAME,
-        g_game->font20,
-        "LOAD GAME",
-        WHITE);
-
-    // QUIT GAME button
-    m_quit_button = new Button(
-        m_resources[I_BUTTON],
-        m_resources[I_BUTTON_OVER],
-        m_resources[I_BUTTON_DIS],
-        x + 70,
-        y + 215,
-        EVENT_MOUSEOVER,
-        EVENT_QUIT_GAME,
-        g_game->font20,
-        "QUIT GAME",
-        WHITE);
-
-    // RETURN button
-    m_return_button = new Button(
-        m_resources[I_BUTTON],
-        m_resources[I_BUTTON_OVER],
-        m_resources[I_BUTTON_DIS],
-        x + 70,
-        y + 300,
-        EVENT_MOUSEOVER,
-        EVENT_CLOSE,
-        g_game->font20,
-        "RETURN",
-        WHITE);
+PauseMenu::PauseMenu()
+    : Module(PAUSEMENU_X, PAUSEMENU_Y, PAUSEMENU_W, PAUSEMENU_H),
+      m_resources(PAUSEMENU_IMAGES), m_background(make_shared<Bitmap>(
+                                         m_resources[I_PAUSEMENU_BG],
+                                         PAUSEMENU_X,
+                                         PAUSEMENU_Y)),
+      m_save_button(make_shared<TextButton>(
+          make_shared<Label>(
+              "SAVE GAME",
+              m_x + 70,
+              m_y + 45
+                  + (PAUSEMENU_BUTTON_H
+                     - al_get_font_line_height(g_game->font20))
+                        / 2,
+              PAUSEMENU_BUTTON_W,
+              PAUSEMENU_BUTTON_H,
+              false,
+              ALLEGRO_ALIGN_CENTER,
+              g_game->font20,
+              WHITE),
+          m_x + 70,
+          m_y + 45,
+          PAUSEMENU_BUTTON_W,
+          PAUSEMENU_BUTTON_H,
+          EVENT_NONE,
+          EVENT_SAVE_GAME,
+          m_resources[I_BUTTON],
+          m_resources[I_BUTTON_OVER],
+          m_resources[I_BUTTON_DIS])),
+      m_load_button(make_shared<TextButton>(
+          make_shared<Label>(
+              "LOAD GAME",
+              m_x + 70,
+              m_y + 130
+                  + (PAUSEMENU_BUTTON_H
+                     - al_get_font_line_height(g_game->font20))
+                        / 2,
+              PAUSEMENU_BUTTON_W,
+              PAUSEMENU_BUTTON_H,
+              false,
+              ALLEGRO_ALIGN_CENTER,
+              g_game->font20,
+              WHITE),
+          m_x + 70,
+          m_y + 130,
+          PAUSEMENU_BUTTON_W,
+          PAUSEMENU_BUTTON_H,
+          EVENT_NONE,
+          EVENT_LOAD_GAME,
+          m_resources[I_BUTTON],
+          m_resources[I_BUTTON_OVER],
+          m_resources[I_BUTTON_DIS])),
+      m_quit_button(make_shared<TextButton>(
+          make_shared<Label>(
+              "QUIT GAME",
+              m_x + 70,
+              m_y + 215
+                  + (PAUSEMENU_BUTTON_H
+                     - al_get_font_line_height(g_game->font20))
+                        / 2,
+              PAUSEMENU_BUTTON_W,
+              PAUSEMENU_BUTTON_H,
+              false,
+              ALLEGRO_ALIGN_CENTER,
+              g_game->font20,
+              WHITE),
+          m_x + 70,
+          m_y + 215,
+          PAUSEMENU_BUTTON_W,
+          PAUSEMENU_BUTTON_H,
+          EVENT_NONE,
+          EVENT_QUIT_GAME,
+          m_resources[I_BUTTON],
+          m_resources[I_BUTTON_OVER],
+          m_resources[I_BUTTON_DIS])),
+      m_return_button(make_shared<TextButton>(
+          make_shared<Label>(
+              "RETURN",
+              m_x + 70,
+              m_y + 300
+                  + (PAUSEMENU_BUTTON_H
+                     - al_get_font_line_height(g_game->font20))
+                        / 2,
+              PAUSEMENU_BUTTON_W,
+              PAUSEMENU_BUTTON_H,
+              false,
+              ALLEGRO_ALIGN_CENTER,
+              g_game->font20,
+              WHITE),
+          m_x + 70,
+          m_y + 300,
+          PAUSEMENU_BUTTON_W,
+          PAUSEMENU_BUTTON_H,
+          EVENT_NONE,
+          EVENT_CLOSE,
+          m_resources[I_BUTTON],
+          m_resources[I_BUTTON_OVER],
+          m_resources[I_BUTTON_DIS])),
+      m_enabled(false) {
+    add_child_module(m_background);
+    add_child_module(m_save_button);
+    add_child_module(m_load_button);
+    add_child_module(m_quit_button);
+    add_child_module(m_return_button);
 }
 
-PauseMenu::~PauseMenu() {
-    display = false;
-    if (m_save_button != NULL)
-        delete m_save_button;
-    if (m_load_button != NULL)
-        delete m_load_button;
-    if (m_quit_button != NULL)
-        delete m_quit_button;
-    if (m_return_button != NULL)
-        delete m_return_button;
-}
-
-// other funcs
-bool
-PauseMenu::OnMouseMove(int x, int y) {
-    if (!enabled)
-        return false;
-    bool result = false;
-    result = m_save_button->OnMouseMove(x, y);
-    if (!result)
-        result = m_load_button->OnMouseMove(x, y);
-    if (!result)
-        result = m_quit_button->OnMouseMove(x, y);
-    if (!result)
-        result = m_return_button->OnMouseMove(x, y);
-    return result;
-}
-bool
-PauseMenu::OnMouseReleased(int button, int x, int y) {
-    if (!enabled)
-        return false;
-    bool result = false;
-    result = m_save_button->OnMouseReleased(button, x, y);
-    if (!result)
-        result = m_load_button->OnMouseReleased(button, x, y);
-    if (!result)
-        result = m_quit_button->OnMouseReleased(button, x, y);
-    if (!result)
-        result = m_return_button->OnMouseReleased(button, x, y);
-    return result;
-}
 void
-PauseMenu::Draw() {
-    if (!enabled)
-        return;
-    al_set_target_bitmap(g_game->GetBackBuffer());
+PauseMenu::set_enabled(bool enabled) {
+    m_enabled = enabled;
 
-    // draw background
-    al_draw_bitmap(m_resources[I_PAUSEMENU_BG], x, y, 0);
+    string module_name = g_game->gameState->getCurrentModule();
 
-    // save/load only available in certain modules
-    string module = g_game->gameState->getCurrentModule();
-    if (module == MODULE_HYPERSPACE || module == MODULE_INTERPLANETARY
-        || module == MODULE_ORBIT ||
-        // module == MODULE_ENCOUNTER ||
-        module == MODULE_STARPORT) {
-        m_save_button->SetEnabled(true);
-        m_load_button->SetEnabled(true);
+    if (enabled
+        && (module_name == MODULE_HYPERSPACE
+            || module_name == MODULE_INTERPLANETARY
+            || module_name == MODULE_ORBIT || module_name == MODULE_STARPORT)) {
+        m_save_button->set_active(true);
+        m_load_button->set_active(true);
     } else {
-        m_save_button->SetEnabled(false);
-        m_load_button->SetEnabled(false);
+        m_save_button->set_active(false);
+        m_load_button->set_active(false);
     }
-
-    // let buttons run
-    if (m_save_button)
-        m_save_button->Run(g_game->GetBackBuffer());
-    if (m_load_button)
-        m_load_button->Run(g_game->GetBackBuffer());
-    if (m_quit_button)
-        m_quit_button->Run(g_game->GetBackBuffer());
-    if (m_return_button)
-        m_return_button->Run(g_game->GetBackBuffer());
 }
+// vi: ft=cpp

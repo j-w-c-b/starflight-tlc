@@ -19,6 +19,7 @@
 
 #include "AudioSystem.h"
 #include "Module.h"
+#include "PauseMenu.h"
 
 // mode names defined here
 const std::string MODULE_STARTUP = "STARTUP";
@@ -48,10 +49,10 @@ const std::string MODULE_MESSAGEGUI = "MESSAGEGUI";
 
 class Mode final {
   public:
-    Mode(Module *module, const std::string &path);
+    Mode(std::shared_ptr<Module> module, const std::string &path);
 
   private:
-    Module *rootModule;
+    std::shared_ptr<Module> rootModule;
     std::string musicPath;
 
     friend class ModeMgr;
@@ -64,7 +65,7 @@ class ModeMgr : public Module {
 
     void AddMode(
         const std::string &modeName,
-        Module *rootModule,
+        std::shared_ptr<Module> rootModule,
         const std::string &musicPath);
     bool LoadModule(const std::string &moduleName);
     void CloseCurrentModule();
@@ -72,26 +73,24 @@ class ModeMgr : public Module {
     std::string GetCurrentModuleName() { return currentModeName; }
     std::string GetPrevModuleName() { return prevModeName; }
 
-    virtual bool on_update() override;
-    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
-    virtual bool on_close() override;
-    virtual bool on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event) override;
-    virtual bool on_key_down(ALLEGRO_KEYBOARD_EVENT *event) override;
-    virtual bool on_key_up(ALLEGRO_KEYBOARD_EVENT *event) override;
-    virtual bool on_mouse_move(ALLEGRO_MOUSE_EVENT *event) override;
-    virtual bool on_mouse_button_down(ALLEGRO_MOUSE_EVENT *event) override;
-    virtual bool on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) override;
     virtual bool on_event(ALLEGRO_EVENT *event) override;
+    virtual bool on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event) override;
+
+    void enable_pause_menu(bool enable);
+    void toggle_pause_menu();
 
   private:
-    Module *m_activeRootModule;
+    std::shared_ptr<Module> m_activeRootModule;
     std::shared_ptr<Sample> currentMusic;
 
     std::string prevModeName;
     std::string currentModeName;
 
     // this is the list of game modes in the game
-    std::map<std::string, Mode *> m_modes;
+    std::map<std::string, std::shared_ptr<Mode>> m_modes;
+    std::shared_ptr<PauseMenu> m_pause_menu;
+    std::shared_ptr<Module> m_previous_modal;
+    bool m_originally_paused;
 };
 
 #endif

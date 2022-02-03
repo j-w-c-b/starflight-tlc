@@ -17,7 +17,7 @@ template <class T> struct Resource : public ResourceName {
     static void deleter(T *);
 
     Resource() : data(nullptr, deleter){};
-    Resource(ResourceName r) : ResourceName(r), data(nullptr, deleter){};
+    Resource(const ResourceName &r) : ResourceName(r), data(nullptr, deleter){};
 };
 
 template <class T> class ResourceManager {

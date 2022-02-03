@@ -10,6 +10,7 @@
 
 #include <array>
 
+#include "Bitmap.h"
 #include "DataMgr.h"
 #include "Flux.h"
 #include "Label.h"
@@ -17,73 +18,96 @@
 #include "ResourceManager.h"
 #include "Sprite.h"
 
+struct StarmapConfig {
+    StarmapConfig();
+
+    //! Width (pixels) of the starmap viewer including the frame.
+    int viewer_width;
+    //! Height (pixels) of the starmap viewer including the frame.
+    int viewer_height;
+    //! X coordinate (pixels) of left side of the starmap viewer
+    int viewer_x;
+    //! Y coordinate (pixels) of top of the starmap viewer
+    int viewer_y;
+    //! Width (pixels) of the map within the viewer
+    int map_width;
+    //! Height (pixels) of the map within the viewer
+    int map_height;
+    //! X coordinate (pixels) of the left side of the map relative to the viewer
+    int map_x;
+    //! Y coordinate (pixels) of the top of the map relative to the viewer
+    int map_y;
+
+    //! Width (pixels) of a text label
+    int text_width;
+
+    //! Height (pixels) of a text label
+    int text_height;
+
+    //! X coordinate (pixels) of the position x text label relative to the
+    //! viewer
+    int position_x;
+    //! X coordinate (pixels) of the position y text label relative to the
+    //! viewer
+    int position_y;
+    //! X coordinate (pixels) of the destination x text label relative to the
+    //! viewer
+    int destination_x;
+    //! X coordinate (pixels) of the destination y text label relative to the
+    //! viewer
+    int destination_y;
+    //! X coordinate (pixels) of the distance label relative to the viewer
+    int distance_x;
+    //! X coordinate (pixels) of the fuel label relative to the viewer
+    int fuel_x;
+    //! Y coordinate (pixels) of the fuel label relative to the viewer
+    int text_field_y;
+
+    //! X Scaling factor due to different ratio of galaxy w/h to viewer w/h
+    double scale_x;
+    //! Y Scaling factor due to different ratio of galaxy w/h to viewer w/h
+    double scale_y;
+};
+
 class ModuleStarmap : public Module {
   public:
     ModuleStarmap();
     virtual ~ModuleStarmap();
     virtual bool on_init() override;
-    virtual bool on_update() override;
     virtual bool on_draw(ALLEGRO_BITMAP *target) override;
     virtual bool on_mouse_move(ALLEGRO_MOUSE_EVENT *event) override;
-    virtual bool on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) override;
-    virtual bool on_event(ALLEGRO_EVENT *event) override;
+    virtual bool on_mouse_button_click(ALLEGRO_MOUSE_EVENT *event) override;
     virtual bool on_close() override;
 
   private:
-    bool map_active, dest_active, m_over_star;
     void draw_flux();
     void draw_stars();
 
-    //! Ratio of the map width / width of the galaxy in tile coordinates
-    float ratioX;
-    //! Ratio of the map height / height of the galaxy in tile coordinates
-    float ratioY;
-    //! Width (pixels) of the starmap viewer including the frame.
-    int VIEWER_WIDTH;
-    //! Height (pixels) of the starmap viewer including the frame.
-    int VIEWER_HEIGHT;
-    //! X coordinate (pixels) of left side of the starmap viewer
-    int VIEWER_X;
-    //! Y coordinate (pixels) of top of the starmap viewer
-    int VIEWER_Y;
-    //! Width (pixels) of the map within the viewer
-    int MAP_WIDTH;
-    //! Height (pixels) of the map within the viewer
-    int MAP_HEIGHT;
-    //! X coordate (pixels) of the left side of the map relative to the viewer
-    int MAP_X;
-    //! Y coordate (pixels) of the top of the map relative to the viewer
-    int MAP_Y;
-    //! Width (pixels) of the area containing text
-    int TEXT_WIDTH;
-    //! Height (pixels) of the area containing text
-    int TEXT_HEIGHT;
-    //! Time in ticks for the viewer to fully show or be hidden
-    int VIEWER_MOVE_TICKS;
-    //! X coordinate (pixels) of the text fields (relative to the viewer)
-    std::array<int, 6> TEXT_FIELD_X;
-    //! Y coordate (pixels) of the top of the text relative to the viewer
-    int TEXT_FIELD_Y;
+    ResourceManager<ALLEGRO_BITMAP> m_resources;
+    StarmapConfig m_config;
 
-    //! Current view y coordinate---will change as the viewer is opened or
-    //  closed. This starts as -VIEWER_HEIGTH when the viewer is completely
-    //  off screen, and rises to 0 when the viewer is completely on screen.
-    int viewer_offset_y;
+    bool m_dest_active;
+    bool m_over_star;
+
+    std::shared_ptr<Bitmap> m_viewer_bitmap;
 
     //! Bitmap containing the set of stars and flux
-    ALLEGRO_BITMAP *starview;
-
-    //! Bitmap containing the text field values and location circles on the
-    // map. This is the same size as the viewer.
-    ALLEGRO_BITMAP *overlay;
+    ALLEGRO_BITMAP *m_starview;
+    std::shared_ptr<Bitmap> m_starview_bitmap;
 
     Point2D m_cursor_pos;
     Point2D m_dest_pos;
 
-    Label *m_star_label;
-    CoordValue star_x;
-    CoordValue star_y;
-    ResourceManager<ALLEGRO_BITMAP> resources;
+    std::shared_ptr<Label> m_star_label;
+    std::shared_ptr<Label> m_position_x_label;
+    std::shared_ptr<Label> m_position_y_label;
+    std::shared_ptr<Label> m_destination_x_label;
+    std::shared_ptr<Label> m_destination_y_label;
+    std::shared_ptr<Label> m_distance_label;
+    std::shared_ptr<Label> m_fuel_label;
+
+    CoordValue m_star_x;
+    CoordValue m_star_y;
 };
 
 #endif

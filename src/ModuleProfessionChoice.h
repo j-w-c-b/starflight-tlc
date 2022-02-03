@@ -1,6 +1,6 @@
 #pragma once
 
-#include <string.h>
+#include <string>
 
 #include <allegro5/allegro.h>
 
@@ -19,12 +19,12 @@ class ModuleProfessionChoice : public Module {
     virtual bool on_event(ALLEGRO_EVENT *event) override;
 
   private:
-    Bitmap *m_background;
-    NewButton *m_scientific_button;
-    NewButton *m_freelance_button;
-    NewButton *m_military_button;
+    std::shared_ptr<Bitmap> m_background;
+    std::shared_ptr<NewButton> m_scientific_button;
+    std::shared_ptr<NewButton> m_freelance_button;
+    std::shared_ptr<NewButton> m_military_button;
 
-    Label *m_prof_info_label;
+    std::shared_ptr<Label> m_prof_info_label;
 
     static const std::string c_prof_info_scientific_text;
     static const std::string c_prof_info_freelance_text;

@@ -298,7 +298,7 @@ Stardate::Serialize(Archive &ar) {
 }
 
 int
-Stardate::get_current_date_in_days(void) {
+Stardate::get_current_date_in_days() const {
     int i_current_year = m_year;
     int i_current_month = m_month;
     int i_current_day = m_day;

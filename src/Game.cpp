@@ -27,6 +27,7 @@
 #include "PauseMenu.h"
 #include "QuestMgr.h"
 #include "Script.h"
+#include "Slider.h"
 #include "Util.h"
 
 #include "ModuleAuxiliaryDisplay.h"
@@ -94,7 +95,6 @@ Game::Game() {
     questMgr = NULL;
     audioSystem = NULL;
     dataMgr = NULL;
-    pauseMenu = NULL;
     cursor = NULL;
 
     font10 = NULL;
@@ -126,10 +126,6 @@ Game::~Game() {
 
     // destroy the video modes list
     videomodes.clear();
-
-    // kill the pause menu
-    if (pauseMenu != NULL)
-        delete pauseMenu;
 
     // destroy fonts
     al_destroy_font(font10);
@@ -213,22 +209,7 @@ Game::SetTimePaused(bool val) {
 
 void
 Game::TogglePauseMenu() {
-    static bool origTimePause;
-    if (!pauseMenu->isEnabled())
-        return;
-
-    if (pauseMenu->isShowing()) {
-        SetTimePaused(origTimePause);
-        // hide pausemenu
-        m_pause = false;
-        pauseMenu->setShowing(false);
-    } else {
-        origTimePause = getTimePaused();
-        SetTimePaused(true);
-        // show pausemenu
-        m_pause = true;
-        pauseMenu->setShowing(true);
-    }
+    modeMgr->toggle_pause_menu();
 }
 
 #pragma endregion
@@ -823,6 +804,11 @@ Game::broadcast_event(ALLEGRO_EVENT *event) {
     al_emit_user_event(&m_user_event_source, event, nullptr);
 }
 
+void
+Game::enable_pause_menu(bool enable) {
+    modeMgr->enable_pause_menu(enable);
+}
+
 /*
  * INITIALIZE LOW-LEVEL LIBRARY AND ENGINE RESOURCES
  */
@@ -917,9 +903,6 @@ Game::InitGame() {
     font48 = al_load_font(fontfile.c_str(), 48, 0);
     font60 = al_load_font(fontfile.c_str(), 60, 0);
 
-    // create the PauseMenu
-    pauseMenu = new PauseMenu();
-
     // hide the default mouse cursor
     al_hide_mouse_cursor(m_display);
 
@@ -987,6 +970,9 @@ void
 Game::UpdateAlienRaceAttitudes() {
     // update alien attitudes (200,000 is 3 1/3 minute, changing from attitude 1
     // to 10 will require 30 minutes)
+    if (m_pause) {
+        return;
+    }
     int mins = 1;
     if (globalTimer.getTimer()
         > g_game->gameState->alienAttitudeUpdate + 200000 * mins) {
@@ -1037,18 +1023,22 @@ Game::RunGame() {
             return;
         case ALLEGRO_EVENT_TIMER:
             need_redraw = true;
+            if (!m_pause) {
+                modeMgr->update();
+                UpdateAlienRaceAttitudes();
+            }
             break;
         case ALLEGRO_EVENT_KEY_DOWN:
-            on_key_down(&event.keyboard);
+            modeMgr->key_down(&event.keyboard);
             break;
         case ALLEGRO_EVENT_KEY_CHAR:
-            on_key_pressed(&event.keyboard);
+            modeMgr->key_pressed(&event.keyboard);
             break;
         case ALLEGRO_EVENT_KEY_UP:
-            on_key_up(&event.keyboard);
+            modeMgr->key_up(&event.keyboard);
             break;
         case ALLEGRO_EVENT_MOUSE_AXES:
-            on_mouse_move(&event.mouse);
+            modeMgr->mouse_move(&event.mouse);
             break;
         case ALLEGRO_EVENT_MOUSE_ENTER_DISPLAY:
         case ALLEGRO_EVENT_DISPLAY_SWITCH_IN:
@@ -1061,12 +1051,10 @@ Game::RunGame() {
             show_cursor = true;
             break;
         case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
-            m_last_button_downs[event.mouse.button - 1] =
-                make_pair(event.mouse.x, event.mouse.y);
-            on_mouse_button_down(&event.mouse);
+            modeMgr->mouse_button_down(&event.mouse);
             break;
         case ALLEGRO_EVENT_MOUSE_BUTTON_UP:
-            on_mouse_button_up(&event.mouse);
+            modeMgr->mouse_button_up(&event.mouse);
             break;
         case EVENT_CHANGE_MODULE:
             need_redraw = true;
@@ -1111,42 +1099,13 @@ Game::RunGame() {
     }
 
     if (!m_pause) {
-        // call update on all modules
-        modeMgr->update();
-
         // global abort flag to end game
         if (!m_keepRunning)
             return;
-
-        // tell active module to draw
-        modeMgr->draw(m_backbuffer);
-
-        // perform generic updates to time-sensitive game data
-        UpdateAlienRaceAttitudes();
-
-    } // mpause
-
-    // handle the pause menu
-    if (pauseMenu->isShowing()) {
-        // tell active module to draw
-        modeMgr->draw(m_backbuffer);
-
-        // draw the pause popup
-        pauseMenu->Draw();
     }
 
-    // handle the messagebox
-    if (messageBox != NULL) {
-        if (messageBox->is_active()) {
-            // tell active module to draw
-            modeMgr->draw(m_backbuffer);
-
-            // draw messagebox
-            messageBox->on_draw(m_backbuffer);
-        } else {
-            KillMessageBoxWindow();
-        }
-    }
+    // tell active module to draw
+    modeMgr->draw(m_backbuffer);
 
     // draw mouse everywhere but during startup
     if (g_game->gameState->getCurrentModule() != "STARTUP") {
@@ -1303,102 +1262,12 @@ Game::RunGame() {
 #pragma region "UI events"
 
 void
-Game::on_key_down(ALLEGRO_KEYBOARD_EVENT *event) {
-    // send keypress event to messagebox
-    if (messageBox != nullptr) {
-        if (!messageBox->on_key_pressed(event)) {
-            return;
-        }
-    }
-
-    if (!m_pause) {
-        modeMgr->on_key_down(event);
-    }
-}
-
-void
-Game::on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event) {
-    if (!m_pause) {
-        modeMgr->on_key_pressed(event);
-    }
-}
-
-void
-Game::on_key_up(ALLEGRO_KEYBOARD_EVENT *event) {
-    if (event->keycode == ALLEGRO_KEY_ESCAPE)
-        TogglePauseMenu();
-
-    if (!m_pause) {
-        modeMgr->on_key_up(event);
-    }
-}
-
-void
 Game::toggleShowControls() {
     showControls = !showControls;
     ALLEGRO_EVENT e = {
         .type = static_cast<unsigned int>(
             showControls ? EVENT_SHOW_CONTROLS : EVENT_HIDE_CONTROLS)};
     broadcast_event(&e);
-}
-
-void
-Game::on_mouse_move(ALLEGRO_MOUSE_EVENT *event) {
-    int x = event->x;
-    int y = event->y;
-
-    // send mouse event to pause menu
-    if (pauseMenu->isShowing()) {
-        if (pauseMenu->OnMouseMove(x, y))
-            return;
-    }
-
-    // send mouse event to messagebox
-    if (messageBox != nullptr) {
-        // this stops buttons from under the messagebox from being clicked
-        if (!messageBox->on_mouse_move(event))
-            return;
-    }
-
-    if (!m_pause) {
-        modeMgr->on_mouse_move(event);
-    }
-}
-
-void
-Game::on_mouse_button_down(ALLEGRO_MOUSE_EVENT *event) {
-    // send mouse event to messagebox
-    if (messageBox != nullptr) {
-        // this stops buttons from under the messagebox from being clicked
-        if (!messageBox->on_mouse_button_down(event))
-            return;
-    }
-    if (!m_pause) {
-        modeMgr->mouse_button_down(event);
-    }
-}
-
-void
-Game::on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) {
-    int button = event->button - 1;
-    int x = event->x;
-    int y = event->y;
-
-    // send mouse event to pause menu
-    if (pauseMenu->isShowing()) {
-        if (pauseMenu->OnMouseReleased(button, x, y))
-            return;
-    }
-
-    // send mouse event to messagebox
-    if (messageBox != NULL) {
-        // this stops buttons from under the messagebox from being clicked
-        if (!messageBox->on_mouse_button_up(event))
-            return;
-    }
-    if (!m_pause) {
-        modeMgr->on_mouse_button_up(event);
-    }
 }
 
 #pragma endregion
@@ -1409,98 +1278,134 @@ Game::InitializeModules() {
 
     // STARTUP MODE
     modeMgr->AddMode(
-        MODULE_STARTUP, new ModuleStartup(), "data/startup/Starflight.ogg");
+        MODULE_STARTUP,
+        make_shared<ModuleStartup>(),
+        "data/startup/Starflight.ogg");
 
     // TITLE SCREEN GAME MODE
     modeMgr->AddMode(
         MODULE_TITLESCREEN,
-        new ModuleTitleScreen(),
+        make_shared<ModuleTitleScreen>(),
         "data/startup/Starflight.ogg");
 
     // CREDITS GAME MODE
     modeMgr->AddMode(
-        MODULE_CREDITS, new ModuleCredits(), "data/credits/credits.ogg");
+        MODULE_CREDITS,
+        make_shared<ModuleCredits>(),
+        "data/credits/credits.ogg");
 
     // STARPORT MODE
     modeMgr->AddMode(
-        MODULE_STARPORT, new ModuleStarport, "data/starport/starport.ogg");
+        MODULE_STARPORT,
+        make_shared<ModuleStarport>(),
+        "data/starport/starport.ogg");
 
     // CAPTAIN CREATION MODE
     modeMgr->AddMode(
         MODULE_CAPTAINCREATION,
-        new ModuleCaptainCreation,
+        make_shared<ModuleCaptainCreation>(),
         "data/startup/Starflight.ogg");
 
     // CAPTAIN'S LOUNGE MODE
     modeMgr->AddMode(
         MODULE_CAPTAINSLOUNGE,
-        new ModuleCaptainsLounge,
+        make_shared<ModuleCaptainsLounge>(),
         "data/starport/starport.ogg");
 
     // SHIPCONFIG GAME MODE
     modeMgr->AddMode(
-        MODULE_SHIPCONFIG, new ModuleShipConfig, "data/starport/starport.ogg");
+        MODULE_SHIPCONFIG,
+        make_shared<ModuleShipConfig>(),
+        "data/starport/starport.ogg");
 
     // INTERSTELLAR (HYPERSPACE) TRAVEL GAME MODE
-    Module *mode_hyperspace = new ModuleInterstellarTravel();
-    mode_hyperspace->add_child_module(new ModuleAuxiliaryDisplay);
-    mode_hyperspace->add_child_module(new ModuleControlPanel);
-    mode_hyperspace->add_child_module(new ModuleStarmap);
-    mode_hyperspace->add_child_module(new ModuleTopGUI);
-    mode_hyperspace->add_child_module(new ModuleQuestLog);
-    mode_hyperspace->add_child_module(new ModuleMedical);
-    mode_hyperspace->add_child_module(new ModuleEngineer);
-    mode_hyperspace->add_child_module(new ModuleCargoWindow);
-    mode_hyperspace->add_child_module(new ModuleMessageGUI);
+    auto mode_hyperspace = make_shared<ModuleInterstellarTravel>();
+    mode_hyperspace->add_child_module(make_shared<ModuleAuxiliaryDisplay>());
+    mode_hyperspace->add_child_module(make_shared<ModuleControlPanel>());
+    mode_hyperspace->add_child_module(make_shared<Slider>(
+        make_shared<ModuleStarmap>(),
+        Slider::SLIDE_FROM_TOP,
+        EVENT_NAVIGATOR_STARMAP));
+    mode_hyperspace->add_child_module(make_shared<ModuleTopGUI>());
+    mode_hyperspace->add_child_module(make_shared<Slider>(
+        make_shared<ModuleQuestLog>(),
+        Slider::SLIDE_FROM_RIGHT,
+        EVENT_CAPTAIN_QUESTLOG));
+    mode_hyperspace->add_child_module(make_shared<ModuleMedical>());
+    mode_hyperspace->add_child_module(make_shared<Slider>(
+        make_shared<ModuleEngineer>(),
+        Slider::SLIDE_FROM_TOP,
+        EVENT_ENGINEER_REPAIR));
+    mode_hyperspace->add_child_module(make_shared<ModuleCargoWindow>());
+    mode_hyperspace->add_child_module(make_shared<ModuleMessageGUI>());
     modeMgr->AddMode(
         MODULE_HYPERSPACE, mode_hyperspace, "data/spacetravel/spacetravel.ogg");
 
     // INTERPLANETARY TRAVEL GAME MODE
-    Module *mode_interplanetaryTravel = new ModuleInterPlanetaryTravel;
-    mode_interplanetaryTravel->add_child_module(new ModuleAuxiliaryDisplay);
-    mode_interplanetaryTravel->add_child_module(new ModuleControlPanel);
-    mode_interplanetaryTravel->add_child_module(new ModuleStarmap);
-    mode_interplanetaryTravel->add_child_module(new ModuleTopGUI);
-    mode_interplanetaryTravel->add_child_module(new ModuleQuestLog);
-    mode_interplanetaryTravel->add_child_module(new ModuleMedical);
-    mode_interplanetaryTravel->add_child_module(new ModuleEngineer);
-    mode_interplanetaryTravel->add_child_module(new ModuleCargoWindow);
-    mode_interplanetaryTravel->add_child_module(new ModuleMessageGUI);
+    auto mode_interplanetaryTravel = make_shared<ModuleInterPlanetaryTravel>();
+    mode_interplanetaryTravel->add_child_module(
+        make_shared<ModuleAuxiliaryDisplay>());
+    mode_interplanetaryTravel->add_child_module(
+        make_shared<ModuleControlPanel>());
+    mode_interplanetaryTravel->add_child_module(make_shared<Slider>(
+        make_shared<ModuleStarmap>(),
+        Slider::SLIDE_FROM_TOP,
+        EVENT_NAVIGATOR_STARMAP));
+    mode_interplanetaryTravel->add_child_module(make_shared<ModuleTopGUI>());
+    mode_interplanetaryTravel->add_child_module(make_shared<Slider>(
+        make_shared<ModuleQuestLog>(),
+        Slider::SLIDE_FROM_RIGHT,
+        EVENT_CAPTAIN_QUESTLOG));
+    mode_interplanetaryTravel->add_child_module(make_shared<ModuleMedical>());
+    mode_interplanetaryTravel->add_child_module(make_shared<Slider>(
+        make_shared<ModuleEngineer>(),
+        Slider::SLIDE_FROM_TOP,
+        EVENT_ENGINEER_REPAIR));
+    mode_interplanetaryTravel->add_child_module(
+        make_shared<ModuleCargoWindow>());
+    mode_interplanetaryTravel->add_child_module(
+        make_shared<ModuleMessageGUI>());
     modeMgr->AddMode(
         MODULE_INTERPLANETARY,
         mode_interplanetaryTravel,
         "data/spacetravel/spacetravel.ogg");
 
     // PLANET ORBIT GAME MODE
-    Module *mode_orbit = new ModulePlanetOrbit();
-    mode_orbit->add_child_module(new ModuleAuxiliaryDisplay);
-    mode_orbit->add_child_module(new ModuleControlPanel);
-    mode_orbit->add_child_module(new ModuleMessageGUI);
+    auto mode_orbit = make_shared<ModulePlanetOrbit>();
+    mode_orbit->add_child_module(make_shared<ModuleAuxiliaryDisplay>());
+    mode_orbit->add_child_module(make_shared<ModuleControlPanel>());
+    mode_orbit->add_child_module(make_shared<ModuleMessageGUI>());
     modeMgr->AddMode(
         MODULE_ORBIT, mode_orbit, "data/spacetravel/spacetravel.ogg");
 
     // PLANET SURFACE MODE
-    Module *mode_planet = new ModulePlanetSurface;
-    mode_planet->add_child_module(new ModuleCargoWindow);
+    auto mode_planet = make_shared<ModulePlanetSurface>();
+    mode_planet->add_child_module(make_shared<ModuleCargoWindow>());
     modeMgr->AddMode(
         MODULE_SURFACE, mode_planet, "data/planetsurface/planetsurface.ogg");
 
     // CREW ASSIGNMENT GAME MODE
     modeMgr->AddMode(
-        MODULE_CREWBUY, new ModuleCrewHire(), "data/starport/starport.ogg");
+        MODULE_CREWBUY,
+        make_shared<ModuleCrewHire>(),
+        "data/starport/starport.ogg");
 
     // BANK MODULE
-    modeMgr->AddMode(MODULE_BANK, new ModuleBank, "data/starport/starport.ogg");
+    modeMgr->AddMode(
+        MODULE_BANK, make_shared<ModuleBank>(), "data/starport/starport.ogg");
 
     // TRADE DEPOT MODULE
     g_game->modeMgr->AddMode(
-        MODULE_TRADEDEPOT, new ModuleTradeDepot, "data/starport/starport.ogg");
+        MODULE_TRADEDEPOT,
+        make_shared<ModuleTradeDepot>(),
+        "data/starport/starport.ogg");
 
     // GAME OVER MODULE
-    g_game->modeMgr->AddMode(MODULE_GAMEOVER, new ModuleGameOver, "");
+    g_game->modeMgr->AddMode(
+        MODULE_GAMEOVER, make_shared<ModuleGameOver>(), "");
 
     // CANTINA MODULE
-    Module *cantina = new ModuleCantina;
+    auto cantina = make_shared<ModuleCantina>();
     g_game->modeMgr->AddMode(
         MODULE_CANTINA, cantina, "data/starport/starport.ogg");
     g_game->modeMgr->AddMode(
@@ -1509,16 +1414,18 @@ Game::InitializeModules() {
         MODULE_MILITARYOPS, cantina, "data/starport/starport.ogg");
 
     // ALIEN ENCOUNTER MODULE
-    Module *mode_encounter = new ModuleEncounter;
-    mode_encounter->add_child_module(new ModuleTopGUI);
-    mode_encounter->add_child_module(new ModuleControlPanel);
-    mode_encounter->add_child_module(new ModuleCargoWindow);
+    auto mode_encounter = make_shared<ModuleEncounter>();
+    mode_encounter->add_child_module(make_shared<ModuleTopGUI>());
+    mode_encounter->add_child_module(make_shared<ModuleControlPanel>());
+    mode_encounter->add_child_module(make_shared<ModuleCargoWindow>());
     g_game->modeMgr->AddMode(
         MODULE_ENCOUNTER, mode_encounter, "data/encounter/combat.ogg");
 
     // SETTINGS GAME MODE
     modeMgr->AddMode(
-        MODULE_SETTINGS, new ModuleSettings, "data/startup/Starflight.ogg");
+        MODULE_SETTINGS,
+        make_shared<ModuleSettings>(),
+        "data/startup/Starflight.ogg");
 
     return result;
 }

@@ -19,9 +19,25 @@
 const int HOMEWORLD_ID = 8;
 
 class ModulePlanetOrbit : public Module {
-  private:
+  public:
+    ModulePlanetOrbit();
     ~ModulePlanetOrbit();
 
+    virtual bool on_init() override;
+    virtual bool on_update() override;
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
+    virtual bool on_mouse_move(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_mouse_button_down(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_event(ALLEGRO_EVENT *event) override;
+    virtual bool on_close() override;
+
+    void doorbit();
+    void dosurface();
+    void scanplanet();
+    void analyzeplanet();
+
+  private:
     bool CreatePlanetTexture();
 
     std::shared_ptr<Sample> audio_scan;
@@ -58,22 +74,6 @@ class ModulePlanetOrbit : public Module {
 
     TexturedSphere *texsphere;
     ResourceManager<ALLEGRO_BITMAP> m_resources;
-
-  public:
-    ModulePlanetOrbit(void);
-    virtual bool on_init() override;
-    virtual bool on_update() override;
-    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
-    virtual bool on_mouse_move(ALLEGRO_MOUSE_EVENT *event) override;
-    virtual bool on_mouse_button_down(ALLEGRO_MOUSE_EVENT *event) override;
-    virtual bool on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) override;
-    virtual bool on_event(ALLEGRO_EVENT *event) override;
-    virtual bool on_close() override;
-
-    void doorbit();
-    void dosurface();
-    void scanplanet();
-    void analyzeplanet();
 };
 
 #endif

@@ -460,7 +460,7 @@ ModuleInterstellarTravel::on_init() {
     flag_Engaged = false;
 
     // enable the Pause Menu
-    g_game->pauseMenu->setEnabled(true);
+    g_game->enable_pause_menu(true);
 
     // load the datafile
     if (!resources.load()) {

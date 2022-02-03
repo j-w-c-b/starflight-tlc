@@ -1,6 +1,3 @@
-
-#include <string.h>
-
 #include <allegro5/allegro.h>
 
 #include "AdvancedTileScroller.h"

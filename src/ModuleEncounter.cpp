@@ -328,7 +328,7 @@ ModuleEncounter::on_init() {
     firingLaser = firingMissile = false;
 
     // enable the Pause Menu
-    g_game->pauseMenu->setEnabled(true);
+    g_game->enable_pause_menu(true);
 
     // create the player ship
     playerShip = new PlayerShipSprite();

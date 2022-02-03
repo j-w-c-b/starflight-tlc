@@ -17,6 +17,7 @@ class Bitmap : public Module {
         int height = -1);
     virtual ~Bitmap() {}
 
+    void set_bitmap(ALLEGRO_BITMAP *bitmap);
     virtual bool on_draw(ALLEGRO_BITMAP *target) override;
 
     virtual void set_visible_region(int x, int y, int width, int height);
@@ -24,8 +25,6 @@ class Bitmap : public Module {
   private:
     int m_visible_x;
     int m_visible_y;
-    int m_visible_width;
-    int m_visible_height;
     ALLEGRO_BITMAP *m_bitmap;
 };
 

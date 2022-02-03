@@ -71,7 +71,6 @@ class DataMgr;
 class AudioSystem;
 class QuestMgr;
 class Script;
-class PauseMenu;
 
 class ModulePlanetSurface;
 class ModuleCargoWindow;
@@ -104,7 +103,6 @@ class Game {
     void setVibration(int value) { vibration = value; }
 
     MessageBoxWindow *messageBox;
-    PauseMenu *pauseMenu;
     Sprite *cursor;
     float CrossModuleAngle; // Holds entry angle for systems
 
@@ -245,18 +243,14 @@ class Game {
     bool Initialize_Graphics();
     void LoadModule(const std::string &new_module);
     void broadcast_event(ALLEGRO_EVENT *event);
+    void enable_pause_menu(bool enable);
+    void set_pause(bool pause) { m_pause = pause; }
 
   protected:
     void Stop();
     virtual bool InitGame();
     virtual void DestroyGame();
     virtual void RunGame();
-    virtual void on_key_down(ALLEGRO_KEYBOARD_EVENT *event);
-    virtual void on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event);
-    virtual void on_key_up(ALLEGRO_KEYBOARD_EVENT *event);
-    virtual void on_mouse_move(ALLEGRO_MOUSE_EVENT *event);
-    virtual void on_mouse_button_down(ALLEGRO_MOUSE_EVENT *event);
-    virtual void on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event);
 
   private:
     void UpdateAlienRaceAttitudes();

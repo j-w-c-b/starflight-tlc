@@ -52,10 +52,10 @@ class ModuleCargoWindow : public Module {
     ScrollBox::ScrollBox *m_playerListNumItems;
     ScrollBox::ScrollBox *m_playerListValue;
 
-    Button *m_jettisonButton;
+    std::shared_ptr<Button> m_jettisonButton;
     std::shared_ptr<Sample> m_sndButtonClick;
 
-    Label *m_space_status;
+    std::shared_ptr<Label> m_space_status;
     int maxSpace;
     ResourceManager<ALLEGRO_BITMAP> m_resources;
 };

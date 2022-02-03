@@ -12,114 +12,11 @@ using namespace captaincreation_resources;
 
 ALLEGRO_DEBUG_CHANNEL("ModuleCaptainCreation")
 
-#define PROFBTN_SCIENTIFIC_X 13
-#define PROFBTN_SCIENTIFIC_Y 219
-#define PROFBTN_FREELANCE_X 349
-#define PROFBTN_FREELANCE_Y 219
-#define PROFBTN_MILITARY_X 686
-#define PROFBTN_MILITARY_Y 219
 #define BACKBTN_WIDTH 82
 #define BACKBTN_HEIGHT 58
 
 #define BACKBTN_X 12
 #define BACKBTN_Y 698
-
-#define FINISHBTN_X 860
-#define FINISHBTN_Y 585
-
-#define PROFESSION_BOX_X 72
-#define PROFESSION_BOX_WIDTH 880
-#define PROFESSION_BOX_Y 390
-#define PROFESSION_BOX_HEIGHT 260
-
-#define DETAILS_BOX_X 72
-#define DETAILS_BOX_WIDTH 880
-#define DETAILS_BOX_Y 170
-#define DETAILS_BOX_HEIGHT 480
-
-#define TEXTCOL al_map_rgb(0, 255, 255)
-
-#define TEXTHEIGHT_TITLES 60
-#define TEXTHEIGHT_PROFESSIONNAMES 40
-#define TEXTHEIGHT_NAME 30
-#define TEXTHEIGHT_ATTRIBUTES 30
-
-#define PROFESSIONAMES_VERT_SPACE 10
-
-#define DETAILS_FONT_SIZE 32
-#define NAME_X DETAILS_BOX_X + DETAILS_FONT_SIZE
-#define NAME_Y DETAILS_BOX_Y + DETAILS_FONT_SIZE
-#define NAME_MAXLEN 15
-
-#define CURSOR_Y NAME_Y
-#define CURSOR_DELAY 10
-
-#define ATTS_X 287
-#define ATTS_Y 144
-
-#define ATTR_LABEL_X 32
-#define ATTR_LABEL_WIDTH 300
-#define ATTR_LABEL_HEIGHT 40
-#define ATTR_VALUE_WIDTH 48
-#define ATTR_VALUE_PADDING 32
-#define ATTR_PLUS_WIDTH 37
-#define ATTR_PLUS_HEIGHT 37
-#define ATTR_PLUS_PADDING 5
-#define ATTR_MINUS_WIDTH 37
-#define ATTR_MINUS_HEIGHT 37
-#define ATTR_MINUS_PADDING 32
-#define ATTR_AVAILABLE_WIDTH 270
-
-#define ATTS_COMMON_X NAME_X
-// NOTE: right-align relative to NAME_X
-#define ATTS_VALS_RIGHT_OFFSET_X 380 - DETAILS_FONT_SIZE
-// NOTE: VALS are right aligned
-#define ATTS_VALS_COMMON_X DETAILS_BOX_X + 380
-#define ATTS_PLUS_COMMON_X ATTS_VALS_COMMON_X + DETAILS_FONT_SIZE
-#define ATTS_MAX_COMMON_X ATTS_PLUS_COMMON_X + 42 * 2 + DETAILS_FONT_SIZE
-#define ATTS_MINUS_COMMON_X ATTS_PLUS_COMMON_X + 42
-// NOTE: right aligned
-#define ATTS_AVAILPTS_COMMON_X DETAILS_BOX_X + 700
-#define ATTS_Y_BASE NAME_Y + 2 * DETAILS_FONT_SIZE
-#define ATTS_Y_SPACING 40
-#define ATTS_PLUS_Y_BASE (ATTS_Y_BASE - 7)
-
-#define RESET_X 868
-#define RESET_Y 542
-
-#define DURABILITY_X ATTS_COMMON_X
-#define DURABILITY_Y (ATTS_Y_BASE + (ATTS_Y_SPACING * 0))
-#define PLUS_DURABILITY_X ATTS_PLUS_COMMON_X
-#define PLUS_DURABILITY_Y (ATTS_PLUS_Y_BASE + (ATTS_Y_SPACING * 0))
-#define LEARNRATE_X ATTS_COMMON_X
-#define LEARNRATE_Y (ATTS_Y_BASE + (ATTS_Y_SPACING * 1))
-#define PLUS_LEARNRATE_X ATTS_PLUS_COMMON_X
-#define PLUS_LEARNRATE_Y (ATTS_PLUS_Y_BASE + (ATTS_Y_SPACING * 1))
-
-#define SCIENCE_X ATTS_COMMON_X
-#define SCIENCE_Y (ATTS_Y_BASE + (ATTS_Y_SPACING * 3))
-#define PLUS_SCIENCE_X ATTS_PLUS_COMMON_X
-#define PLUS_SCIENCE_Y (ATTS_PLUS_Y_BASE + (ATTS_Y_SPACING * 3))
-#define NAVIGATION_X ATTS_COMMON_X
-#define NAVIGATION_Y (ATTS_Y_BASE + (ATTS_Y_SPACING * 4))
-#define PLUS_NAVIGATION_X ATTS_PLUS_COMMON_X
-#define PLUS_NAVIGATION_Y (ATTS_PLUS_Y_BASE + (ATTS_Y_SPACING * 4))
-#define TACTICS_X ATTS_COMMON_X
-#define TACTICS_Y (ATTS_Y_BASE + (ATTS_Y_SPACING * 5))
-#define PLUS_TACTICS_X ATTS_PLUS_COMMON_X
-#define PLUS_TACTICS_Y (ATTS_PLUS_Y_BASE + (ATTS_Y_SPACING * 5))
-#define ENGINEERING_X ATTS_COMMON_X
-#define ENGINEERING_Y (ATTS_Y_BASE + (ATTS_Y_SPACING * 6))
-#define PLUS_ENGINEERING_X ATTS_PLUS_COMMON_X
-#define PLUS_ENGINEERING_Y (ATTS_PLUS_Y_BASE + (ATTS_Y_SPACING * 6))
-#define COMMUNICATION_X ATTS_COMMON_X
-#define COMMUNICATION_Y (ATTS_Y_BASE + (ATTS_Y_SPACING * 7))
-#define PLUS_COMMUNICATION_X ATTS_PLUS_COMMON_X
-#define PLUS_COMMUNICATION_Y (ATTS_PLUS_Y_BASE + (ATTS_Y_SPACING * 7))
-#define MEDICAL_X ATTS_COMMON_X
-#define MEDICAL_Y (ATTS_Y_BASE + (ATTS_Y_SPACING * 8))
-#define PLUS_MEDICAL_X ATTS_PLUS_COMMON_X
-#define PLUS_MEDICAL_Y (ATTS_PLUS_Y_BASE + (ATTS_Y_SPACING * 8))
 
 #define BASEATT_SCIENTIFIC_DURABILITY 5
 #define BASEATT_SCIENTIFIC_LEARNRATE 5
@@ -175,9 +72,6 @@ ALLEGRO_DEBUG_CHANNEL("ModuleCaptainCreation")
 #define MAXATT_MILITARY_COMMUNICATION 250
 #define MAXATT_MILITARY_MEDICAL 65
 
-#define INITIAL_AVAIL_PTS 5
-#define INITIAL_AVAIL_PROF_PTS 25
-
 static string
 resolve_sample_name(const string &name) {
     auto result = find_if(
@@ -193,26 +87,17 @@ resolve_sample_name(const string &name) {
 ModuleCaptainCreation::ModuleCaptainCreation()
     : Module(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT),
       m_resources(CAPTAINCREATION_IMAGES),
-      m_click_loaded(g_game->audioSystem->Load(
+      m_click_loaded(
+          g_game->audioSystem->Load(resolve_sample_name(S_CLICK), S_CLICK)),
+      m_buttonclick_loaded(g_game->audioSystem->Load(
           resolve_sample_name(S_BUTTONCLICK),
           S_BUTTONCLICK)),
+      m_error_loaded(
+          g_game->audioSystem->Load(resolve_sample_name(S_ERROR), S_ERROR)),
       m_wizPage(WP_NONE),
-      m_profession_choice(new ModuleProfessionChoice(m_resources)),
-      m_physical_points(new ModuleCaptainAttributeGroup(
-          DETAILS_BOX_X,
-          DETAILS_BOX_Y,
-          DETAILS_BOX_WIDTH,
-          DETAILS_BOX_HEIGHT,
-          INITIAL_AVAIL_PTS,
-          m_resources)),
-      m_profession_choice(new ModuleCaptainAttributeGroup(
-          DETAILS_BOX_X,
-          DETAILS_BOX_Y,
-          DETAILS_BOX_WIDTH,
-          DETAILS_BOX_HEIGHT,
-          INITIAL_AVAIL_PROF_PTS,
-          m_resources)),
-      m_back_button(new NewButton(
+      m_profession_choice(make_shared<ModuleProfessionChoice>(m_resources)),
+      m_captain_details(make_shared<ModuleCaptainDetails>(m_resources)),
+      m_back_button(make_shared<NewButton>(
           BACKBTN_X,
           BACKBTN_Y,
           BACKBTN_WIDTH,
@@ -222,18 +107,12 @@ ModuleCaptainCreation::ModuleCaptainCreation()
           m_resources[I_CAPTAINCREATION_BACK],
           m_resources[I_CAPTAINCREATION_BACK_MOUSEOVER],
           nullptr,
-          S_BUTTONCLICK)),
-      m_cursorIdx(0), m_cursorIdxDelay(0), m_mouseOverImg(nullptr) {
+          S_BUTTONCLICK)) {
 
     add_child_module(m_profession_choice);
+    add_child_module(m_captain_details);
 
-    add_child_module(m_physical_points);
-    add_child_module(m_profession_points);
-
-    m_physical_points->set_active(false);
-    m_profession_points->set_active(false);
-
-    // last to draw over child backgrounds
+    // last to draw so it is on top of other sub-modules
     add_child_module(m_back_button);
 }
 
@@ -245,35 +124,6 @@ ModuleCaptainCreation::on_init() {
         g_game->message("CaptainCreation: Error loading resources");
         return false;
     }
-
-    m_detailsBackground = m_resources[I_CAPTAINCREATION_DETAILSBACKGROUND];
-    m_resetBtn = m_resources[I_CAPTAINCREATION_RESET];
-    m_resetBtnMouseOver = m_resources[I_CAPTAINCREATION_RESET_MOUSEOVER];
-
-    ALLEGRO_BITMAP *btnNorm, *btnOver, *btnDis;
-
-    btnNorm = m_resources[I_CAPTAINCREATION_FINISH];
-    btnOver = m_resources[I_CAPTAINCREATION_FINISH_MOUSEOVER];
-    btnDis = m_resources[I_CAPTAINCREATION_FINISH_DISABLED];
-
-    m_finishBtn = new Button(
-        btnNorm,
-        btnOver,
-        btnDis,
-        FINISHBTN_X,
-        FINISHBTN_Y,
-        EVENT_NONE,
-        EVENT_CAPTAINCREATION_FINISH,
-        "",
-        false,
-        true);
-    if (m_finishBtn == nullptr)
-        return false;
-    if (!m_finishBtn->IsInitialized())
-        return false;
-
-    m_cursor[0] = m_resources[I_CAPTAINCREATION_CURSOR0];
-    m_cursor[1] = m_resources[I_CAPTAINCREATION_CURSOR1];
 
     // load audio files
     m_sndBtnClick =
@@ -295,10 +145,9 @@ ModuleCaptainCreation::on_init() {
         return false;
     }
 
-    m_mouseOverImg = nullptr;
-    m_name = "";
     m_wizPage = WP_PROFESSION_CHOICE;
     m_profession_choice->set_active(true);
+    m_captain_details->set_active(false);
 
     return true;
 }
@@ -330,48 +179,6 @@ ModuleCaptainCreation::on_draw(ALLEGRO_BITMAP *target) {
 
     case WP_DETAILS:
         {
-            al_draw_bitmap(m_detailsBackground, 0, 0, 0);
-
-            al_draw_text(
-                g_game->font60,
-                TEXTCOL,
-                SCREEN_WIDTH / 2,
-                30,
-                ALLEGRO_ALIGN_CENTER,
-                "Captain Details");
-
-            string name = "Name: " + m_name;
-            al_draw_text(
-                g_game->font32, TEXTCOL, NAME_X, NAME_Y, 0, name.c_str());
-
-            int nlen = al_get_text_width(g_game->font32, name.c_str());
-            al_draw_bitmap(
-                m_cursor[m_cursorIdx], NAME_X + nlen + 2, CURSOR_Y, 0);
-
-            if (++m_cursorIdxDelay > CURSOR_DELAY) {
-                m_cursorIdxDelay = 0;
-                m_cursorIdx++;
-                if (m_cursorIdx > 1)
-                    m_cursorIdx = 0;
-            }
-
-            al_draw_bitmap(m_resetBtn, RESET_X, RESET_Y, 0);
-
-            if (m_physical_points->get_available_points() == 0
-                && m_profession_points->get_available_points() == 0
-                && (m_name.size() > 0)) {
-                m_finishBtn->SetEnabled(true);
-            } else {
-                m_finishBtn->SetEnabled(false);
-            }
-
-            m_finishBtn->Run(g_game->GetBackBuffer());
-
-            if (m_mouseOverImg != nullptr) {
-                al_draw_bitmap(
-                    m_mouseOverImg, m_mouseOverImgX, m_mouseOverImgY, 0);
-            }
-
             // display tutorial help messages for beginners
             if ((!g_game->gameState->firstTimeVisitor
                  || g_game->gameState->getActiveQuest() > 1))
@@ -399,11 +206,6 @@ ModuleCaptainCreation::on_draw(ALLEGRO_BITMAP *target) {
 
 bool
 ModuleCaptainCreation::on_close() {
-    if (m_finishBtn != nullptr) {
-        delete m_finishBtn;
-        m_finishBtn = nullptr;
-    }
-
     if (m_sndBtnClick != nullptr) {
         m_sndBtnClick = nullptr;
     }
@@ -421,70 +223,10 @@ ModuleCaptainCreation::on_close() {
 
 bool
 ModuleCaptainCreation::on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event) {
-    if (m_wizPage == WP_DETAILS) {
-        bool playKeySnd = false;
-        bool playErrSnd = false;
-
-        if (isalnum(event->unichar) || event->unichar == ' ') {
-            if (m_name.size() < NAME_MAXLEN) {
-                char c = event->unichar;
-                m_name.push_back(c);
-
-                playKeySnd = true;
-            } else
-                playErrSnd = true;
-        } else if (event->keycode == ALLEGRO_KEY_BACKSPACE) {
-            if (m_name.size() > 0) {
-                m_name.erase(--(m_name.end()));
-
-                playKeySnd = true;
-            } else
-                playErrSnd = true;
-        } else {
-            playErrSnd = true;
-        }
-
-        if (playKeySnd) {
-            g_game->audioSystem->Play(m_sndClick);
-        }
-
-        if (playErrSnd) {
-            g_game->audioSystem->Play(m_sndErr);
-        }
+    if (event->keycode == ALLEGRO_KEY_ESCAPE) {
+        ALLEGRO_EVENT e = {.type = EVENT_CAPTAINCREATION_BACK};
+        g_game->broadcast_event(&e);
         return false;
-    }
-    return true;
-}
-
-bool
-ModuleCaptainCreation::on_mouse_move(ALLEGRO_MOUSE_EVENT *event) {
-    int x = event->x;
-    int y = event->y;
-
-    switch (m_wizPage) {
-    case WP_PROFESSION_CHOICE:
-        {
-        }
-        break;
-
-    case WP_DETAILS:
-        {
-            if ((x >= RESET_X)
-                && (x < (RESET_X + al_get_bitmap_width(m_resetBtn)))
-                && (y >= RESET_Y)
-                && (y < (RESET_Y + al_get_bitmap_height(m_resetBtn)))) {
-                m_mouseOverImg = m_resetBtnMouseOver;
-                m_mouseOverImgX = RESET_X;
-                m_mouseOverImgY = RESET_Y;
-            } else {
-                m_mouseOverImg = nullptr;
-            }
-
-            m_finishBtn->OnMouseMove(x, y);
-        }
-        break;
-    case WP_NONE:
-        break;
     }
     return true;
 }
@@ -493,15 +235,14 @@ void
 ModuleCaptainCreation::chooseFreelance() {
     // set freelance attributes
     m_profession = PROFESSION_FREELANCE;
-    m_attributes.durability = BASEATT_FREELANCE_DURABILITY;
-    m_attributes.learnRate = BASEATT_FREELANCE_LEARNRATE;
-    m_attributes.science = BASEATT_FREELANCE_SCIENCE;
-    m_attributes.navigation = BASEATT_FREELANCE_NAVIGATION;
-    m_attributes.tactics = BASEATT_FREELANCE_TACTICS;
-    m_attributes.engineering = BASEATT_FREELANCE_ENGINEERING;
-    m_attributes.communication = BASEATT_FREELANCE_COMMUNICATION;
-    m_attributes.medical = BASEATT_FREELANCE_MEDICAL;
-    m_attributesInitial = m_attributes;
+    m_attributesInitial.durability = BASEATT_FREELANCE_DURABILITY;
+    m_attributesInitial.learnRate = BASEATT_FREELANCE_LEARNRATE;
+    m_attributesInitial.science = BASEATT_FREELANCE_SCIENCE;
+    m_attributesInitial.navigation = BASEATT_FREELANCE_NAVIGATION;
+    m_attributesInitial.tactics = BASEATT_FREELANCE_TACTICS;
+    m_attributesInitial.engineering = BASEATT_FREELANCE_ENGINEERING;
+    m_attributesInitial.communication = BASEATT_FREELANCE_COMMUNICATION;
+    m_attributesInitial.medical = BASEATT_FREELANCE_MEDICAL;
 
     // set attribute max values
     m_attributesMax.durability = MAXATT_FREELANCE_DURABILITY;
@@ -513,12 +254,9 @@ ModuleCaptainCreation::chooseFreelance() {
     m_attributesMax.communication = MAXATT_FREELANCE_COMMUNICATION;
     m_attributesMax.medical = MAXATT_FREELANCE_MEDICAL;
 
-    m_availPts = INITIAL_AVAIL_PTS;
-    m_availProfPts = INITIAL_AVAIL_PROF_PTS;
-
     // store attributes in gamestate
     g_game->gameState->setProfession(m_profession);
-    g_game->gameState->officerCap->attributes = m_attributes;
+    g_game->gameState->officerCap->attributes = m_attributesInitial;
 
     // set ship name and properties based on profession
     Ship ship = g_game->gameState->getShip();
@@ -565,15 +303,14 @@ void
 ModuleCaptainCreation::chooseMilitary() {
     // set military attributes
     m_profession = PROFESSION_MILITARY;
-    m_attributes.durability = BASEATT_MILITARY_DURABILITY;
-    m_attributes.learnRate = BASEATT_MILITARY_LEARNRATE;
-    m_attributes.science = BASEATT_MILITARY_SCIENCE;
-    m_attributes.navigation = BASEATT_MILITARY_NAVIGATION;
-    m_attributes.tactics = BASEATT_MILITARY_TACTICS;
-    m_attributes.engineering = BASEATT_MILITARY_ENGINEERING;
-    m_attributes.communication = BASEATT_MILITARY_COMMUNICATION;
-    m_attributes.medical = BASEATT_MILITARY_MEDICAL;
-    m_attributesInitial = m_attributes;
+    m_attributesInitial.durability = BASEATT_MILITARY_DURABILITY;
+    m_attributesInitial.learnRate = BASEATT_MILITARY_LEARNRATE;
+    m_attributesInitial.science = BASEATT_MILITARY_SCIENCE;
+    m_attributesInitial.navigation = BASEATT_MILITARY_NAVIGATION;
+    m_attributesInitial.tactics = BASEATT_MILITARY_TACTICS;
+    m_attributesInitial.engineering = BASEATT_MILITARY_ENGINEERING;
+    m_attributesInitial.communication = BASEATT_MILITARY_COMMUNICATION;
+    m_attributesInitial.medical = BASEATT_MILITARY_MEDICAL;
 
     // maximum attribute values
     m_attributesMax.durability = MAXATT_MILITARY_DURABILITY;
@@ -585,12 +322,9 @@ ModuleCaptainCreation::chooseMilitary() {
     m_attributesMax.communication = MAXATT_MILITARY_COMMUNICATION;
     m_attributesMax.medical = MAXATT_MILITARY_MEDICAL;
 
-    m_availPts = INITIAL_AVAIL_PTS;
-    m_availProfPts = INITIAL_AVAIL_PROF_PTS;
-
     // store attributes in gamestate
     g_game->gameState->setProfession(m_profession);
-    g_game->gameState->officerCap->attributes = m_attributes;
+    g_game->gameState->officerCap->attributes = m_attributesInitial;
 
     // set ship name and properties based on profession
     Ship ship = g_game->gameState->getShip();
@@ -637,15 +371,14 @@ void
 ModuleCaptainCreation::chooseScience() {
     // set science attributes
     m_profession = PROFESSION_SCIENTIFIC;
-    m_attributes.durability = BASEATT_SCIENTIFIC_DURABILITY;
-    m_attributes.learnRate = BASEATT_SCIENTIFIC_LEARNRATE;
-    m_attributes.science = BASEATT_SCIENTIFIC_SCIENCE;
-    m_attributes.navigation = BASEATT_SCIENTIFIC_NAVIGATION;
-    m_attributes.tactics = BASEATT_SCIENTIFIC_TACTICS;
-    m_attributes.engineering = BASEATT_SCIENTIFIC_ENGINEERING;
-    m_attributes.communication = BASEATT_SCIENTIFIC_COMMUNICATION;
-    m_attributes.medical = BASEATT_SCIENTIFIC_MEDICAL;
-    m_attributesInitial = m_attributes;
+    m_attributesInitial.durability = BASEATT_SCIENTIFIC_DURABILITY;
+    m_attributesInitial.learnRate = BASEATT_SCIENTIFIC_LEARNRATE;
+    m_attributesInitial.science = BASEATT_SCIENTIFIC_SCIENCE;
+    m_attributesInitial.navigation = BASEATT_SCIENTIFIC_NAVIGATION;
+    m_attributesInitial.tactics = BASEATT_SCIENTIFIC_TACTICS;
+    m_attributesInitial.engineering = BASEATT_SCIENTIFIC_ENGINEERING;
+    m_attributesInitial.communication = BASEATT_SCIENTIFIC_COMMUNICATION;
+    m_attributesInitial.medical = BASEATT_SCIENTIFIC_MEDICAL;
 
     // maximum attribute values
     m_attributesMax.durability = MAXATT_SCIENTIFIC_DURABILITY;
@@ -657,12 +390,9 @@ ModuleCaptainCreation::chooseScience() {
     m_attributesMax.communication = MAXATT_SCIENTIFIC_COMMUNICATION;
     m_attributesMax.medical = MAXATT_SCIENTIFIC_MEDICAL;
 
-    m_availPts = INITIAL_AVAIL_PTS;
-    m_availProfPts = INITIAL_AVAIL_PROF_PTS;
-
     // store attributes in gamestate
     g_game->gameState->setProfession(m_profession);
-    g_game->gameState->officerCap->attributes = m_attributes;
+    g_game->gameState->officerCap->attributes = m_attributesInitial;
 
     // set ship name and properties based on profession
     Ship ship = g_game->gameState->getShip();
@@ -706,215 +436,69 @@ ModuleCaptainCreation::chooseScience() {
 }
 
 bool
-ModuleCaptainCreation::on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) {
-    int x = event->x;
-    int y = event->y;
-    int button = event->button - 1;
-
-    if (!is_mouse_click(event)) {
-        return true;
-    }
-
-    switch (m_wizPage) {
-    case WP_PROFESSION_CHOICE:
-        break;
-
-    case WP_DETAILS:
-        {
-            bool playSnd = false;
-            bool playErrSnd = false;
-
-            if ((x >= RESET_X)
-                && (x < (RESET_X + al_get_bitmap_width(m_resetBtn)))
-                && (y >= RESET_Y)
-                && (y < (RESET_Y + al_get_bitmap_height(m_resetBtn)))) {
-                playSnd = true;
-                m_attributes = m_attributesInitial;
-                m_availPts = INITIAL_AVAIL_PTS;
-                m_availProfPts = INITIAL_AVAIL_PROF_PTS;
-            }
-
-            m_finishBtn->OnMouseReleased(button, x, y);
-
-            if (playSnd) {
-                g_game->audioSystem->Play(m_sndBtnClick);
-            }
-
-            if (playErrSnd) {
-                g_game->audioSystem->Play(m_sndErr);
-            }
-        }
-        break;
-    case WP_NONE:
-        break;
-    }
-    return true;
-}
-
-bool
 ModuleCaptainCreation::on_event(ALLEGRO_EVENT *event) {
     bool playBtnSnd = false;
     bool creationComplete = false;
-    bool playErrSnd = false;
 
     if (m_wizPage == WP_PROFESSION_CHOICE) {
         switch (event->type) {
         case EVENT_PROFESSION_SCIENTIFIC:
             chooseScience();
-            m_wizPage = WP_DETAILS;
-            m_profession_choice->set_active(false);
-            m_physical_points->set_active(true);
-            m_profession_points->set_active(true);
-            return false;
+            break;
         case EVENT_PROFESSION_FREELANCE:
             chooseFreelance();
-            m_wizPage = WP_DETAILS;
-            m_profession_choice->set_active(false);
-            m_physical_points->set_active(true);
-            m_profession_points->set_active(true);
-            return false;
+            break;
         case EVENT_PROFESSION_MILITARY:
             chooseMilitary();
-            m_wizPage = WP_DETAILS;
-            m_profession_choice->set_active(false);
-            m_physical_points->set_active(true);
-            m_profession_points->set_active(true);
-            return false;
+            break;
         case EVENT_CAPTAINCREATION_BACK:
             m_wizPage = WP_PROFESSION_CHOICE;
             // return player to previous screen
             g_game->LoadModule(g_game->modeMgr->GetPrevModuleName());
             return false;
+        default:
+            return true;
         }
-        return true;
-    }
-    if (event->type == EVENT_CAPTAINCREATION_BACK) {
-        m_wizPage = WP_PROFESSION_CHOICE;
-        m_profession_choice->set_active(true);
+        m_wizPage = WP_DETAILS;
+        m_profession_choice->set_active(false);
+        m_captain_details->setup_attributes(
+            m_attributesInitial, m_attributesMax);
+        m_captain_details->reset();
+        m_captain_details->set_active(true);
         return false;
-    }
-    if (m_availPts < INITIAL_AVAIL_PTS) {
-        if (event->type == EVENT_CAPTAINCREATION_MINUS_DURABILITY) {
-            // durability
-            if (m_attributes.durability > m_attributesInitial.durability) {
-                playBtnSnd = true;
-                m_attributes.durability--;
-                m_availPts++;
-            } else {
-                playErrSnd = true;
-            }
-        } else if (event->type == EVENT_CAPTAINCREATION_MINUS_LEARNRATE) {
-            // learn rate
-            if (m_attributes.learnRate > m_attributesInitial.learnRate) {
-                playBtnSnd = true;
-                m_attributes.learnRate--;
-                m_availPts++;
-            } else {
-                playErrSnd = true;
-            }
-        }
     } else {
-        if (event->type == EVENT_CAPTAINCREATION_MINUS_DURABILITY
-            || event->type == EVENT_CAPTAINCREATION_MINUS_LEARNRATE) {
-            playErrSnd = true;
+        if (event->type == EVENT_CAPTAINCREATION_BACK) {
+            m_wizPage = WP_PROFESSION_CHOICE;
+            m_profession_choice->set_active(true);
+            m_captain_details->set_active(false);
+            return false;
         }
-    }
-    if (m_availProfPts < INITIAL_AVAIL_PROF_PTS) {
-        if (event->type == EVENT_CAPTAINCREATION_MINUS_SCIENCE) {
-            // science
-            if (m_attributes.science > m_attributesInitial.science) {
-                playBtnSnd = true;
-                m_attributes.science--;
-                m_availProfPts++;
-            } else {
-                playErrSnd = true;
-            }
-        } else if (event->type == EVENT_CAPTAINCREATION_MINUS_NAVIGATION) {
-            // navigation
-            if (m_attributes.navigation > m_attributesInitial.navigation) {
-                playBtnSnd = true;
-                m_attributes.navigation--;
-                m_availProfPts++;
-            } else {
-                playErrSnd = true;
-            }
-        } else if (event->type == EVENT_CAPTAINCREATION_MINUS_TACTICS) {
-            // tactics
-            if (m_attributes.tactics > m_attributesInitial.tactics) {
-                playBtnSnd = true;
-                m_attributes.tactics--;
-                m_availProfPts++;
-            } else {
-                playErrSnd = true;
-            }
-        } else if (event->type == EVENT_CAPTAINCREATION_MINUS_ENGINEERING) {
-            // engineering
-            if (m_attributes.engineering > m_attributesInitial.engineering) {
-                playBtnSnd = true;
-                m_attributes.engineering--;
-                m_availProfPts++;
-            } else {
-                playErrSnd = true;
-            }
-        } else if (event->type == EVENT_CAPTAINCREATION_MINUS_COMMUNICATION) {
-            // communication
-            if (m_attributes.communication
-                > m_attributesInitial.communication) {
-                playBtnSnd = true;
-                m_attributes.communication--;
-                m_availProfPts++;
-            } else {
-                playErrSnd = true;
-            }
-        } else if (event->type == EVENT_CAPTAINCREATION_MINUS_MEDICAL) {
-            // medical
-            if (m_attributes.medical > m_attributesInitial.medical) {
-                playBtnSnd = true;
-                m_attributes.medical--;
-                m_availProfPts++;
-            } else {
-                playErrSnd = true;
-            }
+
+        if (event->type == EVENT_CAPTAINCREATION_FINISH) {
+            playBtnSnd = true;
+
+            // this ends up calling g_game->gameState->m_ship.Reset()
+            // so most of the changes we did on the ship are thrown out
+            g_game->gameState->Reset();
+            g_game->gameState->m_profession = m_profession;
+            g_game->gameState->officerCap->name = m_captain_details->get_name();
+            g_game->gameState->officerCap->attributes =
+                m_captain_details->get_attributes();
+            g_game->gameState->m_captainSelected = true;
+            g_game->gameState->SaveGame(GameState::GAME_SAVE_SLOT_NEW);
+
+            creationComplete = true;
         }
-    } else {
-        switch (event->type) {
-        case EVENT_CAPTAINCREATION_MINUS_SCIENCE:
-        case EVENT_CAPTAINCREATION_MINUS_NAVIGATION:
-        case EVENT_CAPTAINCREATION_MINUS_TACTICS:
-        case EVENT_CAPTAINCREATION_MINUS_ENGINEERING:
-        case EVENT_CAPTAINCREATION_MINUS_COMMUNICATION:
-        case EVENT_CAPTAINCREATION_MINUS_MEDICAL:
-            playErrSnd = true;
+
+        if (playBtnSnd) {
+            g_game->audioSystem->Play(m_sndBtnClick);
         }
-    }
 
-    if (playErrSnd) {
-        g_game->audioSystem->Play(m_sndErr);
-    }
-
-    if (event->type == EVENT_CAPTAINCREATION_FINISH) {
-        playBtnSnd = true;
-
-        // this ends up calling g_game->gameState->m_ship.Reset()
-        // so most of the changes we did on the ship are thrown out
-        g_game->gameState->Reset();
-        g_game->gameState->m_profession = m_profession;
-        g_game->gameState->officerCap->name = m_name;
-        g_game->gameState->officerCap->attributes = m_attributes;
-        g_game->gameState->m_captainSelected = true;
-        g_game->gameState->SaveGame(GameState::GAME_SAVE_SLOT_NEW);
-
-        creationComplete = true;
-    }
-
-    if (playBtnSnd) {
-        g_game->audioSystem->Play(m_sndBtnClick);
-    }
-
-    if (creationComplete) {
-        g_game->gameState->m_captainSelected = true;
-        g_game->LoadModule(MODULE_CAPTAINSLOUNGE);
-        return false;
+        if (creationComplete) {
+            g_game->gameState->m_captainSelected = true;
+            g_game->LoadModule(MODULE_CAPTAINSLOUNGE);
+            return false;
+        }
     }
     return true;
 }

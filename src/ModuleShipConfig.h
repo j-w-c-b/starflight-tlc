@@ -146,6 +146,8 @@ class ModuleShipConfig : public Module {
 
   public:
     ModuleShipConfig();
+    virtual ~ModuleShipConfig() {}
+
     virtual bool on_init() override;
     virtual bool on_draw(ALLEGRO_BITMAP *target) override;
     virtual bool on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event) override;
@@ -155,8 +157,6 @@ class ModuleShipConfig : public Module {
     virtual bool on_close() override;
 
   private:
-    virtual ~ModuleShipConfig() {}
-
     int buttonsActive;
     std::vector<EventType> menuPath;
     Button *buttons[NUMBER_OF_BUTTONS];

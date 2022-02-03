@@ -75,7 +75,7 @@ ModuleCargoWindow::ModuleCargoWindow()
     m_sndButtonClick = nullptr;
 
     // cargo capacity indicator
-    m_space_status = new Label(
+    m_space_status = make_shared<Label>(
         "",
         CARGO_SPACESTATUS_X,
         CARGO_SPACESTATUS_Y,
@@ -108,7 +108,7 @@ ModuleCargoWindow::on_init() {
     btnNorm = m_resources[I_CARGO_BTN];
     btnOver = m_resources[I_CARGO_BTN_MO];
 
-    m_jettisonButton = new Button(
+    m_jettisonButton = make_shared<Button>(
         btnNorm,
         btnOver,
         nullptr,
@@ -356,7 +356,7 @@ ModuleCargoWindow::on_draw(ALLEGRO_BITMAP *target) {
     // return early since we are not visible
     if (!isVisible()) {
         m_space_status->set_active(false);
-        return false;
+        return true;
     }
 
     m_space_status->set_active(true);
@@ -487,10 +487,7 @@ ModuleCargoWindow::on_close() {
         m_playerListValue = nullptr;
     }
 
-    if (m_jettisonButton != nullptr) {
-        delete m_jettisonButton;
-        m_jettisonButton = nullptr;
-    }
+    m_jettisonButton.reset();
 
     if (m_sndButtonClick != nullptr) {
         m_sndButtonClick.reset();

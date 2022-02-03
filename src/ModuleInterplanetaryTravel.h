@@ -57,7 +57,7 @@ class ModuleInterPlanetaryTravel : public Module {
     int asx, asy;
     Star *star;
     Planet *planet;
-    Label *m_planet_label;
+    std::shared_ptr<Label> m_planet_label;
     bool flag_nav;
     bool flag_thrusting;
     int flag_rotation;

@@ -20,50 +20,25 @@ using namespace std;
 
 ALLEGRO_DEBUG_CHANNEL("ModeMgr")
 
-Mode::Mode(Module *module, const string &path)
+Mode::Mode(shared_ptr<Module> module, const string &path)
     : rootModule(module), musicPath(path) {}
 
 ModeMgr::ModeMgr(Game * /* game*/)
     : m_activeRootModule(nullptr), currentMusic(nullptr), prevModeName(""),
-      currentModeName("") {}
+      currentModeName(""), m_pause_menu(make_shared<PauseMenu>()),
+      m_previous_modal(nullptr) {
+    m_pause_menu->set_active(false);
+}
 
 ModeMgr::~ModeMgr() {
     ALLEGRO_DEBUG("[DESTROYING MODULES]\n");
-    map<string, Mode *>::iterator i;
-    i = m_modes.begin();
-
-    bool isOperationsRoom,
-        operationsRoomDeleted =
-            false; // needed!! (cannot delete same object 3x)
-    while (i != m_modes.end()) {
-        if (i->first.length() > 0) {
-            if ((strcmp(i->first.c_str(), "CANTINA") == 0)
-                || (strcmp(i->first.c_str(), "RESEARCHLAB") == 0)
-                || (strcmp(i->first.c_str(), "MILITARYOPS") == 0))
-                isOperationsRoom = true;
-            else
-                isOperationsRoom = false;
-
-            if ((!isOperationsRoom) || (!operationsRoomDeleted)) {
-                if (isOperationsRoom)
-                    operationsRoomDeleted = true;
-                ALLEGRO_DEBUG("  Destroying %s\n", i->first.c_str());
-                delete i->second;
-            } else {
-                ALLEGRO_DEBUG(
-                    "  Module %s was previously deleted (object "
-                    "assigned 3x)\n",
-                    i->first.c_str());
-            }
-        }
-        ++i;
-    }
+    m_modes.clear();
 }
 
 void
 ModeMgr::AddMode(
     const string &modeName,
-    Module *rootModule,
+    std::shared_ptr<Module> rootModule,
     const string &musicPath) {
     if (musicPath.compare("") != 0) {
         ALLEGRO_FS_ENTRY *entry =
@@ -76,8 +51,9 @@ ModeMgr::AddMode(
         al_destroy_fs_entry(entry);
     }
 
-    Mode *newmode = new Mode(rootModule, musicPath);
+    shared_ptr<Mode> newmode = make_shared<Mode>(rootModule, musicPath);
     m_modes[modeName] = newmode;
+    rootModule->set_active(false);
 }
 
 void
@@ -86,7 +62,9 @@ ModeMgr::CloseCurrentModule() {
     if (m_activeRootModule == nullptr)
         return;
 
-    m_activeRootModule->close();
+    close();
+    m_activeRootModule->set_active(false);
+    remove_child_module(m_activeRootModule);
     m_activeRootModule = nullptr;
 }
 
@@ -95,11 +73,11 @@ ModeMgr::LoadModule(const string &newModeName) {
     bool result = false;
 
     // disable the Pause Menu
-    g_game->pauseMenu->setEnabled(false);
+    m_pause_menu->set_enabled(false);
 
     // search the current and new modes in the m_modes associative array
-    map<string, Mode *>::iterator icurr = m_modes.find(currentModeName);
-    map<string, Mode *>::iterator inew = m_modes.find(newModeName);
+    auto icurr = m_modes.find(currentModeName);
+    auto inew = m_modes.find(newModeName);
 
     if (inew == m_modes.end()) {
         g_game->message("Error '" + newModeName + "' is not a valid mode name");
@@ -107,8 +85,8 @@ ModeMgr::LoadModule(const string &newModeName) {
     }
 
     // save module name
-    this->prevModeName = this->currentModeName;
-    this->currentModeName = newModeName;
+    prevModeName = this->currentModeName;
+    currentModeName = newModeName;
 
     // store module name in gamestate
     g_game->gameState->setCurrentModule(newModeName);
@@ -116,11 +94,9 @@ ModeMgr::LoadModule(const string &newModeName) {
     // the following will always be true except exactly once, at game start
     if (icurr != m_modes.end()) {
         // close active module
-        ALLEGRO_DEBUG(
-            "ModeMgr: closing module '%s'\n", this->prevModeName.c_str());
+        ALLEGRO_DEBUG("ModeMgr: closing module '%s'\n", prevModeName.c_str());
         CloseCurrentModule();
-        ALLEGRO_DEBUG(
-            "ModeMgr: module '%s' closed\n\n", this->prevModeName.c_str());
+        ALLEGRO_DEBUG("ModeMgr: module '%s' closed\n\n", prevModeName.c_str());
     }
 
     // launch new module
@@ -134,9 +110,10 @@ ModeMgr::LoadModule(const string &newModeName) {
 
     if (!result)
         return false;
+    m_activeRootModule->set_active(true);
+    add_child_module(m_activeRootModule);
 
     // handle background music
-
     // if we don't want music, we are done
     if (!g_game->getGlobalBoolean("AUDIO_MUSIC"))
         return true;
@@ -177,33 +154,6 @@ ModeMgr::LoadModule(const string &newModeName) {
 }
 
 bool
-ModeMgr::on_update() {
-    ALLEGRO_ASSERT(m_activeRootModule || !g_game->IsRunning());
-    if (m_activeRootModule == nullptr)
-        return false;
-
-    return m_activeRootModule->update();
-}
-
-bool
-ModeMgr::on_draw(ALLEGRO_BITMAP *target) {
-    ALLEGRO_ASSERT(m_activeRootModule || !g_game->IsRunning());
-    if (m_activeRootModule == nullptr)
-        return false;
-
-    return m_activeRootModule->draw(target);
-}
-
-bool
-ModeMgr::on_close() {
-    ALLEGRO_ASSERT(m_activeRootModule || !g_game->IsRunning());
-    if (m_activeRootModule == nullptr)
-        return false;
-
-    return m_activeRootModule->close();
-}
-
-bool
 ModeMgr::on_event(ALLEGRO_EVENT *event) {
     ALLEGRO_ASSERT(m_activeRootModule || !g_game->IsRunning());
 
@@ -221,74 +171,59 @@ ModeMgr::on_event(ALLEGRO_EVENT *event) {
     case EVENT_LOAD_GAME:
     case EVENT_QUIT_GAME:
         // hide the pause menu
-        if (g_game->pauseMenu->isShowing())
-            g_game->TogglePauseMenu();
+        if (m_pause_menu->get_active())
+            toggle_pause_menu();
 
-        // hide the messagebox
-        if (g_game->messageBox != nullptr)
-            g_game->messageBox->set_active(false);
+        /* // hide the messagebox */
+        /* if (m_message_box != nullptr) */
+        /*     m_messageBox->set_active(false); */
     }
 
     if (m_activeRootModule == nullptr)
         return false;
 
     // if this is not a close event, pass it on
-    if (evtype != EVENT_CLOSE)
-        m_activeRootModule->event(event);
+    if (evtype == EVENT_CLOSE)
+        return false;
 
     return true;
 }
 
 bool
-ModeMgr::on_key_down(ALLEGRO_KEYBOARD_EVENT *event) {
-    ALLEGRO_ASSERT(m_activeRootModule || !g_game->IsRunning());
-    if (m_activeRootModule == nullptr)
-        return false;
-
-    return m_activeRootModule->key_down(event);
-}
-
-bool
 ModeMgr::on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event) {
     ALLEGRO_ASSERT(m_activeRootModule || !g_game->IsRunning());
-    if (m_activeRootModule == nullptr)
-        return false;
 
-    return m_activeRootModule->key_pressed(event);
+    if (m_pause_menu->is_enabled() && event->keycode == ALLEGRO_KEY_ESCAPE) {
+        toggle_pause_menu();
+        return false;
+    } else {
+        return true;
+    }
 }
 
-bool
-ModeMgr::on_key_up(ALLEGRO_KEYBOARD_EVENT *event) {
-    ALLEGRO_ASSERT(m_activeRootModule || !g_game->IsRunning());
-    if (m_activeRootModule == nullptr)
-        return false;
-
-    return m_activeRootModule->key_up(event);
+void
+ModeMgr::enable_pause_menu(bool enable) {
+    m_pause_menu->set_enabled(enable);
 }
 
-bool
-ModeMgr::on_mouse_move(ALLEGRO_MOUSE_EVENT *event) {
-    ALLEGRO_ASSERT(m_activeRootModule || !g_game->IsRunning());
-    if (m_activeRootModule == nullptr)
-        return false;
+void
+ModeMgr::toggle_pause_menu() {
+    if (!m_pause_menu->is_enabled())
+        return;
 
-    return m_activeRootModule->mouse_move(event);
-}
-
-bool
-ModeMgr::on_mouse_button_down(ALLEGRO_MOUSE_EVENT *event) {
-    ALLEGRO_ASSERT(m_activeRootModule || !g_game->IsRunning());
-    if (m_activeRootModule == nullptr)
-        return false;
-
-    return m_activeRootModule->mouse_button_down(event);
-}
-
-bool
-ModeMgr::on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) {
-    ALLEGRO_ASSERT(m_activeRootModule || !g_game->IsRunning());
-    if (m_activeRootModule == nullptr)
-        return false;
-
-    return m_activeRootModule->mouse_button_up(event);
+    if (m_pause_menu->get_active()) {
+        g_game->SetTimePaused(m_originally_paused);
+        // hide pausemenu
+        g_game->set_pause(false);
+        m_pause_menu->set_active(false);
+        m_activeRootModule->set_modal_child(m_previous_modal);
+        m_previous_modal = nullptr;
+    } else {
+        m_originally_paused = g_game->getTimePaused();
+        g_game->SetTimePaused(true);
+        // show pausemenu
+        g_game->set_pause(true);
+        m_pause_menu->set_active(true);
+        m_previous_modal = m_activeRootModule->set_modal_child(m_pause_menu);
+    }
 }

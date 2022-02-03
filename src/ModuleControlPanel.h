@@ -32,7 +32,7 @@ class ModuleControlPanel : public Module {
     virtual bool on_draw(ALLEGRO_BITMAP *target) override;
     virtual bool on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event) override;
     virtual bool on_mouse_move(ALLEGRO_MOUSE_EVENT *event) override;
-    virtual bool on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_mouse_button_click(ALLEGRO_MOUSE_EVENT *event) override;
     virtual bool on_close() override;
 
     ResourceManager<ALLEGRO_BITMAP> resources;

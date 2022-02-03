@@ -71,3 +71,4 @@ Label::refresh() {
         m_dirty = false;
     }
 }
+// vi: ft=cpp

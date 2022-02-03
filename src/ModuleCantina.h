@@ -20,30 +20,31 @@
 class ModuleCantina : public Module {
   public:
     ModuleCantina();
-    virtual ~ModuleCantina();
+    virtual ~ModuleCantina() {}
     virtual bool on_init() override;
     virtual bool on_update() override;
-    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
-    virtual bool on_mouse_move(ALLEGRO_MOUSE_EVENT *event) override;
-    virtual bool on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) override;
     virtual bool on_event(ALLEGRO_EVENT *event) override;
-    virtual bool on_close() override;
 
   private:
-    ALLEGRO_BITMAP *m_background;
-    Button *m_exitBtn;
-    Button *m_turninBtn;
-
-    Label *questTitle;
-    Label *questLong;
-    Label *questReward;
-    Label *m_title_label;
-    Label *m_description_label;
-    Label *m_reward_label;
-    Label *m_requirement_label;
-
-    bool selectedQuestCompleted;
     ResourceManager<ALLEGRO_BITMAP> resources;
+    bool m_button_click_loaded;
+
+    std::shared_ptr<Bitmap> m_background;
+
+    std::shared_ptr<Label> m_title_heading_label;
+    std::shared_ptr<Label> m_title_label;
+    std::shared_ptr<Label> m_status_label;
+    std::shared_ptr<Label> m_description_title_label;
+    std::shared_ptr<Label> m_description_label;
+    std::shared_ptr<Label> m_reward_title_label;
+    std::shared_ptr<Label> m_reward_label;
+
+    std::shared_ptr<TextButton> m_exit_button;
+    std::shared_ptr<TextButton> m_turn_in_button;
+
+    bool m_quest_complete;
+    int m_debrief_status;
 };
 
 #endif
+// vi: ft=cpp

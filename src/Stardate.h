@@ -45,7 +45,7 @@ class Stardate {
     void Reset();
     bool Serialize(Archive &out);
 
-    int get_current_date_in_days(void);
+    int get_current_date_in_days() const;
     void add_days(int days);
 
     int totalHours;

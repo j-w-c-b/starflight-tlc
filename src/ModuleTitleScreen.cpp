@@ -29,11 +29,11 @@ ModuleTitleScreen::ModuleTitleScreen()
     const int mainmenu_x = 392;
     const int mainmenu_y = 450;
 
-    m_title = new Bitmap(m_resources[I_TITLE_NORMAL], 0, 100);
+    m_title = make_shared<Bitmap>(m_resources[I_TITLE_NORMAL], 0, 100);
     add_child_module(m_title);
 
     // create new game button
-    m_new_game = new NewButton(
+    m_new_game = make_shared<NewButton>(
         mainmenu_x,
         mainmenu_y,
         -1,
@@ -45,7 +45,7 @@ ModuleTitleScreen::ModuleTitleScreen()
     add_child_module(m_new_game);
 
     // create load button
-    m_load_game = new NewButton(
+    m_load_game = make_shared<NewButton>(
         mainmenu_x,
         mainmenu_y + 60,
         -1,
@@ -57,7 +57,7 @@ ModuleTitleScreen::ModuleTitleScreen()
     add_child_module(m_load_game);
 
     // create settings button
-    m_settings = new NewButton(
+    m_settings = make_shared<NewButton>(
         mainmenu_x,
         mainmenu_y + 120,
         -1,
@@ -69,7 +69,7 @@ ModuleTitleScreen::ModuleTitleScreen()
     add_child_module(m_settings);
 
     // create credits button
-    m_credits = new NewButton(
+    m_credits = make_shared<NewButton>(
         mainmenu_x,
         mainmenu_y + 180,
         -1,
@@ -81,7 +81,7 @@ ModuleTitleScreen::ModuleTitleScreen()
     add_child_module(m_credits);
 
     // create quit button
-    m_quit = new NewButton(
+    m_quit = make_shared<NewButton>(
         mainmenu_x,
         mainmenu_y + 240,
         -1,

@@ -24,7 +24,7 @@ function(create_resource_header)
     file(
         GLOB ${resourcedepname}
         LIST_DIRECTORIES false
-        "${CMAKE_SOURCE_DIR}/data/${ARGV0}/*"
+        "${CMAKE_SOURCE_DIR}/data/${ARGV0}/*.*"
     )
 
     add_custom_command(
@@ -102,6 +102,8 @@ add_library(lib${APP_NAME} STATIC
     GameState.h
     Label.cpp
     Label.h
+    Loan.cpp
+    Loan.h
     Math.cpp
     MathTL.h
     MessageBoxWindow.cpp
@@ -187,12 +189,16 @@ add_library(lib${APP_NAME} STATIC
     Script.h
     ScrollBox.cpp
     ScrollBox.h
+    Slider.cpp
+    Slider.h
     Sprite.cpp
     Sprite.h
     Stardate.cpp
     Stardate.h
     TerrainVehicleSprite.cpp
     TerrainVehicleSprite.h
+    TextEntry.cpp
+    TextEntry.h
     TexturedSphere.cpp
     TexturedSphere.h
     TileScroller.cpp

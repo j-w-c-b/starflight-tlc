@@ -478,7 +478,7 @@ ModulePlanetOrbit::on_init() {
 #endif
 
     // enable the Pause Menu
-    g_game->pauseMenu->setEnabled(true);
+    g_game->enable_pause_menu(true);
 
     planetScan = 0;
     planetAnalysis = 0;
@@ -527,35 +527,35 @@ ModulePlanetOrbit::on_init() {
                 planetRotationSpeed = 0.14;
                 lightmapOffsetX = -250;
                 lightmapOffsetY = -250;
-                lightmapFilename = "lightmap_planet_500.tga";
+                lightmapFilename = I_LIGHTMAP_PLANET_500;
                 break;
             case PS_LARGE:
                 planetRadius = 192;
                 planetRotationSpeed = 0.17;
                 lightmapOffsetX = -200;
                 lightmapOffsetY = -200;
-                lightmapFilename = "lightmap_planet_400.tga";
+                lightmapFilename = I_LIGHTMAP_PLANET_400;
                 break;
             case PS_MEDIUM:
                 planetRadius = 144;
                 planetRotationSpeed = 0.20;
                 lightmapOffsetX = -150;
                 lightmapOffsetY = -150;
-                lightmapFilename = "lightmap_planet_300.tga";
+                lightmapFilename = I_LIGHTMAP_PLANET_300;
                 break;
             case PS_SMALL:
                 planetRadius = 96;
                 planetRotationSpeed = 0.23;
                 lightmapOffsetX = -100;
                 lightmapOffsetY = -100;
-                lightmapFilename = "lightmap_planet_200.tga";
+                lightmapFilename = I_LIGHTMAP_PLANET_200;
                 break;
             default: // asteroid
                 planetRadius = 48;
                 planetRotationSpeed = 0.26;
                 lightmapOffsetX = -50;
                 lightmapOffsetY = -50;
-                lightmapFilename = "lightmap_planet_100.tga";
+                lightmapFilename = I_LIGHTMAP_PLANET_100;
             }
         } else
             planetid = -1;
@@ -567,17 +567,7 @@ ModulePlanetOrbit::on_init() {
     }
 
     // load planet lightmap overlay
-    ALLEGRO_PATH *data_root = al_get_standard_path(ALLEGRO_RESOURCES_PATH);
-    lightmapFilename = "data/planetorbit/" + lightmapFilename;
-    ALLEGRO_PATH *lightmap_path = al_create_path(lightmapFilename.c_str());
-
-    al_rebase_path(data_root, lightmap_path);
-
-    lightmap_overlay = NULL;
-    lightmap_overlay =
-        al_load_bitmap(al_path_cstr(lightmap_path, ALLEGRO_NATIVE_PATH_SEP));
-    al_destroy_path(lightmap_path);
-    al_destroy_path(data_root);
+    lightmap_overlay = m_resources[lightmapFilename];
 
     if (!lightmap_overlay) {
         g_game->fatalerror("PlanetOrbit: error loading lightmap_overlay");
@@ -972,3 +962,4 @@ ModulePlanetOrbit::analyzeplanet() {
         planetAnalysis = 1;
     }
 }
+// vi: ft=cpp

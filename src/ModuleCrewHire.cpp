@@ -99,7 +99,7 @@ ModuleCrewHire::ModuleCrewHire()
         m_PositionBtns[i] = nullptr;
 
     // Load label for title
-    m_title = new Label(
+    m_title = make_shared<Label>(
         c_title,
         28,
         170,
@@ -112,7 +112,7 @@ ModuleCrewHire::ModuleCrewHire()
     add_child_module(m_title);
 
     // Load label for slogan
-    m_slogan = new Label(
+    m_slogan = make_shared<Label>(
         "Where you can hire the finest galactic crew!",
         28,
         200,
@@ -125,7 +125,7 @@ ModuleCrewHire::ModuleCrewHire()
     add_child_module(m_slogan);
 
     // Load label for directions
-    m_directions = new Label(
+    m_directions = make_shared<Label>(
         c_directions,
         28,
         280,
@@ -609,39 +609,15 @@ ModuleCrewHire::on_close() {
         al_destroy_bitmap(posDisImages[i]);
     }
 
-    if (m_exitBtn) {
-        delete m_exitBtn;
-        m_exitBtn = nullptr;
-    }
-
-    if (m_hireBtn) {
-        delete m_hireBtn;
-        m_hireBtn = nullptr;
-    }
-
-    if (m_hiremoreBtn) {
-        delete m_hiremoreBtn;
-        m_hiremoreBtn = nullptr;
-    }
-
-    if (m_fireBtn) {
-        delete m_fireBtn;
-        m_fireBtn = nullptr;
-    }
-
-    if (m_unassignBtn) {
-        delete m_unassignBtn;
-        m_unassignBtn = nullptr;
-    }
-
-    if (m_backBtn) {
-        delete m_backBtn;
-        m_backBtn = nullptr;
-    }
+    m_exitBtn.reset();
+    m_hireBtn.reset();
+    m_hiremoreBtn.reset();
+    m_fireBtn.reset();
+    m_unassignBtn.reset();
+    m_backBtn.reset();
 
     for (int i = 0; i < 8; i++) {
-        delete m_PositionBtns[i];
-        m_PositionBtns[i] = nullptr;
+        m_PositionBtns[i].reset();
     }
 
     if (unassignedCrew) {
@@ -672,7 +648,7 @@ ModuleCrewHire::on_init() {
     }
 
     // enable the Pause Menu
-    g_game->pauseMenu->setEnabled(true);
+    g_game->enable_pause_menu(true);
 
     currentScreen = PERSONNEL_SCREEN;
     selectedPosition = -1; // Set the selectedPosition to none
@@ -824,7 +800,7 @@ ModuleCrewHire::on_init() {
     // Create escape button for the module
     btnNorm = resources[I_GENERIC_EXIT_BTN_NORM];
     btnOver = resources[I_GENERIC_EXIT_BTN_OVER];
-    m_exitBtn = new Button(
+    m_exitBtn = make_shared<Button>(
         btnNorm,
         btnOver,
         nullptr,
@@ -836,13 +812,9 @@ ModuleCrewHire::on_init() {
         "Exit",
         al_map_rgb(255, 0, 0),
         "click");
-    if (m_exitBtn == nullptr)
-        return false;
-    if (!m_exitBtn->IsInitialized())
-        return false;
 
     // Create and initialize the Back button for the module
-    m_backBtn = new Button(
+    m_backBtn = make_shared<Button>(
         btnNorm,
         btnOver,
         nullptr,
@@ -854,16 +826,12 @@ ModuleCrewHire::on_init() {
         "Back",
         al_map_rgb(255, 0, 0),
         "click");
-    if (m_backBtn == nullptr)
-        return false;
-    if (!m_backBtn->IsInitialized())
-        return false;
 
     // Create and initialize the HireMore button for the module
     btnNorm = resources[I_PERSONNEL_BTN2];
     btnOver = resources[I_PERSONNEL_BTN2_HOV];
     btnDis = resources[I_PERSONNEL_BTN2_DIS];
-    m_hiremoreBtn = new Button(
+    m_hiremoreBtn = make_shared<Button>(
         btnNorm,
         btnOver,
         btnDis,
@@ -875,16 +843,12 @@ ModuleCrewHire::on_init() {
         "Hire Crew",
         al_map_rgb(0, 255, 255),
         "click");
-    if (m_hiremoreBtn == nullptr)
-        return false;
-    if (!m_hiremoreBtn->IsInitialized())
-        return false;
 
     // Create and initialize the Hire button for the module
     btnNorm = resources[I_PERSONNEL_BTN];
     btnOver = resources[I_PERSONNEL_BTN_HOV];
     btnDis = resources[I_PERSONNEL_BTN_DIS];
-    m_hireBtn = new Button(
+    m_hireBtn = make_shared<Button>(
         btnNorm,
         btnOver,
         btnDis,
@@ -896,13 +860,9 @@ ModuleCrewHire::on_init() {
         "Hire",
         al_map_rgb(0, 255, 255),
         "click");
-    if (m_hireBtn == nullptr)
-        return false;
-    if (!m_hireBtn->IsInitialized())
-        return false;
 
     // Create and initialize the Fire button for the module
-    m_fireBtn = new Button(
+    m_fireBtn = make_shared<Button>(
         btnNorm,
         btnOver,
         btnDis,
@@ -914,13 +874,9 @@ ModuleCrewHire::on_init() {
         "Fire",
         al_map_rgb(0, 255, 255),
         "click");
-    if (m_fireBtn == nullptr)
-        return false;
-    if (!m_fireBtn->IsInitialized())
-        return false;
 
     // Create and initialize the Assign Position button for the module
-    m_unassignBtn = new Button(
+    m_unassignBtn = make_shared<Button>(
         btnNorm,
         btnOver,
         btnDis,
@@ -932,10 +888,6 @@ ModuleCrewHire::on_init() {
         "Unassign",
         al_map_rgb(0, 255, 255),
         "click");
-    if (m_unassignBtn == nullptr)
-        return false;
-    if (!m_unassignBtn->IsInitialized())
-        return false;
 
     ALLEGRO_BITMAP *blackIcons = resources[I_ICONS_SMALL];
     ALLEGRO_BITMAP *greenIcons = resources[I_ICONS_SMALL_GREEN];
@@ -977,7 +929,7 @@ ModuleCrewHire::on_init() {
         al_draw_bitmap(btnDis, 0, 0, 0);
 
         // Create and initialize the new button
-        m_PositionBtns[i] = new Button(
+        m_PositionBtns[i] = make_shared<Button>(
             posNormImages[i],
             posOverImages[i],
             posDisImages[i],
@@ -986,11 +938,6 @@ ModuleCrewHire::on_init() {
             EVENT_NONE,
             EVENT_CREWHIRE_CAPTAIN + i,
             "click");
-
-        if (m_PositionBtns[i] == nullptr)
-            return false;
-        if (!m_PositionBtns[i]->IsInitialized())
-            return false;
 
         al_set_target_bitmap(m_PositionBtns[i]->GetImgNormal());
         al_draw_bitmap_region(blackIcons, 30 * i, 0, 30, 30, 0, 0, 0);

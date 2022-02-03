@@ -48,18 +48,18 @@ class ModuleCrewHire : public Module {
     int lastEmployeeSpawn;
     int currentVisit;
 
-    Label *m_title;
-    Label *m_slogan;
-    Label *m_directions;
+    std::shared_ptr<Label> m_title;
+    std::shared_ptr<Label> m_slogan;
+    std::shared_ptr<Label> m_directions;
 
-    Button *m_exitBtn;
-    Button *m_hireBtn;
-    Button *m_hiremoreBtn;
-    Button *m_fireBtn;
-    Button *m_unassignBtn;
-    Button *m_backBtn;
+    std::shared_ptr<Button> m_exitBtn;
+    std::shared_ptr<Button> m_hireBtn;
+    std::shared_ptr<Button> m_hiremoreBtn;
+    std::shared_ptr<Button> m_fireBtn;
+    std::shared_ptr<Button> m_unassignBtn;
+    std::shared_ptr<Button> m_backBtn;
 
-    Button *m_PositionBtns[8];
+    std::shared_ptr<Button> m_PositionBtns[8];
     ALLEGRO_BITMAP *posNormImages[8];
     ALLEGRO_BITMAP *posOverImages[8];
     ALLEGRO_BITMAP *posDisImages[8];

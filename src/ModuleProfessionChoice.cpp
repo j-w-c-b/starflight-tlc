@@ -1,6 +1,8 @@
 #include "ModuleProfessionChoice.h"
+#include "captaincreation_resources.h"
 
 using namespace std;
+using namespace captaincreation_resources;
 
 const string ModuleProfessionChoice::c_prof_info_scientific_text =
     "Even though the universe regresses towards smaller and smaller "
@@ -31,12 +33,24 @@ const string ModuleProfessionChoice::c_prof_info_military_text =
     "be at the helm of a Wraith class warship. Being in front of it, "
     "however, is another scenario entirely.";
 
+const int PROFBTN_SCIENTIFIC_X = 13;
+const int PROFBTN_SCIENTIFIC_Y = 219;
+const int PROFBTN_FREELANCE_X = 349;
+const int PROFBTN_FREELANCE_Y = 219;
+const int PROFBTN_MILITARY_X = 686;
+const int PROFBTN_MILITARY_Y = 219;
+
+const int PROFESSION_BOX_X = 72;
+const int PROFESSION_BOX_WIDTH = 880;
+const int PROFESSION_BOX_Y = 390;
+const int PROFESSION_BOX_HEIGHT = 260;
+
 ModuleProfessionChoice::ModuleProfessionChoice(
     ResourceManager<ALLEGRO_BITMAP> &resources)
     : Module(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT),
-      m_background(
-          new Bitmap(resources[I_CAPTAINCREATION_PROFESSIONBACKGROUND])),
-      m_scientific_button(new NewButton(
+      m_background(make_shared<Bitmap>(
+          resources[I_CAPTAINCREATION_PROFESSIONBACKGROUND])),
+      m_scientific_button(make_shared<NewButton>(
           PROFBTN_SCIENTIFIC_X,
           PROFBTN_SCIENTIFIC_Y,
           -1,
@@ -47,7 +61,7 @@ ModuleProfessionChoice::ModuleProfessionChoice(
           resources[I_CAPTAINCREATION_SCIENTIFIC_MOUSEOVER],
           nullptr,
           S_BUTTONCLICK)),
-      m_freelance_button(new NewButton(
+      m_freelance_button(make_shared<NewButton>(
           PROFBTN_FREELANCE_X,
           PROFBTN_FREELANCE_Y,
           -1,
@@ -58,7 +72,7 @@ ModuleProfessionChoice::ModuleProfessionChoice(
           resources[I_CAPTAINCREATION_FREELANCE_MOUSEOVER],
           nullptr,
           S_BUTTONCLICK)),
-      m_military_button(new NewButton(
+      m_military_button(make_shared<NewButton>(
           PROFBTN_MILITARY_X,
           PROFBTN_MILITARY_Y,
           -1,
@@ -69,7 +83,7 @@ ModuleProfessionChoice::ModuleProfessionChoice(
           resources[I_CAPTAINCREATION_MILITARY_MOUSEOVER],
           nullptr,
           S_BUTTONCLICK)),
-      m_prof_info_label(new Label(
+      m_prof_info_label(make_shared<Label>(
           "",
           PROFESSION_BOX_X + 22,
           PROFESSION_BOX_Y + 22,
@@ -108,3 +122,4 @@ ModuleProfessionChoice::on_event(ALLEGRO_EVENT *event) {
     }
     return true;
 }
+// vi: ft=cpp

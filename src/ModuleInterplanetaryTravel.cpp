@@ -41,16 +41,16 @@ ALLEGRO_DEBUG_CHANNEL("ModuleInterPlanetaryTravel")
 
 const int FlyingHoursBeforeSkillUp = 168;
 
-ModuleInterPlanetaryTravel::ModuleInterPlanetaryTravel(void)
+ModuleInterPlanetaryTravel::ModuleInterPlanetaryTravel()
     : Module(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT), resources(SPACETRAVEL_IMAGES) {
 
     m_planet_label =
-        new Label("", 0, 0, 100, 22, false, 0, g_game->font18, ORANGE);
+        make_shared<Label>("", 0, 0, 100, 22, false, 0, g_game->font18, ORANGE);
 
     add_child_module(m_planet_label);
 }
 
-ModuleInterPlanetaryTravel::~ModuleInterPlanetaryTravel(void) {}
+ModuleInterPlanetaryTravel::~ModuleInterPlanetaryTravel() {}
 
 #pragma endregion
 
@@ -338,7 +338,9 @@ ModuleInterPlanetaryTravel::on_close() {
         text = NULL;
     }
     delete scroller;
+    scroller = nullptr;
     delete ship;
+    ship = nullptr;
 
     resources.unload();
     return true;
@@ -351,7 +353,7 @@ ModuleInterPlanetaryTravel::on_init() {
     ALLEGRO_DEBUG("  Interplanetary Initialize\n");
 
     // enable the Pause Menu
-    g_game->pauseMenu->setEnabled(true);
+    g_game->enable_pause_menu(true);
 
     // load the datafile
     if (!resources.load()) {

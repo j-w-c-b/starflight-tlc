@@ -23,26 +23,6 @@ class Items;
 class Archive;
 class Quest;
 
-enum Faction
-{
-    Myrrdan = 0,
-    Elowan,
-    Veloxi,
-    Spemin,
-    Thrynn,
-    BarZhon,
-    Nyssian,
-    Tafel,
-    Minex,
-    TheCoalition
-};
-
-// I hesitate to introduce a duplicate enum but Faction is incorrect
-//   * it does not have a NONE option
-//   * Pirate is missing
-//   * Myrrdan is not an alien race
-//   * Veloxi is not an alien race
-
 enum AlienRaces
 {
     ALIEN_NONE = 0,
@@ -72,9 +52,6 @@ enum Skill
 class Attributes {
   public:
     Attributes();
-    virtual ~Attributes();
-
-    Attributes &operator=(const Attributes &rhs);
 
     int &operator[](int i);
 
@@ -359,7 +336,7 @@ struct FluxInfo {
 
     FluxInfo()
         : endpoint_1_visible(false), endpoint_2_visible(false),
-          path_visible(false){};
+          path_visible(false) {}
 };
 
 class PlayerInfo {
@@ -476,7 +453,6 @@ class GameState {
     static GameState *ReadGame(GameSaveSlot slot);
     static GameState *LoadGame(GameSaveSlot slot);
     static void DeleteGame(GameSaveSlot slot);
-    static void DumpStats(GameState *); // debug tool.
 
     void AutoSave();
     void AutoLoad();
@@ -541,7 +517,7 @@ class GameState {
     bool m_captainSelected;      // is a captain selected for play?
     ProfessionType m_profession; // captain profession
     int m_credits;               // credits
-    Items &m_items;              // player inventory
+    Items m_items;               // player inventory
     PlayerInfo *player;          // Holds misc player data
     Ship m_ship;                 // ship data
     OfficerType
@@ -581,7 +557,7 @@ class GameState {
     bool dirty; // Does the game state need saving (for Captain's Lounge code)?
 
     ProfessionType getProfession() { return m_profession; }
-    std::string getProfessionString();
+    std::string getProfessionString() const;
 
     // Accessors & mutator imported from Encounter module to standardize access:
     AlienRaces getCurrentAlien();
@@ -592,9 +568,10 @@ class GameState {
     // the currently active module
     // Module names are found in ModeMgr.h
     std::string currentModule;
-    std::string getCurrentModule() { return currentModule; }
-    std::string getSavedModule() { return currentModeWhenGameSaved; }
+    std::string getCurrentModule() const { return currentModule; }
+    std::string getSavedModule() const { return currentModeWhenGameSaved; }
     void setCurrentModule(const std::string &value) { currentModule = value; }
+    std::string get_saved_module_name() const;
 
     // the currently active quest ID
     int getActiveQuest() { return activeQuest; }
@@ -624,6 +601,10 @@ class GameState {
             player->posSystem.x / 256.0, player->posSystem.y / 256.0);
     }
 
+    GameSaveSlot get_current_game_save_slot() const {
+        return currentSaveGameSlot;
+    }
+
   private:
     int activeQuest;
     int storedValue; // stored value of quest requirement is a game state
@@ -633,10 +614,6 @@ class GameState {
     static GameSaveSlot currentSaveGameSlot;
     std::string currentModeWhenGameSaved;
 
-    // The following are not used anywhere anymore. we preserve them only for
-    // savegame compatibility
-    int TotalCargoStacks;
-    int defaultShipCargoSize;
     static ALLEGRO_PATH *save_dir_path;
     static ALLEGRO_PATH *get_save_file_path(GameSaveSlot slot);
     static bool ensure_save_dir();

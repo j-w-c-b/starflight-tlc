@@ -91,8 +91,7 @@ ModuleAuxiliaryDisplay::on_event(ALLEGRO_EVENT *event) {
 bool
 ModuleAuxiliaryDisplay::on_close() {
     delete scroller;
-
-    resources.unload();
+    scroller = nullptr;
     return true;
 }
 

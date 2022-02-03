@@ -95,12 +95,13 @@ PlanetSurfaceTimer::PlanetSurfaceTimer(
       m_text(nullptr) {
     set_active(false);
 
-    m_gauge_background = new Bitmap(resources[I_ELEMENT_BIGGAUGE_EMPTY], x, y);
+    m_gauge_background =
+        make_shared<Bitmap>(resources[I_ELEMENT_BIGGAUGE_EMPTY], x, y);
     add_child_module(m_gauge_background);
 
     m_gauge_background->get_size(m_gauge_width, m_gauge_height);
 
-    m_text = new Label(
+    m_text = make_shared<Label>(
         text,
         x,
         y,
@@ -112,7 +113,8 @@ PlanetSurfaceTimer::PlanetSurfaceTimer(
         BLACK);
     add_child_module(m_text);
 
-    m_gauge_filled = new Bitmap(resources[I_ELEMENT_BIGGAUGE_YELLOW], x, y);
+    m_gauge_filled =
+        make_shared<Bitmap>(resources[I_ELEMENT_BIGGAUGE_YELLOW], x, y);
     m_gauge_filled->set_visible_region(0, 0, 0, 0);
 
     add_child_module(m_gauge_filled);
@@ -171,13 +173,13 @@ ModulePlanetSurface::ModulePlanetSurface(void)
       panCamera(false), activeButtons(0) {
     g_game->PlanetSurfaceHolder = this;
 
-    m_timer =
-        new PlanetSurfaceTimer(TIMER_X, TIMER_Y, -1, -1, 0, "", resources);
+    m_timer = make_shared<PlanetSurfaceTimer>(
+        TIMER_X, TIMER_Y, -1, -1, 0, "", resources);
 
     add_child_module(m_timer);
 
     // Initialize label
-    m_label = new Label(
+    m_label = make_shared<Label>(
         SHIP_TEXT,
         CMDBUTTONS_UL_X + 10,
         CMDBUTTONS_UL_Y + 10,
@@ -594,9 +596,6 @@ bool
 ModulePlanetSurface::on_close() {
     ALLEGRO_DEBUG("PlanetSurface Destroy\n");
 
-    // unload the data file (thus freeing all resources at once)
-    resources.unload();
-
     PlanetSurfaceObject::EmptyGraphics();
 
     if (messages != NULL) {
@@ -689,7 +688,7 @@ ModulePlanetSurface::on_init() {
     ALLEGRO_DEBUG("  PlanetSurface Initialize\n");
 
     // enable the Pause Menu
-    g_game->pauseMenu->setEnabled(true);
+    g_game->enable_pause_menu(true);
 
     // Set Misc Variables
     srand(time(NULL));

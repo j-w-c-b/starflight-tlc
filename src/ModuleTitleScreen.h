@@ -25,12 +25,12 @@ class ModuleTitleScreen : public Module {
 
   private:
     ResourceManager<ALLEGRO_BITMAP> m_resources;
-    Bitmap *m_title;
-    NewButton *m_new_game;
-    NewButton *m_load_game;
-    NewButton *m_settings;
-    NewButton *m_credits;
-    NewButton *m_quit;
+    std::shared_ptr<Bitmap> m_title;
+    std::shared_ptr<NewButton> m_new_game;
+    std::shared_ptr<NewButton> m_load_game;
+    std::shared_ptr<NewButton> m_settings;
+    std::shared_ptr<NewButton> m_credits;
+    std::shared_ptr<NewButton> m_quit;
 };
 
 #endif

@@ -1431,8 +1431,6 @@ Ship::damageRandomSystemOrCrew(int odds, int mindamage, int maxdamage) {
 
 Attributes::Attributes() { Reset(); }
 
-Attributes::~Attributes() { Reset(); }
-
 int &
 Attributes::operator[](int i) {
     static int Err = -1;
@@ -1479,24 +1477,6 @@ Attributes::operator[](int i) {
         return Err;
         break;
     }
-}
-
-Attributes &
-Attributes::operator=(const Attributes &rhs) {
-    durability = rhs.durability;
-    learnRate = rhs.learnRate;
-
-    science = rhs.science;
-    navigation = rhs.navigation;
-    tactics = rhs.tactics;
-    engineering = rhs.engineering;
-    communication = rhs.communication;
-    medical = rhs.medical;
-    vitality = rhs.vitality;
-
-    extra_variable = rhs.extra_variable;
-
-    return *this;
 }
 
 // accessors
@@ -1645,23 +1625,14 @@ GameState::get_save_file_path(GameSaveSlot slot) {
 }
 
 GameState::~GameState() {
-    delete &m_items;
     delete player;
-    player = NULL;
     delete officerCap;
-    officerCap = NULL;
     delete officerSci;
-    officerSci = NULL;
     delete officerNav;
-    officerNav = NULL;
     delete officerTac;
-    officerTac = NULL;
     delete officerEng;
-    officerEng = NULL;
     delete officerCom;
-    officerCom = NULL;
     delete officerDoc;
-    officerDoc = NULL;
 
     for (int i = 0; i < (int)m_unemployedOfficers.size(); ++i) {
         delete m_unemployedOfficers[i];
@@ -1723,9 +1694,6 @@ GameState::operator=(const GameState &rhs) {
     delete officerDoc;
     officerDoc = new Officer();
     *officerDoc = *rhs.officerDoc;
-
-    TotalCargoStacks = rhs.TotalCargoStacks;
-    defaultShipCargoSize = rhs.defaultShipCargoSize;
 
     m_baseGameTimeSecs = rhs.m_baseGameTimeSecs;
     m_gameTimeSecs = rhs.m_gameTimeSecs;
@@ -1991,11 +1959,6 @@ GameState::Reset() {
     // This returns the ship's values to the defaults
     m_ship.Reset();
 
-    // Those values are not used anywhere anymore but must be conserved to
-    // preserve savegame compatibility
-    defaultShipCargoSize = 0;
-    TotalCargoStacks = 0;
-
     m_currentSelectedOfficer = OFFICER_CAPTAIN;
 
     for (int i = 0; i < (int)m_unemployedOfficers.size(); ++i) {
@@ -2183,10 +2146,11 @@ GameState::Reset() {
 bool
 GameState::Serialize(Archive &ar) {
     string ClassName = "GameState";
-    int Schema = 3;
+    int Schema = 4;
     // schema 1 - added currentModeWhenGameSaved
     // schema 2 - removed fluxSeed, added flux_info
     // schema 3 - rework flux_info to include ID, data
+    // schema 4 - remove unused cargo stacks
 
     if (ar.IsStoring()) {
         ar << ClassName;
@@ -2247,9 +2211,6 @@ GameState::Serialize(Archive &ar) {
             return false;
         if (!officerDoc->Serialize(ar))
             return false;
-
-        ar << TotalCargoStacks;
-        ar << defaultShipCargoSize;
 
         currentModeWhenGameSaved = g_game->modeMgr->GetCurrentModuleName();
         ar << currentModeWhenGameSaved;
@@ -2351,8 +2312,12 @@ GameState::Serialize(Archive &ar) {
         if (!officerDoc->Serialize(ar))
             return false;
 
-        ar >> TotalCargoStacks;
-        ar >> defaultShipCargoSize;
+        if (LoadSchema < 4) {
+            int TotalCargoStacks;
+            int defaultShipCargoSize;
+            ar >> TotalCargoStacks;
+            ar >> defaultShipCargoSize;
+        }
 
         if (LoadSchema >= 1)
             ar >> currentModeWhenGameSaved;
@@ -2379,7 +2344,7 @@ GameState::Serialize(Archive &ar) {
                     flux_info[i] = fi;
                 }
             }
-        } else if (LoadSchema == 3) {
+        } else if (LoadSchema >= 3) {
             int num_flux;
             ar >> num_flux;
 
@@ -2610,9 +2575,6 @@ GameState::LoadGame(GameSaveSlot slot) {
     // Roll random repair minerals and set the repair counters
     g_game->gameState->m_ship.initializeRepair();
 
-#ifdef DEBUG
-    DumpStats(g_game->gameState); // dump statistics to file.
-#endif
     ALLEGRO_DEBUG("Game state loaded successfully\n");
     return g_game->gameState; // return gs & leave deletion to caller?
 }
@@ -2669,8 +2631,8 @@ GameState::getCredits() const {
 }
 
 string
-GameState::getProfessionString() {
-    switch (getProfession()) {
+GameState::getProfessionString() const {
+    switch (m_profession) {
     case PROFESSION_NONE:
         return "none";
         break;
@@ -2979,6 +2941,27 @@ GameState::setAlienAttitude(int value) {
         value = 100;
     AlienRaces region = getCurrentAlien();
     alienAttitudes[region] = value;
+}
+
+std::string
+GameState::get_saved_module_name() const {
+    static map<string, string> name_map = {
+        {MODULE_CAPTAINCREATION, "Captain Creation"},
+        {MODULE_CAPTAINSLOUNGE, "Captain's Lounge"},
+        {MODULE_HYPERSPACE, "Hyperspace"},
+        {MODULE_INTERPLANETARY, "Interplanetary space"},
+        {MODULE_ORBIT, "Planet Orbit"},
+        {MODULE_SURFACE, "Planet Surface"},
+        {MODULE_PORT, "Starport"},
+        {MODULE_STARPORT, "Starport"}};
+
+    auto val = name_map.find(currentModule);
+
+    if (val != name_map.end()) {
+        return val->second;
+    } else {
+        return "";
+    }
 }
 
 bool

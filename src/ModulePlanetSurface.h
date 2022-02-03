@@ -58,9 +58,9 @@ class PlanetSurfaceTimer : public Module {
     int m_gauge_width;
     int m_gauge_height;
 
-    Label *m_text;
-    Bitmap *m_gauge_background;
-    Bitmap *m_gauge_filled;
+    std::shared_ptr<Label> m_text;
+    std::shared_ptr<Bitmap> m_gauge_background;
+    std::shared_ptr<Bitmap> m_gauge_filled;
 };
 
 class ModulePlanetSurface : public Module {
@@ -106,7 +106,7 @@ class ModulePlanetSurface : public Module {
     ALLEGRO_BITMAP *Hull;
     ALLEGRO_BITMAP *HullBar;
 
-    Label *m_help_label;
+    std::shared_ptr<Label> m_help_label;
 
     int CMDBUTTONS_UL_X;
     int CMDBUTTONS_UL_Y;
@@ -174,13 +174,13 @@ class ModulePlanetSurface : public Module {
     int vibration;
     bool panCamera;
 
-    PlanetSurfaceTimer *m_timer;
+    std::shared_ptr<PlanetSurfaceTimer> m_timer;
 
     int vessel_mode; // 0=ship with TV, 1=TV, 2=ship without TV
     Button *Btns[9];
     Button *BigBtns[2];
     int activeButtons;
-    Label *m_label;
+    std::shared_ptr<Label> m_label;
 
     void drawMinimap();
     void drawHPBar(PlanetSurfaceObject *PSO);

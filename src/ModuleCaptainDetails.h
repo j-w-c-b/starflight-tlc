@@ -5,10 +5,13 @@
 #include <allegro5/allegro.h>
 
 #include "Button.h"
-#include "Event.h"
+#include "Events.h"
 #include "Label.h"
 #include "Module.h"
 #include "ResourceManager.h"
+#include "TextEntry.h"
+
+using namespace std;
 
 class ModuleCaptainAttribute : public Module {
   public:
@@ -51,11 +54,15 @@ class ModuleCaptainAttribute : public Module {
         }
     }
 
+  protected:
+    bool on_draw(ALLEGRO_BITMAP *) override { return true; }
+
   private:
-    Label *m_name_label;
-    Label *m_value_label;
-    NewButton *m_plus_button;
-    NewButton *m_minus_button;
+    std::shared_ptr<Label> m_name_label;
+    std::shared_ptr<Label> m_value_label;
+    std::shared_ptr<NewButton> m_plus_button;
+    std::shared_ptr<NewButton> m_minus_button;
+
     int m_value;
     int m_min;
     int m_max;
@@ -67,7 +74,6 @@ class ModuleCaptainAttributeGroup : public Module {
         int x,
         int y,
         int width,
-        int height,
         int max,
         ResourceManager<ALLEGRO_BITMAP> &resources);
 
@@ -84,12 +90,9 @@ class ModuleCaptainAttributeGroup : public Module {
         return i->second->get_value();
     }
 
-    void reset() {
-        for (auto i : m_attributes) {
-            i.second->reset();
-        }
-        m_sum = 0;
-    }
+    void clear();
+    void reset();
+    void resize();
 
     int get_available_points() const { return m_max - m_sum; }
 
@@ -98,21 +101,39 @@ class ModuleCaptainAttributeGroup : public Module {
   private:
     int m_sum;
     int m_max;
-    std::map<const std::string, ModuleCaptainAttribute *> m_attributes;
-    std::map<const EventType, ModuleCaptainAttribute *> m_attributes_by_plus;
-    std::map<const EventType, ModuleCaptainAttribute *> m_attributes_by_minus;
+    std::map<const std::string, std::shared_ptr<ModuleCaptainAttribute>>
+        m_attributes;
+    std::map<const EventType, std::shared_ptr<ModuleCaptainAttribute>>
+        m_attributes_by_plus;
+    std::map<const EventType, std::shared_ptr<ModuleCaptainAttribute>>
+        m_attributes_by_minus;
     ResourceManager<ALLEGRO_BITMAP> &m_resources;
-    Label *m_available_label;
+    std::shared_ptr<Label> m_available_label;
 };
 
 class ModuleCaptainDetails : public Module {
   public:
     explicit ModuleCaptainDetails(ResourceManager<ALLEGRO_BITMAP> &resources);
-    virtual ~ModuleCaptainDetails();
+    virtual ~ModuleCaptainDetails() {}
+    void setup_attributes(
+        const Attributes &initial_attributes,
+        const Attributes &max_attributes);
+
+    bool on_event(ALLEGRO_EVENT *event) override;
+
+    std::string get_name() const;
+    Attributes get_attributes() const;
+
+    void reset();
 
   private:
-    ModuleCaptainAttributeGroup *m_physical_attributes;
-    ModuleCaptainAttributeGroup *m_professional_attributes;
-    ;
-    Button *m_finishBtn;
+    std::shared_ptr<Bitmap> m_background;
+    std::shared_ptr<Label> m_title_label;
+    std::shared_ptr<TextEntry> m_name_entry;
+    std::shared_ptr<class ModuleCaptainAttributeGroup> m_physical_attributes;
+    std::shared_ptr<class ModuleCaptainAttributeGroup>
+        m_professional_attributes;
+    std::shared_ptr<NewButton> m_reset_button;
+    std::shared_ptr<NewButton> m_accept_button;
 };
+// vi: ft=cpp

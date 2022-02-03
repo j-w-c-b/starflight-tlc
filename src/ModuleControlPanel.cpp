@@ -623,13 +623,11 @@ ModuleControlPanel::on_mouse_move(ALLEGRO_MOUSE_EVENT *event) {
 }
 
 bool
-ModuleControlPanel::on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) {
-    if (!is_mouse_click(event)) {
-        return true;
-    }
+ModuleControlPanel::on_mouse_button_click(ALLEGRO_MOUSE_EVENT *event) {
     int button = event->button - 1;
     int x = event->x;
     int y = event->y;
+    bool capture_press = false;
 
     if (button != 0) {
         return true;
@@ -641,11 +639,20 @@ ModuleControlPanel::on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) {
 
         if (officerButton->IsInButton(x, y)) {
             // change the officer
+            if (selectedOfficer != officerButton
+                && selectedCommand != nullptr) {
+                ALLEGRO_EVENT e = {
+                    .type = static_cast<unsigned int>(
+                        selectedCommand->getEventID())};
+                g_game->broadcast_event(&e);
+                selectedCommand = nullptr;
+            }
             selectedOfficer = officerButton;
 
             // play sound
             g_game->audioSystem->Play(sndOfficerSelected);
 
+            capture_press = true;
             break;
         }
     }
@@ -655,22 +662,30 @@ ModuleControlPanel::on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) {
 
             if (commandButton->IsInButton(x, y)
                 && commandButton->GetEnabled()) {
+                if (selectedCommand != commandButton
+                    && selectedCommand != nullptr) {
+                    ALLEGRO_EVENT e = {
+                        .type = static_cast<unsigned int>(
+                            selectedCommand->getEventID())};
+                    g_game->broadcast_event(&e);
+                }
                 selectedCommand = commandButton;
 
                 g_game->audioSystem->Play(sndOfficerCommandSelected);
+                capture_press = true;
             }
         }
     }
 
     // launch event based on button ID so all modules in this mode will be
     // notified
-    if (selectedCommand) {
+    if (selectedCommand && capture_press) {
         ALLEGRO_EVENT e = {
             .type = static_cast<unsigned int>(selectedCommand->getEventID())};
         g_game->broadcast_event(&e);
     }
 
-    return false;
+    return !capture_press;
 }
 
 #pragma endregion

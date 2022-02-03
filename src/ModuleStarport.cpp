@@ -38,7 +38,7 @@ ModuleStarport::ModuleStarport(void) : resources(STARPORT_IMAGES) {
     }
 
     // enable the Pause Menu
-    g_game->pauseMenu->setEnabled(true);
+    g_game->enable_pause_menu(true);
     flag_showWelcome = true;
 }
 //***********************************************
@@ -228,7 +228,7 @@ ModuleStarport::on_init() {
     ALLEGRO_DEBUG("  Starport Initialize\n");
 
     // enable the Pause Menu
-    g_game->pauseMenu->setEnabled(true);
+    g_game->enable_pause_menu(true);
 
     // load the sound effects
     // NOTE: a missing wav file is a soft error for the time being

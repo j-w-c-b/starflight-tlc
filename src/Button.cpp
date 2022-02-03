@@ -20,10 +20,10 @@ NewButton::NewButton(
     ALLEGRO_BITMAP *disabled,
     const string &sound_name)
     : Module(x, y, width, height), m_mouse_over_event(mouse_over_event),
-      m_click_event(click_event), m_is_visible(true), m_is_enabled(true),
-      m_is_highlight(false), m_normal(nullptr), m_mouse_over(nullptr),
-      m_disabled(nullptr), m_sound_name(sound_name) {
-    ALLEGRO_ASSERT(normal != NULL);
+      m_click_event(click_event), m_is_enabled(true), m_is_highlight(false),
+      m_normal(nullptr), m_mouse_over(nullptr), m_disabled(nullptr),
+      m_sound_name(sound_name) {
+    ALLEGRO_ASSERT(normal != nullptr);
     if (width == -1 || height == 1) {
         if (width == -1) {
             width = al_get_bitmap_width(normal);
@@ -41,109 +41,160 @@ NewButton::NewButton(
         m_sound_name = "";
     }
 
-    m_normal = new Bitmap(normal, x, y);
+    m_normal = make_shared<Bitmap>(normal, x, y);
     add_child_module(m_normal);
-    m_current_bitmap = m_normal;
 
     if (mouse_over != nullptr) {
-        m_mouse_over = new Bitmap(mouse_over, x, y);
+        m_mouse_over = make_shared<Bitmap>(mouse_over, x, y);
         add_child_module(m_mouse_over);
-        if (m_is_highlight) {
-            m_current_bitmap = m_mouse_over;
-        }
     }
     if (disabled != nullptr) {
-        m_disabled = new Bitmap(disabled, x, y);
+        m_disabled = make_shared<Bitmap>(disabled, x, y);
         add_child_module(m_disabled);
-        if (!m_is_enabled) {
-            m_current_bitmap = m_disabled;
-        }
     }
+
+    update_active_bitmap();
 }
 
 bool
-NewButton::on_update() {
-    /*
-     * on_init is setting all children to active, so we decide which one is
-     * really active here
-     */
-    if (m_current_bitmap == m_normal) {
-        m_normal->set_active(true);
-    } else {
-        m_normal->set_active(false);
+NewButton::on_init() {
+    update_active_bitmap();
+    return true;
+}
+
+void
+NewButton::set_enabled(bool enabled) {
+    if (enabled != m_is_enabled) {
+        m_is_enabled = enabled;
+        update_active_bitmap();
     }
-    if (m_mouse_over) {
-        if (m_current_bitmap == m_mouse_over) {
+}
+
+void
+NewButton::set_highlight(bool highlight) {
+    if (highlight != m_is_highlight) {
+        m_is_highlight = highlight;
+        update_active_bitmap();
+    }
+}
+
+void
+NewButton::update_active_bitmap(bool mouse_over) {
+    m_normal->set_active(true);
+    if (m_mouse_over != nullptr) {
+        if (m_is_enabled && (m_is_highlight || mouse_over)) {
+            m_normal->set_active(false);
             m_mouse_over->set_active(true);
         } else {
             m_mouse_over->set_active(false);
         }
     }
-
-    if (m_disabled) {
-        if (m_current_bitmap == m_disabled) {
+    if (m_disabled != nullptr) {
+        if (!m_is_enabled) {
+            m_normal->set_active(false);
             m_disabled->set_active(true);
         } else {
             m_disabled->set_active(false);
         }
     }
-    return true;
 }
 
 bool
 NewButton::on_mouse_move(ALLEGRO_MOUSE_EVENT *event) {
-    bool need_event = false;
-
-    if (m_is_visible) {
-        if (!m_is_enabled) {
-            if (m_disabled) {
-                m_current_bitmap = m_disabled;
-            } else {
-                m_current_bitmap = m_normal;
-            }
-        } else if (
-            (need_event = point_within_module(event->x, event->y))
-            || m_is_highlight) {
-            if (m_mouse_over) {
-                m_current_bitmap = m_mouse_over;
-            } else {
-                m_current_bitmap = m_normal;
-            }
-        } else {
-            m_current_bitmap = m_normal;
-        }
-        if (need_event) {
-            ALLEGRO_EVENT e = {
-                .type = static_cast<unsigned int>(m_mouse_over_event)};
-            g_game->broadcast_event(&e);
-        }
-    } else {
-        m_current_bitmap = nullptr;
+    bool mouse_over = point_within_module(event->x, event->y);
+    if (m_is_enabled && mouse_over) {
+        ALLEGRO_EVENT e = {
+            .type = static_cast<unsigned int>(m_mouse_over_event)};
+        g_game->broadcast_event(&e);
     }
+    update_active_bitmap(mouse_over);
     return true;
 }
 
 bool
-NewButton::on_mouse_button_up(ALLEGRO_MOUSE_EVENT *event) {
-    if (!m_is_enabled || !m_is_visible || event->button != 1) {
+NewButton::on_mouse_button_click(ALLEGRO_MOUSE_EVENT *event) {
+    if (!m_is_enabled || event->button != 1) {
         return true;
     }
-    if (is_mouse_click(event)) {
-        // make sure button sound isn't playing
-        if (m_sound_name != "") {
-            if (Game::audioSystem->IsPlaying(m_sound_name))
-                Game::audioSystem->Stop(m_sound_name);
+    // make sure button sound isn't playing
+    if (m_sound_name != "") {
+        if (Game::audioSystem->IsPlaying(m_sound_name))
+            Game::audioSystem->Stop(m_sound_name);
 
-            // play button sound
-            Game::audioSystem->Play(m_sound_name);
-        }
-
-        ALLEGRO_EVENT e = {.type = static_cast<unsigned int>(m_click_event)};
-        g_game->broadcast_event(&e);
-
-        return false;
+        // play button sound
+        Game::audioSystem->Play(m_sound_name);
     }
-    return true;
+
+    ALLEGRO_EVENT e = {.type = static_cast<unsigned int>(m_click_event)};
+    g_game->broadcast_event(&e);
+
+    return false;
+}
+
+TextButton::TextButton(
+    shared_ptr<Label> text,
+    int x,
+    int y,
+    int width,
+    int height,
+    EventType mouse_over_event,
+    EventType click_event,
+    ALLEGRO_BITMAP *normal,
+    ALLEGRO_BITMAP *mouse_over,
+    ALLEGRO_BITMAP *disabled,
+    const std::string &sound_name)
+    : NewButton(
+        x,
+        y,
+        width,
+        height,
+        mouse_over_event,
+        click_event,
+        normal,
+        mouse_over,
+        disabled,
+        sound_name),
+      m_text(text) {
+    add_child_module(m_text);
+}
+
+TextButton::TextButton(
+    const std::string &text,
+    ALLEGRO_FONT *font,
+    ALLEGRO_COLOR color,
+    int flags,
+    int x,
+    int y,
+    int width,
+    int height,
+    EventType mouse_over_event,
+    EventType click_event,
+    ALLEGRO_BITMAP *normal,
+    ALLEGRO_BITMAP *mouse_over,
+    ALLEGRO_BITMAP *disabled,
+    const std::string &sound_name)
+    : NewButton(
+        x,
+        y,
+        width,
+        height,
+        mouse_over_event,
+        click_event,
+        normal,
+        mouse_over,
+        disabled,
+        sound_name) {
+    int text_y = m_y;
+    int text_height = m_height;
+    int line_height = al_get_font_line_height(font);
+
+    if (flags & ALLEGRO_ALIGN_CENTER) {
+        text_y += (m_height - line_height) / 2;
+        text_height = line_height;
+    }
+    m_text = make_shared<Label>(
+        text, m_x, text_y, m_width, text_height, false, flags, font, color);
+    add_child_module(m_text);
 }
 
 Button::Button(
@@ -157,12 +208,12 @@ Button::Button(
     const string &initButtonSound /*= ""*/,
     bool initEnabled /*= true*/,
     bool initVisible /*= true*/)
-    : imgNormal(NULL), imgMouseOver(NULL), imgDisabled(NULL),
+    : imgNormal(nullptr), imgMouseOver(nullptr), imgDisabled(nullptr),
       buttonSound(initButtonSound), x(initX), y(initY),
       mouseOverEvent(initMouseOverEvent), clickEvent(initClickEvent),
       enabled(initEnabled), visible(initVisible), buttonText(""),
       initialized(false), deleteBitmaps(true), highlight(false), lastMouseX(0),
-      lastMouseY(0), fontPtr(NULL), textColor(BLACK) {
+      lastMouseY(0), fontPtr(nullptr), textColor(BLACK) {
     imgNormal = al_load_bitmap(initImgFileNormal.c_str());
     al_convert_mask_to_alpha(imgNormal, MASK_COLOR);
     imgMouseOver = al_load_bitmap(initImgFileMouseOver.c_str());
@@ -170,7 +221,8 @@ Button::Button(
     imgDisabled = al_load_bitmap(initImgFileDisabled.c_str());
     al_convert_mask_to_alpha(imgDisabled, MASK_COLOR);
 
-    if (imgNormal != NULL /*&& imgMouseOver != NULL && imgDisabled != NULL*/)
+    if (imgNormal
+        != nullptr /*&& imgMouseOver != nullptr && imgDisabled != nullptr*/)
         initialized = true;
 }
 
@@ -188,7 +240,7 @@ Button::Button(
     const string &initButtonSound /*= ""*/,
     bool initEnabled /*= true*/,
     bool initVisible /*= true*/)
-    : imgNormal(NULL), imgMouseOver(NULL), imgDisabled(NULL),
+    : imgNormal(nullptr), imgMouseOver(nullptr), imgDisabled(nullptr),
       buttonSound(initButtonSound), x(initX), y(initY),
       mouseOverEvent(initMouseOverEvent), clickEvent(initClickEvent),
       enabled(initEnabled), visible(initVisible), buttonText(initButtonText),
@@ -201,7 +253,8 @@ Button::Button(
     imgDisabled = al_load_bitmap(initImgFileDisabled.c_str());
     al_convert_mask_to_alpha(imgDisabled, MASK_COLOR);
 
-    if (imgNormal != NULL /*&& imgMouseOver != NULL && imgDisabled != NULL*/)
+    if (imgNormal
+        != nullptr /*&& imgMouseOver != nullptr && imgDisabled != nullptr*/)
         initialized = true;
 }
 
@@ -221,8 +274,9 @@ Button::Button(
       y(initY), mouseOverEvent(initMouseOverEvent), clickEvent(initClickEvent),
       enabled(initEnabled), visible(initVisible), buttonText(""),
       initialized(false), deleteBitmaps(false), highlight(false), lastMouseX(0),
-      lastMouseY(0), fontPtr(NULL), textColor(BLACK) {
-    if (imgNormal != NULL /*&& imgMouseOver != NULL && imgDisabled != NULL*/)
+      lastMouseY(0), fontPtr(nullptr), textColor(BLACK) {
+    if (imgNormal
+        != nullptr /*&& imgMouseOver != nullptr && imgDisabled != nullptr*/)
         initialized = true;
 }
 
@@ -246,7 +300,8 @@ Button::Button(
       enabled(initEnabled), visible(initVisible), buttonText(initButtonText),
       initialized(false), deleteBitmaps(false), highlight(false), lastMouseX(0),
       lastMouseY(0), fontPtr(initFontPtr), textColor(initTextColor) {
-    if (imgNormal != NULL /*&& imgMouseOver != NULL && imgDisabled != NULL*/)
+    if (imgNormal
+        != nullptr /*&& imgMouseOver != nullptr && imgDisabled != nullptr*/)
         initialized = true;
 }
 
@@ -335,19 +390,19 @@ Button::SetHighlight(bool initHighlight) {
 void
 Button::Destroy() {
     if (deleteBitmaps) {
-        if (imgNormal != NULL) {
+        if (imgNormal != nullptr) {
             al_destroy_bitmap(imgNormal);
-            imgNormal = NULL;
+            imgNormal = nullptr;
         }
 
-        if (imgMouseOver != NULL) {
+        if (imgMouseOver != nullptr) {
             al_destroy_bitmap(imgMouseOver);
-            imgMouseOver = NULL;
+            imgMouseOver = nullptr;
         }
 
-        if (imgDisabled != NULL) {
+        if (imgDisabled != nullptr) {
             al_destroy_bitmap(imgDisabled);
-            imgDisabled = NULL;
+            imgDisabled = nullptr;
         }
     }
     initialized = false;
@@ -367,16 +422,16 @@ Button::Run(ALLEGRO_BITMAP *canvas) {
 
     bool mouseIsOverButton = PtInBtn(lastMouseX, lastMouseY);
 
-    if (!enabled && (imgDisabled != NULL))
+    if (!enabled && (imgDisabled != nullptr))
         imgToDraw = imgDisabled;
-    else if (enabled && mouseIsOverButton && (imgMouseOver != NULL))
+    else if (enabled && mouseIsOverButton && (imgMouseOver != nullptr))
         imgToDraw = imgMouseOver;
-    else if (enabled && highlight && (imgMouseOver != NULL))
+    else if (enabled && highlight && (imgMouseOver != nullptr))
         imgToDraw = imgMouseOver;
 
     al_draw_bitmap(imgToDraw, x, y, 0);
 
-    if (fontPtr != NULL && buttonText.length() > 0) {
+    if (fontPtr != nullptr && buttonText.length() > 0) {
         // get center of the button
         int textX = x + GetWidth() / 2;
         int textY = y + GetHeight() / 2 - al_get_font_line_height(fontPtr) / 2;
