@@ -7,99 +7,83 @@
 
 #include <allegro5/allegro.h>
 
-#include "DataMgr.h"
-#include "Events.h"
 #include "Game.h"
-#include "GameState.h"
-#include "ModeMgr.h"
 #include "ModuleTopGUI.h"
-#include "Script.h"
-#include "Util.h"
 #include "topgui_resources.h"
 
-using namespace topgui_resources;
-
-int ggx = 0;
-int ggy = 0;
+using namespace std;
+using namespace topgui;
 
 ALLEGRO_DEBUG_CHANNEL("ModuleTopGUI")
 
-ModuleTopGUI::ModuleTopGUI() : m_resources(TOPGUI_IMAGES) {}
-ModuleTopGUI::~ModuleTopGUI() {}
-
 bool
-ModuleTopGUI::Init() {
-    ggx = (int)g_game->getGlobalNumber("GUI_GAUGES_POS_X");
-    ggy = (int)g_game->getGlobalNumber("GUI_GAUGES_POS_Y");
+ModuleTopGUI::on_init() {
+    int ggx = static_cast<int>(g_game->getGlobalNumber("GUI_GAUGES_POS_X"));
+    int ggy = static_cast<int>(g_game->getGlobalNumber("GUI_GAUGES_POS_Y"));
+
+    m_top_gauge = make_shared<Bitmap>(images[I_TOPGAUGE], ggx, ggy);
+    add_child_module(m_top_gauge);
+
+    m_hull_gauge =
+        make_shared<Bitmap>(images[I_ELEMENT_GAUGE_GREEN], ggx + 89, ggy + 15);
+    add_child_module(m_hull_gauge);
+    m_armor_gauge =
+        make_shared<Bitmap>(images[I_ELEMENT_GAUGE_RED], ggx + 273, ggy + 15);
+    add_child_module(m_armor_gauge);
+
+    m_shields_gauge =
+        make_shared<Bitmap>(images[I_ELEMENT_GAUGE_BLUE], ggx + 464, ggy + 15);
+    add_child_module(m_shields_gauge);
+
+    m_fuel_gauge = make_shared<Bitmap>(
+        images[I_ELEMENT_GAUGE_ORANGE], ggx + 630, ggy + 14);
+    add_child_module(m_fuel_gauge);
 
     return true;
 }
 
-void
-ModuleTopGUI::Close() {}
+bool
+ModuleTopGUI::on_close() {
+    remove_child_module(m_fuel_gauge);
+    remove_child_module(m_shields_gauge);
+    remove_child_module(m_armor_gauge);
+    remove_child_module(m_hull_gauge);
+    remove_child_module(m_top_gauge);
 
-void
-ModuleTopGUI::Update() {}
+    m_top_gauge = nullptr;
+    m_hull_gauge = nullptr;
+    m_armor_gauge = nullptr;
+    m_shields_gauge = nullptr;
+    m_fuel_gauge = nullptr;
 
-void
-ModuleTopGUI::Draw() {
+    return true;
+}
+
+bool
+ModuleTopGUI::on_draw(ALLEGRO_BITMAP * /*target*/) {
     float fuel_percent = g_game->gameState->getShip().getFuel();
     float hull_percent = g_game->gameState->getShip().getHullIntegrity() / 100;
     float armor_percent = 0;
     float shield_percent = 0;
-    al_set_target_bitmap(g_game->GetBackBuffer());
 
     if (g_game->gameState->getShip().getMaxArmorIntegrity() <= 0) {
         armor_percent = 0;
     } else {
-        armor_percent = g_game->gameState->getShip().getArmorIntegrity() /
-                        g_game->gameState->getShip().getMaxArmorIntegrity();
+        armor_percent = g_game->gameState->getShip().getArmorIntegrity()
+                        / g_game->gameState->getShip().getMaxArmorIntegrity();
     }
 
     if (g_game->gameState->getShip().getMaxShieldCapacity() <= 0) {
         shield_percent = 0;
     } else {
-        shield_percent = g_game->gameState->getShip().getShieldCapacity() /
-                         g_game->gameState->getShip().getMaxShieldCapacity();
+        shield_percent = g_game->gameState->getShip().getShieldCapacity()
+                         / g_game->gameState->getShip().getMaxShieldCapacity();
     }
-    /*
-     * draw top gauge gui
-     */
-    al_draw_bitmap(m_resources[I_TOPGAUGE], ggx, ggy, 0);
-    al_draw_bitmap_region(
-        m_resources[I_ELEMENT_GAUGE_GREEN],
-        0,
-        0,
-        al_get_bitmap_width(m_resources[I_ELEMENT_GAUGE_GREEN]) * hull_percent,
-        al_get_bitmap_height(m_resources[I_ELEMENT_GAUGE_GREEN]),
-        ggx + 89,
-        ggy + 15,
-        0);
-    al_draw_bitmap_region(
-        m_resources[I_ELEMENT_GAUGE_RED],
-        0,
-        0,
-        al_get_bitmap_width(m_resources[I_ELEMENT_GAUGE_RED]) * armor_percent,
-        al_get_bitmap_height(m_resources[I_ELEMENT_GAUGE_RED]),
-        ggx + 273,
-        ggy + 15,
-        0);
-    al_draw_bitmap_region(
-        m_resources[I_ELEMENT_GAUGE_BLUE],
-        0,
-        0,
-        al_get_bitmap_width(m_resources[I_ELEMENT_GAUGE_BLUE]) * shield_percent,
-        al_get_bitmap_height(m_resources[I_ELEMENT_GAUGE_BLUE]),
-        ggx + 464,
-        ggy + 15,
-        0);
-    al_draw_bitmap_region(
-        m_resources[I_ELEMENT_GAUGE_ORANGE],
-        0,
-        0,
-        al_get_bitmap_width(m_resources[I_ELEMENT_GAUGE_ORANGE]) * fuel_percent,
-        al_get_bitmap_height(m_resources[I_ELEMENT_GAUGE_ORANGE]),
-        ggx + 630,
-        ggy + 14,
-        0);
+    m_hull_gauge->set_clip_width(m_hull_gauge->get_width() * hull_percent);
+    m_armor_gauge->set_clip_width(m_armor_gauge->get_width() * armor_percent);
+    m_shields_gauge->set_clip_width(
+        m_shields_gauge->get_width() * shield_percent);
+    m_fuel_gauge->set_clip_width(m_fuel_gauge->get_width() * fuel_percent);
+
+    return true;
 }

@@ -16,17 +16,17 @@ function mineralInitialize( )
 
 	--cheaper ores are more numerous
 	if (id <= 40) then
-		L_LoadImage("data/planetsurface/ore_sprite.tga")
+		L_LoadImage("data/planetsurface/ore_sprite.png")
 		L_SetDamage(math.random(1, 4))
 		
 	--rare ores are less numerous
 	elseif (id <= 54) then
-		L_LoadImage("data/planetsurface/ore_sprite.tga")
+		L_LoadImage("data/planetsurface/ore_sprite.png")
 		L_SetDamage(math.random(1, 3))
 		
 	--endurium uses it's own image
 	elseif (id == 54) then --endurium
-		L_LoadImage("data/planetsurface/endurium_sprite.tga")
+		L_LoadImage("data/planetsurface/endurium_sprite.png")
 		L_SetDamage(math.random(1, 2))
 	end
 

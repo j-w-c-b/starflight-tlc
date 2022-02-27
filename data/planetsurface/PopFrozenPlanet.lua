@@ -26,27 +26,27 @@ HasLife = ( TEMPERATURE == "ARCTIC" and ATMOSPHERE ~= "NONE" )
 lifeForms = {}
 
 -- 57 - Plant Bird
-lifeForm = { 57, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Plant_Small.tga", 0, 1, 0, 15, 15, 0, "", "" }
+lifeForm = { 57, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Plant_Small.png", 0, 1, 0, 15, 15, 0, "", "" }
 lifeForms[0] = lifeForm 
 
 -- 63 - Hive Plant
-lifeForm = { 63, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Plant_Small.tga", 0, 1, 0, 15, 15, 0, "", "" }
+lifeForm = { 63, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Plant_Small.png", 0, 1, 0, 15, 15, 0, "", "" }
 lifeForms[1] = lifeForm 
 
 -- 70 - Humanoid Hopper			
-lifeForm = { 70, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_2Leg_Large.tga", 0, 1, 0, 17, 17, 0, "", "" }
+lifeForm = { 70, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_2Leg_Large.png", 0, 1, 0, 17, 17, 0, "", "" }
 lifeForms[2] = lifeForm
 
 -- 74 - Psychic Blaster			
-lifeForm = { 74, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Swift_Galists.tga", 0, 1, 0, 11, 11, 0, "", "" }
+lifeForm = { 74, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Swift_Galists.png", 0, 1, 0, 11, 11, 0, "", "" }
 lifeForms[3] = lifeForm
 
 -- 77 - Wandering Chandelier
-lifeForm = { 77, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Tree_Small.tga", 0, 1, 0, 17, 17, 0, "", "" }
+lifeForm = { 77, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Tree_Small.png", 0, 1, 0, 17, 17, 0, "", "" }
 lifeForms[4] = lifeForm 
 
 -- 112 - Humming Rock
-lifeForm = { 112, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/ore_sprite.tga", 0, 1, 0, 22, 22, 0, "", "" }
+lifeForm = { 112, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/ore_sprite.png", 0, 1, 0, 22, 22, 0, "", "" }
 lifeForms[5] = lifeForm 
 
 if HasLife then

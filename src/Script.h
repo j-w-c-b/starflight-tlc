@@ -16,11 +16,8 @@
 #include "lua.hpp"
 
 class Script {
-  private:
-    lua_State *luaState;
-
   public:
-    Script();
+    Script(const std::string &dat_file = "");
     virtual ~Script();
 
     bool load(const std::string &scriptfile);
@@ -32,14 +29,16 @@ class Script {
     void setGlobalNumber(const std::string &name, double value);
 
     bool getGlobalBoolean(const std::string &name);
+    void setGlobalBoolean(const std::string &name, bool value);
 
     bool runFunction(const std::string &name);
 
     static int L_LoadScript(lua_State *luaVM);
 
     std::string errorMessage;
-    lua_State *
-    getState() {
-        return luaState;
-    }
+    lua_State *getState() { return luaState; }
+
+  private:
+    lua_State *luaState;
+    std::string m_dat_file;
 };

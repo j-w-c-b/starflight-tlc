@@ -8,40 +8,32 @@
 #ifndef _SHIPCONFIG_H
 #define _SHIPCONFIG_H 1
 
-#include "Button.h"
-#include "GameState.h"
-#include "Module.h"
-#include "ResourceManager.h"
-#include <allegro5/allegro.h>
+#include <memory>
+#include <string>
 #include <vector>
 
+#include <allegro5/allegro.h>
+
+#include "Bitmap.h"
+#include "Button.h"
+#include "GameState.h"
+#include "Label.h"
+#include "Module.h"
+#include "TextEntry.h"
+
 #define MAX_CARGOPODS 16
-#define BUTTON_X_START 130
-#define BUTTON_Y_START 255
 #define BOTTOM_CORNER_X 20
 #define BOTTOM_CORNER_Y 684
-
-#define MENU_PATH_X 30
-#define MENU_PATH_Y 184
 
 #define STATIC_READOUT_X 550
 #define DYNAMIC_READOUT_X 950
 #define READOUT_Y 150
 #define READOUT_SPACING 50
 
-#define STATIC_CREDITS_X 650
-#define DYNAMIC_CREDITS_X 900
-#define CREDITS_Y 75
-
-#define STATIC_SHIPNAME_X 560
-#define DYNAMIC_SHIPNAME_X 700
-#define SHIPNAME_Y 685
-
 #define PIXEL_BUFFER 4
 #define BUTTON_HEIGHT 64
 #define NINETY_DEGREES 90
 #define NUMBER_OF_BUTTONS 7
-const double _360_TO_256(256.0 / 360.0);
 
 #define CARGOPODS 500
 #define SELLBACK_RATE .7
@@ -87,9 +79,6 @@ const double _360_TO_256(256.0 / 360.0);
 #define MISSILELAUNCHER_CLASS4 120000
 #define MISSILELAUNCHER_CLASS5 200000
 #define MISSILELAUNCHER_CLASS6 330000
-//#define MISSILELAUNCHER_CLASS7 330000	//jjh
-//#define MISSILELAUNCHER_CLASS8 330000
-//#define MISSILELAUNCHER_CLASS9 330000
 
 #define LASER_CLASS1 8000
 #define LASER_CLASS2 20000
@@ -97,112 +86,78 @@ const double _360_TO_256(256.0 / 360.0);
 #define LASER_CLASS4 90000
 #define LASER_CLASS5 150000
 #define LASER_CLASS6 260000
-//#define LASER_CLASS7 260000		//jjh
-//#define LASER_CLASS8 260000
-//#define LASER_CLASS9 260000
 
-const int ITEM_PRICES[5][6] = {{ENGINE_CLASS1,
-                                ENGINE_CLASS2,
-                                ENGINE_CLASS3,
-                                ENGINE_CLASS4,
-                                ENGINE_CLASS5,
-                                ENGINE_CLASS6},
-                               {SHIELD_CLASS1,
-                                SHIELD_CLASS2,
-                                SHIELD_CLASS3,
-                                SHIELD_CLASS4,
-                                SHIELD_CLASS5,
-                                SHIELD_CLASS6},
-                               {ARMOR_CLASS1,
-                                ARMOR_CLASS2,
-                                ARMOR_CLASS3,
-                                ARMOR_CLASS4,
-                                ARMOR_CLASS5,
-                                ARMOR_CLASS6},
-                               {MISSILELAUNCHER_CLASS1,
-                                MISSILELAUNCHER_CLASS2,
-                                MISSILELAUNCHER_CLASS3,
-                                MISSILELAUNCHER_CLASS4,
-                                MISSILELAUNCHER_CLASS5,
-                                MISSILELAUNCHER_CLASS6},
-                               {LASER_CLASS1,
-                                LASER_CLASS2,
-                                LASER_CLASS3,
-                                LASER_CLASS4,
-                                LASER_CLASS5,
-                                LASER_CLASS6}};
-enum ButtonType
-{
-    UndefButtonType,
-    ModuleEntry,
-    ShipConfig,
-    Launch,
-    Buy,
-    Sell,
-    Repair,
-    Name,
-    Exit,
-    CargoPods,
-    Engines,
-    Shields,
-    Armor,
-    Missiles,
-    Lasers,
-    Hull,
-    Back,
-    Class1,
-    Class2,
-    Class3,
-    Class4,
-    Class5,
-    Class6,
-    Pay,
-    Nevermind,
-    SaveName,
-    TVConfig,
-    BuyTV
-};
+const int ITEM_PRICES[5][6] = {
+    {ENGINE_CLASS1,
+     ENGINE_CLASS2,
+     ENGINE_CLASS3,
+     ENGINE_CLASS4,
+     ENGINE_CLASS5,
+     ENGINE_CLASS6},
+    {SHIELD_CLASS1,
+     SHIELD_CLASS2,
+     SHIELD_CLASS3,
+     SHIELD_CLASS4,
+     SHIELD_CLASS5,
+     SHIELD_CLASS6},
+    {ARMOR_CLASS1,
+     ARMOR_CLASS2,
+     ARMOR_CLASS3,
+     ARMOR_CLASS4,
+     ARMOR_CLASS5,
+     ARMOR_CLASS6},
+    {MISSILELAUNCHER_CLASS1,
+     MISSILELAUNCHER_CLASS2,
+     MISSILELAUNCHER_CLASS3,
+     MISSILELAUNCHER_CLASS4,
+     MISSILELAUNCHER_CLASS5,
+     MISSILELAUNCHER_CLASS6},
+    {LASER_CLASS1,
+     LASER_CLASS2,
+     LASER_CLASS3,
+     LASER_CLASS4,
+     LASER_CLASS5,
+     LASER_CLASS6}};
 
 // calculate the difference between the enums
 const int CLASS_ENUM_DIF =
-    (Class1 - Class1Type); // calculates the correct value for the class of item
+    (EVENT_SHIP_CONFIG_CLASS1
+     - Class1Type); // calculates the correct value for the class of item
 const int ITEM_ENUM_DIF =
-    Engines -
-    0; // calculates the correct index into the ITEM_PRICES[5][6] array
+    EVENT_SHIP_CONFIG_ENGINES
+    - 0; // calculates the correct index into the ITEM_PRICES[5][6] array
 
 class ModuleShipConfig : public Module {
 
   public:
     ModuleShipConfig();
-    virtual bool Init() override;
-    virtual void Update() override;
-    virtual void Draw() override;
-    virtual void OnKeyPressed(int keyCode) override;
-    virtual void OnMouseMove(int x, int y) override;
-    virtual void OnMouseReleased(int button, int x, int y) override;
-    virtual void OnEvent(Event *event) override;
-    virtual void Close() override;
-
-  private:
     virtual ~ModuleShipConfig() {}
 
-    int buttonsActive;
-    std::vector<ButtonType> menuPath;
-    Button *buttons[NUMBER_OF_BUTTONS];
-    ALLEGRO_BITMAP *shipImage;
+    virtual bool on_init() override;
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
+    virtual bool on_event(ALLEGRO_EVENT *event) override;
+    virtual bool on_close() override;
+
+  private:
+    std::shared_ptr<Bitmap> m_background;
+    int m_buttons_active;
+    std::vector<EventType> menuPath;
+    std::shared_ptr<Label> m_menu_path_label;
+    std::shared_ptr<TextButton> m_buttons[NUMBER_OF_BUTTONS];
+    std::shared_ptr<TextEntry> m_ship_name_entry;
+    std::shared_ptr<Label> m_credits_display;
+    std::shared_ptr<Bitmap> m_ship_image;
+    std::shared_ptr<Label> m_ship_name_label;
     ALLEGRO_BITMAP *shipConfig;
     int repairCost;
     bool inputName;
     std::string shipName;
-    std::shared_ptr<Sample> m_sndClick;
-    std::shared_ptr<Sample> m_sndErr;
-    ALLEGRO_BITMAP *m_cursor;
-    ResourceManager<ALLEGRO_BITMAP> m_resources;
+    std::shared_ptr<ALLEGRO_BITMAP> m_cursor;
 
     void display() const;
     std::string convertMenuPathToString() const;
-    std::string convertButtonTypeToString(ButtonType btnType) const;
-    void configureButton(int btn, ButtonType btnType);
+    std::string convertEventTypeToString(EventType btnType) const;
+    void configureButton(int btn, EventType btnType);
     bool checkComponent() const;
     void buyComponent();
     void sellComponent();

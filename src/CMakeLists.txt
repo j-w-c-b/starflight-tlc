@@ -1,12 +1,20 @@
-cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
 
 include(implib_utils.cmake)
 
-file(
-    GLOB TOPLEVEL_DATA
+file(GLOB TOPLEVEL_DATA
     LIST_DIRECTORIES false
-    "${CMAKE_SOURCE_DIR}/data/*/"
+    "${CMAKE_SOURCE_DIR}/data/*.ogg"
+    "${CMAKE_SOURCE_DIR}/data/*.lua"
+    "${CMAKE_SOURCE_DIR}/data/*.yaml"
 )
+
+foreach(dat ${TOPLEVEL_DATA})
+    file(RELATIVE_PATH reldat "${CMAKE_SOURCE_DIR}/data" "${dat}")
+    set_source_files_properties(
+        "${dat}" PROPERTIES MACOSX_PACKAGE_LOCATION "Resources/data/"
+    )
+endforeach()
 
 # This function generates a header containing the upper-cased base names
 # of all the files in ../data/${ARGV0} and mapping of those to the names
@@ -24,7 +32,10 @@ function(create_resource_header)
     file(
         GLOB ${resourcedepname}
         LIST_DIRECTORIES false
-        "${CMAKE_SOURCE_DIR}/data/${ARGV0}/*"
+        "${CMAKE_SOURCE_DIR}/data/${ARGV0}/*.ogg"
+        "${CMAKE_SOURCE_DIR}/data/${ARGV0}/*.png"
+        "${CMAKE_SOURCE_DIR}/data/${ARGV0}/*.lua"
+        "${CMAKE_SOURCE_DIR}/data/${ARGV0}/*.ttf"
     )
 
     add_custom_command(
@@ -36,11 +47,29 @@ function(create_resource_header)
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/data
         DEPENDS ${${resourcedepname}}
     )
-    set(MODULE_RESOURCE_HEADERS ${MODULE_RESOURCE_HEADERS} ${RESOURCE_HEADER} ${${resourcedepname}} PARENT_SCOPE)
+    set(MODULE_RESOURCE_HEADERS ${MODULE_RESOURCE_HEADERS} ${RESOURCE_HEADER} PARENT_SCOPE)
+    file(
+        GLOB ${ARGV0}_DATA
+        LIST_DIRECTORIES false
+        RELATIVE "${CMAKE_SOURCE_DIR}"
+        "${CMAKE_SOURCE_DIR}/data/${ARGV0}/*.ogg"
+        "${CMAKE_SOURCE_DIR}/data/${ARGV0}/*.png"
+        "${CMAKE_SOURCE_DIR}/data/${ARGV0}/*.lua"
+        "${CMAKE_SOURCE_DIR}/data/${ARGV0}/*.ttf"
+    )
+    add_custom_command(
+        OUTPUT "${ARGV0}.dat"
+        COMMAND ${CMAKE_COMMAND} 
+        -E tar c "${CMAKE_CURRENT_BINARY_DIR}/${ARGV0}.dat" --format=zip -- ${${ARGV0}_DATA}
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    )
+set(MODULE_RESOURCE_DATA ${MODULE_RESOURCE_DATA} "${CMAKE_CURRENT_BINARY_DIR}/${ARGV0}.dat" PARENT_SCOPE)
     set_source_files_properties(
-        ${${resourcedepname}} PROPERTIES MACOSX_PACKAGE_LOCATION Resources/data/${ARGV0}
+        ${ARGV0}.dat PROPERTIES MACOSX_PACKAGE_LOCATION Resources/data/${ARGV0}.dat
     )
 endfunction()
+
+
 
 create_resource_header("auxiliary")
 create_resource_header("bank")
@@ -85,12 +114,18 @@ add_library(lib${APP_NAME} STATIC
     Archive.h
     AudioSystem.cpp
     AudioSystem.h
+    Bitmap.cpp
+    Bitmap.h
     Button.cpp
     Button.h
+    CheckBox.cpp
+    CheckBox.h
     CombatObject.cpp
     CombatObject.h
     DataMgr.cpp
     DataMgr.h
+    DialogButtonPanel.cpp
+    DialogButtonPanel.h
     Events.h
     Flux.cpp
     Flux.h
@@ -98,8 +133,12 @@ add_library(lib${APP_NAME} STATIC
     Game.h
     GameState.cpp
     GameState.h
+    ItemStackButtonList.cpp
+    ItemStackButtonList.h
     Label.cpp
     Label.h
+    Loan.cpp
+    Loan.h
     Math.cpp
     MathTL.h
     MessageBoxWindow.cpp
@@ -116,6 +155,8 @@ add_library(lib${APP_NAME} STATIC
     ModuleCantina.h
     ModuleCaptainCreation.cpp
     ModuleCaptainCreation.h
+    ModuleCaptainDetails.cpp
+    ModuleCaptainDetails.h
     ModuleCaptainsLounge.cpp
     ModuleCaptainsLounge.h
     ModuleCargoWindow.cpp
@@ -144,6 +185,8 @@ add_library(lib${APP_NAME} STATIC
     ModulePlanetOrbit.h
     ModulePlanetSurface.cpp
     ModulePlanetSurface.h
+    ModuleProfessionChoice.cpp
+    ModuleProfessionChoice.h
     ModuleQuestLog.cpp
     ModuleQuestLog.h
     ModuleSettings.cpp
@@ -162,50 +205,56 @@ add_library(lib${APP_NAME} STATIC
     ModuleTopGUI.h
     ModuleTradeDepot.cpp
     ModuleTradeDepot.h
+    Officer.cpp
+    Officer.h
+    OfficerInfo.cpp
+    OfficerInfo.h
     PauseMenu.cpp
     PauseMenu.h
     Perlin.cpp
     PerlinTL.h
+    PersonnelSlotButton.cpp
+    PersonnelSlotButton.h
     PlanetSurfaceObject.cpp
     PlanetSurfaceObject.h
     PlanetSurfacePlayerVessel.cpp
     PlanetSurfacePlayerVessel.h
     PlayerShipSprite.cpp
     PlayerShipSprite.h
+    Point2D.cpp
     Point2D.h
     QuestMgr.cpp
     QuestMgr.h
     ResourceManager.cpp
     ResourceManager.h
+    RichTextLabel.cpp
+    RichTextLabel.h
     Script.cpp
     Script.h
-    ScrollBox.cpp
-    ScrollBox.h
+    ScrolledModule.cpp
+    ScrolledModule.h
+    SlidingModule.h
     Sprite.cpp
     Sprite.h
     Stardate.cpp
     Stardate.h
-    TerrainVehicleSprite.cpp
-    TerrainVehicleSprite.h
+    TextEntry.cpp
+    TextEntry.h
     TexturedSphere.cpp
     TexturedSphere.h
     TileScroller.cpp
     TileScroller.h
     Timer.cpp
     Timer.h
+    UnemployedSlotButton.cpp
+    UnemployedSlotButton.h
+    UnemployedPanel.cpp
+    UnemployedPanel.h
     Util.cpp
     Util.h
-    Vector3.cpp
-    Vector3.h
     debug.h
     noiseutils.cpp
     noiseutils.h
-    tinyxml/tinystr.cpp
-    tinyxml/tinystr.h
-    tinyxml/tinyxml.cpp
-    tinyxml/tinyxml.h
-    tinyxml/tinyxmlerror.cpp
-    tinyxml/tinyxmlparser.cpp
     rand.c
     lua.hpp
     ${MODULE_RESOURCE_HEADERS}
@@ -215,12 +264,13 @@ add_executable(
     ${APP_NAME} ${BUNDLE_ARG}
     main.cpp
     ${MODULE_RESOURCE_HEADERS}
+    ${MODULE_RESOURCE_DATA}
     ${TOPLEVEL_DATA}
     ${ICON_PATH}
 )
 
-set_property(TARGET ${APP_NAME} PROPERTY CXX_STANDARD 11)
-set_property(TARGET lib${APP_NAME} PROPERTY CXX_STANDARD 11)
+set_property(TARGET ${APP_NAME} PROPERTY CXX_STANDARD 17)
+set_property(TARGET lib${APP_NAME} PROPERTY CXX_STANDARD 17)
 
 target_include_directories(
     ${APP_NAME}
@@ -257,11 +307,14 @@ target_link_libraries(
     allegro_font
     allegro_image
     allegro_main
+    allegro_physfs
     allegro_primitives
     allegro_ttf
+    physfs
     lua
     m
     noise
+    yaml_cpp
 )
 
 add_dependencies(
@@ -279,15 +332,19 @@ add_dependencies(
     allegro_audio
     allegro_font
     allegro_dialog
+    allegro_physfs
     allegro_primitives
+    physfs
+    yaml_cpp
 )
 
 set_target_properties(${APP_NAME} PROPERTIES MACOSX_BUNDLE TRUE)
+set_target_properties(${APP_NAME} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in)
 
 set_target_properties(${APP_NAME} PROPERTIES MACOSX_BUNDLE_ICON_FILE ${ICON_NAME})
 set_source_files_properties(${ICON_PATH} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 set_source_files_properties(
-    ${TOPLEVEL_DATA} PROPERTIES MACOSX_PACKAGE_LOCATION Resources/data/
+    ${MODULE_RESOURCE_DATA} PROPERTIES MACOSX_PACKAGE_LOCATION Resources/data
 )
 
 # Use pkgconfig to find the allegro libraries and headers, and add them to
@@ -302,14 +359,26 @@ set(allegro_pkgs
     allegro_font
     allegro_image
     allegro_main
+    allegro_physfs
     allegro_primitives
     allegro_ttf
+    physfs
+    yaml_cpp
 )
 
 foreach (pkg ${allegro_pkgs})
     string(TOUPPER ${pkg} pkg_prefix)
 
-    pkg_check_modules(${pkg_prefix} REQUIRED IMPORTED_TARGET GLOBAL "${pkg}-5>=5.2")
+    if (${pkg} MATCHES "allegro.*")
+        set(pkgspec "${pkg}-5>=5.2")
+    elseif(${pkg} MATCHES "yaml_cpp")
+        set(pkg_prefix "YAML_CPP")
+        set(pkgspec "yaml-cpp")
+    else()
+        set(pkgspec "${pkg}")
+    endif()
+
+    pkg_check_modules(${pkg_prefix} REQUIRED IMPORTED_TARGET GLOBAL "${pkgspec}")
     add_library(${pkg} SHARED IMPORTED GLOBAL)
     
     list(GET ${pkg_prefix}_LINK_LIBRARIES 0 firstlib)
@@ -319,8 +388,10 @@ foreach (pkg ${allegro_pkgs})
     if (WIN32)
         set(${pkg}_IMPLIB ${firstlib})
         set_property(TARGET ${pkg} PROPERTY IMPORTED_IMPLIB ${firstlib})
-        implib_to_dll(${pkg}_IMPLIB)
-        set_property(TARGET ${pkg} PROPERTY IMPORTED_LOCATION ${${pkg}_LIBRARY})
+        if (${firstlib} MATCHES ".dll.a")
+            implib_to_dll(${pkg}_IMPLIB)
+            set_property(TARGET ${pkg} PROPERTY IMPORTED_LOCATION ${${pkg}_LIBRARY})
+        endif()
     else()
         set_property(TARGET ${pkg} PROPERTY IMPORTED_LOCATION ${firstlib})
     endif()
@@ -333,6 +404,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES Darwin)
     install(TARGETS ${APP_NAME} BUNDLE DESTINATION .)
     install(CODE "
             include(BundleUtilities)
+            set(BU_CHMOD_BUNDLE_ITEMS 1)
             fixup_bundle(\"\${CMAKE_INSTALL_PREFIX}/${APP_NAME}.app\" \"\" \"${ALLEGRO_LIBRARY_DIRS}\")
             ")
 
@@ -341,9 +413,15 @@ if (${CMAKE_SYSTEM_NAME} MATCHES Darwin)
 elseif (${CMAKE_SYSTEM_NAME} MATCHES Windows)
     add_custom_command(
         TARGET ${APP_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/../data ${CMAKE_CURRENT_BINARY_DIR}/data)
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/data/
+    )
+add_custom_command(
+        TARGET ${APP_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${TOPLEVEL_DATA} ${MODULE_RESOURCE_DATA} ${CMAKE_CURRENT_BINARY_DIR}/data/
+    )
     install(TARGETS ${APP_NAME} DESTINATION .)
-    install(DIRECTORY ../data/ DESTINATION data)
+    install(FILES ${MODULE_RESOURCE_DATA} DESTINATION data)
+    install(FILES ${TOPLEVEL_DATA} DESTINATION data/)
     add_custom_command(
         TARGET ${APP_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:${APP_NAME}> $<TARGET_FILE_DIR:${APP_NAME}>
@@ -351,11 +429,17 @@ elseif (${CMAKE_SYSTEM_NAME} MATCHES Windows)
     install(FILES $<TARGET_RUNTIME_DLLS:${APP_NAME}> DESTINATION .)
     set (CPACK_PACKAGE_INSTALL_DIRECTORY ${CMAKE_PROJECT})
 elseif (${CMAKE_SYSTEM_NAME} MATCHES Linux)
+    install(TARGETS ${APP_NAME})
+    install(FILES ${TOPLEVEL_DATA} DESTINATION data)
+    install(FILES ${MODULE_RESOURCE_DATA} DESTINATION data)
     add_custom_command(
         TARGET ${APP_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/../data ${CMAKE_CURRENT_BINARY_DIR}/data)
-    install(TARGETS ${APP_NAME})
-    install(DIRECTORY ../data/ DESTINATION data)
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/data/
+        )
+    add_custom_command(
+        TARGET ${APP_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${TOPLEVEL_DATA} ${MODULE_RESOURCE_DATA} ${CMAKE_CURRENT_BINARY_DIR}/data/
+        )
 else()
     message(FATAL_ERROR "Unsupported OS")
 endif()

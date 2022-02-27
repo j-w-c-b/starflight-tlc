@@ -31,24 +31,24 @@ HasLife = goodSize and goodTemp and goodGrav and goodAtmos
 lifeForms = {}
 
 -- 61 - Red Puff Wart
-lifeForm = { 61, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Spider_Giant.tga", 0, 1, 0, 19, 19, 0, "", "" }
+lifeForm = { 61, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Spider_Giant.png", 0, 1, 0, 19, 19, 0, "", "" }
 lifeForms[0] = lifeForm 
 
 -- 69 - Black Acid Squirter
-lifeForm = { 69, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Starfish_Large.tga", 0, 1, 0, 15, 15, 0, "", "" }
+lifeForm = { 69, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Starfish_Large.png", 0, 1, 0, 15, 15, 0, "", "" }
 lifeForms[1] = lifeForm
 
 
 -- 81 - Breathing Cactus
-lifeForm = { 81, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Plant_Small.tga", 0, 1, 0, 15, 15, 0, "", "" }
+lifeForm = { 81, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Plant_Small.png", 0, 1, 0, 15, 15, 0, "", "" }
 lifeForms[2] = lifeForm 
 
 -- 84 - Crystal Sponge Plant
-lifeForm = { 84, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Crystal_Small4.tga", 0, 1, 0, 15, 15, 0, "", "" }
+lifeForm = { 84, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Crystal_Small4.png", 0, 1, 0, 15, 15, 0, "", "" }
 lifeForms[3] = lifeForm
 
 -- 95 - Grey Anemone
-lifeForm = { 95, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Sponge_Large.tga", 0, 1, 0, 17, 17, 0, "", "" }
+lifeForm = { 95, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Sponge_Large.png", 0, 1, 0, 17, 17, 0, "", "" }
 lifeForms[4] = lifeForm 
 
 if HasLife then

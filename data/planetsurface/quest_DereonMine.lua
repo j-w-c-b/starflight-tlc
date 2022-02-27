@@ -4,7 +4,7 @@
 
 function DereonMineInitialize( )
 
-	L_LoadImage("data/planetsurface/B_Mine.tga")
+	L_LoadImage("data/planetsurface/B_Mine.png")
 
 	L_SetColHalfWidth(40)
 	L_SetColHalfHeight(40)

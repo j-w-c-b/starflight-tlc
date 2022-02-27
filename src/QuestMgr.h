@@ -22,28 +22,16 @@ class QuestMgr {
 
     void raiseEvent(int eventid, int param1 = -1, int param2 = -1);
 
-    std::string
-    getName() {
-        return questName;
-    }
-    std::string
-    getShort() {
-        return questShort;
-    }
-    std::string
-    getLong() {
-        return questLong;
-    }
-    std::string
-    getDebrief() {
-        return questDebrief;
-    }
+    std::string getName() { return questName; }
+    std::string getShort() { return questShort; }
+    std::string getLong() { return questLong; }
+    std::string getDebrief() { return questDebrief; }
 
     void getScriptGlobals();
     void setStoredValue(int value);
     void
     VerifyRequirements(int reqCode = -1, int reqType = -1, int reqAmt = -1);
-    void giveReward();
+    std::string giveReward();
 
     int questReqCode, questReqType;
     float questReqAmt;
@@ -51,7 +39,7 @@ class QuestMgr {
     float questRewAmt;
 
   private:
-    Script *script;
+    Script script;
 
     std::string questName;
     std::string questShort;
@@ -59,3 +47,4 @@ class QuestMgr {
     std::string questDebrief;
     int debriefStatus;
 };
+// vi: ft=cpp

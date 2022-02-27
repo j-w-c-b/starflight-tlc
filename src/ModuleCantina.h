@@ -8,42 +8,47 @@
 #ifndef MODULECANTINA_H
 #define MODULECANTINA_H
 
+#include <allegro5/allegro.h>
+
+#include "Bitmap.h"
 #include "Button.h"
-#include "GameState.h"
 #include "Label.h"
 #include "Module.h"
-#include "ResourceManager.h"
-#include "ScrollBox.h"
-#include <allegro5/allegro.h>
 
 class ModuleCantina : public Module {
   public:
     ModuleCantina();
-    virtual ~ModuleCantina();
-    virtual bool Init() override;
-    virtual void Update() override;
-    virtual void Draw() override;
-    virtual void OnKeyReleased(int keyCode) override;
-    virtual void OnMouseMove(int x, int y) override;
-    virtual void OnMouseReleased(int button, int x, int y) override;
-    virtual void OnEvent(Event *event) override;
-    virtual void Close() override;
+    virtual ~ModuleCantina() {}
+    virtual bool on_init() override;
+    virtual bool on_update() override;
+    virtual bool on_event(ALLEGRO_EVENT *event) override;
 
   private:
-    ALLEGRO_BITMAP *m_background;
-    Button *m_exitBtn;
-    Button *m_turninBtn;
+    std::shared_ptr<Bitmap> m_background;
 
-    Label *questTitle;
-    Label *questLong;
-    Label *questReward;
+    std::shared_ptr<Label> m_title_heading_label;
+    std::shared_ptr<Label> m_title_label;
+    std::shared_ptr<Label> m_status_label;
+    std::shared_ptr<Label> m_description_title_label;
+    std::shared_ptr<Label> m_description_label;
+    std::shared_ptr<Label> m_reward_title_label;
+    std::shared_ptr<Label> m_reward_label;
 
-    std::string label1, label2, label3, label4;
-    ALLEGRO_COLOR labelcolor, textcolor;
-    bool selectedQuestCompleted;
-    std::string requirementLabel;
-    ALLEGRO_COLOR requirementColor;
-    ResourceManager<ALLEGRO_BITMAP> resources;
+    std::shared_ptr<TextButton> m_exit_button;
+    std::shared_ptr<TextButton> m_turn_in_button;
+
+    enum quest_status
+    {
+        QUEST_ACTIVE,
+        QUEST_COMPLETE,
+        QUEST_DEBRIEF,
+        QUEST_DEBRIEF_COMPLETE,
+        QUEST_REWARD,
+        QUEST_REWARD_COMPLETE,
+    };
+
+    quest_status m_quest_status;
 };
 
 #endif
+// vi: ft=cpp

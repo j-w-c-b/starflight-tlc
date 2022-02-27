@@ -14,102 +14,84 @@
 #ifndef MODEMGR_H
 #define MODEMGR_H
 
-#include "AudioSystem.h"
 #include <map>
 #include <string>
 
+#include "AudioSystem.h"
+#include "Game.h"
+#include "Module.h"
+#include "PauseMenu.h"
+
 // mode names defined here
-const std::string MODULE_STARTUP = "STARTUP";
-const std::string MODULE_TITLESCREEN = "TITLESCREEN";
-const std::string MODULE_CREDITS = "CREDITS";
-const std::string MODULE_CAPTAINCREATION = "CAPTAINCREATION";
-const std::string MODULE_CAPTAINSLOUNGE = "CAPTAINSLOUNGE";
-const std::string MODULE_STARMAP = "STARMAP";
-const std::string MODULE_HYPERSPACE = "HYPERSPACE";
-const std::string MODULE_INTERPLANETARY = "INTERPLANETARY";
-const std::string MODULE_ORBIT = "PLANETORBIT";
-const std::string MODULE_SURFACE = "PLANETSURFACE";
-const std::string MODULE_PORT = "STARPORT";
-const std::string MODULE_SHIPCONFIG = "SHIPCONFIG";
-const std::string MODULE_STARPORT = "STARPORT";
-const std::string MODULE_CREWBUY = "CREWHIRE";
-const std::string MODULE_BANK = "BANK";
-const std::string MODULE_TRADEDEPOT = "TRADEDEPOT";
-const std::string MODULE_GAMEOVER = "GAMEOVER";
-const std::string MODULE_CANTINA = "CANTINA";
-const std::string MODULE_RESEARCHLAB = "RESEARCHLAB";
-const std::string MODULE_MILITARYOPS = "MILITARYOPS";
-const std::string MODULE_ENCOUNTER = "ENCOUNTER";
-const std::string MODULE_AUXILIARYDISPLAY = "AUXILIARYDISPLAY";
-const std::string MODULE_SETTINGS = "SETTINGS";
-const std::string MODULE_MESSAGEGUI = "MESSAGEGUI";
+constexpr std::string_view MODULE_STARTUP = "STARTUP";
+constexpr std::string_view MODULE_TITLESCREEN = "TITLESCREEN";
+constexpr std::string_view MODULE_CREDITS = "CREDITS";
+constexpr std::string_view MODULE_CAPTAINCREATION = "CAPTAINCREATION";
+constexpr std::string_view MODULE_CAPTAINSLOUNGE = "CAPTAINSLOUNGE";
+constexpr std::string_view MODULE_STARMAP = "STARMAP";
+constexpr std::string_view MODULE_HYPERSPACE = "HYPERSPACE";
+constexpr std::string_view MODULE_INTERPLANETARY = "INTERPLANETARY";
+constexpr std::string_view MODULE_ORBIT = "PLANETORBIT";
+constexpr std::string_view MODULE_SURFACE = "PLANETSURFACE";
+constexpr std::string_view MODULE_PORT = "STARPORT";
+constexpr std::string_view MODULE_SHIPCONFIG = "SHIPCONFIG";
+constexpr std::string_view MODULE_STARPORT = "STARPORT";
+constexpr std::string_view MODULE_CREWBUY = "CREWHIRE";
+constexpr std::string_view MODULE_BANK = "BANK";
+constexpr std::string_view MODULE_TRADEDEPOT = "TRADEDEPOT";
+constexpr std::string_view MODULE_GAMEOVER = "GAMEOVER";
+constexpr std::string_view MODULE_CANTINA = "CANTINA";
+constexpr std::string_view MODULE_RESEARCHLAB = "RESEARCHLAB";
+constexpr std::string_view MODULE_MILITARYOPS = "MILITARYOPS";
+constexpr std::string_view MODULE_ENCOUNTER = "ENCOUNTER";
+constexpr std::string_view MODULE_AUXILIARYDISPLAY = "AUXILIARYDISPLAY";
+constexpr std::string_view MODULE_SETTINGS = "SETTINGS";
+constexpr std::string_view MODULE_MESSAGEGUI = "MESSAGEGUI";
 
-class Module;
-class GameState;
-struct ALLEGRO_BITMAP;
-class Game;
-class Event;
-
-class Mode {
+class Mode final {
   public:
-    Mode(Module *module, const std::string &path);
+    Mode(std::shared_ptr<Module> module, const std::string &path);
 
   private:
-    Module *rootModule;
+    std::shared_ptr<Module> rootModule;
     std::string musicPath;
 
     friend class ModeMgr;
 };
 
-class ModeMgr {
+class ModeMgr : public Module {
   public:
     explicit ModeMgr(Game *game);
-
     virtual ~ModeMgr();
 
-    void AddMode(const std::string &modeName,
-                 Module *rootModule,
-                 const std::string &musicPath);
+    void AddMode(
+        const std::string_view &modeName,
+        std::shared_ptr<Module> rootModule,
+        const std::string &musicPath);
     bool LoadModule(const std::string &moduleName);
     void CloseCurrentModule();
 
-    std::string
-    GetCurrentModuleName() {
-        return currentModeName;
-    }
-    std::string
-    GetPrevModuleName() {
-        return prevModeName;
-    }
+    std::string GetCurrentModuleName() { return currentModeName; }
+    std::string GetPrevModuleName() { return prevModeName; }
 
-    void Update();
-    void Draw();
+    virtual bool on_event(ALLEGRO_EVENT *event) override;
+    virtual bool on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event) override;
 
-    // call to broadcast the specified event to all modules which are part
-    // of the active mode
-    void BroadcastEvent(Event *event);
-
-    void OnKeyPress(int keyCode);
-    void OnKeyPressed(int keyCode);
-    void OnKeyReleased(int keyCode);
-
-    void OnMouseMove(int x, int y);
-    void OnMouseClick(int button, int x, int y);
-    void OnMousePressed(int button, int x, int y);
-    void OnMouseReleased(int button, int x, int y);
-
-    void OnMouseWheelUp(int x, int y);
-    void OnMouseWheelDown(int x, int y);
+    void enable_pause_menu(bool enable);
+    void toggle_pause_menu();
 
   private:
-    Module *m_activeRootModule;
+    std::shared_ptr<Module> m_activeRootModule;
     std::shared_ptr<Sample> currentMusic;
 
     std::string prevModeName;
     std::string currentModeName;
 
     // this is the list of game modes in the game
-    std::map<std::string, Mode *> m_modes;
+    std::map<std::string, std::shared_ptr<Mode>> m_modes;
+    std::shared_ptr<PauseMenu> m_pause_menu;
+    std::shared_ptr<Module> m_previous_modal;
+    bool m_originally_paused;
 };
 
 #endif

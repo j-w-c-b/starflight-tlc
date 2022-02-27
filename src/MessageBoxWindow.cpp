@@ -7,245 +7,146 @@
 #include "gui_resources.h"
 
 using namespace std;
-using namespace gui_resources;
+using namespace gui;
 
-MessageBoxWindow::MessageBoxWindow(const string &initheading,
-                                   const string &initText,
-                                   int initX,
-                                   int initY,
-                                   int initWidth,
-                                   int initHeight,
-                                   ALLEGRO_COLOR initTextColor,
-                                   bool initCentered)
-    : heading(initheading), text(initText), x(initX), y(initY),
-      width(initWidth), height(initHeight), textColor(initTextColor),
-      centered(initCentered), visible(true), m_resources(GUI_IMAGES) {
+MessageBoxWindow::MessageBoxWindow(
+    const string &heading,
+    const string &text,
+    int x,
+    int y,
+    int width,
+    int height,
+    ALLEGRO_COLOR text_color,
+    bool centered,
+    bool scrollbar)
+    : Module(
+        centered ? x - width / 2 : x,
+        centered ? y - height / 2 : y,
+        width,
+        height) {
+    create_background();
+    add_child_module(m_background);
 
-    m_ok_button = new Button(m_resources[I_GENERIC_EXIT_BTN_NORM],
-                             m_resources[I_GENERIC_EXIT_BTN_OVER],
-                             m_resources[I_GENERIC_EXIT_BTN_OVER],
-                             x,
-                             y,
-                             EVENT_MOUSEOVER,
-                             EVENT_CLOSE,
-                             g_game->font24,
-                             "Ok",
-                             WHITE);
+    m_label_heading = make_shared<Label>(
+        heading,
+        get_x() + 20,
+        get_y() + 10,
+        get_width() - 34,
+        get_height() - 25,
+        false,
+        centered ? ALLEGRO_ALIGN_CENTER : ALLEGRO_ALIGN_LEFT,
+        g_game->font20,
+        text_color);
+    add_child_module(m_label_heading);
 
-    int top = y - height / 2;
-
-    if (centered) {
-        m_ok_button->SetX(x - m_ok_button->GetWidth() / 2);
-        m_ok_button->SetY((y + height / 2) - (m_ok_button->GetHeight() + 7));
-        labelText = new Label(text,
-                              (x - width / 2) + 20,
-                              top + 60,
-                              width - 34,
-                              height - 20,
-                              initTextColor,
-                              g_game->font20);
-        labelHeading = new Label(heading,
-                                 (x - width / 2) + 20,
-                                 top + 20,
-                                 width - 34,
-                                 height - 20,
-                                 initTextColor,
-                                 g_game->font20);
+    if (!scrollbar) {
+        m_label_text = make_shared<RichTextLabel>(
+            get_x() + 20,
+            get_y() + 40,
+            get_width() - 34,
+            get_height() - 55 - 74,
+            true,
+            centered ? ALLEGRO_ALIGN_CENTER : ALLEGRO_ALIGN_LEFT,
+            g_game->font20,
+            text_color,
+            al_map_rgba(0, 0, 0, 0));
     } else {
-        m_ok_button->SetX((x + width / 2) - (m_ok_button->GetWidth() / 2));
-        m_ok_button->SetY((y + height) - (m_ok_button->GetHeight() + 7));
-        labelText = new Label(text,
-                              x + 20,
-                              y + 30,
-                              width - 34,
-                              height - 20,
-                              initTextColor,
-                              g_game->font20);
-        labelHeading = new Label(heading,
-                                 x + 20,
-                                 y + 10,
-                                 width - 34,
-                                 height - 20,
-                                 initTextColor,
-                                 g_game->font20);
+        m_label_text = make_shared<ScrolledModule<RichTextLabel>>(
+            get_x() + 20,
+            get_y() + 40,
+            get_width() - 55,
+            get_height() - 55 - 74,
+            al_get_font_line_height(g_game->font20.get()),
+            al_map_rgb(128, 128, 128),
+            al_map_rgb(32, 32, 32),
+            al_map_rgb(48, 48, 128),
+            al_map_rgb(96, 96, 128),
+            al_map_rgba(0, 0, 0, 0),
+            true,
+            centered ? ALLEGRO_ALIGN_CENTER : ALLEGRO_ALIGN_LEFT,
+            g_game->font20,
+            text_color,
+            al_map_rgba(0, 0, 0, 0));
     }
-
-    labelText->Refresh();
-    labelHeading->Refresh();
-}
-
-MessageBoxWindow::~MessageBoxWindow() {
-    if (labelText)
-        delete labelText;
-    if (labelHeading)
-        delete labelHeading;
-}
-
-// accessors
-int
-MessageBoxWindow::GetX() const {
-    return x;
-}
-int
-MessageBoxWindow::GetY() const {
-    return y;
-}
-int
-MessageBoxWindow::GetWidth() const {
-    return width;
-}
-int
-MessageBoxWindow::GetHeight() const {
-    return height;
-}
-bool
-MessageBoxWindow::IsVisible() const {
-    return visible;
-}
-
-// mutators
-void
-MessageBoxWindow::SetText(const string &initText) {
-    text = initText;
-    labelText->SetText(text);
-    labelText->Refresh();
-}
-void
-MessageBoxWindow::SetX(int initX) {
-    x = initX;
-    labelText->SetX(x);
-    labelText->Refresh();
-}
-void
-MessageBoxWindow::SetY(int initY) {
-    y = initY;
-    labelText->SetY(y);
-    labelText->Refresh();
-}
-void
-MessageBoxWindow::SetTextColor(ALLEGRO_COLOR initTextColor) {
-    textColor = initTextColor;
-}
-void
-MessageBoxWindow::SetVisible(bool visibility) {
-    visible = visibility;
-}
-
-// other funcs
-bool
-MessageBoxWindow::OnMouseMove(int x, int y) {
-    bool result = false;
-
-    if (m_ok_button)
-        result = m_ok_button->OnMouseMove(x, y);
-
-    return result;
-}
-bool
-MessageBoxWindow::OnMouseReleased(int button, int x, int y) {
-    bool result = false;
-
-    if (m_ok_button)
-        result = m_ok_button->OnMouseReleased(button, x, y);
-
-    return result;
-}
-
-bool
-MessageBoxWindow::OnMouseClick(int /*button*/, int x, int y) {
-    bool result = false;
-
-    if (m_ok_button)
-        result = m_ok_button->PtInBtn(x, y);
-
-    return result;
-}
-
-bool
-MessageBoxWindow::OnMousePressed(int /*button*/, int x, int y) {
-    bool result = false;
-
-    if (m_ok_button)
-        result = m_ok_button->PtInBtn(x, y);
-
-    return result;
-}
-
-bool
-MessageBoxWindow::OnKeyPress(int keyCode) {
-    if (keyCode == ALLEGRO_KEY_ENTER) {
-        Event e(EVENT_CLOSE);
-        Game::modeMgr->BroadcastEvent(&e);
-        return true;
+    if (text != "") {
+        m_label_text->set_text(text);
     }
-    return false;
+    add_child_module(m_label_text);
+
+    m_ok_button = make_shared<TextButton>(
+        "Ok",
+        g_game->font24,
+        WHITE,
+        ALLEGRO_ALIGN_CENTER,
+        get_x(),
+        get_y(),
+        EVENT_MOUSEOVER,
+        EVENT_CLOSE,
+        images[I_GENERIC_EXIT_BTN_NORM],
+        images[I_GENERIC_EXIT_BTN_OVER],
+        images[I_GENERIC_EXIT_BTN_OVER]);
+    add_child_module(m_ok_button);
+    auto [w, h] = m_ok_button->get_size();
+    m_ok_button->move(
+        (get_x() + width / 2) - (w / 2), (get_y() + height) - (h + 15));
+    m_pause_state = g_game->getTimePaused();
+}
+
+MessageBoxWindow::~MessageBoxWindow() { g_game->SetTimePaused(m_pause_state); }
+
+bool
+MessageBoxWindow::on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event) {
+    if (event->keycode == ALLEGRO_KEY_ENTER) {
+        ALLEGRO_EVENT e = {.type = static_cast<unsigned int>(EVENT_CLOSE)};
+        g_game->broadcast_event(&e);
+        return false;
+    }
+    return true;
 }
 
 void
-MessageBoxWindow::Update() {}
-
-void
-MessageBoxWindow::Draw() {
-
-    ALLEGRO_BITMAP *backBuffer = g_game->GetBackBuffer();
-
-    int left;
-    int top;
-
-    if (centered) {
-        left = x - width / 2;
-        top = y - height / 2;
-    } else {
-        left = x;
-        top = y;
-    }
-
-    ALLEGRO_BITMAP *temp = al_create_bitmap(width, height);
+MessageBoxWindow::create_background() {
+    ALLEGRO_BITMAP *temp = al_create_bitmap(get_width(), get_height());
     al_set_target_bitmap(temp);
-    al_draw_scaled_bitmap(m_resources[I_TRANS_BG],
-                          0,
-                          0,
-                          al_get_bitmap_width(m_resources[I_TRANS_BG]),
-                          al_get_bitmap_height(m_resources[I_TRANS_BG]),
-                          0,
-                          0,
-                          width,
-                          height,
-                          0);
-    al_set_target_bitmap(backBuffer);
-    al_draw_bitmap(temp, left, top, 0);
-
-    if (m_ok_button)
-        m_ok_button->Run(backBuffer);
-
-    al_set_target_bitmap(backBuffer);
-    al_draw_scaled_bitmap(m_resources[I_MESSAGEBOX_BAR],
-                          0,
-                          0,
-                          al_get_bitmap_width(m_resources[I_MESSAGEBOX_BAR]),
-                          al_get_bitmap_height(m_resources[I_MESSAGEBOX_BAR]),
-                          left,
-                          top,
-                          al_get_bitmap_width(temp),
-                          al_get_bitmap_height(m_resources[I_MESSAGEBOX_BAR]),
-                          0);
+    al_clear_to_color(al_map_rgba(0, 0, 0, 0));
     al_draw_scaled_bitmap(
-        m_resources[I_MESSAGEBOX_BAR],
+        images[I_TRANS_BG].get(),
         0,
         0,
-        al_get_bitmap_width(m_resources[I_MESSAGEBOX_BAR]),
-        al_get_bitmap_height(m_resources[I_MESSAGEBOX_BAR]),
-        left,
-        top + al_get_bitmap_height(temp) -
-            al_get_bitmap_height(m_resources[I_MESSAGEBOX_BAR]),
-        al_get_bitmap_width(temp),
-        al_get_bitmap_height(m_resources[I_MESSAGEBOX_BAR]),
+        al_get_bitmap_width(images[I_TRANS_BG].get()),
+        al_get_bitmap_height(images[I_TRANS_BG].get()),
+        0,
+        0,
+        get_width(),
+        get_height(),
         0);
 
-    al_destroy_bitmap(temp);
+    al_draw_scaled_bitmap(
+        images[I_MESSAGEBOX_BAR].get(),
+        0,
+        0,
+        al_get_bitmap_width(images[I_MESSAGEBOX_BAR].get()),
+        al_get_bitmap_height(images[I_MESSAGEBOX_BAR].get()),
+        0,
+        0,
+        al_get_bitmap_width(temp),
+        al_get_bitmap_height(images[I_MESSAGEBOX_BAR].get()),
+        0);
 
-    if (labelHeading)
-        labelHeading->Draw(backBuffer);
-    if (labelText)
-        labelText->Draw(backBuffer);
+    al_draw_scaled_bitmap(
+        images[I_MESSAGEBOX_BAR].get(),
+        0,
+        0,
+        al_get_bitmap_width(images[I_MESSAGEBOX_BAR].get()),
+        al_get_bitmap_height(images[I_MESSAGEBOX_BAR].get()),
+        0,
+        al_get_bitmap_height(temp)
+            - al_get_bitmap_height(images[I_MESSAGEBOX_BAR].get()),
+        al_get_bitmap_width(temp),
+        al_get_bitmap_height(images[I_MESSAGEBOX_BAR].get()),
+        0);
+
+    m_background = make_shared<Bitmap>(
+        shared_ptr<ALLEGRO_BITMAP>(temp, al_destroy_bitmap), get_x(), get_y());
 }
+// vi: ft=cpp

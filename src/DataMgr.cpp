@@ -5,30 +5,233 @@
         Date: 01/22/2007
 */
 
-#include "DataMgr.h"
+#include <allegro5/allegro.h>
+#include <allegro5/allegro_font.h>
+
+#include <yaml-cpp/yaml.h>
+
 #include "Archive.h"
+#include "DataMgr.h"
 #include "Game.h"
 #include "GameState.h"
 #include "QuestMgr.h"
 #include "Util.h"
-#include "tinyxml/tinyxml.h"
-#include <allegro5/allegro.h>
-#include <allegro5/allegro_font.h>
-#include <cstdarg>
 
 ALLEGRO_DEBUG_CHANNEL("DataMgr")
 
 using namespace std;
 
-#define ITEMS_FILE "data/strfltitems.xml"
-#define GALAXY_FILE "data/galaxy.xml"
-#define HUMANNAMES_FILE "data/human.xml"
+#define ITEMS_FILE "data/strfltitems.yaml"
+#define GALAXY_FILE "data/galaxy.yaml"
+#define HUMANNAMES_FILE "data/human.yaml"
+
+namespace YAML {
+template <> struct convert<Item> {
+    static Node encode(const Item &item) {
+        Node node;
+        node["ID"] = item.id;
+        node["Type"] = Item::ItemTypeToString(item.itemType);
+        node["Name"] = item.name;
+        node["Value"] = item.value;
+        node["Size"] = item.size;
+        node["Speed"] = item.speed;
+        node["Danger"] = item.danger;
+        node["Damage"] = item.damage;
+        node["Age"] = Item::ItemAgeToString(item.itemAge);
+        node["ShipRepairMetal"] = item.shipRepairMetal;
+        node["BlackMarket"] = item.blackMarketItem;
+        node["Portrait"] = item.portrait;
+        node["planetid"] = item.planetid;
+        node["y"] = item.y;
+        node["x"] = item.x;
+        node["Description"] = item.description;
+
+        return node;
+    }
+    static bool decode(const Node &node, Item &item) {
+        if (!node.IsMap()) {
+            return false;
+        }
+        item.name = node["Name"].as<string>();
+        item.id = node["ID"].as<int>();
+        item.itemType = Item::ItemTypeFromString(node["Type"].as<string>());
+        if (node["Value"]) {
+            item.value = node["Value"].as<double>();
+        }
+        if (node["Size"]) {
+            item.size = node["Size"].as<double>();
+        }
+        if (node["Speed"]) {
+            item.speed = node["Speed"].as<double>();
+        }
+        if (node["Danger"]) {
+            item.danger = node["Danger"].as<double>();
+        }
+        if (node["Damage"]) {
+            item.damage = node["Damage"].as<double>();
+        }
+        if (node["Age"]) {
+            item.itemAge = Item::ItemAgeFromString(node["Age"].as<string>());
+        }
+        if (node["ShipRepairMetal"]) {
+            item.shipRepairMetal = node["ShipRepairMetal"].as<bool>();
+        }
+        if (node["BlackMarket"]) {
+            item.blackMarketItem = node["BlackMarket"].as<bool>();
+        }
+        if (node["Portrait"]) {
+            item.portrait = node["Portrait"].as<string>();
+        }
+        if (node["planetid"]) {
+            item.planetid = node["planetid"].as<int>();
+        }
+        if (node["x"]) {
+            item.x = node["x"].as<int>();
+        }
+        if (node["y"]) {
+            item.y = node["y"].as<int>();
+        }
+        if (node["Description"]) {
+            item.description = node["Description"].as<string>();
+        }
+
+        return true;
+    }
+};
+
+template <> struct convert<Star> {
+    static Node encode(const Star &star) {
+        Node node;
+        node["id"] = star.id;
+        node["name"] = star.name;
+        node["x"] = star.x;
+        node["y"] = star.y;
+        node["spectralclass"] = Star::SpectralClassToString(star.spectralClass);
+        node["color"] = star.color;
+        node["temperature"] = star.temperature;
+        node["mass"] = star.mass;
+        node["radius"] = star.radius;
+        node["luminosity"] = star.luminosity;
+
+        return node;
+    }
+    static bool decode(const Node &node, Star &star) {
+        if (!node.IsMap()) {
+            return false;
+        }
+        star.id = node["id"].as<ID>();
+        star.name = node["name"].as<string>();
+        star.x = node["x"].as<int>();
+        star.y = node["y"].as<int>();
+        star.spectralClass =
+            Star::SpectralClassFromString(node["spectralclass"].as<string>());
+        star.color = node["color"].as<string>();
+        star.temperature = node["temperature"].as<unsigned long>();
+        star.mass = node["mass"].as<double>();
+        star.radius = node["radius"].as<double>();
+        star.luminosity = node["luminosity"].as<double>();
+
+        return true;
+    }
+};
+
+template <> struct convert<Planet> {
+    static Node encode(const Planet &planet) {
+        Node node;
+        node["id"] = planet.id;
+        node["hoststar"] = planet.hostStarID;
+        node["name"] = planet.name;
+        node["size"] = Planet::PlanetSizeToString(planet.size);
+        node["type"] = Planet::PlanetTypeToString(planet.type);
+        node["color"] = planet.color;
+        node["temperature"] =
+            Planet::PlanetTemperatureToString(planet.temperature);
+        node["gravity"] = Planet::PlanetGravityToString(planet.gravity);
+        node["atmosphere"] =
+            Planet::PlanetAtmosphereToString(planet.atmosphere);
+        node["weather"] = Planet::PlanetWeatherToString(planet.weather);
+
+        return node;
+    }
+    static bool decode(const Node &node, Planet &planet) {
+        if (!node.IsMap()) {
+            return false;
+        }
+        planet.id = node["id"].as<int>();
+        planet.hostStarID = node["hoststar"].as<int>();
+        planet.name = node["name"].as<string>();
+        planet.size = Planet::PlanetSizeFromString(node["size"].as<string>());
+        planet.type = Planet::PlanetTypeFromString(node["type"].as<string>());
+        planet.color = node["color"].as<string>();
+        planet.temperature = Planet::PlanetTemperatureFromString(
+            node["temperature"].as<string>());
+        planet.gravity =
+            Planet::PlanetGravityFromString(node["gravity"].as<string>());
+        planet.atmosphere =
+            Planet::PlanetAtmosphereFromString(node["atmosphere"].as<string>());
+        planet.weather =
+            Planet::PlanetWeatherFromString(node["weather"].as<string>());
+        if (node["landable"]) {
+            planet.landable = node["landable"].as<bool>();
+        } else {
+            planet.landable = true;
+        }
+
+        return true;
+    }
+};
+
+template <> struct convert<Point2D> {
+    static Node encode(const Point2D &point) {
+        Node node;
+        node[0] = point.x;
+        node[1] = point.y;
+
+        return node;
+    }
+    static bool decode(const Node &node, Point2D &point) {
+        if (!node.IsSequence()) {
+            return false;
+        }
+        point.x = node[0].as<int>();
+        point.y = node[1].as<int>();
+
+        return true;
+    }
+};
+
+template <> struct convert<Flux> {
+    static Node encode(const Flux &flux) {
+        auto ep1 = flux.get_endpoint1();
+        auto ep2 = flux.get_endpoint2();
+        Node node;
+        node["id"] = flux.get_id();
+        node["endpoints"][0] = ep1;
+        node["endpoints"][1] = ep2;
+
+        return node;
+    }
+    static bool decode(const Node &node, Flux &flux) {
+        int id;
+        Point2D ep1;
+        Point2D ep2;
+        if (!node.IsMap()) {
+            return false;
+        }
+        id = node["id"].as<int>();
+        ep1 = node["endpoints"][0].as<Point2D>();
+        ep2 = node["endpoints"][1].as<Point2D>();
+
+        flux = Flux(id, ep1, ep2);
+
+        return true;
+    }
+};
+} // namespace YAML
 
 Item::Item() { Reset(); }
 
 Item::Item(const Item &rhs) { *this = rhs; }
-
-Item::~Item() {}
 
 Item &
 Item::operator=(const Item &rhs) {
@@ -137,13 +340,13 @@ Star::~Star() {
 }
 
 int
-Star::GetNumPlanets() {
+Star::GetNumPlanets() const {
     return (int)planets.size();
 }
 
-Planet *
-Star::GetPlanet(int idx) {
-    Planet *result = NULL;
+const Planet *
+Star::GetPlanet(int idx) const {
+    const Planet *result = nullptr;
 
     if ((idx >= 0) && (idx < (int)planets.size())) {
         result = planets[idx];
@@ -152,16 +355,14 @@ Star::GetPlanet(int idx) {
     return result;
 }
 
-Planet *
-Star::GetPlanetByID(ID id) {
-    Planet *result = NULL;
-
-    map<ID, Planet *>::iterator i = planetsByID.find(id);
+const Planet *
+Star::GetPlanetByID(ID id) const {
+    auto i = planetsByID.find(id);
     if (i != planetsByID.end()) {
-        result = i->second;
+        return i->second;
     }
 
-    return result;
+    return nullptr;
 }
 
 SpectralClass
@@ -191,27 +392,6 @@ Planet::Planet()
     : id(-1), hostStarID(-1), name(""), size(PS_INVALID), type(PT_INVALID),
       color(""), temperature(PTMP_INVALID), gravity(PG_INVALID),
       atmosphere(PA_INVALID), weather(PW_INVALID) {}
-
-Planet::Planet(const Planet &rhs) { *this = rhs; }
-
-Planet::~Planet() {}
-
-Planet &
-Planet::operator=(const Planet &rhs) {
-    id = rhs.id;
-    hostStarID = rhs.hostStarID;
-    name = rhs.name;
-    size = rhs.size;
-    type = rhs.type;
-    color = rhs.color;
-    temperature = rhs.temperature;
-    gravity = rhs.gravity;
-    atmosphere = rhs.atmosphere;
-    weather = rhs.weather;
-    landable = rhs.landable;
-
-    return *this;
-}
 
 PlanetSize
 Planet::PlanetSizeFromString(const string &size) {
@@ -518,14 +698,11 @@ Planet::PlanetWeatherFromString(const string &weather) {
 DataMgr::DataMgr() : m_initialized(false) {}
 
 DataMgr::~DataMgr() {
-    for (vector<Star *>::iterator i = stars.begin(); i != stars.end(); ++i) {
-        delete (*i);
+    for (auto &i : stars) {
+        delete i;
     }
 
-    for (auto &i : humanNames) {
-        delete (i->second);
-    }
-    for (auto &i : g_game->dataMgr->flux) {
+    for (auto &i : flux) {
         delete i;
     }
     flux.clear();
@@ -610,22 +787,6 @@ DataMgr::GetStarByLocation(CoordValue x, CoordValue y) {
     return result;
 }
 
-int
-DataMgr::GetNumFlux() {
-    return (int)flux.size();
-}
-
-const Flux *
-DataMgr::GetFlux(int idx) {
-    Flux *result = nullptr;
-
-    if ((idx >= 0) && (idx < (int)flux.size())) {
-        result = flux[idx];
-    }
-
-    return result;
-}
-
 const Flux *
 DataMgr::GetFluxByLocation(CoordValue x, CoordValue y) {
     auto i = fluxByLocation.find(make_pair(x, y));
@@ -647,17 +808,17 @@ DataMgr::GetPlanetByID(ID id) {
     return result;
 }
 
-string
+pair<string, string>
 DataMgr::GetRandMixedName() {
     if (humanNames.size() == 0) {
         g_game->message("ERROR: The human names data has not been loaded.");
-        return "<Error>";
+        return {"<Error>", "<Error>"};
     }
 
     int randomID = Util::Random(0, (int)humanNames.size() - 1);
     int randomID2 = Util::Random(0, (int)humanNames.size() - 1);
 
-    return *humanNames[randomID]->first + " " + *humanNames[randomID2]->second;
+    return {humanNames[randomID].first, humanNames[randomID2].second};
 }
 
 bool
@@ -681,121 +842,20 @@ DataMgr::Initialize() {
 
 bool
 DataMgr::LoadItems() {
-    string xml_file = Util::resource_path(ITEMS_FILE);
+    string items_file = Util::resource_path(ITEMS_FILE);
 
-    // open the strfltitems.xml file
-    TiXmlDocument doc(xml_file);
+    YAML::Node node = YAML::LoadFile(items_file);
+    auto yaml_items = node["items"];
+    ALLEGRO_ASSERT(yaml_items.IsSequence());
 
-    if (!doc.LoadFile())
-        return false;
-
-    // load root of xml hierarchy
-    TiXmlElement *itemSet = doc.FirstChildElement("items");
-    if (itemSet == NULL)
-        return false;
-
-    // load all items
-    TiXmlElement *item = itemSet->FirstChildElement("item");
-    while (item != NULL) {
-        Item newItem;
-        TiXmlHandle itemHandle(item);
-
-        TiXmlText *text;
-
-        text = itemHandle.FirstChild("ID").FirstChild().Text();
-        if (text != NULL) {
-            newItem.id = atoi(text->Value());
+    for (auto i : yaml_items) {
+        ALLEGRO_ASSERT(i.IsMap());
+        auto item = new Item(i.as<Item>());
+        auto existing = itemsByID.find(item->id);
+        if (existing == itemsByID.end()) {
+            items.push_back(item);
+            itemsByID[item->id] = item;
         }
-
-        text = itemHandle.FirstChild("Type").FirstChild().Text();
-        if (text != NULL) {
-            newItem.itemType = Item::ItemTypeFromString(text->Value());
-        }
-
-        text = itemHandle.FirstChild("Name").FirstChild().Text();
-        if (text != NULL) {
-            newItem.name = text->Value();
-        }
-
-        text = itemHandle.FirstChild("Value").FirstChild().Text();
-        if (text != NULL) {
-            newItem.value = atof(text->Value());
-        }
-
-        text = itemHandle.FirstChild("Size").FirstChild().Text();
-        if (text != NULL) {
-            newItem.size = atof(text->Value());
-        }
-
-        text = itemHandle.FirstChild("Speed").FirstChild().Text();
-        if (text != NULL) {
-            newItem.speed = atof(text->Value());
-        }
-
-        text = itemHandle.FirstChild("Danger").FirstChild().Text();
-        if (text != NULL) {
-            newItem.danger = atof(text->Value());
-        }
-
-        text = itemHandle.FirstChild("Damage").FirstChild().Text();
-        if (text != NULL) {
-            newItem.damage = atof(text->Value());
-        }
-
-        text = itemHandle.FirstChild("Age").FirstChild().Text();
-        if (text != NULL) {
-            newItem.itemAge = Item::ItemAgeFromString(text->Value());
-        }
-
-        text = itemHandle.FirstChild("ShipRepairMetal").FirstChild().Text();
-        if (text != NULL) {
-            string v(text->Value());
-            newItem.shipRepairMetal = v == "true";
-        }
-
-        text = itemHandle.FirstChild("BlackMarket").FirstChild().Text();
-        if (text != NULL) {
-            string v(text->Value());
-            newItem.blackMarketItem = v == "true";
-        }
-
-        text = itemHandle.FirstChild("Portrait").FirstChild().Text();
-        if (text != NULL) {
-            newItem.portrait = text->Value();
-        }
-
-        // new property for Artifacts
-        text = itemHandle.FirstChild("planetid").FirstChild().Text();
-        if (text != NULL) {
-            newItem.planetid = atof(text->Value());
-        }
-        // new property for Artifacts
-        text = itemHandle.FirstChild("x").FirstChild().Text();
-        if (text != NULL) {
-            newItem.x = atof(text->Value());
-        }
-        // new property for Artifacts
-        text = itemHandle.FirstChild("y").FirstChild().Text();
-        if (text != NULL) {
-            newItem.y = atof(text->Value());
-        }
-
-        // new property for Ruins (and now for lifeForms too).
-        text = itemHandle.FirstChild("Description").FirstChild().Text();
-        if (text != NULL) {
-            newItem.description = text->Value();
-        }
-
-        // make sure an item with this ID doesn't already exist
-        Item *existingItem = GetItemByID(newItem.id);
-        if (existingItem == NULL) {
-            // add the item
-            Item *toAdd = new Item(newItem);
-            items.push_back(toAdd);
-            itemsByID[newItem.id] = toAdd;
-        }
-
-        item = item->NextSiblingElement("item");
     }
 
     return true;
@@ -803,260 +863,43 @@ DataMgr::LoadItems() {
 
 bool
 DataMgr::LoadGalaxy() {
-    string xml_file = Util::resource_path(GALAXY_FILE);
-    TiXmlDocument doc(xml_file);
+    string galaxy_file = Util::resource_path(GALAXY_FILE);
+    YAML::Node node = YAML::LoadFile(galaxy_file);
+    auto galaxy = node["galaxy"];
+    ALLEGRO_ASSERT(galaxy.IsSequence());
 
-    if (!doc.LoadFile())
-        return false;
-
-    TiXmlElement *galaxy = doc.FirstChildElement("galaxy");
-    if (galaxy == NULL)
-        return false;
-
-    // load all stars first, since the planets reference them
-    TiXmlElement *star = galaxy->FirstChildElement("star");
-    while (star != NULL) {
-        Star newStar;
-        TiXmlHandle starHandle(star);
-
-        TiXmlText *text;
-
-        text = starHandle.FirstChild("id").FirstChild().Text();
-        if (text != NULL) {
-            newStar.id = atoi(text->Value());
-        }
-
-        text = starHandle.FirstChild("name").FirstChild().Text();
-        if (text == NULL)
-            newStar.name = "";
-        else
-            newStar.name = text->Value();
-
-        text = starHandle.FirstChild("x").FirstChild().Text();
-        if (text != NULL) {
-            newStar.x = atoi(text->Value());
-        }
-
-        text = starHandle.FirstChild("y").FirstChild().Text();
-        if (text != NULL) {
-            newStar.y = atoi(text->Value());
-        }
-
-        text = starHandle.FirstChild("spectralclass").FirstChild().Text();
-        if (text != NULL) {
-            newStar.spectralClass =
-                Star::SpectralClassFromString(text->Value());
-        }
-
-        text = starHandle.FirstChild("color").FirstChild().Text();
-        if (text != NULL) {
-            newStar.color = text->Value();
-        }
-
-        text = starHandle.FirstChild("temperature").FirstChild().Text();
-        if (text != NULL) {
-            newStar.temperature = atol(text->Value());
-        }
-
-        text = starHandle.FirstChild("mass").FirstChild().Text();
-        if (text != NULL) {
-            newStar.mass = atol(text->Value());
-        }
-
-        text = starHandle.FirstChild("radius").FirstChild().Text();
-        if (text != NULL) {
-            newStar.radius = atol(text->Value());
-        }
-
-        text = starHandle.FirstChild("luminosity").FirstChild().Text();
-        if (text != NULL) {
-            newStar.luminosity = atol(text->Value());
-        }
-
-        // make sure a star with this ID doesn't already exist
-        Star *existingStar = GetStarByID(newStar.id);
-        if (existingStar == NULL) {
-            // add the star
-            Star *toAdd = new Star(newStar);
-            stars.push_back(toAdd);
-            starsByID[newStar.id] = toAdd;
-            starsByLocation[make_pair(newStar.x, newStar.y)] = toAdd;
-        }
-
-        star = star->NextSiblingElement("star");
-    }
-
-    // now load all planets
-    TiXmlElement *planet = galaxy->FirstChildElement("planet");
-    while (planet != NULL) {
-        Planet newPlanet;
-        TiXmlHandle planetHandle(planet);
-
-        TiXmlText *text;
-
-        text = planetHandle.FirstChild("id").FirstChild().Text();
-        if (text != NULL) {
-            newPlanet.id = atoi(text->Value());
-        }
-
-        text = planetHandle.FirstChild("hoststar").FirstChild().Text();
-        if (text != NULL) {
-            newPlanet.hostStarID = atoi(text->Value());
-        }
-
-        text = planetHandle.FirstChild("name").FirstChild().Text();
-        if (text != NULL) {
-            newPlanet.name = text->Value();
-        }
-
-        text = planetHandle.FirstChild("size").FirstChild().Text();
-        if (text != NULL) {
-            newPlanet.size = Planet::PlanetSizeFromString(text->Value());
-        }
-
-        text = planetHandle.FirstChild("type").FirstChild().Text();
-        if (text != NULL) {
-            newPlanet.type = Planet::PlanetTypeFromString(text->Value());
-        }
-
-        text = planetHandle.FirstChild("color").FirstChild().Text();
-        if (text != NULL) {
-            newPlanet.color = text->Value();
-        }
-
-        text = planetHandle.FirstChild("temperature").FirstChild().Text();
-        if (text != NULL) {
-            newPlanet.temperature =
-                Planet::PlanetTemperatureFromString(text->Value());
-        }
-
-        text = planetHandle.FirstChild("gravity").FirstChild().Text();
-        if (text != NULL) {
-            newPlanet.gravity = Planet::PlanetGravityFromString(text->Value());
-        }
-
-        text = planetHandle.FirstChild("atmosphere").FirstChild().Text();
-        if (text != NULL) {
-            newPlanet.atmosphere =
-                Planet::PlanetAtmosphereFromString(text->Value());
-        }
-
-        text = planetHandle.FirstChild("weather").FirstChild().Text();
-        if (text != NULL) {
-            newPlanet.weather = Planet::PlanetWeatherFromString(text->Value());
-        }
-
-        // added to prevent landing on homeworlds
-        newPlanet.landable = true;
-        text = planetHandle.FirstChild("landable").FirstChild().Text();
-        if (text != NULL) {
-            string str = Util::ToString(text->Value());
-            // all planets are landable unless otherwise specified in galaxy
-            // data
-            if (str == "false")
-                newPlanet.landable = false;
-        }
-
-        // sanity checks
-        if (newPlanet.size == PS_INVALID || newPlanet.type == PT_INVALID ||
-            newPlanet.temperature == PTMP_INVALID ||
-            newPlanet.gravity == PG_INVALID ||
-            newPlanet.atmosphere == PA_INVALID) {
-            std::string msg =
-                "loadGalaxy: error loading planet #" + to_string(newPlanet.id);
-            msg += " , name -- " + newPlanet.name + " --";
-            msg += " , size " + Planet::PlanetSizeToString(newPlanet.size);
-            msg += " , type " + Planet::PlanetTypeToString(newPlanet.type);
-            msg += " , temperature " +
-                   Planet::PlanetTemperatureToString(newPlanet.temperature);
-            msg += " , gravity " +
-                   Planet::PlanetGravityToString(newPlanet.gravity);
-            msg += " , atmosphere " +
-                   Planet::PlanetAtmosphereToString(newPlanet.atmosphere);
-            msg += "\n";
-            ALLEGRO_DEBUG("%s\n", msg.c_str());
-            ALLEGRO_ASSERT(0);
-        }
-
-        // make sure the host star does exist
-        Star *hostStar = GetStarByID(newPlanet.hostStarID);
-        if (hostStar != NULL) {
-            // make sure a planet with this ID doesn't already exist in the host
-            // star
-            Planet *existingPlanet = hostStar->GetPlanetByID(newPlanet.id);
-            if (existingPlanet == NULL) {
-                // add the planet to the host star
-                Planet *toAdd = new Planet(newPlanet);
-                hostStar->planets.push_back(toAdd);
-                hostStar->planetsByID[newPlanet.id] = toAdd;
+    for (auto i : galaxy) {
+        ALLEGRO_ASSERT(i.IsMap());
+        if (i["star"]) {
+            Star *star = new Star(i["star"].as<Star>());
+            auto existing = starsByID.find(star->id);
+            if (existing == starsByID.end()) {
+                stars.push_back(star);
+                starsByID[star->id] = star;
+                starsByLocation[{star->x, star->y}] = star;
             }
+        } else if (i["planet"]) {
+            Planet *planet = new Planet(i["planet"].as<Planet>());
+            auto existing = allPlanetsByID.find(planet->id);
+            if (existing == allPlanetsByID.end()) {
+                allPlanets.push_back(planet);
+                allPlanetsByID[planet->id] = planet;
+            }
+        } else if (i["flux"]) {
+            Flux *f = new Flux(i["flux"].as<Flux>());
+            flux.push_back(f);
+            auto ep1 = f->get_endpoint1();
+            auto ep2 = f->get_endpoint2();
+            fluxByLocation[{ep1.x, ep1.y}] = f;
+            fluxByLocation[{ep2.x, ep2.y}] = f;
         }
-
-        // add to the large list of all planets (not bound by host star)
-        Planet *toAdd = new Planet(newPlanet);
-        allPlanets.push_back(toAdd);
-        allPlanetsByID[newPlanet.id] = toAdd;
-
-        planet = planet->NextSiblingElement("planet");
     }
 
-    // now load all flux
-    TiXmlElement *flux = galaxy->FirstChildElement("flux");
-    while (flux != NULL) {
-        ID flux_id = -1;
-        Point2D endpoint_1 = {-1, -1};
-        Point2D endpoint_2 = {-1, -1};
-        TiXmlHandle fluxHandle(flux);
-
-        TiXmlText *text;
-
-        text = fluxHandle.FirstChild("id").FirstChild().Text();
-        if (text != NULL) {
-            flux_id = atoi(text->Value());
-        }
-
-        TiXmlHandle endpoint = fluxHandle.FirstChildElement("endpoint");
-        text = endpoint.FirstChild("x").FirstChild().Text();
-        if (text != nullptr) {
-            endpoint_1.x = atoi(text->Value());
-        }
-        text = endpoint.FirstChild("y").FirstChild().Text();
-        if (text != nullptr) {
-            endpoint_1.y = atoi(text->Value());
-        }
-        endpoint = fluxHandle.ChildElement("endpoint", 1);
-        text = endpoint.FirstChild("x").FirstChild().Text();
-        if (text != nullptr) {
-            endpoint_2.x = atoi(text->Value());
-        }
-        text = endpoint.FirstChild("y").FirstChild().Text();
-        if (text != nullptr) {
-            endpoint_2.y = atoi(text->Value());
-        }
-
-        // sanity checks
-        if ((flux_id < 0 || flux_id >= MAX_FLUX) ||
-            (endpoint_1.x < 0 || endpoint_1.x >= 250) ||
-            (endpoint_1.y < 0 || endpoint_1.y >= 220) ||
-            (endpoint_2.x < 0 || endpoint_2.x >= 250) ||
-            (endpoint_2.y < 0 || endpoint_2.y >= 220)) {
-            std::string msg =
-                "loadGalaxy: error loading flux #" + to_string(flux_id);
-            msg += " , endpoint_1 (" + to_string(endpoint_1.x) + ", " +
-                   to_string(endpoint_1.y) + ")";
-            msg += " , endpoint_2 (" + to_string(endpoint_2.x) + ", " +
-                   to_string(endpoint_2.y) + ")\n";
-            ALLEGRO_ERROR("%s\n", msg.c_str());
-            ALLEGRO_ASSERT(0);
-        }
-
-        // add to the DataMgr
-        Flux *toAdd = new Flux(flux_id, endpoint_1, endpoint_2);
-        this->flux.push_back(toAdd);
-        this->fluxByLocation[make_pair(endpoint_1.x, endpoint_1.y)] = toAdd;
-        this->fluxByLocation[make_pair(endpoint_2.x, endpoint_2.y)] = toAdd;
-
-        flux = flux->NextSiblingElement("flux");
+    for (auto i = allPlanets.begin(), e = allPlanets.end(); i != e; ++i) {
+        Planet *p = *i;
+        Star *star = starsByID[p->hostStarID];
+        star->planets.push_back(p);
+        star->planetsByID[p->id] = p;
     }
 
     return true;
@@ -1064,49 +907,23 @@ DataMgr::LoadGalaxy() {
 
 bool
 DataMgr::LoadHumanNames() {
-    string xml_file = Util::resource_path(HUMANNAMES_FILE);
+    string name_file = Util::resource_path(HUMANNAMES_FILE);
+    YAML::Node node = YAML::LoadFile(name_file);
+    auto names = node["Names"];
 
-    TiXmlDocument doc(xml_file);
-
-    if (!doc.LoadFile())
+    if (!names.IsSequence()) {
         return false;
+    }
 
-    TiXmlElement *people = doc.FirstChildElement("Names");
-    if (people == NULL)
-        return false;
-
-    // load all stars first, since the planets reference them
-    TiXmlElement *name = people->FirstChildElement("Name");
-    while (name != NULL) {
-        string firstName;
-        string lastName;
-        TiXmlHandle nameHandle(name);
-
-        TiXmlText *text;
-
-        // Check for first name
-        text = nameHandle.FirstChild("First").FirstChild().Text();
-        if (text == NULL)
-            firstName = "";
-        else
-            firstName = text->Value();
-
-        // Check for last name
-        text = nameHandle.FirstChild("Last").FirstChild().Text();
-        if (text == NULL)
-            lastName = "";
-        else
-            lastName = text->Value();
-
-        // Add the name to the list
-        std::pair<std::string *, std::string *> *newName =
-            new std::pair<std::string *, std::string *>;
-        newName->first = new string(firstName);
-        newName->second = new string(lastName);
-        humanNames.push_back(newName);
-
-        // Grab next name
-        name = name->NextSiblingElement("Name");
+    for (auto i : names) {
+        ALLEGRO_ASSERT(i.IsMap());
+        if (i["Name"]) {
+            auto first = i["Name"]["First"].as<string>();
+            auto last = i["Name"]["Last"].as<string>();
+            humanNames.push_back({first, last});
+        } else {
+            return false;
+        }
     }
 
     return true;
@@ -1136,56 +953,66 @@ Items::Reset() {
     stacks.clear();
 }
 
-bool
-Items::Serialize(Archive &ar) {
-    string ClassName = "Items";
-    int Schema = 0;
+InputArchive &
+operator>>(InputArchive &ar, Items &items) {
+    string class_name = string(Items::class_name);
+    int schema = 0;
 
-    if (ar.IsStoring()) {
-        ar << ClassName;
-        ar << Schema;
+    items.Reset();
 
-        int numStacks = (int)stacks.size();
-        ar << numStacks;
-        for (vector<pair<ID, int>>::iterator i = stacks.begin();
-             i != stacks.end();
-             ++i) {
-            int id = i->first;
-            int numItems = i->second;
-
-            ar << id;
-            ar << numItems;
-        }
-    } else {
-        Reset();
-
-        string LoadClassName;
-        ar >> LoadClassName;
-        if (LoadClassName != ClassName)
-            return false;
-
-        int LoadSchema;
-        ar >> LoadSchema;
-        if (LoadSchema > Schema)
-            return false;
-
-        int numStacks;
-        ar >> numStacks;
-        for (int i = 0; i < numStacks; i++) {
-            int id;
-            ar >> id;
-            int numItems;
-            ar >> numItems;
-            stacks.push_back(make_pair(id, numItems));
-        }
+    string load_class_name;
+    ar >> load_class_name;
+    if (load_class_name != class_name) {
+        std::error_code ec(al_get_errno(), std::system_category());
+        throw std::system_error(
+            ec,
+            "Invalid save file: expected " + std::string(class_name) + ", got "
+                + load_class_name);
     }
 
-    return true;
+    int load_schema;
+    ar >> load_schema;
+    if (load_schema > schema) {
+        std::error_code ec(al_get_errno(), std::system_category());
+        throw std::system_error(
+            ec,
+            "Invalid save file: expected " + class_name + ", got "
+                + load_class_name);
+    }
+
+    int num_stacks;
+    ar >> num_stacks;
+    for (int i = 0; i < num_stacks; i++) {
+        int id;
+        ar >> id;
+        int numItems;
+        ar >> numItems;
+        items.stacks.push_back(make_pair(id, numItems));
+    }
+    return ar;
+}
+
+OutputArchive &
+operator<<(OutputArchive &ar, const Items &items) {
+    string class_name = string(Items::class_name);
+    int schema = 0;
+
+    ar << class_name;
+    ar << schema;
+
+    int num_stacks = static_cast<int>(items.stacks.size());
+    ar << num_stacks;
+    for (auto &i : items.stacks) {
+        ar << i.first;
+        ar << i.second;
+    }
+
+    return ar;
 }
 
 int
 Items::GetNumStacks() {
-    return (int)stacks.size();
+    return static_cast<int>(stacks.size());
 }
 
 void
@@ -1301,4 +1128,14 @@ Items::Get_Item_By_ID(int id, Item &item, int &num_in_stack) {
         return;
     }
     item = *pItem;
+}
+
+int
+Items::get_count(ID id) const {
+    for (auto &i : stacks) {
+        if (i.first == id) {
+            return i.second;
+        }
+    }
+    return 0;
 }

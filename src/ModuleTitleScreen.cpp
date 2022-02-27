@@ -7,37 +7,28 @@
     menu: 311,461
 */
 
-#include "ModuleTitleScreen.h"
+#include <allegro5/allegro.h>
+
 #include "Button.h"
 #include "DataMgr.h"
 #include "Events.h"
 #include "Game.h"
 #include "GameState.h"
 #include "ModeMgr.h"
+#include "ModuleTitleScreen.h"
 #include "Util.h"
 #include "titlescreen_resources.h"
-#include <allegro5/allegro.h>
 
 using namespace std;
-using namespace titlescreen_resources;
+using namespace titlescreen;
 
 ALLEGRO_DEBUG_CHANNEL("ModuleTitleScreen")
 
-ModuleTitleScreen::ModuleTitleScreen() : m_resources(TITLESCREEN_IMAGES) {
-    m_rotationAngle = 0;
-    btnTitle = NULL;
-    btnNewGame = NULL;
-    btnLoadGame = NULL;
-    btnSettings = NULL;
-    btnCredits = NULL;
-    btnQuit = NULL;
-    title_mode = 690;
-}
-
-ModuleTitleScreen::~ModuleTitleScreen() {}
+ModuleTitleScreen::ModuleTitleScreen()
+    : Module(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT) {}
 
 bool
-ModuleTitleScreen::Init() {
+ModuleTitleScreen::on_init() {
     const int mainmenu_x = 392;
     const int mainmenu_y = 450;
 
@@ -45,180 +36,131 @@ ModuleTitleScreen::Init() {
     // multiple paths to this module in the game:
     g_game->SetTimePaused(true);
 
-    // create title button
-    btnTitle = new Button(m_resources[I_TITLE_NORMAL],
-                          m_resources[I_TITLE_OVER],
-                          NULL,
-                          0,
-                          100,
-                          0,
-                          0);
+    auto background = make_shared<Bitmap>(images[I_TITLE_BACKGROUND]);
+    add_child_module(background);
+
+    auto title = make_shared<Bitmap>(images[I_TITLE_NORMAL], 0, 100);
+    add_child_module(title);
 
     // create new game button
-    btnNewGame = new Button(m_resources[I_TITLE_NEWGAME_NORMAL],
-                            m_resources[I_TITLE_NEWGAME_OVER],
-                            NULL,
-                            mainmenu_x,
-                            mainmenu_y,
-                            0,
-                            700);
+    auto new_game = make_shared<Button>(
+        mainmenu_x,
+        mainmenu_y,
+        -1,
+        -1,
+        EVENT_NONE,
+        EVENT_NEW_GAME,
+        images[I_TITLE_NEWGAME_NORMAL],
+        images[I_TITLE_NEWGAME_OVER]);
+    add_child_module(new_game);
 
     // create load button
-    btnLoadGame = new Button(m_resources[I_TITLE_LOADGAME_NORMAL],
-                             m_resources[I_TITLE_LOADGAME_OVER],
-                             NULL,
-                             mainmenu_x,
-                             mainmenu_y + 60,
-                             0,
-                             701);
+    auto load_game = make_shared<Button>(
+        mainmenu_x,
+        mainmenu_y + 60,
+        -1,
+        -1,
+        EVENT_NONE,
+        EVENT_LOAD_GAME,
+        images[I_TITLE_LOADGAME_NORMAL],
+        images[I_TITLE_LOADGAME_OVER]);
+    add_child_module(load_game);
 
     // create settings button
-    btnSettings = new Button(m_resources[I_TITLE_SETTINGS_NORMAL],
-                             m_resources[I_TITLE_SETTINGS_OVER],
-                             NULL,
-                             mainmenu_x,
-                             mainmenu_y + 120,
-                             0,
-                             702);
+    auto settings = make_shared<Button>(
+        mainmenu_x,
+        mainmenu_y + 120,
+        -1,
+        -1,
+        EVENT_NONE,
+        EVENT_SETTINGS,
+        images[I_TITLE_SETTINGS_NORMAL],
+        images[I_TITLE_SETTINGS_OVER]);
+    add_child_module(settings);
 
     // create credits button
-    btnCredits = new Button(m_resources[I_TITLE_CREDITS_NORMAL],
-                            m_resources[I_TITLE_CREDITS_OVER],
-                            NULL,
-                            mainmenu_x,
-                            mainmenu_y + 180,
-                            0,
-                            703);
+    auto credits = make_shared<Button>(
+        mainmenu_x,
+        mainmenu_y + 180,
+        -1,
+        -1,
+        EVENT_NONE,
+        EVENT_CREDITS,
+        images[I_TITLE_CREDITS_NORMAL],
+        images[I_TITLE_CREDITS_OVER]);
+    add_child_module(credits);
 
     // create quit button
-    btnQuit = new Button(m_resources[I_TITLE_QUIT_NORMAL],
-                         m_resources[I_TITLE_QUIT_OVER],
-                         NULL,
-                         mainmenu_x,
-                         mainmenu_y + 240,
-                         0,
-                         704);
+    auto quit = make_shared<Button>(
+        mainmenu_x,
+        mainmenu_y + 240,
+        -1,
+        -1,
+        EVENT_NONE,
+        EVENT_QUIT_GAME,
+        images[I_TITLE_QUIT_NORMAL],
+        images[I_TITLE_QUIT_OVER]);
+    add_child_module(quit);
 
     return true;
 }
 
-void
-ModuleTitleScreen::Update() {}
+bool
+ModuleTitleScreen::on_close() {
+    clear_child_modules();
 
-void
-ModuleTitleScreen::Draw() {
-    al_set_target_bitmap(g_game->GetBackBuffer());
-    al_draw_scaled_bitmap(m_resources[I_TITLE_BACKGROUND],
-                          0,
-                          0,
-                          al_get_bitmap_width(m_resources[I_TITLE_BACKGROUND]),
-                          al_get_bitmap_height(m_resources[I_TITLE_BACKGROUND]),
-                          0,
-                          0,
-                          SCREEN_WIDTH,
-                          SCREEN_HEIGHT,
-                          0);
-    btnTitle->Run(g_game->GetBackBuffer());
-    btnNewGame->Run(g_game->GetBackBuffer());
-    btnLoadGame->Run(g_game->GetBackBuffer());
-    btnSettings->Run(g_game->GetBackBuffer());
-    btnCredits->Run(g_game->GetBackBuffer());
-    btnQuit->Run(g_game->GetBackBuffer());
+    return true;
+}
 
-    switch (title_mode) {
-    case 690: // welcome message if needed
-        title_mode = 1;
+bool
+ModuleTitleScreen::on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event) {
+    ALLEGRO_EVENT e = make_event(EVENT_NONE);
+    switch (event->keycode) {
+    case ALLEGRO_KEY_N:
+        e.type = EVENT_NEW_GAME;
         break;
+    case ALLEGRO_KEY_L:
+        e.type = EVENT_LOAD_GAME;
+        break;
+    case ALLEGRO_KEY_S:
+        e.type = EVENT_SETTINGS;
+        break;
+    case ALLEGRO_KEY_C:
+        e.type = EVENT_CREDITS;
+        break;
+    case ALLEGRO_KEY_ESCAPE:
+    case ALLEGRO_KEY_Q:
+        e.type = EVENT_QUIT_GAME;
+        break;
+    default:
+        break;
+    }
+    if (e.type != EVENT_NONE) {
+        g_game->broadcast_event(&e);
+        return false;
+    } else {
+        return true;
+    }
+}
 
-    case 700: // clicked New Game
-        title_mode = 1;
+bool
+ModuleTitleScreen::on_event(ALLEGRO_EVENT *event) {
+    switch (event->type) {
+    case EVENT_NEW_GAME:
         g_game->LoadModule(MODULE_CAPTAINCREATION);
-        return;
-        break;
-
-    case 701: // clicked Load Game
-        title_mode = 1;
+        return false;
+    case EVENT_LOAD_GAME:
         g_game->LoadModule(MODULE_CAPTAINSLOUNGE);
-        return;
-        break;
-
-    case 702: // clicked Settings
-        title_mode = 1;
+        return false;
+    case EVENT_SETTINGS:
         g_game->LoadModule(MODULE_SETTINGS);
-        return;
-        break;
-
-    case 703: // clicked Credits
-        title_mode = 1;
+        return false;
+    case EVENT_CREDITS:
         g_game->LoadModule(MODULE_CREDITS);
-        return;
-        break;
-
-    case 704: // QUIT GAME
-        title_mode = 705;
-        break;
-
-    case 705:
+        return false;
+    case EVENT_QUIT_GAME:
         g_game->shutdown();
-        break;
+        return false;
     }
-}
-
-void
-ModuleTitleScreen::OnKeyReleased(int keyCode) {
-    if (keyCode == ALLEGRO_KEY_ESCAPE)
-        title_mode = 704;
-}
-
-void
-ModuleTitleScreen::OnMouseMove(int x, int y) {
-    btnTitle->OnMouseMove(x, y);
-    btnNewGame->OnMouseMove(x, y);
-    btnLoadGame->OnMouseMove(x, y);
-    btnSettings->OnMouseMove(x, y);
-    btnCredits->OnMouseMove(x, y);
-    btnQuit->OnMouseMove(x, y);
-}
-
-void
-ModuleTitleScreen::OnMouseReleased(int button, int x, int y) {
-    btnTitle->OnMouseReleased(button, x, y);
-    btnNewGame->OnMouseReleased(button, x, y);
-    btnLoadGame->OnMouseReleased(button, x, y);
-    btnSettings->OnMouseReleased(button, x, y);
-    btnCredits->OnMouseReleased(button, x, y);
-    btnQuit->OnMouseReleased(button, x, y);
-}
-
-void
-ModuleTitleScreen::OnEvent(Event *event) {
-    Module::OnEvent(event);
-
-    switch (event->getEventType()) {
-    case 700: // new game
-        title_mode = 700;
-        break;
-    case 701: // load game
-        title_mode = 701;
-        break;
-    case 702: // settings
-        title_mode = 702;
-        break;
-    case 703: // credits
-        title_mode = 703;
-        break;
-    case 704: // exit game
-        title_mode = 704;
-        break;
-    }
-}
-
-void
-ModuleTitleScreen::Close() {
-    delete btnTitle;
-    delete btnNewGame;
-    delete btnLoadGame;
-    delete btnSettings;
-    delete btnCredits;
-    delete btnQuit;
+    return true;
 }

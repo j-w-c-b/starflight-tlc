@@ -10,97 +10,148 @@
 */
 
 #include "ModuleShipConfig.h"
-#include "AudioSystem.h"
 #include "DataMgr.h"
 #include "Events.h"
 #include "Game.h"
+#include "MessageBoxWindow.h"
 #include "ModeMgr.h"
 #include "QuestMgr.h"
 #include "Util.h"
 #include "shipconfig_resources.h"
 
 using namespace std;
-using namespace shipconfig_resources;
+using namespace shipconfig;
+
+namespace shipconfig {
+const int BUTTON_X_START = 130;
+const int BUTTON_Y_START = 255;
+
+const int MENU_PATH_X = 30;
+const int MENU_PATH_Y = 184;
+const int MENU_PATH_W = 480;
+const int MENU_PATH_H = 64;
+
+const int CREDITS_X = 550 + 5;
+const int CREDITS_Y = 75;
+const int CREDITS_W = 440 - 10;
+
+const int SHIPNAME_X = 550 + 5;
+const int SHIPNAME_Y = 685;
+const int SHIPNAME_W = 440 - 10;
+}; // namespace shipconfig
 
 ALLEGRO_DEBUG_CHANNEL("ModuleShipConfig")
 
 #define SHIPNAME_MAXLEN 20
 
-ModuleShipConfig::ModuleShipConfig(void) : m_resources(SHIPCONFIG_IMAGES) {}
+ModuleShipConfig::ModuleShipConfig() : m_buttons_active(0) {
+    m_background = make_shared<Bitmap>(images[I_SHIPCONFIG]);
+    add_child_module(m_background);
 
-// Init is a good place to load resources
-bool
-ModuleShipConfig::Init() {
-    ALLEGRO_DEBUG("  ShipConfig Initialize\n");
-
-    // load the datafile
-    if (!m_resources.load()) {
-        g_game->message("ShipConfig: Error loading resources");
-        return false;
-    }
-
-    inputName = false;
-
-    // create button images
-    ALLEGRO_BITMAP *btnNorm, *btnOver, *btnDeact;
-    btnNorm = m_resources[I_SHIPCONFIG_BTN_NORM];
-    btnOver = m_resources[I_SHIPCONFIG_BTN_OVER];
-    btnDeact = m_resources[I_SHIPCONFIG_BTN_DEACTIVE];
-
-    // initialize array of button ptrs
     for (int i = 0; i < NUMBER_OF_BUTTONS; ++i) {
-        if (i < NUMBER_OF_BUTTONS) {
-            buttons[i] =
-                new Button(btnNorm,
-                           btnOver,
-                           btnDeact,
-                           BUTTON_X_START,
-                           BUTTON_Y_START + i * (BUTTON_HEIGHT + PIXEL_BUFFER),
-                           0,
-                           0,
-                           g_game->font22,
-                           "def",
-                           al_map_rgb(0, 255, 0));
-        }
-        if (buttons[i]) {
-            if (!buttons[i]->IsInitialized())
-                return false;
-        } else
-            return false;
+        m_buttons[i] = make_shared<TextButton>(
+            "def",
+            g_game->font22,
+            GREEN,
+            ALLEGRO_ALIGN_CENTER,
+            BUTTON_X_START,
+            BUTTON_Y_START + i * (BUTTON_HEIGHT + PIXEL_BUFFER),
+            EVENT_NONE,
+            EVENT_NONE,
+            images[I_SHIPCONFIG_BTN_NORM],
+            images[I_SHIPCONFIG_BTN_OVER],
+            images[I_SHIPCONFIG_BTN_DEACTIVE]);
+        m_buttons[i]->set_active(false);
+        add_child_module(m_buttons[i]);
     }
+    m_menu_path_label = make_shared<Label>(
+        "",
+        MENU_PATH_X,
+        MENU_PATH_Y,
+        MENU_PATH_W,
+        MENU_PATH_H,
+        false,
+        0,
+        g_game->font32,
+        WHITE);
+    add_child_module(m_menu_path_label);
+
+    m_credits_display = make_shared<Label>(
+        "Credits",
+        CREDITS_X,
+        CREDITS_Y,
+        CREDITS_W,
+        al_get_font_line_height(g_game->font32.get()),
+        false,
+        ALLEGRO_ALIGN_CENTER,
+        g_game->font32,
+        WHITE);
+    add_child_module(m_credits_display);
+
+    m_ship_image = make_shared<Bitmap>(images[I_FREELANCE], 586, 548);
+    add_child_module(m_ship_image);
+
+    m_ship_name_label = make_shared<Label>(
+        "Ship Name: MSS " + g_game->gameState->m_ship.getName(),
+        SHIPNAME_X,
+        SHIPNAME_Y,
+        SHIPNAME_W,
+        al_get_font_line_height(g_game->font22.get()),
+        false,
+        ALLEGRO_ALIGN_CENTER,
+        g_game->font22,
+        WHITE);
+    add_child_module(m_ship_name_label);
+
+    m_ship_name_entry = make_shared<TextEntry>(
+        g_game->font22,
+        WHITE,
+        "MSS ",
+        SHIPNAME_MAXLEN,
+        images[I_SHIPCONFIG_CURSOR0],
+        0.4,
+        MENU_PATH_X,
+        MENU_PATH_Y,
+        al_get_text_width(g_game->font22.get(), "W") * SHIPNAME_MAXLEN,
+        al_get_font_line_height(g_game->font22.get()),
+        samples[S_CLICK],
+        samples[S_ERROR],
+        "");
+    m_ship_name_entry->set_active(false);
+    add_child_module(m_ship_name_entry);
+
+    set_draw_after_children(true);
+}
+
+bool
+ModuleShipConfig::on_init() {
+    ALLEGRO_DEBUG("  EVENT_SHIP_CONFIG_SYSTEMS Initialize\n");
+
+    m_ship_name_label->set_text(
+        "Ship Name: MSS " + g_game->gameState->m_ship.getName());
+    m_ship_name_entry->set_active(false);
+
+    m_buttons_active = 0;
 
     // setup up the pathing
     menuPath.clear();
-    Event e(ModuleEntry);
-    g_game->modeMgr->BroadcastEvent(&e);
-
-    // load background image
-    shipConfig = m_resources[I_SHIPCONFIG];
+    ALLEGRO_EVENT e = make_event(EVENT_SHIP_CONFIG_MENU_ENTRY);
+    on_event(&e);
 
     // load ship image
     switch (g_game->gameState->getProfession()) {
     case PROFESSION_FREELANCE:
-        shipImage = m_resources[I_FREELANCE];
+        m_ship_image->set_bitmap(images[I_FREELANCE]);
     case PROFESSION_MILITARY:
-        shipImage = m_resources[I_MILITARY];
+        m_ship_image->set_bitmap(images[I_MILITARY]);
     case PROFESSION_SCIENTIFIC:
-        shipImage = m_resources[I_SCIENCE];
+        m_ship_image->set_bitmap(images[I_SCIENCE]);
     default:
-        ALLEGRO_ERROR("***ERROR: ShipConfig: Player's profession is invalid.");
+        ALLEGRO_ERROR("***ERROR: EVENT_SHIP_CONFIG_SYSTEMS: Player's "
+                      "profession is invalid.");
     }
 
-    // load audio files
-    m_sndClick = g_game->audioSystem->Load("data/shipconfig/click.ogg");
-    if (!m_sndClick) {
-        g_game->message("ShipConfig: Error loading click.ogg");
-        return false;
-    }
-    m_sndErr = g_game->audioSystem->Load("data/shipconfig/error.ogg");
-    if (!m_sndErr) {
-        g_game->message("ShipConfig: Error loading error.ogg");
-        return false;
-    }
-    m_cursor = m_resources[I_SHIPCONFIG_CURSOR0];
+    m_cursor = images[I_SHIPCONFIG_CURSOR0];
 
     // tell questmgr that this module has been entered
     g_game->questMgr->raiseEvent(22);
@@ -108,108 +159,48 @@ ModuleShipConfig::Init() {
     return true;
 }
 
-void
-ModuleShipConfig::OnKeyPressed(int keyCode) {
-    ALLEGRO_KEYBOARD_STATE keyboard_state;
-
-    if (inputName) {
-        bool playKeySnd = false;
-        bool playErrSnd = false;
-
-        al_get_keyboard_state(&keyboard_state);
-        bool shifted = al_key_down(&keyboard_state, ALLEGRO_KEY_LSHIFT) ||
-                       al_key_down(&keyboard_state, ALLEGRO_KEY_RSHIFT);
-
-        if (((keyCode >= ALLEGRO_KEY_A) && (keyCode <= ALLEGRO_KEY_PAD_9)) ||
-            (keyCode == ALLEGRO_KEY_SPACE)) {
-            if (shipName.size() < SHIPNAME_MAXLEN) {
-                char c;
-                if (keyCode >= ALLEGRO_KEY_A && keyCode <= ALLEGRO_KEY_Z) {
-                    c = (keyCode - ALLEGRO_KEY_A) + (shifted ? 'A' : 'a');
-                } else if (keyCode >= ALLEGRO_KEY_0 &&
-                           keyCode <= ALLEGRO_KEY_9) {
-                    c = (keyCode - ALLEGRO_KEY_0) + '0';
-                } else if (keyCode >= ALLEGRO_KEY_PAD_0 &&
-                           keyCode <= ALLEGRO_KEY_PAD_9) {
-                    c = (keyCode - ALLEGRO_KEY_PAD_0) + '0';
-                } else {
-                    c = ' ';
-                }
-
-                shipName.push_back(c);
-
-                playKeySnd = true;
-            } else
-                playErrSnd = true;
-        } else if (keyCode == ALLEGRO_KEY_BACKSPACE) {
-            if (shipName.size() > 0) {
-                shipName.erase(--(shipName.end()));
-
-                playKeySnd = true;
-            } else
-                playErrSnd = true;
-        }
-
-        if (playKeySnd) {
-            g_game->audioSystem->Play(m_sndClick);
-        }
-
-        if (playErrSnd) {
-            g_game->audioSystem->Play(m_sndErr);
-        }
-    }
-}
-
-void
-ModuleShipConfig::OnMouseMove(int x, int y) {
-    for (int i = 0; i < buttonsActive; ++i)
-        buttons[i]->OnMouseMove(x, y);
-}
-void
-ModuleShipConfig::OnMouseReleased(int button, int x, int y) {
-    for (int i = 0; i < buttonsActive; ++i)
-        if (buttons[i]->OnMouseReleased(button, x, y))
-            return;
-}
-
-void
-ModuleShipConfig::OnEvent(Event *event) {
+bool
+ModuleShipConfig::on_event(ALLEGRO_EVENT *event) {
     int evnum, maxclass = -1;
-    Event e;
+    ALLEGRO_EVENT e = make_event(EVENT_NONE);
 
     // check for general events
-    switch (event->getEventType()) {
-    case UndefButtonType:
-        break;
-    case ModuleEntry:
-        menuPath.push_back(ModuleEntry);
-        buttonsActive = 4;
-        configureButton(0, ShipConfig);
-        configureButton(1, TVConfig);
-        configureButton(2, Launch);
-        configureButton(3, Exit);
+    switch (event->type) {
+    case EVENT_CLOSE:
+        set_modal_child(nullptr);
         break;
 
-    case ShipConfig:
-        menuPath.push_back(ShipConfig);
-        buttonsActive = 5;
-        configureButton(0, Buy);
-        configureButton(1, Sell);
-        configureButton(2, Repair);
-        configureButton(3, Name);
-        configureButton(4, Back);
+    case EVENT_SHIP_CONFIG_MENU_ENTRY:
+        menuPath.push_back(EVENT_SHIP_CONFIG_MENU_ENTRY);
+        m_buttons_active = 4;
+        configureButton(0, EVENT_SHIP_CONFIG_SYSTEMS);
+        configureButton(1, EVENT_SHIP_CONFIG_TV_CONFIG);
+        configureButton(2, EVENT_SHIP_CONFIG_LAUNCH);
+        configureButton(3, EVENT_SHIP_CONFIG_EXIT);
+        m_menu_path_label->set_text(convertMenuPathToString().c_str());
         break;
 
-    case Launch:
+    case EVENT_SHIP_CONFIG_SYSTEMS:
+        menuPath.push_back(EVENT_SHIP_CONFIG_SYSTEMS);
+        m_buttons_active = 5;
+        configureButton(0, EVENT_SHIP_CONFIG_BUY);
+        configureButton(1, EVENT_SHIP_CONFIG_SELL);
+        configureButton(2, EVENT_SHIP_CONFIG_REPAIR);
+        configureButton(3, EVENT_SHIP_CONFIG_NAME);
+        configureButton(4, EVENT_SHIP_CONFIG_BACK);
+        m_menu_path_label->set_text(convertMenuPathToString().c_str());
+        break;
+
+    case EVENT_SHIP_CONFIG_LAUNCH:
         if (g_game->gameState->PreparedToLaunch()) {
             ID starid = 2;
-            g_game->gameState->player->currentStar = starid;
+            g_game->gameState->player.currentStar = starid;
             int start_pos_x =
                 g_game->getGlobalNumber("PLAYER_HYPERSPACE_START_X");
             int start_pos_y =
                 g_game->getGlobalNumber("PLAYER_HYPERSPACE_START_Y");
-            g_game->gameState->player->set_galactic_pos(start_pos_x,
-                                                        start_pos_y);
+            g_game->gameState->player.set_galactic_pos(
+                start_pos_x, start_pos_y);
 
             // compute myrrdan position
             int orbitalpos = 3;
@@ -217,106 +208,116 @@ ModuleShipConfig::OnEvent(Event *event) {
                 tilesheight = 256;
             int starX = tilesacross / 2, starY = tilesdown / 2;
 
-            srand(starid);
+            sfsrand(starid);
             for (int i = 0; i < orbitalpos; i++)
-                rand();
+                sfrand();
             float radius = (2 + orbitalpos) * 4;
-            float angle = rand() % 360;
+            float angle = sfrand() % 360;
             int rx = (int)(cos(angle) * radius);
             int ry = (int)(sin(angle) * radius);
 
             // set player position to start near myrrdan
-            g_game->gameState->player->posSystem.SetPosition(
+            g_game->gameState->player.posSystem.SetPosition(
                 (starX + rx) * tileswidth - 256,
                 (starY + ry) * tilesheight - 135);
 
             g_game->LoadModule(MODULE_INTERPLANETARY);
         } else {
-            g_game->ShowMessageBoxWindow("Not prepared to launch! Make sure "
-                                         "you have an engine and a crew.");
+            set_modal_child(make_shared<MessageBoxWindow>(
+                "",
+                "Not prepared to launch! Make sure "
+                "you have an engine and a crew."));
         }
-        return;
+        return true;
+
+    case EVENT_SHIP_CONFIG_BUY:
+        menuPath.push_back(EVENT_SHIP_CONFIG_BUY);
+        m_buttons_active = 7;
+        configureButton(0, EVENT_SHIP_CONFIG_CARGO_PODS);
+        configureButton(1, EVENT_SHIP_CONFIG_ENGINES);
+        configureButton(2, EVENT_SHIP_CONFIG_SHIELDS);
+        configureButton(3, EVENT_SHIP_CONFIG_ARMOR);
+        configureButton(4, EVENT_SHIP_CONFIG_MISSILES);
+        configureButton(5, EVENT_SHIP_CONFIG_LASERS);
+        configureButton(6, EVENT_SHIP_CONFIG_BACK);
+        m_menu_path_label->set_text(convertMenuPathToString().c_str());
         break;
 
-    case Buy:
-        menuPath.push_back(Buy);
-        buttonsActive = 7;
-        configureButton(0, CargoPods);
-        configureButton(1, Engines);
-        configureButton(2, Shields);
-        configureButton(3, Armor);
-        configureButton(4, Missiles);
-        configureButton(5, Lasers);
-        configureButton(6, Back);
+    case EVENT_SHIP_CONFIG_SELL:
+        menuPath.push_back(EVENT_SHIP_CONFIG_SELL);
+        m_buttons_active = 7;
+        configureButton(0, EVENT_SHIP_CONFIG_CARGO_PODS);
+        configureButton(1, EVENT_SHIP_CONFIG_ENGINES);
+        configureButton(2, EVENT_SHIP_CONFIG_SHIELDS);
+        configureButton(3, EVENT_SHIP_CONFIG_ARMOR);
+        configureButton(4, EVENT_SHIP_CONFIG_MISSILES);
+        configureButton(5, EVENT_SHIP_CONFIG_LASERS);
+        configureButton(6, EVENT_SHIP_CONFIG_BACK);
+        m_menu_path_label->set_text(convertMenuPathToString().c_str());
         break;
 
-    case Sell:
-        menuPath.push_back(Sell);
-        buttonsActive = 7;
-        configureButton(0, CargoPods);
-        configureButton(1, Engines);
-        configureButton(2, Shields);
-        configureButton(3, Armor);
-        configureButton(4, Missiles);
-        configureButton(5, Lasers);
-        configureButton(6, Back);
+    case EVENT_SHIP_CONFIG_REPAIR:
+        {
+            // calculate repair cost
+            repairCost = 0;
+            Ship ship = g_game->gameState->m_ship;
+            if (ship.getHullIntegrity() < 100)
+                repairCost += getHullRepair();
+            if (ship.getArmorIntegrity() < 100)
+                repairCost += getArmorRepair();
+            if (ship.getEngineIntegrity() < 100)
+                repairCost += getEngineRepair();
+            if (ship.getShieldIntegrity() < 100)
+                repairCost += getShieldRepair();
+            if (ship.getLaserIntegrity() < 100)
+                repairCost += getLaserRepair();
+            if (ship.getMissileLauncherIntegrity() < 100)
+                repairCost += getMissileRepair();
+
+            menuPath.push_back(EVENT_SHIP_CONFIG_REPAIR);
+            m_buttons_active = 7;
+            configureButton(0, EVENT_SHIP_CONFIG_ENGINES);
+            configureButton(1, EVENT_SHIP_CONFIG_SHIELDS);
+            configureButton(2, EVENT_SHIP_CONFIG_ARMOR);
+            configureButton(3, EVENT_SHIP_CONFIG_MISSILES);
+            configureButton(4, EVENT_SHIP_CONFIG_LASERS);
+            configureButton(5, EVENT_SHIP_CONFIG_HULL);
+            configureButton(6, EVENT_SHIP_CONFIG_BACK);
+            m_menu_path_label->set_text(
+                "Total Repair Cost: " + to_string(repairCost) + " MU");
+        }
         break;
 
-    case Repair: {
-        // calculate repair cost
-        repairCost = 0;
-        Ship ship = g_game->gameState->m_ship;
-        if (ship.getHullIntegrity() < 100)
-            repairCost += getHullRepair();
-        if (ship.getArmorIntegrity() < 100)
-            repairCost += getArmorRepair();
-        if (ship.getEngineIntegrity() < 100)
-            repairCost += getEngineRepair();
-        if (ship.getShieldIntegrity() < 100)
-            repairCost += getShieldRepair();
-        if (ship.getLaserIntegrity() < 100)
-            repairCost += getLaserRepair();
-        if (ship.getMissileLauncherIntegrity() < 100)
-            repairCost += getMissileRepair();
-
-        menuPath.push_back(Repair);
-        buttonsActive = 7;
-        configureButton(0, Engines);
-        configureButton(1, Shields);
-        configureButton(2, Armor);
-        configureButton(3, Missiles);
-        configureButton(4, Lasers);
-        configureButton(5, Hull);
-        configureButton(6, Back);
-    } break;
-
-    case Name:
-        menuPath.push_back(Name);
-        buttonsActive = 2;
-        configureButton(0, SaveName);
-        configureButton(1, Nevermind);
-        inputName = true;
-        shipName = g_game->gameState->m_ship.getName();
+    case EVENT_SHIP_CONFIG_NAME:
+        menuPath.push_back(EVENT_SHIP_CONFIG_NAME);
+        m_buttons_active = 2;
+        configureButton(0, EVENT_SHIP_CONFIG_SAVE_NAME);
+        configureButton(1, EVENT_SHIP_CONFIG_CANCEL);
+        m_ship_name_entry->set_active(true);
+        m_menu_path_label->set_active(false);
+        m_ship_name_entry->set_text(g_game->gameState->m_ship.getName());
         break;
 
-    case Exit:
+    case EVENT_SHIP_CONFIG_EXIT:
         g_game->LoadModule(MODULE_STARPORT);
-        return;
+        return false;
         break;
 
-    case CargoPods:
-        if (menuPath[2] == Buy &&
-            g_game->gameState->m_ship.getCargoPodCount() < MAX_CARGOPODS &&
-            g_game->gameState->m_credits >= CARGOPODS) {
+    case EVENT_SHIP_CONFIG_CARGO_PODS:
+        if (menuPath[2] == EVENT_SHIP_CONFIG_BUY
+            && g_game->gameState->m_ship.getCargoPodCount() < MAX_CARGOPODS
+            && g_game->gameState->m_credits >= CARGOPODS) {
             g_game->gameState->m_ship.cargoPodPlusPlus();
             g_game->gameState->m_credits -= CARGOPODS;
-        } else if (menuPath[2] == Sell &&
-                   g_game->gameState->m_ship.getCargoPodCount() > 0) {
+        } else if (
+            menuPath[2] == EVENT_SHIP_CONFIG_SELL
+            && g_game->gameState->m_ship.getCargoPodCount() > 0) {
             if (g_game->gameState->m_ship.getAvailableSpace() < POD_CAPACITY)
-                g_game->ShowMessageBoxWindow(
+                set_modal_child(make_shared<MessageBoxWindow>(
                     "",
-                    "You can't sell any of your cargo pods--you have too many "
-                    "items in the hold.");
+                    "You can't sell any of your cargo pods--you have too "
+                    "many "
+                    "items in the hold."));
             else {
                 g_game->gameState->m_ship.cargoPodMinusMinus();
                 g_game->gameState->m_credits += CARGOPODS;
@@ -325,40 +326,40 @@ ModuleShipConfig::OnEvent(Event *event) {
         break;
 
     // buy/sell ship components
-    case Engines:
-    case Shields:
-    case Armor:
-    case Missiles:
-    case Lasers:
-    case Hull:
-        menuPath.push_back((ButtonType)event->getEventType());
-        if (menuPath[2] == Buy) {
-            buttonsActive = 7;
-            configureButton(0, Class1);
-            configureButton(1, Class2);
-            configureButton(2, Class3);
-            configureButton(3, Class4);
-            configureButton(4, Class5);
-            configureButton(5, Class6);
-            configureButton(6, Back);
+    case EVENT_SHIP_CONFIG_ENGINES:
+    case EVENT_SHIP_CONFIG_SHIELDS:
+    case EVENT_SHIP_CONFIG_ARMOR:
+    case EVENT_SHIP_CONFIG_MISSILES:
+    case EVENT_SHIP_CONFIG_LASERS:
+    case EVENT_SHIP_CONFIG_HULL:
+        menuPath.push_back(static_cast<EventType>(event->type));
+        if (menuPath[2] == EVENT_SHIP_CONFIG_BUY) {
+            m_buttons_active = 7;
+            configureButton(0, EVENT_SHIP_CONFIG_CLASS1);
+            configureButton(1, EVENT_SHIP_CONFIG_CLASS2);
+            configureButton(2, EVENT_SHIP_CONFIG_CLASS3);
+            configureButton(3, EVENT_SHIP_CONFIG_CLASS4);
+            configureButton(4, EVENT_SHIP_CONFIG_CLASS5);
+            configureButton(5, EVENT_SHIP_CONFIG_CLASS6);
+            configureButton(6, EVENT_SHIP_CONFIG_BACK);
 
             // limit purchase to maximum class by profession
-            evnum = event->getEventType();
+            evnum = event->type;
             switch (evnum) {
-            case Engines:
+            case EVENT_SHIP_CONFIG_ENGINES:
                 maxclass = g_game->gameState->m_ship.getMaxEngineClass();
                 break;
-            case Shields:
+            case EVENT_SHIP_CONFIG_SHIELDS:
                 maxclass = g_game->gameState->m_ship.getMaxShieldClass();
                 break;
-            case Armor:
+            case EVENT_SHIP_CONFIG_ARMOR:
                 maxclass = g_game->gameState->m_ship.getMaxArmorClass();
                 break;
-            case Missiles:
+            case EVENT_SHIP_CONFIG_MISSILES:
                 maxclass =
                     g_game->gameState->m_ship.getMaxMissileLauncherClass();
                 break;
-            case Lasers:
+            case EVENT_SHIP_CONFIG_LASERS:
                 maxclass = g_game->gameState->m_ship.getMaxLaserClass();
                 break;
             default:
@@ -366,53 +367,59 @@ ModuleShipConfig::OnEvent(Event *event) {
             }
 
             for (int n = 6; n > maxclass; n--) {
-                configureButton(n - 1, UndefButtonType);
+                configureButton(n - 1, EVENT_NONE);
             }
-
-        } else if (menuPath[2] == Sell) {
+        } else if (menuPath[2] == EVENT_SHIP_CONFIG_SELL) {
             if (checkComponent()) {
                 sellComponent();
                 menuPath.pop_back();
-            } else
-                g_game->ShowMessageBoxWindow(
-                    "", "You don't have one to sell!", 400, 200);
+            } else {
+                set_modal_child(make_shared<MessageBoxWindow>(
+                    "", "You don't have one to sell!"));
+            }
 
             menuPath.pop_back();
-            e = menuPath.back();
+            e.type = menuPath.back();
             menuPath.pop_back();
-            g_game->modeMgr->BroadcastEvent(&e);
-        } else if (menuPath[2] == Repair) {
+            g_game->broadcast_event(&e);
+
+            m_menu_path_label->set_text(convertMenuPathToString().c_str());
+
+        } else if (menuPath[2] == EVENT_SHIP_CONFIG_REPAIR) {
             if (checkComponent()) {
                 repairComponent();
                 menuPath.pop_back();
             } else
-                g_game->ShowMessageBoxWindow(
-                    "", "You don't have one to repair!", 400, 200);
+                set_modal_child(make_shared<MessageBoxWindow>(
+                    "", "You don't have one to repair!"));
 
             menuPath.pop_back();
-            e = menuPath.back();
+            e.type = menuPath.back();
             menuPath.pop_back();
-            g_game->modeMgr->BroadcastEvent(&e);
+            g_game->broadcast_event(&e);
         }
         break;
 
-    case Back:
-        inputName = false;
+    case EVENT_SHIP_CONFIG_BACK:
+        m_ship_name_entry->set_active(false);
+        m_menu_path_label->set_active(true);
         menuPath.pop_back();
-        e = menuPath.back();
+        e.type = menuPath.back();
         menuPath.pop_back();
-        g_game->modeMgr->BroadcastEvent(&e);
+        g_game->broadcast_event(&e);
+
+        m_menu_path_label->set_text(convertMenuPathToString().c_str());
         break;
 
     // buy new class of component
-    case Class1:
-    case Class2:
-    case Class3:
-    case Class4:
-    case Class5:
-    case Class6:
-        menuPath.push_back((ButtonType)event->getEventType());
-        if (menuPath[2] == Buy) {
+    case EVENT_SHIP_CONFIG_CLASS1:
+    case EVENT_SHIP_CONFIG_CLASS2:
+    case EVENT_SHIP_CONFIG_CLASS3:
+    case EVENT_SHIP_CONFIG_CLASS4:
+    case EVENT_SHIP_CONFIG_CLASS5:
+    case EVENT_SHIP_CONFIG_CLASS6:
+        menuPath.push_back(static_cast<EventType>(event->type));
+        if (menuPath[2] == EVENT_SHIP_CONFIG_BUY) {
             if (!checkComponent()) {
                 buyComponent();
                 menuPath.pop_back();
@@ -420,201 +427,189 @@ ModuleShipConfig::OnEvent(Event *event) {
             }
         }
         menuPath.pop_back();
-        e = menuPath.back();
+        e.type = menuPath.back();
         menuPath.pop_back();
-        g_game->modeMgr->BroadcastEvent(&e);
+        g_game->broadcast_event(&e);
+
+        m_menu_path_label->set_text(convertMenuPathToString().c_str());
         break;
 
-    case Nevermind:
+    case EVENT_SHIP_CONFIG_CANCEL:
         menuPath.pop_back();
-        e = menuPath.back();
+        e.type = menuPath.back();
         menuPath.pop_back();
-        g_game->modeMgr->BroadcastEvent(&e);
+        g_game->broadcast_event(&e);
+
+        m_menu_path_label->set_text(convertMenuPathToString().c_str());
+        m_ship_name_entry->set_active(false);
+        m_menu_path_label->set_active(true);
         break;
 
-    case SaveName:
-        if (menuPath[2] == Name) {
+    case EVENT_SHIP_CONFIG_SAVE_NAME:
+        if (menuPath[2] == EVENT_SHIP_CONFIG_NAME) {
+            shipName = m_ship_name_entry->get_text();
             if (shipName != "") {
                 g_game->gameState->m_ship.setName(shipName);
+                m_ship_name_entry->set_active(false);
+                m_menu_path_label->set_active(true);
+                m_ship_name_label->set_text(shipName);
+                m_ship_name_label->set_text("Ship Name: MSS " + shipName);
 
                 menuPath.pop_back();
-                e = menuPath.back();
+                e.type = menuPath.back();
                 menuPath.pop_back();
-                g_game->modeMgr->BroadcastEvent(&e);
+                g_game->broadcast_event(&e);
+
+                m_menu_path_label->set_text(convertMenuPathToString().c_str());
             } else {
-                g_game->ShowMessageBoxWindow(
-                    "", "You must first christen your ship!", 400, 200);
+                set_modal_child(make_shared<MessageBoxWindow>(
+                    "", "You must first christen your ship!"));
             }
         }
         break;
 
-    case TVConfig:
-        menuPath.push_back(TVConfig);
-        buttonsActive = 2;
-        configureButton(0, BuyTV);
-        configureButton(1, Back);
+    case EVENT_SHIP_CONFIG_TV_CONFIG:
+        menuPath.push_back(EVENT_SHIP_CONFIG_TV_CONFIG);
+        m_buttons_active = 2;
+        configureButton(0, EVENT_SHIP_CONFIG_BUY_TV);
+        configureButton(1, EVENT_SHIP_CONFIG_BACK);
+        m_menu_path_label->set_text(convertMenuPathToString().c_str());
         break;
 
-    case BuyTV:
+    case EVENT_SHIP_CONFIG_BUY_TV:
         if (g_game->gameState->m_ship.getHasTV()) {
-            g_game->ShowMessageBoxWindow(
-                "", "You already own a Terrain Vehicle!", 400, 200);
+            set_modal_child(make_shared<MessageBoxWindow>(
+                "", "You already own a Terrain Vehicle!"));
         } else {
             if (g_game->gameState->getCredits() >= 2000) {
                 g_game->gameState->m_ship.setHasTV(true);
                 g_game->gameState->augCredits(-2000);
 
                 menuPath.pop_back();
-                e = menuPath.back();
+                e.type = menuPath.back();
                 menuPath.pop_back();
-                g_game->modeMgr->BroadcastEvent(&e);
+                g_game->broadcast_event(&e);
+                m_menu_path_label->set_text(convertMenuPathToString().c_str());
             } else {
-                g_game->ShowMessageBoxWindow(
-                    "", "A new Terrain Vehicle costs 2000 credits.", 400, 200);
+                set_modal_child(make_shared<MessageBoxWindow>(
+                    "", "A new Terrain Vehicle costs 2000 credits."));
             }
         }
         break;
-
-    default:
-        break;
     }
+
+    for (int i = 0; i < NUMBER_OF_BUTTONS; i++) {
+        m_buttons[i]->set_active(i < m_buttons_active);
+    }
+
+    return true;
 }
 
-void
-ModuleShipConfig::Close() {
-    ALLEGRO_DEBUG("ShipConfig Destroy\n");
+bool
+ModuleShipConfig::on_close() {
+    ALLEGRO_DEBUG("EVENT_SHIP_CONFIG_SYSTEMS Destroy\n");
 
     menuPath.clear();
-    for (int a = 0; a < NUMBER_OF_BUTTONS; ++a) {
-        buttons[a]->Destroy();
-        buttons[a] = NULL;
-    }
 
-    m_sndClick.reset();
-    m_sndErr.reset();
-
-    // unload the data file
-    m_resources.unload();
+    return true;
 }
+
 std::string
 ModuleShipConfig::convertMenuPathToString() const {
     if (menuPath.size() < 2)
-        return "Error menuPath.size() < 1";
-    std::string result = convertButtonTypeToString(menuPath[1]);
+        return "";
+    std::string result = convertEventTypeToString(menuPath[1]);
     for (int i = 2; i < (int)menuPath.size(); ++i)
-        result = result + "->" + convertButtonTypeToString(menuPath[i]);
+        result = result + "->" + convertEventTypeToString(menuPath[i]);
     return result;
 }
 std::string
-ModuleShipConfig::convertButtonTypeToString(ButtonType btnType) const {
+ModuleShipConfig::convertEventTypeToString(EventType btnType) const {
     switch (btnType) {
-    case UndefButtonType:
-    case ModuleEntry:
-        return "";
-    case ShipConfig:
+    case EVENT_SHIP_CONFIG_SYSTEMS:
         return "Ship Systems";
-        break;
-    case Launch:
+    case EVENT_SHIP_CONFIG_LAUNCH:
         return "Launch";
-        break;
-    case Buy:
+    case EVENT_SHIP_CONFIG_BUY:
         return "Buy";
-        break;
-    case Sell:
+    case EVENT_SHIP_CONFIG_SELL:
         return "Sell";
-        break;
-    case Repair:
+    case EVENT_SHIP_CONFIG_REPAIR:
         return "Repair";
-        break;
-    case Name:
+    case EVENT_SHIP_CONFIG_NAME:
         return "Name";
-        break;
-    case Exit:
+    case EVENT_SHIP_CONFIG_EXIT:
         return "Exit";
-        break;
-    case CargoPods:
+    case EVENT_SHIP_CONFIG_CARGO_PODS:
         return "Cargo Pods";
-        break;
-    case Engines:
+    case EVENT_SHIP_CONFIG_ENGINES:
         return "Engines";
-        break;
-    case Shields:
+    case EVENT_SHIP_CONFIG_SHIELDS:
         return "Shields";
-        break;
-    case Armor:
+    case EVENT_SHIP_CONFIG_ARMOR:
         return "Armor";
-        break;
-    case Missiles:
+    case EVENT_SHIP_CONFIG_MISSILES:
         return "Missiles";
-        break;
-    case Lasers:
+    case EVENT_SHIP_CONFIG_LASERS:
         return "Lasers";
-        break;
-    case Hull:
+    case EVENT_SHIP_CONFIG_HULL:
         return "Hull";
-        break;
-    case Back:
+    case EVENT_SHIP_CONFIG_BACK:
         return "Back";
-        break;
-    case Class1:
+    case EVENT_SHIP_CONFIG_CLASS1:
         return "Class 1";
-        break;
-    case Class2:
+    case EVENT_SHIP_CONFIG_CLASS2:
         return "Class 2";
-        break;
-    case Class3:
+    case EVENT_SHIP_CONFIG_CLASS3:
         return "Class 3";
-        break;
-    case Class4:
+    case EVENT_SHIP_CONFIG_CLASS4:
         return "Class 4";
-        break;
-    case Class5:
+    case EVENT_SHIP_CONFIG_CLASS5:
         return "Class 5";
-        break;
-    case Class6:
+    case EVENT_SHIP_CONFIG_CLASS6:
         return "Class 6";
-        break;
-    case Pay:
+    case EVENT_SHIP_CONFIG_PAY:
         return "Pay";
-        break;
-    case Nevermind:
+    case EVENT_SHIP_CONFIG_CANCEL:
         return "Cancel";
-        break;
-    case SaveName:
+    case EVENT_SHIP_CONFIG_SAVE_NAME:
         return "Save Name";
-        break;
-    case TVConfig:
+    case EVENT_SHIP_CONFIG_TV_CONFIG:
         return "Terrain Vehicle";
-        break;
-    case BuyTV:
+    case EVENT_SHIP_CONFIG_BUY_TV:
         return "Buy T.V. (2000)";
-        break;
+    default:
+        return "";
     }
     return "";
 }
 
 void
-ModuleShipConfig::configureButton(int btn, ButtonType btnType) {
+ModuleShipConfig::configureButton(int btn, EventType btnType) {
     if (0 <= btn && btn < NUMBER_OF_BUTTONS) {
-        buttons[btn]->SetClickEvent(btnType);
-        if (Class1 <= btnType && btnType <= Class6) {
-            buttons[btn]->SetButtonText(
-                convertButtonTypeToString(btnType) + "  " +
-                Util::ToString(ITEM_PRICES[menuPath[3] - ITEM_ENUM_DIF][btn]));
+        m_buttons[btn]->set_click_event(btnType);
+        m_buttons[btn]->set_active(true);
+        if (EVENT_SHIP_CONFIG_CLASS1 <= btnType
+            && btnType <= EVENT_SHIP_CONFIG_CLASS6) {
+            m_buttons[btn]->set_text(
+                convertEventTypeToString(btnType) + "  "
+                + Util::ToString(
+                    ITEM_PRICES[menuPath[3] - ITEM_ENUM_DIF][btn]));
 
-        } else if (btnType == CargoPods)
-            buttons[btn]->SetButtonText(convertButtonTypeToString(btnType) +
-                                        "  " + Util::ToString(CARGOPODS));
+        } else if (btnType == EVENT_SHIP_CONFIG_CARGO_PODS)
+            m_buttons[btn]->set_text(
+                convertEventTypeToString(btnType) + "  "
+                + Util::ToString(CARGOPODS));
         else
-            buttons[btn]->SetButtonText(convertButtonTypeToString(btnType));
+            m_buttons[btn]->set_text(convertEventTypeToString(btnType));
 
-        if (btnType == Exit || btnType == Back) {
-            buttons[btn]->SetX(BOTTOM_CORNER_X);
-            buttons[btn]->SetY(BOTTOM_CORNER_Y);
+        if (btnType == EVENT_SHIP_CONFIG_EXIT
+            || btnType == EVENT_SHIP_CONFIG_BACK) {
+            m_buttons[btn]->move(BOTTOM_CORNER_X, BOTTOM_CORNER_Y);
         } else {
-            buttons[btn]->SetX(BUTTON_X_START);
-            buttons[btn]->SetY(BUTTON_Y_START +
-                               btn * (BUTTON_HEIGHT + PIXEL_BUFFER));
+            m_buttons[btn]->move(
+                BUTTON_X_START,
+                BUTTON_Y_START + btn * (BUTTON_HEIGHT + PIXEL_BUFFER));
         }
     }
 }
@@ -624,76 +619,78 @@ ModuleShipConfig::checkComponent() const {
         return false;
 
     switch (menuPath[2]) {
-    case Buy: {
-        int itemIndex = menuPath[3] - ITEM_ENUM_DIF;
-        int classIndex = menuPath[4] - CLASS_ENUM_DIF - 1;
-        int cost = ITEM_PRICES[itemIndex][classIndex];
+    case EVENT_SHIP_CONFIG_BUY:
+        {
+            int itemIndex = menuPath[3] - ITEM_ENUM_DIF;
+            int classIndex = menuPath[4] - CLASS_ENUM_DIF - 1;
+            int cost = ITEM_PRICES[itemIndex][classIndex];
 
-        // can player afford it?
-        int cash = g_game->gameState->m_credits;
-        if (cash - cost < 0)
-            return true;
+            // can player afford it?
+            int cash = g_game->gameState->m_credits;
+            if (cash - cost < 0)
+                return true;
 
-        switch (menuPath[3]) {
-        case Engines:
-            return g_game->gameState->m_ship.getEngineClass() ==
-                   menuPath[4] - CLASS_ENUM_DIF;
-        case Shields:
-            return g_game->gameState->m_ship.getShieldClass() ==
-                   menuPath[4] - CLASS_ENUM_DIF;
-        case Armor:
-            return g_game->gameState->m_ship.getArmorClass() ==
-                   menuPath[4] - CLASS_ENUM_DIF;
-        case Missiles:
-            return g_game->gameState->m_ship.getMissileLauncherClass() ==
-                   menuPath[3] - CLASS_ENUM_DIF;
-        case Lasers:
-            return g_game->gameState->m_ship.getLaserClass() ==
-                   menuPath[4] - CLASS_ENUM_DIF;
-        default:
-            break;
+            switch (menuPath[3]) {
+            case EVENT_SHIP_CONFIG_ENGINES:
+                return g_game->gameState->m_ship.getEngineClass()
+                       == menuPath[4] - CLASS_ENUM_DIF;
+            case EVENT_SHIP_CONFIG_SHIELDS:
+                return g_game->gameState->m_ship.getShieldClass()
+                       == menuPath[4] - CLASS_ENUM_DIF;
+            case EVENT_SHIP_CONFIG_ARMOR:
+                return g_game->gameState->m_ship.getArmorClass()
+                       == menuPath[4] - CLASS_ENUM_DIF;
+            case EVENT_SHIP_CONFIG_MISSILES:
+                return g_game->gameState->m_ship.getMissileLauncherClass()
+                       == menuPath[3] - CLASS_ENUM_DIF;
+            case EVENT_SHIP_CONFIG_LASERS:
+                return g_game->gameState->m_ship.getLaserClass()
+                       == menuPath[4] - CLASS_ENUM_DIF;
+            default:
+                break;
+            }
         }
-    } break;
-    case Sell:
+        break;
+    case EVENT_SHIP_CONFIG_SELL:
         switch (menuPath[3]) {
-        case Engines:
-            return g_game->gameState->m_ship.getEngineClass() !=
-                   NotInstalledType;
-        case Shields:
-            return g_game->gameState->m_ship.getShieldClass() !=
-                   NotInstalledType;
-        case Armor:
-            return g_game->gameState->m_ship.getArmorClass() !=
-                   NotInstalledType;
-        case Missiles:
-            return g_game->gameState->m_ship.getMissileLauncherClass() !=
-                   NotInstalledType;
-        case Lasers:
-            return g_game->gameState->m_ship.getLaserClass() !=
-                   NotInstalledType;
+        case EVENT_SHIP_CONFIG_ENGINES:
+            return g_game->gameState->m_ship.getEngineClass()
+                   != NotInstalledType;
+        case EVENT_SHIP_CONFIG_SHIELDS:
+            return g_game->gameState->m_ship.getShieldClass()
+                   != NotInstalledType;
+        case EVENT_SHIP_CONFIG_ARMOR:
+            return g_game->gameState->m_ship.getArmorClass()
+                   != NotInstalledType;
+        case EVENT_SHIP_CONFIG_MISSILES:
+            return g_game->gameState->m_ship.getMissileLauncherClass()
+                   != NotInstalledType;
+        case EVENT_SHIP_CONFIG_LASERS:
+            return g_game->gameState->m_ship.getLaserClass()
+                   != NotInstalledType;
         default:
             break;
         }
         break;
 
-    case Repair:
+    case EVENT_SHIP_CONFIG_REPAIR:
         switch (menuPath[3]) {
-        case Engines:
-            return g_game->gameState->m_ship.getEngineClass() !=
-                   NotInstalledType;
-        case Shields:
-            return g_game->gameState->m_ship.getShieldClass() !=
-                   NotInstalledType;
-        case Armor:
-            return g_game->gameState->m_ship.getArmorClass() !=
-                   NotInstalledType;
-        case Missiles:
-            return g_game->gameState->m_ship.getMissileLauncherClass() !=
-                   NotInstalledType;
-        case Lasers:
-            return g_game->gameState->m_ship.getLaserClass() !=
-                   NotInstalledType;
-        case Hull:
+        case EVENT_SHIP_CONFIG_ENGINES:
+            return g_game->gameState->m_ship.getEngineClass()
+                   != NotInstalledType;
+        case EVENT_SHIP_CONFIG_SHIELDS:
+            return g_game->gameState->m_ship.getShieldClass()
+                   != NotInstalledType;
+        case EVENT_SHIP_CONFIG_ARMOR:
+            return g_game->gameState->m_ship.getArmorClass()
+                   != NotInstalledType;
+        case EVENT_SHIP_CONFIG_MISSILES:
+            return g_game->gameState->m_ship.getMissileLauncherClass()
+                   != NotInstalledType;
+        case EVENT_SHIP_CONFIG_LASERS:
+            return g_game->gameState->m_ship.getLaserClass()
+                   != NotInstalledType;
+        case EVENT_SHIP_CONFIG_HULL:
             return true;
         default:
             break;
@@ -1055,76 +1052,76 @@ ModuleShipConfig::repairComponent() {
     string noMsg = "You don't have enough credits to pay for the repairs.";
     int itemCost = 0;
     switch (menuPath[3]) {
-    case Hull:
+    case EVENT_SHIP_CONFIG_HULL:
         itemCost = getHullRepair();
         if (itemCost > 0) {
             if (g_game->gameState->m_credits >= itemCost) {
                 g_game->gameState->augCredits(-itemCost);
                 g_game->gameState->m_ship.setHullIntegrity(100);
-                g_game->ShowMessageBoxWindow(
-                    "", "Hull breaches have been patched up.", 400, 200);
+                set_modal_child(make_shared<MessageBoxWindow>(
+                    "", "Hull breaches have been patched up."));
             } else
-                g_game->ShowMessageBoxWindow("", noMsg, 400, 200);
+                set_modal_child(make_shared<MessageBoxWindow>("", noMsg));
         }
         break;
-    case Engines:
+    case EVENT_SHIP_CONFIG_ENGINES:
         itemCost = getEngineRepair();
         if (itemCost > 0) {
             if (g_game->gameState->m_credits >= itemCost) {
                 g_game->gameState->augCredits(-itemCost);
                 g_game->gameState->m_ship.setEngineIntegrity(100);
-                g_game->ShowMessageBoxWindow(
-                    "", "Engines now at peak operating efficiency.", 400, 200);
+                set_modal_child(make_shared<MessageBoxWindow>(
+                    "", "Engines now at peak operating efficiency."));
             } else
-                g_game->ShowMessageBoxWindow("", noMsg, 400, 200);
+                set_modal_child(make_shared<MessageBoxWindow>("", noMsg));
         }
         break;
-    case Shields:
+    case EVENT_SHIP_CONFIG_SHIELDS:
         itemCost = getShieldRepair();
         if (itemCost > 0) {
             if (g_game->gameState->m_credits >= itemCost) {
                 g_game->gameState->augCredits(-itemCost);
                 g_game->gameState->m_ship.setShieldIntegrity(100);
-                g_game->ShowMessageBoxWindow(
-                    "", "Shield capability fully restored.", 400, 200);
+                set_modal_child(make_shared<MessageBoxWindow>(
+                    "", "Shield capability fully restored."));
             } else
-                g_game->ShowMessageBoxWindow("", noMsg, 400, 200);
+                set_modal_child(make_shared<MessageBoxWindow>("", noMsg));
         }
         break;
-    case Armor:
+    case EVENT_SHIP_CONFIG_ARMOR:
         itemCost = getArmorRepair();
         if (itemCost > 0) {
             if (g_game->gameState->m_credits >= itemCost) {
                 g_game->gameState->augCredits(-itemCost);
                 g_game->gameState->m_ship.setArmorIntegrity(100);
-                g_game->ShowMessageBoxWindow(
-                    "", "Armor plating has been reinforced.", 400, 200);
+                set_modal_child(make_shared<MessageBoxWindow>(
+                    "", "Armor plating has been reinforced."));
             } else
-                g_game->ShowMessageBoxWindow("", noMsg, 400, 200);
+                set_modal_child(make_shared<MessageBoxWindow>("", noMsg));
         }
         break;
-    case Missiles:
+    case EVENT_SHIP_CONFIG_MISSILES:
         itemCost = getMissileRepair();
         if (itemCost > 0) {
             if (g_game->gameState->m_credits >= itemCost) {
                 g_game->gameState->augCredits(-itemCost);
                 g_game->gameState->m_ship.setMissileLauncherIntegrity(100);
-                g_game->ShowMessageBoxWindow(
-                    "", "Missile launcher fully repaired.", 400, 200);
+                set_modal_child(make_shared<MessageBoxWindow>(
+                    "", "Missile launcher fully repaired."));
             } else
-                g_game->ShowMessageBoxWindow("", noMsg, 400, 200);
+                set_modal_child(make_shared<MessageBoxWindow>("", noMsg));
         }
         break;
-    case Lasers:
+    case EVENT_SHIP_CONFIG_LASERS:
         itemCost = getLaserRepair();
         if (itemCost > 0) {
             if (g_game->gameState->m_credits >= itemCost) {
                 g_game->gameState->augCredits(-itemCost);
                 g_game->gameState->m_ship.setLaserIntegrity(100);
-                g_game->ShowMessageBoxWindow(
-                    "", "Lasers are ready for action.", 400, 200);
+                set_modal_child(make_shared<MessageBoxWindow>(
+                    "", "Lasers are ready for action."));
             } else
-                g_game->ShowMessageBoxWindow("", noMsg, 400, 200);
+                set_modal_child(make_shared<MessageBoxWindow>("", noMsg));
         }
         break;
     default:
@@ -1145,28 +1142,28 @@ ModuleShipConfig::sellComponent() {
 
     Ship ship = g_game->gameState->getShip();
     switch (menuPath[3]) {
-    case Engines:
+    case EVENT_SHIP_CONFIG_ENGINES:
         salePrice = getEngineValue();
         saleItem = "Class " + Util::ToString(ship.getEngineClass()) + " Engine";
         ship.setEngineClass(NotInstalledType);
         break;
-    case Shields:
+    case EVENT_SHIP_CONFIG_SHIELDS:
         salePrice = getShieldValue();
         saleItem = "Class " + Util::ToString(ship.getShieldClass()) + " Shield";
         ship.setShieldClass(NotInstalledType);
         break;
-    case Armor:
+    case EVENT_SHIP_CONFIG_ARMOR:
         salePrice = getArmorValue();
         saleItem = "Class " + Util::ToString(ship.getArmorClass()) + " Armor";
         ship.setArmorClass(NotInstalledType);
         break;
-    case Missiles:
+    case EVENT_SHIP_CONFIG_MISSILES:
         salePrice = getMissileValue();
-        saleItem = "Class " + Util::ToString(ship.getMissileLauncherClass()) +
-                   " Missile Launcher";
+        saleItem = "Class " + Util::ToString(ship.getMissileLauncherClass())
+                   + " Missile Launcher";
         ship.setMissileLauncherClass(NotInstalledType);
         break;
-    case Lasers:
+    case EVENT_SHIP_CONFIG_LASERS:
         salePrice = getLaserValue();
         saleItem = "Class " + Util::ToString(ship.getLaserClass()) + " Laser";
         ship.setLaserClass(NotInstalledType);
@@ -1181,9 +1178,9 @@ ModuleShipConfig::sellComponent() {
     // add credits to player's account
     g_game->gameState->augCredits(salePrice);
 
-    saleText = "You received " + Util::ToString(salePrice) +
-               " credits for the " + saleItem + ".";
-    g_game->ShowMessageBoxWindow("", saleText, 600, 200);
+    saleText = "You received " + Util::ToString(salePrice) + " credits for the "
+               + saleItem + ".";
+    set_modal_child(make_shared<MessageBoxWindow>("", saleText));
 }
 
 void
@@ -1197,51 +1194,51 @@ ModuleShipConfig::buyComponent() {
     Ship ship = g_game->gameState->getShip();
 
     switch (menuPath[3]) {
-    case Engines:
+    case EVENT_SHIP_CONFIG_ENGINES:
         if (ship.getEngineClass() == 0) {
             ship.setEngineClass(menuPath[4] - CLASS_ENUM_DIF);
             ship.setEngineIntegrity(100.0f);
             g_game->gameState->augCredits(-cost);
         } else
-            g_game->ShowMessageBoxWindow(
-                "", "Your ship already has an engine!", 450, 200);
+            set_modal_child(make_shared<MessageBoxWindow>(
+                "", "Your ship already has an engine!"));
         break;
-    case Shields:
+    case EVENT_SHIP_CONFIG_SHIELDS:
         if (ship.getShieldClass() == 0) {
             ship.setShieldClass(menuPath[4] - CLASS_ENUM_DIF);
             ship.setShieldIntegrity(100.0f);
             ship.setShieldCapacity(ship.getMaxShieldCapacity());
             g_game->gameState->augCredits(-cost);
         } else
-            g_game->ShowMessageBoxWindow(
-                "", "Your ship already has a shield generator!", 450, 200);
+            set_modal_child(make_shared<MessageBoxWindow>(
+                "", "Your ship already has a shield generator!"));
         break;
-    case Armor:
+    case EVENT_SHIP_CONFIG_ARMOR:
         if (ship.getArmorClass() == 0) {
             ship.setArmorClass(menuPath[4] - CLASS_ENUM_DIF);
             ship.setArmorIntegrity(ship.getMaxArmorIntegrity());
             g_game->gameState->augCredits(-cost);
         } else
-            g_game->ShowMessageBoxWindow(
-                "", "Your ship already has armor plating!", 450, 200);
+            set_modal_child(make_shared<MessageBoxWindow>(
+                "", "Your ship already has armor plating!"));
         break;
-    case Missiles:
+    case EVENT_SHIP_CONFIG_MISSILES:
         if (ship.getMissileLauncherClass() == 0) {
             ship.setMissileLauncherClass(menuPath[4] - CLASS_ENUM_DIF);
             ship.setMissileLauncherIntegrity(100.0f);
             g_game->gameState->augCredits(-cost);
         } else
-            g_game->ShowMessageBoxWindow(
-                "", "Your ship already has a missile launcher!", 450, 200);
+            set_modal_child(make_shared<MessageBoxWindow>(
+                "", "Your ship already has a missile launcher!"));
         break;
-    case Lasers:
+    case EVENT_SHIP_CONFIG_LASERS:
         if (ship.getLaserClass() == 0) {
             ship.setLaserClass(menuPath[4] - CLASS_ENUM_DIF); // jjh
             ship.setLaserIntegrity(100.0f);
             g_game->gameState->augCredits(-cost);
         } else
-            g_game->ShowMessageBoxWindow(
-                "", "Your ship already has a laser!", 450, 200);
+            set_modal_child(make_shared<MessageBoxWindow>(
+                "", "Your ship already has a laser!"));
         break;
     default:
         ALLEGRO_ASSERT(0);
@@ -1251,107 +1248,68 @@ ModuleShipConfig::buyComponent() {
 
 void
 ModuleShipConfig::display() const {
-    al_set_target_bitmap(g_game->GetBackBuffer());
-    // show menu path
-    if (menuPath.back() == Repair) {
-        std::string temp =
-            "Total Repair Cost: " + Util::ToString(repairCost) + " MU";
-        al_draw_text(
-            g_game->font32, WHITE, MENU_PATH_X, MENU_PATH_Y, 0, temp.c_str());
-    } else if (menuPath.back() == Name) {
-        int nlen;
-        // print "MSS"
-        al_draw_text(
-            g_game->font22, WHITE, MENU_PATH_X, MENU_PATH_Y, 0, "MSS ");
-        nlen = al_get_text_width(g_game->font22, "MSS ");
-
-        // print ship name
-        al_draw_text(g_game->font22,
-                     WHITE,
-                     MENU_PATH_X + nlen,
-                     MENU_PATH_Y,
-                     0,
-                     shipName.c_str());
-        nlen += al_get_text_width(g_game->font22, shipName.c_str());
-
-        al_draw_bitmap(m_cursor, MENU_PATH_X + nlen + 2, MENU_PATH_Y, 0);
-
-    } else {
-        if (menuPath.size() > 1)
-            al_draw_text(g_game->font32,
-                         WHITE,
-                         MENU_PATH_X,
-                         MENU_PATH_Y,
-                         0,
-                         convertMenuPathToString().c_str());
-    }
-
-    // draw ship schematic
-    al_draw_bitmap(shipImage, 586, 548, 0);
-
     // static
     int i = 0;
-    al_draw_textf(g_game->font22,
-                  WHITE,
-                  STATIC_SHIPNAME_X - 10,
-                  SHIPNAME_Y,
-                  0,
-                  "Ship Name: MSS %s",
-                  g_game->gameState->m_ship.getName().c_str());
-    al_draw_text(g_game->font32,
-                 WHITE,
-                 STATIC_READOUT_X,
-                 READOUT_Y + (i++) * READOUT_SPACING,
-                 0,
-                 "Cargo Pods");
-    al_draw_text(g_game->font32,
-                 WHITE,
-                 STATIC_READOUT_X,
-                 READOUT_Y + (i++) * READOUT_SPACING,
-                 0,
-                 "Engine");
-    al_draw_text(g_game->font32,
-                 WHITE,
-                 STATIC_READOUT_X,
-                 READOUT_Y + (i++) * READOUT_SPACING,
-                 0,
-                 "Shield");
-    al_draw_text(g_game->font32,
-                 WHITE,
-                 STATIC_READOUT_X,
-                 READOUT_Y + (i++) * READOUT_SPACING,
-                 0,
-                 "Armor");
-    al_draw_text(g_game->font32,
-                 WHITE,
-                 STATIC_READOUT_X,
-                 READOUT_Y + (i++) * READOUT_SPACING,
-                 0,
-                 "Missile");
-    al_draw_text(g_game->font32,
-                 WHITE,
-                 STATIC_READOUT_X,
-                 READOUT_Y + (i++) * READOUT_SPACING,
-                 0,
-                 "Laser");
-    al_draw_text(g_game->font32,
-                 WHITE,
-                 STATIC_READOUT_X,
-                 READOUT_Y + (i++) * READOUT_SPACING,
-                 0,
-                 "Hull Integrity");
     al_draw_text(
-        g_game->font32, WHITE, STATIC_CREDITS_X, CREDITS_Y, 0, "Credits");
+        g_game->font32.get(),
+        WHITE,
+        STATIC_READOUT_X,
+        READOUT_Y + (i++) * READOUT_SPACING,
+        0,
+        "Cargo Pods");
+    al_draw_text(
+        g_game->font32.get(),
+        WHITE,
+        STATIC_READOUT_X,
+        READOUT_Y + (i++) * READOUT_SPACING,
+        0,
+        "Engine");
+    al_draw_text(
+        g_game->font32.get(),
+        WHITE,
+        STATIC_READOUT_X,
+        READOUT_Y + (i++) * READOUT_SPACING,
+        0,
+        "Shield");
+    al_draw_text(
+        g_game->font32.get(),
+        WHITE,
+        STATIC_READOUT_X,
+        READOUT_Y + (i++) * READOUT_SPACING,
+        0,
+        "Armor");
+    al_draw_text(
+        g_game->font32.get(),
+        WHITE,
+        STATIC_READOUT_X,
+        READOUT_Y + (i++) * READOUT_SPACING,
+        0,
+        "Missile");
+    al_draw_text(
+        g_game->font32.get(),
+        WHITE,
+        STATIC_READOUT_X,
+        READOUT_Y + (i++) * READOUT_SPACING,
+        0,
+        "Laser");
+    al_draw_text(
+        g_game->font32.get(),
+        WHITE,
+        STATIC_READOUT_X,
+        READOUT_Y + (i++) * READOUT_SPACING,
+        0,
+        "Hull Integrity");
 
     // dynamic
     int j = 0;
-    al_draw_textf(g_game->font32,
-                  WHITE,
-                  DYNAMIC_READOUT_X,
-                  READOUT_Y + (j++) * READOUT_SPACING,
-                  ALLEGRO_ALIGN_RIGHT,
-                  "%d",
-                  g_game->gameState->m_ship.getCargoPodCount());
+    al_draw_textf(
+        g_game->font32.get(),
+        WHITE,
+        DYNAMIC_READOUT_X,
+        READOUT_Y + (j++) * READOUT_SPACING,
+        ALLEGRO_ALIGN_RIGHT,
+        "%d",
+        g_game->gameState->m_ship.getCargoPodCount());
 
     // display class level of engine
     ALLEGRO_COLOR color = WHITE;
@@ -1362,12 +1320,13 @@ ModuleShipConfig::display() const {
         color = YELLOW;
     else
         color = WHITE;
-    al_draw_text(g_game->font32,
-                 color,
-                 DYNAMIC_READOUT_X,
-                 READOUT_Y + (j++) * READOUT_SPACING,
-                 ALLEGRO_ALIGN_RIGHT,
-                 g_game->gameState->m_ship.getEngineClassString().c_str());
+    al_draw_text(
+        g_game->font32.get(),
+        color,
+        DYNAMIC_READOUT_X,
+        READOUT_Y + (j++) * READOUT_SPACING,
+        ALLEGRO_ALIGN_RIGHT,
+        g_game->gameState->m_ship.getEngineClassString().c_str());
 
     // display class level of shield
     health = g_game->gameState->m_ship.getShieldIntegrity();
@@ -1377,12 +1336,13 @@ ModuleShipConfig::display() const {
         color = YELLOW;
     else
         color = WHITE;
-    al_draw_text(g_game->font32,
-                 color,
-                 DYNAMIC_READOUT_X,
-                 READOUT_Y + (j++) * READOUT_SPACING,
-                 ALLEGRO_ALIGN_RIGHT,
-                 g_game->gameState->m_ship.getShieldClassString().c_str());
+    al_draw_text(
+        g_game->font32.get(),
+        color,
+        DYNAMIC_READOUT_X,
+        READOUT_Y + (j++) * READOUT_SPACING,
+        ALLEGRO_ALIGN_RIGHT,
+        g_game->gameState->m_ship.getShieldClassString().c_str());
 
     // display class level of armor
     health = g_game->gameState->m_ship.getArmorIntegrity();
@@ -1392,12 +1352,13 @@ ModuleShipConfig::display() const {
         color = YELLOW;
     else
         color = WHITE;
-    al_draw_text(g_game->font32,
-                 color,
-                 DYNAMIC_READOUT_X,
-                 READOUT_Y + (j++) * READOUT_SPACING,
-                 ALLEGRO_ALIGN_RIGHT,
-                 g_game->gameState->m_ship.getArmorClassString().c_str());
+    al_draw_text(
+        g_game->font32.get(),
+        color,
+        DYNAMIC_READOUT_X,
+        READOUT_Y + (j++) * READOUT_SPACING,
+        ALLEGRO_ALIGN_RIGHT,
+        g_game->gameState->m_ship.getArmorClassString().c_str());
 
     // display class level of missile
     health = g_game->gameState->m_ship.getMissileLauncherIntegrity();
@@ -1408,7 +1369,7 @@ ModuleShipConfig::display() const {
     else
         color = WHITE;
     al_draw_text(
-        g_game->font32,
+        g_game->font32.get(),
         color,
         DYNAMIC_READOUT_X,
         READOUT_Y + (j++) * READOUT_SPACING,
@@ -1423,12 +1384,13 @@ ModuleShipConfig::display() const {
         color = YELLOW;
     else
         color = WHITE;
-    al_draw_text(g_game->font32,
-                 color,
-                 DYNAMIC_READOUT_X,
-                 READOUT_Y + (j++) * READOUT_SPACING,
-                 ALLEGRO_ALIGN_RIGHT,
-                 g_game->gameState->m_ship.getLaserClassString().c_str());
+    al_draw_text(
+        g_game->font32.get(),
+        color,
+        DYNAMIC_READOUT_X,
+        READOUT_Y + (j++) * READOUT_SPACING,
+        ALLEGRO_ALIGN_RIGHT,
+        g_game->gameState->m_ship.getLaserClassString().c_str());
 
     // this should clear up any hull init problem
     health = g_game->gameState->m_ship.getHullIntegrity();
@@ -1443,36 +1405,25 @@ ModuleShipConfig::display() const {
         g_game->gameState->m_ship.setHullIntegrity(100.0f);
 
     // print hull integrity
-    al_draw_textf(g_game->font32,
-                  WHITE,
-                  DYNAMIC_READOUT_X,
-                  READOUT_Y + (j++) * READOUT_SPACING,
-                  ALLEGRO_ALIGN_RIGHT,
-                  "%.0f",
-                  g_game->gameState->m_ship.getHullIntegrity());
-
-    // print credits
-    al_draw_textf(g_game->font32,
-                  WHITE,
-                  DYNAMIC_CREDITS_X,
-                  CREDITS_Y,
-                  ALLEGRO_ALIGN_RIGHT,
-                  "%d",
-                  g_game->gameState->m_credits);
+    al_draw_textf(
+        g_game->font32.get(),
+        WHITE,
+        DYNAMIC_READOUT_X,
+        READOUT_Y + (j++) * READOUT_SPACING,
+        ALLEGRO_ALIGN_RIGHT,
+        "%.0f",
+        g_game->gameState->m_ship.getHullIntegrity());
+    return;
 }
 
-void
-ModuleShipConfig::Update() {}
+bool
+ModuleShipConfig::on_draw(ALLEGRO_BITMAP *target) {
+    m_credits_display->set_text(
+        "Credits " + to_string(g_game->gameState->m_credits));
 
-void
-ModuleShipConfig::Draw() {
-    al_set_target_bitmap(g_game->GetBackBuffer());
-    // blit the background image
-    al_draw_bitmap(shipConfig, 0, 0, 0);
-
-    // step through active buttons
-    for (int i = 0; i < buttonsActive; ++i)
-        buttons[i]->Run(g_game->GetBackBuffer());
+    al_set_target_bitmap(target);
 
     display();
+
+    return true;
 }

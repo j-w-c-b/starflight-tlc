@@ -10,13 +10,15 @@
 
 #include <string>
 
-class Archive;
+#include "Archive.h"
 
 class Stardate {
   public:
     Stardate();
     Stardate(const Stardate &stardate);
     explicit Stardate(const std::string &fullDateString); // dd.hh-mm-yyyy
+
+    static constexpr std::string_view class_name = "Stardate";
 
     Stardate &operator=(const Stardate &stardate);
     int GetDay() const;
@@ -43,12 +45,14 @@ class Stardate {
     void Update(double gameTimeInSecs, double update_interval);
 
     void Reset();
-    bool Serialize(Archive &out);
 
-    int get_current_date_in_days(void);
+    int get_current_date_in_days() const;
     void add_days(int days);
 
     int totalHours;
+    friend InputArchive &operator>>(InputArchive &ar, Stardate &stardate);
+    friend OutputArchive &
+    operator<<(OutputArchive &ar, const Stardate &stardate);
 
   private:
     bool IsValidDate(int day, int month, int year);

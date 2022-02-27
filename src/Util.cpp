@@ -15,7 +15,7 @@ using namespace std;
 
 void
 Util::Init() {
-    srand((unsigned int)time(NULL));
+    sfsrand((unsigned int)time(NULL));
 }
 
 int
@@ -36,7 +36,7 @@ Util::ReentrantDelay(int ms) {
 }
 
 std::string
-Util::ToUpper(std::string &str) {
+Util::ToUpper(const std::string &str) {
     std::string converted(str);
     transform(str.begin(), str.end(), converted.begin(), ::toupper);
     return converted;

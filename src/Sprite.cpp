@@ -4,10 +4,9 @@
  * Author: Jonathan Harbour
  * Date: Early 21st century
  *
- * If you don't like this class, make your own, but don't screw with this one.
- *
  */
 
+#include <cmath>
 #include <sstream>
 
 #include <allegro5/allegro.h>
@@ -17,8 +16,7 @@
 #include "Sprite.h"
 #include "Util.h"
 
-#define PI 3.1415926535
-#define PI_div_180 0.017453292519444
+constexpr float PI_div_180 = M_PI / 180.0;
 
 using namespace std;
 
@@ -56,77 +54,24 @@ Sprite::Sprite() {
     threshold1 = 0;
     threshold2 = 0;
     threshold3 = 0;
-    bLoaded = false;
     DebugMode = false;
 }
 
-Sprite::~Sprite() {
-    // prevent destroying ALLEGRO_BITMAP if it was passed as a pointer rather
-    // than loaded
-    if (bLoaded) {
-        if (this->image != NULL) {
-            al_destroy_bitmap(this->image);
-            this->image = NULL;
-        }
-    }
-
-    if (this->frame != NULL) {
-        al_destroy_bitmap(this->frame);
-        this->frame = NULL;
-    }
-}
-
-bool
-Sprite::load(const char *filename) {
-    string full_filename = Util::resource_path(filename);
-    this->image = al_load_bitmap(full_filename.c_str());
-    if (!this->image) {
-        std::ostringstream s;
-        s << "Error loading sprite file: " << filename;
-        g_game->message(s.str().c_str());
-        return false;
-    }
-    this->width = al_get_bitmap_width(image);
-    this->height = al_get_bitmap_height(image);
-    this->bLoaded = true;
-    al_convert_mask_to_alpha(image, MASK_COLOR);
-
-    // default frame size equals whole image size unless manually changed
-    this->frameWidth = this->width;
-    this->frameHeight = this->height;
-    return true;
-}
-
-bool
-Sprite::load(std::string filename) {
-    return load(filename.c_str());
-}
-
-ALLEGRO_BITMAP *
+shared_ptr<ALLEGRO_BITMAP>
 Sprite::getImage() {
-    if (this->image)
-        return this->image;
-    else
-        return NULL;
+    return image;
 }
 bool
-Sprite::setImage(ALLEGRO_BITMAP *source) {
+Sprite::setImage(shared_ptr<ALLEGRO_BITMAP> source) {
     // if new source image is null, then abort
     if (!source)
         return false;
 
-    // if old image exists, it must be freed first
-    if (this->image && bLoaded) {
-        al_destroy_bitmap(this->image);
-        this->image = NULL;
-    }
-
-    this->image = source;
-    this->width = al_get_bitmap_width(source);
-    this->height = al_get_bitmap_height(source);
-    this->frameWidth = al_get_bitmap_width(source);
-    this->frameHeight = al_get_bitmap_height(source);
-    this->bLoaded = false;
+    image = source;
+    width = al_get_bitmap_width(source.get());
+    height = al_get_bitmap_height(source.get());
+    frameWidth = al_get_bitmap_width(source.get());
+    frameHeight = al_get_bitmap_height(source.get());
 
     return true;
 }
@@ -134,8 +79,8 @@ Sprite::setImage(ALLEGRO_BITMAP *source) {
 void
 Sprite::draw(ALLEGRO_BITMAP *dest) {
     al_set_target_bitmap(dest);
-    if (this->image)
-        al_draw_bitmap(this->image, (int)this->x, (int)this->y, 0);
+    if (image)
+        al_draw_bitmap(image.get(), (int)this->x, (int)this->y, 0);
 }
 
 // draw normally with optional alpha channel support
@@ -150,7 +95,7 @@ Sprite::drawframe(ALLEGRO_BITMAP *dest) {
     al_set_target_bitmap(dest);
 
     al_draw_bitmap_region(
-        this->image, fx, fy, frameWidth, frameHeight, (int)x, (int)y, 0);
+        image.get(), fx, fy, frameWidth, frameHeight, (int)x, (int)y, 0);
 
     if (DebugMode) {
         al_draw_rectangle(
@@ -166,24 +111,27 @@ Sprite::drawframe_rotate(ALLEGRO_BITMAP *dest, int angle) {
 
     // create scratch frame if necessary
     if (!frame) {
-        frame = al_create_bitmap(frameWidth, frameHeight);
+        frame = shared_ptr<ALLEGRO_BITMAP>(
+            al_create_bitmap(frameWidth, frameHeight), al_destroy_bitmap);
     }
 
     // first, draw frame normally but send it to the scratch frame image
     int fx = animStartX + (currFrame % animColumns) * frameWidth;
     int fy = animStartY + (currFrame / animColumns) * frameHeight;
-    al_set_target_bitmap(frame);
+    al_set_target_bitmap(frame.get());
     al_clear_to_color(al_map_rgba(0, 0, 0, 0));
-    al_draw_bitmap_region(image, fx, fy, frameWidth, frameHeight, 0, 0, 0);
+    al_draw_bitmap_region(
+        image.get(), fx, fy, frameWidth, frameHeight, 0, 0, 0);
 
     al_set_target_bitmap(dest);
-    al_draw_rotated_bitmap(frame,
-                           al_get_bitmap_width(frame) / 2,
-                           al_get_bitmap_height(frame) / 2,
-                           x + al_get_bitmap_width(frame) / 2,
-                           y + al_get_bitmap_height(frame) / 2,
-                           angle * PI_div_180,
-                           0);
+    al_draw_rotated_bitmap(
+        frame.get(),
+        al_get_bitmap_width(frame.get()) / 2,
+        al_get_bitmap_height(frame.get()) / 2,
+        x + al_get_bitmap_width(frame.get()) / 2,
+        y + al_get_bitmap_height(frame.get()) / 2,
+        angle * PI_div_180,
+        0);
 
     if (DebugMode) {
         al_draw_rectangle(
@@ -236,11 +184,11 @@ Sprite::collidedD(Sprite *other) {
         return false;
 
     // calculate radius 1
-    double radius1 = this->getFrameWidth() * 0.4;
+    double radius1 = getFrameWidth() * 0.4;
 
     // point = center of sprite 1
-    double x1 = this->getX() + this->getFrameWidth() / 2;
-    double y1 = this->getY() + this->getFrameHeight() / 2;
+    double x1 = getX() + this->getFrameWidth() / 2;
+    double y1 = getY() + this->getFrameHeight() / 2;
 
     // calculate radius 2
     double radius2 = other->getFrameWidth() * 0.4;
@@ -252,7 +200,7 @@ Sprite::collidedD(Sprite *other) {
     // calculate distance
     double deltaX = (x2 - x1);
     double deltaY = (y2 - y1);
-    double dist = sqrt(deltaX * deltaX + deltaY * deltaY);
+    double dist = hypot(deltaX, deltaY);
 
     // return distance comparison
     return (dist < radius1 + radius2);

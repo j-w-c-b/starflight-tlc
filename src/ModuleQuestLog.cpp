@@ -5,24 +5,28 @@
         Date: Nov-24-2007
 */
 
-#include "ModuleQuestLog.h"
+#include <allegro5/allegro.h>
+
 #include "DataMgr.h"
 #include "Events.h"
 #include "Game.h"
 #include "GameState.h"
 #include "Label.h"
 #include "ModuleControlPanel.h"
+#include "ModuleQuestLog.h"
 #include "QuestMgr.h"
 #include "questviewer_resources.h"
-#include <allegro5/allegro.h>
 
 using namespace std;
-using namespace questviewer_resources;
+using namespace questviewer;
 
-#define VIEWER_MOVE_RATE 16
+#define VIEWER_X 588
+#define VIEWER_Y 114
+#define VIEWER_W 436
+#define VIEWER_H 334
 
-#define NAME_X 36
-#define NAME_Y 36
+#define NAME_X VIEWER_X + 36
+#define NAME_Y VIEWER_Y + 36
 #define NAME_H 48
 #define NAME_W 290
 
@@ -31,122 +35,105 @@ using namespace questviewer_resources;
 #define DESC_H 190
 #define DESC_W NAME_W
 
+#define STATUS_X NAME_X
+#define STATUS_Y DESC_Y + DESC_H
+#define STATUS_H NAME_H
+#define STATUS_W NAME_W
+
 ALLEGRO_DEBUG_CHANNEL("ModuleQuestLog")
 
-ModuleQuestLog::ModuleQuestLog() : resources(QUESTVIEWER_IMAGES) {
-    log_active = false;
-}
-
-ModuleQuestLog::~ModuleQuestLog() {}
-
-void
-ModuleQuestLog::OnEvent(Event *event) {
-    switch (event->getEventType()) {
-    case EVENT_CAPTAIN_QUESTLOG:
-        if (!log_active) {
-            log_active = true;
-        } else {
-            log_active = false;
-        }
-        break;
-    }
-}
-
-void
-ModuleQuestLog::Close() {
-    resources.unload();
+ModuleQuestLog::ModuleQuestLog()
+    : Module(VIEWER_X, VIEWER_Y, VIEWER_W, VIEWER_H),
+      m_viewer(make_shared<SlidingModule<Bitmap>>(
+          SLIDE_FROM_RIGHT,
+          EVENT_NONE,
+          0.6,
+          images[I_QUEST_VIEWER],
+          VIEWER_X,
+          VIEWER_Y)),
+      m_quest_name(make_shared<Label>(
+          "",
+          NAME_X,
+          NAME_Y,
+          NAME_W,
+          NAME_H,
+          false,
+          0,
+          g_game->font22,
+          al_map_rgb(255, 84, 0))),
+      m_quest_desc(make_shared<Label>(
+          "",
+          DESC_X,
+          DESC_Y,
+          DESC_W,
+          DESC_H,
+          true,
+          0,
+          g_game->font22,
+          WHITE)),
+      m_quest_status(make_shared<Label>(
+          "",
+          STATUS_X,
+          STATUS_Y,
+          STATUS_W,
+          STATUS_H,
+          false,
+          0,
+          g_game->font20,
+          BLACK)) {
+    add_child_module(m_viewer);
+    m_viewer->add_child_module(m_quest_name);
+    m_viewer->add_child_module(m_quest_desc);
+    m_viewer->add_child_module(m_quest_status);
 }
 
 bool
-ModuleQuestLog::Init() {
-    ALLEGRO_DEBUG("ModuleQuestLog Initialize\n");
+ModuleQuestLog::on_event(ALLEGRO_EVENT *event) {
+    EventType ev = static_cast<EventType>(event->type);
 
-    if (!resources.load()) {
-        g_game->message("QuestLog: Error loading resources");
-        return false;
-    }
-
-    viewer_offset_x = SCREEN_WIDTH;
-    viewer_offset_y = 90;
-
-    log_active = false;
-
-    // create quest name label
-    ALLEGRO_COLOR questTitleColor = al_map_rgb(255, 84, 0);
-    questName = new Label(g_game->questMgr->getName(),
-                          viewer_offset_x + NAME_X,
-                          viewer_offset_y + NAME_Y,
-                          NAME_W,
-                          NAME_H,
-                          questTitleColor,
-                          g_game->font22);
-    questName->Refresh();
-
-    // create quest description label
-    ALLEGRO_COLOR questTextColor = al_map_rgb(255, 255, 255);
-    questDesc = new Label(g_game->questMgr->getShort(),
-                          viewer_offset_x + DESC_X,
-                          viewer_offset_y + DESC_Y,
-                          DESC_W,
-                          DESC_H,
-                          questTextColor,
-                          g_game->font22);
-    questDesc->Refresh();
-
-    // load window GUI
-    window = resources[I_QUEST_VIEWER];
-
-    return true;
-}
-
-void
-ModuleQuestLog::Update() {
-    if (log_active) {
-        if (g_game->gameState->getCurrentSelectedOfficer() != OFFICER_CAPTAIN) {
-            log_active = false;
+    switch (ev) {
+    case EVENT_CAPTAIN_QUESTLOG:
+        m_viewer->toggle();
+        if (!m_is_active) {
+            m_is_active = true;
         }
+        return true;
+    case EVENT_CAPTAIN_LAUNCH:
+        [[fallthrough]];
+    case EVENT_CAPTAIN_DESCEND:
+        [[fallthrough]];
+    case EVENT_CAPTAIN_CARGO:
+        if (!m_viewer->is_closed()) {
+            m_is_active = false;
+            m_viewer->toggle();
+        }
+        return true;
+    default:
+        return true;
     }
 }
 
-void
-ModuleQuestLog::Draw() {
-    // is quest viewer visible?
-    if (viewer_offset_x < SCREEN_WIDTH) {
-        // draw background
-        al_draw_bitmap(window, viewer_offset_x, viewer_offset_y, 0);
+bool
+ModuleQuestLog::on_update() {
+    auto current_officer = g_game->gameState->getCurrentSelectedOfficer();
 
-        // draw quest title
-        questName->SetX(NAME_X + viewer_offset_x);
-        questName->Draw(g_game->GetBackBuffer());
-
-        // draw quest description
-        questDesc->SetX(DESC_X + viewer_offset_x);
-        questDesc->Draw(g_game->GetBackBuffer());
-
-        // display quest completion status
-        string metstr;
-        ALLEGRO_COLOR metcolor;
-        if (g_game->gameState->getQuestCompleted()) {
-            metstr = "(COMPLETE)";
-            metcolor = GREEN;
-        } else {
-            metstr = "(INCOMPLETE)";
-            metcolor = RED;
+    if (current_officer != OFFICER_CAPTAIN) {
+        if (!m_viewer->is_closed()) {
+            m_viewer->toggle();
         }
-        g_game->Print20(g_game->GetBackBuffer(),
-                        viewer_offset_x + NAME_X,
-                        viewer_offset_y + DESC_Y + DESC_H,
-                        metstr,
-                        metcolor);
+        m_is_active = false;
+    } else if (m_is_active && !m_viewer->is_visible()) {
+        m_is_active = false;
     }
+    m_quest_name->set_text(g_game->questMgr->getName());
+    m_quest_desc->set_text(g_game->questMgr->getShort());
 
-    if (log_active) {
-        if (viewer_offset_x > 620) {
-            viewer_offset_x -= VIEWER_MOVE_RATE;
-        }
+    if (g_game->gameState->getQuestCompleted()) {
+        m_quest_status->set_text("(COMPLETE)");
+        m_quest_status->set_color(GREEN);
     } else {
-        if (viewer_offset_x < SCREEN_WIDTH) {
-            viewer_offset_x += VIEWER_MOVE_RATE;
-        }
+        m_quest_status->set_text("(INCOMPLETE)");
+        m_quest_status->set_color(RED);
     }
+    return true;
 }

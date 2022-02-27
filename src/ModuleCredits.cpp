@@ -4,15 +4,16 @@
         Author:
         Date:
 */
+#include <sstream>
 
-#include "ModuleCredits.h"
 #include "DataMgr.h"
 #include "Game.h"
 #include "ModeMgr.h"
+#include "ModuleCredits.h"
 #include "credits_resources.h"
 
 using namespace std;
-using namespace credits_resources;
+using namespace credits;
 
 ALLEGRO_DEBUG_CHANNEL("ModuleCredits")
 /*
@@ -21,20 +22,15 @@ ALLEGRO_DEBUG_CHANNEL("ModuleCredits")
   file to end-user manipulation. Roles ended up being printed on left, with
   names of the right; but i left the array as is.
  */
-const int numcredits = 36;
-string credits[numcredits][2] = {
+static vector<pair<string, string>> s_credits = {
     {"ARTWORK", "Ronald Conley"},
     {"", "Andrew Chason"},
-    {"", ""},
     {"MUSIC", "Chris Hurn"},
-    {"", ""},
     {"PROGRAMMING", "David Calkins"},
     {"", "Jon Harbour"},
     {"", "Steven Wirsz"},
-    {"", ""},
     {"GAME DESIGN", "Jon Harbour"},
     {"", "David Calkins"},
-    {"", ""},
     {"STORY WRITING", "Steven Wirsz"},
     {"", "Jon Harbour"},
     {"", ""},
@@ -46,7 +42,6 @@ string credits[numcredits][2] = {
     {"", "Evan Robinson"},
     {"", ""},
     {"SPECIAL THANKS", ""},
-    {"", ""},
     {"Steve Heyer", "Justin Sargent"},
     {"Nick Busby", "Jonathan Ray"},
     {"Jonathan Verrier", "Matthew Klausmeier"},
@@ -58,66 +53,97 @@ string credits[numcredits][2] = {
     {"Michael Madrio", "William Sherwin"},
     {"Nathan Wright", "Vince Converse"},
     {"Ed Wolinski", "Sophia Wolinski"},
-
 };
 
-ModuleCredits::ModuleCredits(void) : resources(CREDITS_IMAGES) {
-    background = NULL;
-}
-ModuleCredits::~ModuleCredits(void) {}
-
-void
-ModuleCredits::OnKeyReleased(int /*keyCode*/) {
+bool
+ModuleCredits::on_key_pressed(ALLEGRO_KEYBOARD_EVENT * /*event*/) {
     g_game->LoadModule(MODULE_TITLESCREEN);
-    return;
-}
-
-void
-ModuleCredits::OnMouseReleased(int /*button*/, int /*x*/, int /*y*/) {
-    g_game->LoadModule(MODULE_TITLESCREEN);
-    return;
-}
-
-void
-ModuleCredits::Close() {
-    ALLEGRO_DEBUG("Credits Close\n");
-
-    // unload the data file
-    resources.unload();
+    return false;
 }
 
 bool
-ModuleCredits::Init() {
+ModuleCredits::on_mouse_button_click(ALLEGRO_MOUSE_EVENT * /*event*/) {
+    g_game->LoadModule(MODULE_TITLESCREEN);
+    return false;
+}
+
+bool
+ModuleCredits::on_init() {
     ALLEGRO_DEBUG("  ModuleCredits Initialize\n");
+    m_background = make_shared<Bitmap>(images[I_BACKGROUND]);
+    add_child_module(m_background);
 
-    // load the datafile
-    if (!resources.load()) {
-        g_game->message("Credits: Error loading resources");
-        return false;
+    m_contributors = make_shared<Label>(
+        "CONTRIBUTORS",
+        390,
+        10,
+        al_get_text_width(g_game->font32.get(), "CONTRIBUTORS") + 1,
+        al_get_font_line_height(g_game->font32.get()) + 1,
+        false,
+        ALLEGRO_ALIGN_LEFT,
+        g_game->font32,
+        STEEL,
+        nullptr,
+        al_map_rgba(0, 0, 0, 0),
+        true);
+    add_child_module(m_contributors);
+
+    ostringstream os;
+    for (auto &i : s_credits) {
+        os << i.first << "\n";
     }
+    m_credits_left = make_shared<Label>(
+        os.str(),
+        250,
+        70,
+        330,
+        SCREEN_WIDTH - 70,
+        true,
+        ALLEGRO_ALIGN_LEFT,
+        g_game->font18,
+        ORANGE,
+        nullptr,
+        al_map_rgba(0, 0, 0, 0),
+        true);
+    add_child_module(m_credits_left);
 
-    // Load background
-    background = resources[I_BACKGROUND];
-
-    g_game->Print32(background, 390, 10, "CONTRIBUTORS", STEEL, true);
-
-    // print credit lines onto background
-    for (int n = 0; n < numcredits; n++) {
-        g_game->Print24(
-            background, 250, 70 + n * 19, credits[n][0], ORANGE, true);
-        g_game->Print24(
-            background, 580, 70 + n * 19, credits[n][1], ORANGE, true);
+    os.str("");
+    for (auto &i : s_credits) {
+        os << i.second << "\n";
     }
+    m_credits_right = make_shared<Label>(
+        os.str(),
+        580,
+        70,
+        SCREEN_WIDTH - 580,
+        SCREEN_WIDTH - 70,
+        true,
+        ALLEGRO_ALIGN_LEFT,
+        g_game->font18,
+        ORANGE,
+        nullptr,
+        al_map_rgba(0, 0, 0, 0),
+        true);
+    add_child_module(m_credits_right);
 
     return true;
 }
 
-void
-ModuleCredits::Update() {}
+bool
+ModuleCredits::on_close() {
+    ALLEGRO_DEBUG("Credits Close\n");
 
-void
-ModuleCredits::Draw() {
-    // draw background
-    al_set_target_bitmap(g_game->GetBackBuffer());
-    al_draw_bitmap(background, 0, 0, 0);
+    remove_child_module(m_background);
+    m_background = nullptr;
+
+    remove_child_module(m_contributors);
+    m_contributors = nullptr;
+
+    remove_child_module(m_credits_left);
+    m_credits_left = nullptr;
+
+    remove_child_module(m_credits_right);
+    m_credits_right = nullptr;
+
+    return true;
 }

@@ -1,43 +1,68 @@
 #pragma once
 
-#include "Button.h"
-#include "Events.h"
-#include "Game.h"
-#include "GameState.h"
-#include "ModeMgr.h"
-#include "Module.h"
-#include "ResourceManager.h"
-#include "Stardate.h"
+#include <map>
+#include <memory>
+#include <optional>
+#include <string>
+
 #include <allegro5/allegro.h>
 
-/*
-current problem is that the default button has some overlapping problems
-It isn't showing up, or if the order is changed another button doesn't show.
-*/
-class ModuleSettings : public Module {
+#include "Bitmap.h"
+#include "Button.h"
+#include "CheckBox.h"
+#include "Game.h"
+#include "Label.h"
+#include "Module.h"
+#include "ScrolledModule.h"
+
+class VideoModeSelector : public Module {
   public:
-    ModuleSettings(void);
-    virtual ~ModuleSettings(void);
-    virtual bool Init() override;
-    virtual void Update() override;
-    virtual void Draw() override;
-    virtual void OnKeyReleased(int keyCode) override;
-    virtual void OnMouseMove(int x, int y) override;
-    virtual void OnMouseClick(int button, int x, int y) override;
-    virtual void OnMousePressed(int button, int x, int y) override;
-    virtual void OnMouseReleased(int button, int x, int y) override;
-    virtual void OnMouseWheelUp(int x, int y) override;
-    virtual void OnMouseWheelDown(int x, int y) override;
-    virtual void OnEvent(Event *event) override;
-    virtual void Close() override;
-    bool SaveConfigurationFile();
+    VideoModeSelector(
+        int x,
+        int y,
+        int width,
+        int height,
+        VideoMode video_mode);
+    virtual ~VideoModeSelector(){};
+
+    VideoMode get_video_mode() const { return m_video_mode; }
+
+  protected:
+    virtual bool on_init() override;
+    virtual bool on_event(ALLEGRO_EVENT *event) override;
+    virtual bool on_close() override;
 
   private:
-    Button *btn_exit, *btn_fullscreen, *btn_controls[11], *btn_defaults,
-        *btn_save;
-
-    ScrollBox::ScrollBox *resScrollbox;
-    std::string chosenResolution;
-    int cmd_selected, button_selected;
-    ResourceManager<ALLEGRO_BITMAP> m_resources;
+    std::shared_ptr<Label> m_current_label;
+    std::shared_ptr<Label> m_title;
+    std::shared_ptr<Module> m_video_modes;
+    std::map<int, VideoMode> m_video_mode_map;
+    std::optional<int> m_mode_id;
+    VideoMode m_video_mode;
 };
+
+class ModuleSettings : public Module {
+  public:
+    ModuleSettings();
+
+  protected:
+    virtual bool on_init() override;
+    virtual bool on_close() override;
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
+    virtual bool on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event) override;
+    virtual bool on_event(ALLEGRO_EVENT *event) override;
+
+  private:
+    bool SaveConfigurationFile();
+
+    std::shared_ptr<Bitmap> m_background;
+    std::shared_ptr<TextButton> m_exit_button;
+    std::shared_ptr<TextButton> m_save_button;
+    std::shared_ptr<CheckBox> m_fullscreen_button;
+    std::shared_ptr<CheckBox> m_enable_sound;
+    std::shared_ptr<CheckBox> m_enable_music;
+    std::shared_ptr<Label> m_control_keys;
+    std::shared_ptr<Label> m_control_effect;
+    std::shared_ptr<VideoModeSelector> m_video_mode_selector;
+};
+// vi: ft=cpp

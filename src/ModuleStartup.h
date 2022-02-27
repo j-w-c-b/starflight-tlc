@@ -5,28 +5,32 @@
    to titlescreen. Author: J.Harbour Date: Jan 1,2008
 */
 
+#include <memory>
+#include <string>
+
 #include <allegro5/allegro.h>
 
 #include "Module.h"
-#include "ResourceManager.h"
 
 class ModuleStartup : public Module {
   public:
     ModuleStartup();
     virtual ~ModuleStartup();
 
-    virtual bool Init() override;
-    virtual void Update() override;
-    virtual void Draw() override;
-    virtual void OnKeyReleased(int keyCode) override;
-    virtual void Close() override;
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
+    virtual bool on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event) override;
 
   private:
-    int fadein(ALLEGRO_BITMAP *dest, ALLEGRO_BITMAP *source, int speed);
-    int fadeout(ALLEGRO_BITMAP *dest, ALLEGRO_BITMAP *source, int speed);
+    int fadein(
+        ALLEGRO_BITMAP *dest,
+        std::shared_ptr<ALLEGRO_BITMAP> source,
+        int speed);
+    int fadeout(
+        ALLEGRO_BITMAP *dest,
+        std::shared_ptr<ALLEGRO_BITMAP> source,
+        int speed);
 
     int display_mode;
-    ResourceManager<ALLEGRO_BITMAP> m_resources;
 };
 
 const int pages = 5;
@@ -249,3 +253,4 @@ capitalism? Captain Meriwether was not sure that he cared, as long as their
 civilization flourished, and set out that very day to build it.
 
 */
+// vi: ft=cpp

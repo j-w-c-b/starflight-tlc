@@ -8,34 +8,22 @@
 #ifndef MODULETITLESCREEN_H
 #define MODULETITLESCREEN_H
 
+#include <memory>
+
+#include <allegro5/allegro.h>
+
+#include "Bitmap.h"
 #include "Button.h"
 #include "Module.h"
-#include "ResourceManager.h"
 
 class ModuleTitleScreen : public Module {
   public:
     ModuleTitleScreen();
-    virtual ~ModuleTitleScreen();
 
-    bool Init() override;
-    void Update() override;
-    void Draw() override;
-    void OnKeyReleased(int keyCode) override;
-    void OnMouseMove(int x, int y) override;
-    void OnMouseReleased(int button, int x, int y) override;
-    void OnEvent(Event *event) override;
-    void Close() override;
-
-  private:
-    float m_rotationAngle;
-    ResourceManager<ALLEGRO_BITMAP> m_resources;
-    Button *btnTitle;
-    Button *btnNewGame;
-    Button *btnLoadGame;
-    Button *btnSettings;
-    Button *btnCredits;
-    Button *btnQuit;
-    int title_mode;
+    bool on_init() override;
+    bool on_close() override;
+    bool on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event) override;
+    bool on_event(ALLEGRO_EVENT *event) override;
 };
 
 #endif

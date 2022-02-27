@@ -1,52 +1,41 @@
-#include "ModuleTradeDepot.h"
+#include <allegro5/allegro_font.h>
+#include <allegro5/allegro_primitives.h>
+
 #include "AudioSystem.h"
 #include "Button.h"
 #include "Events.h"
 #include "Game.h"
 #include "GameState.h"
+#include "MessageBoxWindow.h"
 #include "ModeMgr.h"
+#include "ModuleTradeDepot.h"
 #include "QuestMgr.h"
-#include "ScrollBox.h"
+#include "ScrolledModule.h"
 #include "Util.h"
 #include "tradedepot_resources.h"
 
-#include <sstream>
 using namespace std;
-using namespace tradedepot_resources;
+using namespace tradedepot;
 
 #define PLAYERLIST_X 10
 #define PLAYERLIST_Y 240
-#define PLAYERLIST_WIDTH 437
-#define PLAYERLIST_NUMITEMS_WIDTH 53
-#define PLAYERLIST_VALUE_WIDTH 84
+#define PLAYERLIST_WIDTH 421
 #define PLAYERLIST_HEIGHT 166
-#define PLAYERLIST_EVENT 101
 
 #define SELLLIST_X 10
 #define SELLLIST_Y 580
-#define SELLLIST_WIDTH 437
-#define SELLLIST_NUMITEMS_WIDTH 53
-#define SELLLIST_VALUE_WIDTH 84
+#define SELLLIST_WIDTH 421
 #define SELLLIST_HEIGHT 97
-#define SELLLIST_EVENT 102
 
 #define DEPOTLIST_X 572
 #define DEPOTLIST_Y 240
-#define DEPOTLIST_WIDTH 437
-#define DEPOTLIST_NUMITEMS_WIDTH 53
-#define DEPOTLIST_VALUE_WIDTH 84
+#define DEPOTLIST_WIDTH 421
 #define DEPOTLIST_HEIGHT 166
-#define DEPOTLIST_EVENT 201
 
 #define BUYLIST_X 580
 #define BUYLIST_Y 580
-#define BUYLIST_WIDTH 437
-#define BUYLIST_NUMITEMS_WIDTH 53
-#define BUYLIST_VALUE_WIDTH 84
+#define BUYLIST_WIDTH 421
 #define BUYLIST_HEIGHT 97
-#define BUYLIST_EVENT 202
-
-#define LIST_TEXTHEIGHT 29
 
 #define PLAYER_BALANCE_X 435
 #define PLAYER_BALANCE_Y 188
@@ -55,12 +44,10 @@ using namespace tradedepot_resources;
 
 #define SELLTOTAL_X 430
 #define SELLTOTAL_Y 524
-#define SELLTOTAL_TEXTHEIGHT 48
 #define SELLTOTAL_TEXTCOL GREEN
 
 #define BUYTOTAL_X 593
 #define BUYTOTAL_Y 524
-#define BUYTOTAL_TEXTHEIGHT 48
 #define BUYTOTAL_TEXTCOL RED
 
 #define EXITBTN_X 20
@@ -70,10 +57,6 @@ using namespace tradedepot_resources;
 #define SELLBUYBTN_Y 330
 #define CHECKOUTBTN_Y 386
 #define CLEARBTN_Y 623
-#define BTNEVENT_SELLBUY 301
-#define BTNEVENT_EXIT 302
-#define BTNEVENT_CHECKOUT 303
-#define BTNEVENT_CLEAR 304
 #define BTNTEXTCOLOR BLACK
 #define BTN_TEXTHEIGHT 30
 
@@ -81,14 +64,6 @@ using namespace tradedepot_resources;
 #define FILTERBTN_START_X 304
 #define FILTERBTN_DELTA_X 147
 #define FILTERBTN_TEXTHEIGHT 20
-
-#define FILTEREVENT_ALL 400
-#define FILTEREVENT_ARTIFACT 401
-#define FILTEREVENT_SPECIALTYGOOD 402
-#define FILTEREVENT_MINERAL 403
-#define FILTEREVENT_LIFEFORM 404
-#define FILTEREVENT_TRADEITEM 405
-#define FILTEREVENT_SHIPUPGRADE 406
 
 #define PROMPTBG_X 303
 #define PROMPTBG_Y 69
@@ -107,11 +82,6 @@ using namespace tradedepot_resources;
 #define PRICE_X 20
 #define PRICE_Y 137
 
-#define BTNEVENT_SPINUP 501
-#define BTNEVENT_SPINDOWN 502
-#define BTNEVENT_ALL 503
-#define BTNEVENT_OK 504
-#define BTNEVENT_CANCEL 505
 #define PROMPTBTN_TEXT_COLOR BLACK
 #define PROMPT_TEXT_COLOR ORANGE
 
@@ -124,42 +94,357 @@ ALLEGRO_DEBUG_CHANNEL("ModuleTradeDepot")
 
 const int ITEM_ENDURIUM = 54;
 
-ModuleTradeDepot::ModuleTradeDepot(void)
-    : m_tradeMode(TM_TRADING), m_clearListSelOnUpdate(false),
-      m_background(NULL), m_playerList(NULL), m_playerListNumItems(NULL),
-      m_playerListValue(NULL), m_sellList(NULL), m_sellListNumItems(NULL),
-      m_sellListValue(NULL), m_depotList(NULL), m_depotListNumItems(NULL),
-      m_depotListValue(NULL), m_buyList(NULL), m_buyListNumItems(NULL),
-      m_buyListValue(NULL), m_sellbuyBtn(NULL), m_exitBtn(NULL),
-      m_checkoutBtn(NULL), m_clearBtn(NULL), m_filterAllBtn(NULL),
-      m_filterSpecialtyGoodBtn(NULL), m_filterMineralBtn(NULL),
-      m_filterLifeformBtn(NULL), m_filterTradeItemBtn(NULL),
-      exitToStarportCommons(false), m_filterType(IT_INVALID),
-      m_promptBackground(NULL), m_spinUpBtn(NULL), m_spinDownBtn(NULL),
-      m_allBtn(NULL), m_okBtn(NULL), m_cancelBtn(NULL), m_cursorIdx(0),
-      m_cursorIdxDelay(0), m_resources(TRADEDEPOT_IMAGES) {
-    for (int i = 0; i < TRADEDEPOT_NUMBUTTONS; i++) {
-        m_buttons[i] = NULL;
-    }
+TradeDepotAmountChooser::TradeDepotAmountChooser(int unit_price, int max_units)
+    : Module(
+        PROMPTBG_X,
+        PROMPTBG_Y,
+        al_get_bitmap_width(images[I_TRADEDEPOT_QUANTITY_PROMPT].get()),
+        al_get_bitmap_height(images[I_TRADEDEPOT_QUANTITY_PROMPT].get())),
+      m_unit_price(unit_price), m_max_units(max_units), m_update_total(true) {
+    m_prompt_background = make_shared<Bitmap>(
+        images[I_TRADEDEPOT_QUANTITY_PROMPT], PROMPTBG_X, PROMPTBG_Y);
+    add_child_module(m_prompt_background);
+
+    m_text_entry = make_shared<NumericTextEntry>(
+        g_game->font24,
+        PROMPT_TEXT_COLOR,
+        "",
+        5,
+        max_units,
+        QTYTEXT_X + PROMPTBG_X,
+        QTYTEXT_Y + PROMPTBG_Y,
+        190,
+        40,
+        images[I_TRADEDEPOT_CURSOR0],
+        0.4,
+        samples[S_BUTTONCLICK],
+        samples[S_ERROR]);
+
+    add_child_module(m_text_entry);
+
+    m_price_label = make_shared<Label>(
+        "",
+        PRICE_X + PROMPTBG_X,
+        PRICE_Y + PROMPTBG_Y,
+        220,
+        al_get_font_line_height(g_game->font24.get()),
+        false,
+        ALLEGRO_ALIGN_LEFT,
+        g_game->font24,
+        PROMPTBTN_TEXT_COLOR);
+    add_child_module(m_price_label);
+
+    // create spinup buttons
+    m_spin_up_button = make_shared<Button>(
+        SPINUPBTN_X + PROMPTBG_X,
+        SPINUPBTN_Y + PROMPTBG_Y,
+        EVENT_NONE,
+        EVENT_TRADE_SPIN_UP,
+        images[I_TRADEDEPOT_SPINUPBTN],
+        images[I_TRADEDEPOT_SPINUPBTN_MO]);
+    add_child_module(m_spin_up_button);
+
+    // create spindown buttons
+    m_spin_down_button = make_shared<Button>(
+        SPINDOWNBTN_X + PROMPTBG_X,
+        SPINDOWNBTN_Y + PROMPTBG_Y,
+        EVENT_NONE,
+        EVENT_TRADE_SPIN_DOWN,
+        images[I_TRADEDEPOT_SPINDOWNBTN],
+        images[I_TRADEDEPOT_SPINDOWNBTN_MO]);
+
+    add_child_module(m_spin_down_button);
+
+    // create all button
+    m_all_button = make_shared<TextButton>(
+        "All",
+        g_game->font24,
+        PROMPTBTN_TEXT_COLOR,
+        ALLEGRO_ALIGN_CENTER,
+        ALLBTN_X + PROMPTBG_X,
+        ALLBTN_Y + PROMPTBG_Y,
+        EVENT_NONE,
+        EVENT_TRADE_ALL,
+        images[I_TRADEDEPOT_PROMPTBTN],
+        images[I_TRADEDEPOT_PROMPTBTN_MO]);
+
+    add_child_module(m_all_button);
+
+    // create ok button
+    m_ok_button = make_shared<TextButton>(
+        "OK",
+        g_game->font24,
+        PROMPTBTN_TEXT_COLOR,
+        ALLEGRO_ALIGN_CENTER,
+        OKBTN_X + PROMPTBG_X,
+        OKBTN_Y + PROMPTBG_Y,
+        EVENT_NONE,
+        EVENT_TRADE_OK,
+        images[I_TRADEDEPOT_PROMPTBTN],
+        images[I_TRADEDEPOT_PROMPTBTN_MO]);
+
+    add_child_module(m_ok_button);
+
+    // create cancel button
+    m_cancel_button = make_shared<TextButton>(
+        "Cancel",
+        g_game->font24,
+        PROMPTBTN_TEXT_COLOR,
+        ALLEGRO_ALIGN_CENTER,
+        CANCELBTN_X + PROMPTBG_X,
+        CANCELBTN_Y + PROMPTBG_Y,
+        EVENT_NONE,
+        EVENT_TRADE_CANCEL,
+        images[I_TRADEDEPOT_PROMPTBTN],
+        images[I_TRADEDEPOT_PROMPTBTN_MO]);
+
+    add_child_module(m_cancel_button);
 }
 
-ModuleTradeDepot::~ModuleTradeDepot(void) {}
+bool
+TradeDepotAmountChooser::on_event(ALLEGRO_EVENT *event) {
+    bool play_button_click = false;
+    bool play_button_error = false;
+    int value = m_text_entry->get_value();
+
+    switch (event->type) {
+    case EVENT_TRADE_SPIN_UP:
+        if (m_text_entry->set_value(value + 1)) {
+            play_button_click = true;
+            m_update_total = true;
+        } else {
+            play_button_error = true;
+        }
+        break;
+    case EVENT_TRADE_SPIN_DOWN:
+
+        if (m_text_entry->set_value(value - 1)) {
+            play_button_click = true;
+            m_update_total = true;
+        } else {
+            play_button_error = true;
+        }
+        break;
+    case EVENT_TRADE_ALL:
+        if (value < m_max_units) {
+            m_text_entry->set_value(m_max_units);
+            play_button_click = true;
+            m_update_total = true;
+        } else {
+            play_button_error = true;
+        }
+        break;
+    }
+    if (play_button_click) {
+        g_game->audioSystem->Play(samples[S_BUTTONCLICK]);
+    } else if (play_button_error) {
+        g_game->audioSystem->Play(samples[S_ERROR]);
+    }
+    return !(play_button_click || play_button_error);
+}
 
 bool
-ModuleTradeDepot::Init() {
+TradeDepotAmountChooser::on_key_pressed(ALLEGRO_KEYBOARD_EVENT * /*event*/) {
+    m_update_total = true;
+
+    return true;
+}
+
+bool
+TradeDepotAmountChooser::on_draw(ALLEGRO_BITMAP * /*target*/) {
+    if (m_update_total) {
+        string label_text =
+            "Price: " + to_string(m_unit_price * m_text_entry->get_value());
+        m_price_label->set_text(label_text);
+    }
+    return true;
+}
+
+int
+TradeDepotAmountChooser::get_amount() const {
+    return m_text_entry->get_value();
+}
+
+void
+TradeDepotAmountChooser::set_amount(int amount) {
+    m_text_entry->set_value(amount);
+    m_update_total = true;
+}
+
+void
+TradeDepotAmountChooser::set_max_units(int max_units) {
+    m_max_units = max_units;
+    m_text_entry->set_max_value(max_units);
+    m_update_total = true;
+}
+
+ModuleTradeDepot::ModuleTradeDepot()
+    : m_clearListSelOnUpdate(false), exitToStarportCommons(false),
+      m_filterType(IT_INVALID) {
+    set_draw_after_children(true);
+}
+
+bool
+ModuleTradeDepot::on_init() {
+    m_background = make_shared<Bitmap>(images[I_TRADEDEPOT_BACKGROUND]);
+    add_child_module(m_background);
+
+    // create exit button
+    m_exit_button = make_shared<TextButton>(
+        "Exit",
+        g_game->font24,
+        BLACK,
+        ALLEGRO_ALIGN_CENTER,
+        EXITBTN_X,
+        EXITBTN_Y,
+        EVENT_NONE,
+        EVENT_TRADE_EXIT,
+        images[I_GENERIC_EXIT_BTN_NORM],
+        images[I_GENERIC_EXIT_BTN_OVER]);
+
+    add_child_module(m_exit_button);
+
+    // create buy/sell button
+    m_buy_sell_button = make_shared<TextButton>(
+        "",
+        g_game->font24,
+        BTNTEXTCOLOR,
+        ALLEGRO_ALIGN_CENTER,
+        BUTTONS_X,
+        SELLBUYBTN_Y,
+        EVENT_NONE,
+        EVENT_TRADE_SELL_BUY,
+        images[I_TRADEDEPOT_BTN],
+        images[I_TRADEDEPOT_BTN_MO]);
+    add_child_module(m_buy_sell_button);
+    m_buy_sell_button->set_active(false);
+
+    // create confirm button
+    m_confirm_button = make_shared<TextButton>(
+        "Confirm",
+        g_game->font22,
+        BTNTEXTCOLOR,
+        ALLEGRO_ALIGN_CENTER,
+        BUTTONS_X,
+        CHECKOUTBTN_Y,
+        EVENT_NONE,
+        EVENT_TRADE_CHECKOUT,
+        images[I_TRADEDEPOT_BTN],
+        images[I_TRADEDEPOT_BTN_MO]);
+    add_child_module(m_confirm_button);
+
+    m_confirm_button->set_active(false);
+
+    // create clear button
+    m_clear_button = make_shared<TextButton>(
+        "Clear",
+        g_game->font24,
+        BTNTEXTCOLOR,
+        ALLEGRO_ALIGN_CENTER,
+        BUTTONS_X,
+        CLEARBTN_Y,
+        EVENT_NONE,
+        EVENT_TRADE_CLEAR,
+        images[I_TRADEDEPOT_BTN],
+        images[I_TRADEDEPOT_BTN_MO]);
+
+    add_child_module(m_clear_button);
+    m_clear_button->set_active(false);
+
+    // create all button
+    int x = FILTERBTN_START_X;
+    auto filter_all_button = make_shared<TextButton>(
+        "All",
+        g_game->font18,
+        BTNTEXTCOLOR,
+        ALLEGRO_ALIGN_CENTER,
+        x,
+        FILTERBTN_Y,
+        EVENT_NONE,
+        EVENT_TRADE_FILTER_ALL,
+        images[I_TRADEDEPOT_FILTERBTN],
+        images[I_TRADEDEPOT_FILTERBTN_MO]);
+
+    m_filter_buttons[IT_INVALID] = filter_all_button;
+    add_child_module(filter_all_button);
+
+    // create artifacts button
+    x += FILTERBTN_DELTA_X;
+    auto filter_artifacts_button = make_shared<TextButton>(
+        "Artifacts",
+        g_game->font18,
+        BTNTEXTCOLOR,
+        ALLEGRO_ALIGN_CENTER,
+        x,
+        FILTERBTN_Y,
+        EVENT_NONE,
+        EVENT_TRADE_FILTER_ARTIFACT,
+        images[I_TRADEDEPOT_FILTERBTN],
+        images[I_TRADEDEPOT_FILTERBTN_MO]);
+
+    m_filter_buttons[IT_ARTIFACT] = filter_artifacts_button;
+    add_child_module(filter_artifacts_button);
+
+    // create minerals button
+    x += FILTERBTN_DELTA_X;
+    auto filter_minerals_button = make_shared<TextButton>(
+        "Minerals",
+        g_game->font18,
+        BTNTEXTCOLOR,
+        ALLEGRO_ALIGN_CENTER,
+        x,
+        FILTERBTN_Y,
+        EVENT_NONE,
+        EVENT_TRADE_FILTER_MINERAL,
+        images[I_TRADEDEPOT_FILTERBTN],
+        images[I_TRADEDEPOT_FILTERBTN_MO]);
+
+    m_filter_buttons[IT_MINERAL] = filter_minerals_button;
+    add_child_module(filter_minerals_button);
+
+    // create lifeforms button
+    x += FILTERBTN_DELTA_X;
+    auto filter_life_forms_button = make_shared<TextButton>(
+        "Lifeforms",
+        g_game->font18,
+        BTNTEXTCOLOR,
+        ALLEGRO_ALIGN_CENTER,
+        x,
+        FILTERBTN_Y,
+        EVENT_NONE,
+        EVENT_TRADE_FILTER_LIFEFORM,
+        images[I_TRADEDEPOT_FILTERBTN],
+        images[I_TRADEDEPOT_FILTERBTN_MO]);
+
+    m_filter_buttons[IT_LIFEFORM] = filter_life_forms_button;
+    add_child_module(filter_life_forms_button);
+
+    // create trade items button
+    x += FILTERBTN_DELTA_X;
+    auto filter_trade_item_button = make_shared<TextButton>(
+        "Trade Items",
+        g_game->font18,
+        BTNTEXTCOLOR,
+        ALLEGRO_ALIGN_CENTER,
+        x,
+        FILTERBTN_Y,
+        EVENT_NONE,
+        EVENT_TRADE_FILTER_TRADE_ITEM,
+        images[I_TRADEDEPOT_FILTERBTN],
+        images[I_TRADEDEPOT_FILTERBTN_MO]);
+
+    m_filter_buttons[IT_TRADEITEM] = filter_trade_item_button;
+    add_child_module(filter_trade_item_button);
+
+    m_amount_chooser = make_shared<TradeDepotAmountChooser>(0, 0);
+
     item_to_display = IT_INVALID;
     portrait_string = "";
 
-    m_item_portraits[IT_ARTIFACT] = m_resources[I_T_ALIENARTIFACT];
-    m_item_portraits[IT_MINERAL] = m_resources[I_T_GEMS];
-    m_item_portraits[IT_LIFEFORM] = m_resources[I_T_RABID_VERTRUK];
-    m_item_portraits[IT_TRADEITEM] = m_resources[I_T_SEEDS];
-
-    // load the datafile
-    if (!m_resources.load()) {
-        g_game->message("TradeDepot: Error loading resources");
-        return false;
-    }
+    m_item_portraits[IT_ARTIFACT] = images[I_T_ALIENARTIFACT];
+    m_item_portraits[IT_MINERAL] = images[I_T_GEMS];
+    m_item_portraits[IT_LIFEFORM] = images[I_T_RABID_VERTRUK];
+    m_item_portraits[IT_TRADEITEM] = images[I_T_SEEDS];
 
     exitToStarportCommons = false;
 
@@ -178,468 +463,94 @@ ModuleTradeDepot::Init() {
     m_depotItems.SetItemCount(40, Util::Random(1, 6) + 6); // titanium
     m_depotItems.SetItemCount(44, Util::Random(1, 6) + 6); // silica
 
-    // load gui images
-    m_background = m_resources[I_TRADEDEPOT_BACKGROUND];
-
-    m_playerListValue = new ScrollBox::ScrollBox(
-        g_game->font24,
-        ScrollBox::SB_LIST,
-        PLAYERLIST_X + PLAYERLIST_WIDTH - PLAYERLIST_VALUE_WIDTH,
+    m_player_items = make_shared<ScrolledTradeDepotItemList>(
+        PLAYERLIST_X,
         PLAYERLIST_Y,
-        PLAYERLIST_VALUE_WIDTH,
+        PLAYERLIST_WIDTH,
         PLAYERLIST_HEIGHT,
-        PLAYERLIST_EVENT);
-    if (m_playerListValue == NULL)
-        return false;
+        al_get_font_line_height(g_game->font22.get()),
+        al_map_rgb(64, 64, 64),
+        al_map_rgb(32, 32, 32),
+        al_map_rgb(48, 48, 128),
+        al_map_rgb(96, 96, 128),
+        al_map_rgb(32, 32, 32),
+        g_game->gameState->m_items,
+        m_filterType,
+        EVENT_TRADE_PLAYER_LIST,
+        g_game->font22,
+        WHITE,
+        al_map_rgb(32, 32, 32),
+        al_map_rgb(48, 48, 128),
+        al_map_rgb(96, 96, 128));
+    add_child_module(m_player_items);
 
-    m_playerListNumItems = new ScrollBox::ScrollBox(
-        g_game->font24,
-        ScrollBox::SB_LIST,
-        PLAYERLIST_X + PLAYERLIST_WIDTH - PLAYERLIST_VALUE_WIDTH -
-            PLAYERLIST_NUMITEMS_WIDTH,
-        PLAYERLIST_Y,
-        PLAYERLIST_NUMITEMS_WIDTH,
-        PLAYERLIST_HEIGHT,
-        PLAYERLIST_EVENT);
-    if (m_playerListNumItems == NULL)
-        return false;
+    m_sell_items = make_shared<ScrolledTradeDepotItemList>(
+        SELLLIST_X,
+        SELLLIST_Y,
+        SELLLIST_WIDTH,
+        SELLLIST_HEIGHT,
+        al_get_font_line_height(g_game->font22.get()),
+        al_map_rgb(64, 64, 64),
+        al_map_rgb(32, 32, 32),
+        al_map_rgb(48, 48, 128),
+        al_map_rgb(96, 96, 128),
+        al_map_rgb(32, 32, 32),
+        m_sellItems,
+        IT_INVALID,
+        EVENT_TRADE_SELL_LIST,
+        g_game->font22,
+        WHITE,
+        al_map_rgb(32, 32, 32),
+        al_map_rgb(48, 48, 128),
+        al_map_rgb(96, 96, 128));
+    add_child_module(m_sell_items);
 
-    m_playerList = new ScrollBox::ScrollBox(g_game->font24,
-                                            ScrollBox::SB_LIST,
-                                            PLAYERLIST_X,
-                                            PLAYERLIST_Y,
-                                            PLAYERLIST_WIDTH,
-                                            PLAYERLIST_HEIGHT,
-                                            PLAYERLIST_EVENT);
-    if (m_playerList == NULL)
-        return false;
-
-    m_playerListNumItems->LinkBox(m_playerList);
-    m_playerListValue->LinkBox(m_playerListNumItems);
-
-    m_sellListValue = new ScrollBox::ScrollBox(g_game->font24,
-                                               ScrollBox::SB_LIST,
-                                               SELLLIST_X + SELLLIST_WIDTH -
-                                                   SELLLIST_VALUE_WIDTH,
-                                               SELLLIST_Y,
-                                               SELLLIST_VALUE_WIDTH,
-                                               SELLLIST_HEIGHT,
-                                               SELLLIST_EVENT);
-    if (m_sellListValue == NULL)
-        return false;
-
-    m_sellListNumItems = new ScrollBox::ScrollBox(g_game->font24,
-                                                  ScrollBox::SB_LIST,
-                                                  SELLLIST_X + SELLLIST_WIDTH -
-                                                      SELLLIST_VALUE_WIDTH -
-                                                      SELLLIST_NUMITEMS_WIDTH,
-                                                  SELLLIST_Y,
-                                                  SELLLIST_NUMITEMS_WIDTH,
-                                                  SELLLIST_HEIGHT,
-                                                  SELLLIST_EVENT);
-    if (m_sellListNumItems == NULL)
-        return false;
-
-    m_sellList = new ScrollBox::ScrollBox(g_game->font24,
-                                          ScrollBox::SB_LIST,
-                                          SELLLIST_X,
-                                          SELLLIST_Y,
-                                          SELLLIST_WIDTH,
-                                          SELLLIST_HEIGHT,
-                                          SELLLIST_EVENT);
-    if (m_sellList == NULL)
-        return false;
-
-    m_sellListNumItems->LinkBox(m_sellList);
-    m_sellListValue->LinkBox(m_sellListNumItems);
-
-    m_depotListValue = new ScrollBox::ScrollBox(g_game->font24,
-                                                ScrollBox::SB_LIST,
-                                                DEPOTLIST_X + DEPOTLIST_WIDTH -
-                                                    DEPOTLIST_VALUE_WIDTH,
-                                                DEPOTLIST_Y,
-                                                DEPOTLIST_VALUE_WIDTH,
-                                                DEPOTLIST_HEIGHT,
-                                                DEPOTLIST_EVENT);
-    if (m_depotListValue == NULL)
-        return false;
-
-    m_depotListNumItems = new ScrollBox::ScrollBox(
-        g_game->font24,
-        ScrollBox::SB_LIST,
-        DEPOTLIST_X + DEPOTLIST_WIDTH - DEPOTLIST_VALUE_WIDTH -
-            DEPOTLIST_NUMITEMS_WIDTH,
+    m_depot_items = make_shared<ScrolledTradeDepotItemList>(
+        DEPOTLIST_X,
         DEPOTLIST_Y,
-        DEPOTLIST_NUMITEMS_WIDTH,
+        DEPOTLIST_WIDTH,
         DEPOTLIST_HEIGHT,
-        DEPOTLIST_EVENT);
-    if (m_depotListNumItems == NULL)
-        return false;
+        al_get_font_line_height(g_game->font22.get()),
+        al_map_rgb(64, 64, 64),
+        al_map_rgb(32, 32, 32),
+        al_map_rgb(48, 48, 128),
+        al_map_rgb(96, 96, 128),
+        al_map_rgb(32, 32, 32),
+        m_depotItems,
+        m_filterType,
+        EVENT_TRADE_DEPOT_LIST,
+        g_game->font22,
+        WHITE,
+        al_map_rgb(32, 32, 32),
+        al_map_rgb(48, 48, 128),
+        al_map_rgb(96, 96, 128));
 
-    m_depotList = new ScrollBox::ScrollBox(g_game->font24,
-                                           ScrollBox::SB_LIST,
-                                           DEPOTLIST_X,
-                                           DEPOTLIST_Y,
-                                           DEPOTLIST_WIDTH,
-                                           DEPOTLIST_HEIGHT,
-                                           DEPOTLIST_EVENT);
-    if (m_depotList == NULL)
-        return false;
+    add_child_module(m_depot_items);
 
-    m_depotListNumItems->LinkBox(m_depotList);
-    m_depotListValue->LinkBox(m_depotListNumItems);
+    m_buy_items = make_shared<ScrolledTradeDepotItemList>(
+        BUYLIST_X,
+        BUYLIST_Y,
+        BUYLIST_WIDTH,
+        BUYLIST_HEIGHT,
+        al_get_font_line_height(g_game->font22.get()),
+        al_map_rgb(64, 64, 64),
+        al_map_rgb(32, 32, 32),
+        al_map_rgb(48, 48, 128),
+        al_map_rgb(96, 96, 128),
+        al_map_rgb(32, 32, 32),
+        m_buyItems,
+        m_filterType,
+        EVENT_TRADE_BUY_LIST,
+        g_game->font22,
+        WHITE,
+        al_map_rgb(32, 32, 32),
+        al_map_rgb(48, 48, 128),
+        al_map_rgb(96, 96, 128));
 
-    m_buyListValue = new ScrollBox::ScrollBox(g_game->font24,
-                                              ScrollBox::SB_LIST,
-                                              BUYLIST_X + BUYLIST_WIDTH -
-                                                  BUYLIST_VALUE_WIDTH,
-                                              BUYLIST_Y,
-                                              BUYLIST_VALUE_WIDTH,
-                                              BUYLIST_HEIGHT,
-                                              BUYLIST_EVENT);
-    if (m_buyListValue == NULL)
-        return false;
-
-    m_buyListNumItems = new ScrollBox::ScrollBox(g_game->font24,
-                                                 ScrollBox::SB_LIST,
-                                                 BUYLIST_X + BUYLIST_WIDTH -
-                                                     BUYLIST_VALUE_WIDTH -
-                                                     BUYLIST_NUMITEMS_WIDTH,
-                                                 BUYLIST_Y,
-                                                 BUYLIST_NUMITEMS_WIDTH,
-                                                 BUYLIST_HEIGHT,
-                                                 BUYLIST_EVENT);
-    if (m_buyListNumItems == NULL)
-        return false;
-
-    m_buyList = new ScrollBox::ScrollBox(g_game->font24,
-                                         ScrollBox::SB_LIST,
-                                         BUYLIST_X,
-                                         BUYLIST_Y,
-                                         BUYLIST_WIDTH,
-                                         BUYLIST_HEIGHT,
-                                         BUYLIST_EVENT);
-    if (m_buyList == NULL)
-        return false;
-
-    m_buyListNumItems->LinkBox(m_buyList);
-    m_buyListValue->LinkBox(m_buyListNumItems);
-
-    // create exit button
-    m_exitBtn = new Button(m_resources[I_GENERIC_EXIT_BTN_NORM],
-                           m_resources[I_GENERIC_EXIT_BTN_OVER],
-                           NULL,
-                           EXITBTN_X,
-                           EXITBTN_Y,
-                           0,
-                           BTNEVENT_EXIT,
-                           g_game->font24,
-                           "Exit",
-                           BLACK);
-    if (m_exitBtn == NULL)
-        return false;
-    if (!m_exitBtn->IsInitialized())
-        return false;
-    m_buttons[1] = m_exitBtn;
-    m_modeBtnMap[m_exitBtn] = TM_TRADING;
-
-    // create buy/sell button
-    m_sellbuyBtn = new Button(m_resources[I_TRADEDEPOT_BTN],
-                              m_resources[I_TRADEDEPOT_BTN_MO],
-                              NULL,
-                              BUTTONS_X,
-                              SELLBUYBTN_Y,
-                              0,
-                              BTNEVENT_SELLBUY,
-                              g_game->font24,
-                              "SellBuy",
-                              BTNTEXTCOLOR);
-    if (m_sellbuyBtn == NULL)
-        return false;
-    if (!m_sellbuyBtn->IsInitialized())
-        return false;
-    m_buttons[0] = m_sellbuyBtn;
-    m_modeBtnMap[m_sellbuyBtn] = TM_TRADING;
-
-    // create confirm button
-    m_checkoutBtn = new Button(m_resources[I_TRADEDEPOT_BTN],
-                               m_resources[I_TRADEDEPOT_BTN_MO],
-                               NULL,
-                               BUTTONS_X,
-                               CHECKOUTBTN_Y,
-                               0,
-                               BTNEVENT_CHECKOUT,
-                               g_game->font24,
-                               "Confirm",
-                               BTNTEXTCOLOR);
-    if (m_checkoutBtn == NULL)
-        return false;
-    if (!m_checkoutBtn->IsInitialized())
-        return false;
-    m_buttons[2] = m_checkoutBtn;
-    m_modeBtnMap[m_checkoutBtn] = TM_TRADING;
-
-    // create clear button
-    m_clearBtn = new Button(m_resources[I_TRADEDEPOT_BTN],
-                            m_resources[I_TRADEDEPOT_BTN_MO],
-                            NULL,
-                            BUTTONS_X,
-                            CLEARBTN_Y,
-                            0,
-                            BTNEVENT_CLEAR,
-                            g_game->font24,
-                            "Clear",
-                            BTNTEXTCOLOR);
-    if (m_clearBtn == NULL)
-        return false;
-    if (!m_clearBtn->IsInitialized())
-        return false;
-    m_buttons[3] = m_clearBtn;
-    m_modeBtnMap[m_clearBtn] = TM_TRADING;
-
-    // create all button
-    int x = FILTERBTN_START_X;
-    m_filterAllBtn = new Button(m_resources[I_TRADEDEPOT_FILTERBTN],
-                                m_resources[I_TRADEDEPOT_FILTERBTN_MO],
-                                NULL,
-                                x,
-                                FILTERBTN_Y,
-                                0,
-                                FILTEREVENT_ALL,
-                                g_game->font18,
-                                "All",
-                                BTNTEXTCOLOR);
-    if (m_filterAllBtn == NULL)
-        return false;
-    if (!m_filterAllBtn->IsInitialized())
-        return false;
-    m_buttons[4] = m_filterAllBtn;
-    m_filterBtnMap[m_filterAllBtn] = true;
-    m_modeBtnMap[m_filterAllBtn] = TM_TRADING;
-
-    // create artifacts button
-    x += FILTERBTN_DELTA_X;
-    m_filterArtifactBtn = new Button(m_resources[I_TRADEDEPOT_FILTERBTN],
-                                     m_resources[I_TRADEDEPOT_FILTERBTN_MO],
-                                     NULL,
-                                     x,
-                                     FILTERBTN_Y,
-                                     0,
-                                     FILTEREVENT_ARTIFACT,
-                                     g_game->font18,
-                                     "Artifacts",
-                                     BTNTEXTCOLOR);
-    if (m_filterArtifactBtn == NULL)
-        return false;
-    if (!m_filterArtifactBtn->IsInitialized())
-        return false;
-    m_buttons[5] = m_filterArtifactBtn;
-    m_filterBtnMap[m_filterArtifactBtn] = true;
-    m_modeBtnMap[m_filterArtifactBtn] = TM_TRADING;
-
-    // create spec goods button
-    x += FILTERBTN_DELTA_X;
-    m_filterSpecialtyGoodBtn =
-        new Button(m_resources[I_TRADEDEPOT_FILTERBTN],
-                   m_resources[I_TRADEDEPOT_FILTERBTN_MO],
-                   NULL,
-                   x,
-                   FILTERBTN_Y,
-                   0,
-                   FILTEREVENT_SPECIALTYGOOD,
-                   g_game->font18,
-                   "Spec Goods",
-                   BTNTEXTCOLOR);
-    if (m_filterSpecialtyGoodBtn == NULL)
-        return false;
-    if (!m_filterSpecialtyGoodBtn->IsInitialized())
-        return false;
-    m_buttons[6] = m_filterSpecialtyGoodBtn;
-    m_filterBtnMap[m_filterSpecialtyGoodBtn] = true;
-    m_modeBtnMap[m_filterSpecialtyGoodBtn] = TM_TRADING;
-
-    // create minerals button
-    x += FILTERBTN_DELTA_X;
-    m_filterMineralBtn = new Button(m_resources[I_TRADEDEPOT_FILTERBTN],
-                                    m_resources[I_TRADEDEPOT_FILTERBTN_MO],
-                                    NULL,
-                                    x,
-                                    FILTERBTN_Y,
-                                    0,
-                                    FILTEREVENT_MINERAL,
-                                    g_game->font18,
-                                    "Minerals",
-                                    BTNTEXTCOLOR);
-    if (m_filterMineralBtn == NULL)
-        return false;
-    if (!m_filterMineralBtn->IsInitialized())
-        return false;
-    m_buttons[7] = m_filterMineralBtn;
-    m_filterBtnMap[m_filterMineralBtn] = true;
-    m_modeBtnMap[m_filterMineralBtn] = TM_TRADING;
-
-    // create lifeforms button
-    x += FILTERBTN_DELTA_X;
-    m_filterLifeformBtn = new Button(m_resources[I_TRADEDEPOT_FILTERBTN],
-                                     m_resources[I_TRADEDEPOT_FILTERBTN_MO],
-                                     NULL,
-                                     x,
-                                     FILTERBTN_Y,
-                                     0,
-                                     FILTEREVENT_LIFEFORM,
-                                     g_game->font18,
-                                     "Lifeforms",
-                                     BTNTEXTCOLOR);
-    if (m_filterLifeformBtn == NULL)
-        return false;
-    if (!m_filterLifeformBtn->IsInitialized())
-        return false;
-    m_buttons[8] = m_filterLifeformBtn;
-    m_filterBtnMap[m_filterLifeformBtn] = true;
-    m_modeBtnMap[m_filterLifeformBtn] = TM_TRADING;
-
-    // create trade items button
-    x += FILTERBTN_DELTA_X;
-    m_filterTradeItemBtn = new Button(m_resources[I_TRADEDEPOT_FILTERBTN],
-                                      m_resources[I_TRADEDEPOT_FILTERBTN_MO],
-                                      NULL,
-                                      x,
-                                      FILTERBTN_Y,
-                                      0,
-                                      FILTEREVENT_TRADEITEM,
-                                      g_game->font24,
-                                      "Trade Items",
-                                      BTNTEXTCOLOR);
-    if (m_filterTradeItemBtn == NULL)
-        return false;
-    if (!m_filterTradeItemBtn->IsInitialized())
-        return false;
-    m_buttons[9] = m_filterTradeItemBtn;
-    m_filterBtnMap[m_filterTradeItemBtn] = true;
-    m_modeBtnMap[m_filterTradeItemBtn] = TM_TRADING;
-
-    // create ship upgrades button
-    x += FILTERBTN_DELTA_X;
-    m_filterShipUpgradeBtn = new Button(m_resources[I_TRADEDEPOT_FILTERBTN],
-                                        m_resources[I_TRADEDEPOT_FILTERBTN_MO],
-                                        NULL,
-                                        x,
-                                        FILTERBTN_Y,
-                                        0,
-                                        FILTEREVENT_SHIPUPGRADE,
-                                        g_game->font24,
-                                        "Ship Upgrades",
-                                        BTNTEXTCOLOR);
-    if (m_filterShipUpgradeBtn == NULL)
-        return false;
-    if (!m_filterShipUpgradeBtn->IsInitialized())
-        return false;
-    m_buttons[10] = m_filterShipUpgradeBtn;
-    m_filterBtnMap[m_filterShipUpgradeBtn] = true;
-    m_modeBtnMap[m_filterShipUpgradeBtn] = TM_TRADING;
-
-    // load quantity prompt ALLEGRO_BITMAP
-    m_promptBackground = m_resources[I_TRADEDEPOT_QUANTITY_PROMPT];
-
-    // create spinup buttons
-    m_spinUpBtn = new Button(m_resources[I_TRADEDEPOT_SPINUPBTN],
-                             m_resources[I_TRADEDEPOT_SPINUPBTN_MO],
-                             NULL,
-                             SPINUPBTN_X + PROMPTBG_X,
-                             SPINUPBTN_Y + PROMPTBG_Y,
-                             0,
-                             BTNEVENT_SPINUP);
-    if (!m_spinUpBtn->IsInitialized())
-        return false;
-    m_buttons[11] = m_spinUpBtn;
-    m_modeBtnMap[m_spinUpBtn] = TM_PROMPTING;
-
-    // create spindown buttons
-    m_spinDownBtn = new Button(m_resources[I_TRADEDEPOT_SPINDOWNBTN],
-                               m_resources[I_TRADEDEPOT_SPINDOWNBTN_MO],
-                               NULL,
-                               SPINDOWNBTN_X + PROMPTBG_X,
-                               SPINDOWNBTN_Y + PROMPTBG_Y,
-                               0,
-                               BTNEVENT_SPINDOWN);
-    if (m_spinDownBtn == NULL)
-        return false;
-    if (!m_spinDownBtn->IsInitialized())
-        return false;
-    m_buttons[12] = m_spinDownBtn;
-    m_modeBtnMap[m_spinDownBtn] = TM_PROMPTING;
-
-    // create all button
-    m_allBtn = new Button(m_resources[I_TRADEDEPOT_PROMPTBTN],
-                          m_resources[I_TRADEDEPOT_PROMPTBTN_MO],
-                          NULL,
-                          ALLBTN_X + PROMPTBG_X,
-                          ALLBTN_Y + PROMPTBG_Y,
-                          0,
-                          BTNEVENT_ALL,
-                          g_game->font24,
-                          "All",
-                          PROMPTBTN_TEXT_COLOR);
-    if (m_allBtn == NULL)
-        return false;
-    if (!m_allBtn->IsInitialized())
-        return false;
-    m_buttons[13] = m_allBtn;
-    m_modeBtnMap[m_allBtn] = TM_PROMPTING;
-
-    // create ok button
-    m_okBtn = new Button(m_resources[I_TRADEDEPOT_PROMPTBTN],
-                         m_resources[I_TRADEDEPOT_PROMPTBTN_MO],
-                         NULL,
-                         OKBTN_X + PROMPTBG_X,
-                         OKBTN_Y + PROMPTBG_Y,
-                         0,
-                         BTNEVENT_OK,
-                         g_game->font24,
-                         "OK",
-                         PROMPTBTN_TEXT_COLOR);
-    if (m_okBtn == NULL)
-        return false;
-    if (!m_okBtn->IsInitialized())
-        return false;
-    m_buttons[14] = m_okBtn;
-    m_modeBtnMap[m_okBtn] = TM_PROMPTING;
-
-    // create cancel button
-    m_cancelBtn = new Button(m_resources[I_TRADEDEPOT_PROMPTBTN],
-                             m_resources[I_TRADEDEPOT_PROMPTBTN_MO],
-                             NULL,
-                             CANCELBTN_X + PROMPTBG_X,
-                             CANCELBTN_Y + PROMPTBG_Y,
-                             0,
-                             BTNEVENT_CANCEL,
-                             g_game->font24,
-                             "Cancel",
-                             PROMPTBTN_TEXT_COLOR);
-    if (m_cancelBtn == NULL)
-        return false;
-    if (!m_cancelBtn->IsInitialized())
-        return false;
-    m_buttons[15] = m_cancelBtn;
-    m_modeBtnMap[m_cancelBtn] = TM_PROMPTING;
-
-    m_cursor[0] = m_resources[I_TRADEDEPOT_CURSOR0];
-    m_cursor[1] = m_resources[I_TRADEDEPOT_CURSOR1];
+    add_child_module(m_buy_items);
 
     m_sellTotal = 0;
     m_buyTotal = 0;
-
-    m_tradeMode = TM_TRADING;
-
-    // load sound file
-    if (!g_game->audioSystem->SampleExists(
-            "buttonclick")) { // switched to named sound: see debug log.
-        if (!g_game->audioSystem->Load("data/tradedepot/buttonclick.ogg",
-                                       "buttonclick")) {
-            g_game->message("ButtonClick: Error loading music");
-            return false;
-        }
-    }
 
     // reset transactions
     m_sellItems.Reset();
@@ -655,119 +566,71 @@ ModuleTradeDepot::Init() {
     return true;
 }
 
-void
-ModuleTradeDepot::Update() {
-    Module::Update();
-
+bool
+ModuleTradeDepot::on_update() {
     if (m_clearListSelOnUpdate) {
-        m_playerListValue->SetSelectedIndex(-1);
-        m_depotListValue->SetSelectedIndex(-1);
-        m_sellListValue->SetSelectedIndex(-1);
-        m_buyListValue->SetSelectedIndex(-1);
+        m_player_items->clear_selected();
+        m_depot_items->clear_selected();
+        m_sell_items->clear_selected();
+        m_buy_items->clear_selected();
 
         m_clearListSelOnUpdate = false;
     }
 
     if (exitToStarportCommons) {
-        if (g_game->audioSystem->IsPlaying("buttonclick") ==
-            false) { // switched to named sound: see debug log.
+        if (g_game->audioSystem->IsPlaying(samples[S_BUTTONCLICK])
+            == false) { // switched to named sound: see debug log.
             g_game->LoadModule(MODULE_STARPORT);
-            return;
+            return false;
         }
     }
+    return true;
 }
 
-void
-ModuleTradeDepot::Draw() {
-    Module::Draw();
-
-    ALLEGRO_BITMAP *canvas = g_game->GetBackBuffer();
-
-    al_set_target_bitmap(canvas);
-    al_draw_bitmap(m_background, 0, 0, 0);
-
-    m_playerListValue->Draw(canvas);
-    m_sellListValue->Draw(canvas);
-    m_depotListValue->Draw(canvas);
-    m_buyListValue->Draw(canvas);
+bool
+ModuleTradeDepot::on_draw(ALLEGRO_BITMAP *target) {
+    al_set_target_bitmap(target);
 
     ostringstream balStr;
     balStr << g_game->gameState->getCredits();
-    al_draw_text(g_game->font48,
-                 PLAYER_BALANCE_TEXTCOL,
-                 PLAYER_BALANCE_X,
-                 PLAYER_BALANCE_Y,
-                 ALLEGRO_ALIGN_RIGHT,
-                 balStr.str().c_str());
+    al_draw_text(
+        g_game->font48.get(),
+        PLAYER_BALANCE_TEXTCOL,
+        PLAYER_BALANCE_X,
+        PLAYER_BALANCE_Y,
+        ALLEGRO_ALIGN_RIGHT,
+        balStr.str().c_str());
 
     if (m_sellTotal > 0) {
         ostringstream sellStr;
         sellStr << m_sellTotal;
-        al_draw_text(g_game->font48,
-                     SELLTOTAL_TEXTCOL,
-                     SELLTOTAL_X,
-                     SELLTOTAL_Y,
-                     ALLEGRO_ALIGN_RIGHT,
-                     sellStr.str().c_str());
+        al_draw_text(
+            g_game->font48.get(),
+            SELLTOTAL_TEXTCOL,
+            SELLTOTAL_X,
+            SELLTOTAL_Y,
+            ALLEGRO_ALIGN_RIGHT,
+            to_string(m_sellTotal).c_str());
     }
 
     if (m_buyTotal > 0) {
-        ostringstream buyStr;
-        buyStr << m_buyTotal;
-        al_draw_text(g_game->font48,
-                     BUYTOTAL_TEXTCOL,
-                     BUYTOTAL_X,
-                     BUYTOTAL_Y,
-                     0,
-                     buyStr.str().c_str());
-    }
-
-    if (m_tradeMode == TM_PROMPTING) {
-        al_draw_bitmap(m_promptBackground, PROMPTBG_X, PROMPTBG_Y, 0);
-
-        al_draw_bitmap(m_promptBackground, PROMPTBG_X, PROMPTBG_Y, 0);
-        al_draw_text(g_game->font24,
-                     PROMPT_TEXT_COLOR,
-                     QTYTEXT_X + PROMPTBG_X,
-                     QTYTEXT_Y + PROMPTBG_Y,
-                     0,
-                     m_promptText.c_str());
-
-        int nlen = al_get_text_width(g_game->font24, m_promptText.c_str());
-        al_draw_bitmap(m_cursor[m_cursorIdx],
-                       QTYTEXT_X + PROMPTBG_X + nlen + 2,
-                       CURSOR_Y + PROMPTBG_Y,
-                       0);
-
-        if (++m_cursorIdxDelay > CURSOR_DELAY) {
-            m_cursorIdxDelay = 0;
-            m_cursorIdx++;
-            if (m_cursorIdx > 1)
-                m_cursorIdx = 0;
-        }
-
-        int qty = atoi(m_promptText.c_str());
-        al_draw_textf(g_game->font24,
-                      PROMPTBTN_TEXT_COLOR,
-                      PRICE_X + PROMPTBG_X,
-                      PRICE_Y + PROMPTBG_Y,
-                      0,
-                      "Price: %d",
-                      static_cast<int>(qty * m_promptItem.value));
-    }
-
-    for (int i = 0; i < TRADEDEPOT_NUMBUTTONS; i++) {
-        if (m_modeBtnMap[m_buttons[i]] == m_tradeMode)
-            m_buttons[i]->Run(canvas);
+        al_draw_text(
+            g_game->font48.get(),
+            BUYTOTAL_TEXTCOL,
+            BUYTOTAL_X,
+            BUYTOTAL_Y,
+            0,
+            to_string(m_buyTotal).c_str());
     }
 
     // draw portrait
     // case logic
     // 447,443
     if (portrait_string == "") {
-        ALLEGRO_BITMAP *portrait = m_item_portraits[item_to_display];
+        std::shared_ptr<ALLEGRO_BITMAP> portrait =
+            m_item_portraits[item_to_display];
         if (portrait) {
-            al_draw_bitmap(portrait, 447, 443, 0);
+            al_draw_bitmap(portrait.get(), 447, 443, 0);
         }
     } else {
         ALLEGRO_BITMAP *temp_bmp;
@@ -782,327 +645,252 @@ ModuleTradeDepot::Draw() {
             ALLEGRO_DEBUG("%s\n", s.c_str());
         }
     }
+    return true;
 }
 
-void
-ModuleTradeDepot::Close() {
-    if (m_playerListValue != NULL) {
-        delete m_playerListValue;
-        m_playerListValue = NULL;
-    }
+bool
+ModuleTradeDepot::on_close() {
+    remove_child_module(m_background);
+    m_background = nullptr;
+    remove_child_module(m_exit_button);
+    m_exit_button = nullptr;
+    remove_child_module(m_buy_sell_button);
+    m_buy_sell_button = nullptr;
+    remove_child_module(m_confirm_button);
+    m_confirm_button = nullptr;
+    remove_child_module(m_clear_button);
+    m_clear_button = nullptr;
 
-    if (m_sellListValue != NULL) {
-        delete m_sellListValue;
-        m_sellListValue = NULL;
+    for (auto &i : m_filter_buttons) {
+        remove_child_module(i.second);
     }
+    m_filter_buttons.clear();
 
-    if (m_depotListValue != NULL) {
-        delete m_depotListValue;
-        m_depotListValue = NULL;
-    }
+    set_modal_child(nullptr);
+    m_amount_chooser = nullptr;
 
-    if (m_buyListValue != NULL) {
-        delete m_buyListValue;
-        m_buyListValue = NULL;
-    }
+    remove_child_module(m_player_items);
+    m_player_items = nullptr;
 
-    for (int i = 0; i < TRADEDEPOT_NUMBUTTONS; i++) {
-        m_buttons[i]->Destroy();
-        delete m_buttons[i];
-        m_buttons[i] = NULL;
-    }
+    remove_child_module(m_depot_items);
+    m_depot_items = nullptr;
 
-    m_resources.unload();
+    remove_child_module(m_sell_items);
+    m_sell_items = nullptr;
+
+    remove_child_module(m_buy_items);
+    m_buy_items = nullptr;
+
+    return true;
 }
 
-void
-ModuleTradeDepot::OnKeyPress(int keyCode) {
-    Module::OnKeyPress(keyCode);
-}
-
-void
-ModuleTradeDepot::OnKeyPressed(int keyCode) {
-    Module::OnKeyPressed(keyCode);
-
-    if (m_tradeMode == TM_PROMPTING) {
-        if ((keyCode >= ALLEGRO_KEY_0) && (keyCode <= ALLEGRO_KEY_9)) {
-            char c = (char)(keyCode - ALLEGRO_KEY_0) + '0';
-
-            if (m_promptText.size() < PROMPT_MAX_CHARS)
-                m_promptText += c;
-        }
-        if ((keyCode >= ALLEGRO_KEY_PAD_0) && (keyCode <= ALLEGRO_KEY_PAD_9)) {
-            char c = (char)(keyCode - ALLEGRO_KEY_PAD_0) + '0';
-
-            if (m_promptText.size() < PROMPT_MAX_CHARS)
-                m_promptText += c;
-        } else if (keyCode == ALLEGRO_KEY_BACKSPACE) {
-            if (m_promptText.size() > 0) {
-                string newText =
-                    m_promptText.substr(0, m_promptText.size() - 1);
-                m_promptText = newText;
-            }
-        }
-    }
-}
-
-void
-ModuleTradeDepot::OnKeyReleased(int keyCode) {
-    if (keyCode == ALLEGRO_KEY_ESCAPE) {
-    }
-}
-
-void
-ModuleTradeDepot::OnMouseMove(int x, int y) {
-
-    if (m_tradeMode == TM_TRADING) {
-        m_playerListValue->OnMouseMove(x, y);
-        m_sellListValue->OnMouseMove(x, y);
-        m_depotListValue->OnMouseMove(x, y);
-        m_buyListValue->OnMouseMove(x, y);
-    }
-
-    for (int i = 0; i < TRADEDEPOT_NUMBUTTONS; i++) {
-        if (m_modeBtnMap[m_buttons[i]] == m_tradeMode)
-            m_buttons[i]->OnMouseMove(x, y);
-    }
-}
-
-void
-ModuleTradeDepot::OnMouseClick(int button, int x, int y) {
-
-    if (m_tradeMode == TM_TRADING) {
-        m_playerListValue->OnMouseClick(button, x, y);
-        m_sellListValue->OnMouseClick(button, x, y);
-        m_depotListValue->OnMouseClick(button, x, y);
-        m_buyListValue->OnMouseClick(button, x, y);
-    }
-}
-
-void
-ModuleTradeDepot::OnMousePressed(int button, int x, int y) {
-    Module::OnMousePressed(button, x, y);
-
-    if (m_tradeMode == TM_TRADING) {
-        m_playerListValue->OnMousePressed(button, x, y);
-        m_sellListValue->OnMousePressed(button, x, y);
-        m_depotListValue->OnMousePressed(button, x, y);
-        m_buyListValue->OnMousePressed(button, x, y);
-    }
-}
-
-void
-ModuleTradeDepot::OnMouseReleased(int button, int x, int y) {
-    Module::OnMouseReleased(button, x, y);
-
-    if (m_tradeMode == TM_TRADING) {
-        m_playerListValue->OnMouseReleased(button, x, y);
-        m_sellListValue->OnMouseReleased(button, x, y);
-        m_depotListValue->OnMouseReleased(button, x, y);
-        m_buyListValue->OnMouseReleased(button, x, y);
-    }
-
-    for (int i = 0; i < TRADEDEPOT_NUMBUTTONS; i++) {
-        if (m_modeBtnMap[m_buttons[i]] == m_tradeMode)
-            m_buttons[i]->OnMouseReleased(button, x, y);
-    }
-}
-
-void
-ModuleTradeDepot::OnMouseWheelUp(int x, int y) {
-    Module::OnMouseWheelUp(x, y);
-}
-
-void
-ModuleTradeDepot::OnMouseWheelDown(int x, int y) {
-    Module::OnMouseWheelDown(x, y);
-}
-
-void
-ModuleTradeDepot::OnEvent(Event *event) {
+bool
+ModuleTradeDepot::on_event(ALLEGRO_EVENT *event) {
     bool playBtnClick = false;
+    int ret = true;
+    const Item *item;
 
-    int eventType = event->getEventType();
-
-    if (eventType == PLAYERLIST_EVENT) {
+    switch (event->type) {
+    case EVENT_TRADE_PLAYER_LIST:
         // clear other list selections
-        m_depotListValue->SetSelectedIndex(-1);
-        m_sellListValue->SetSelectedIndex(-1);
-        m_buyListValue->SetSelectedIndex(-1);
+        m_depot_items->clear_selected();
+        m_sell_items->clear_selected();
+        m_buy_items->clear_selected();
         playBtnClick = true;
 
         // determine item type of selected item so that we can show the correct
         // portrait
-        Item item;
-        int numItems;
-        m_playerItemsFiltered.GetStack(
-            m_playerListValue->GetSelectedIndex(), item, numItems);
-        item_to_display = item.itemType;
-        portrait_string = item.portrait;
-    } else if (eventType == DEPOTLIST_EVENT) {
+        item = g_game->dataMgr->GetItemByID(m_player_items->get_selected());
+        item_to_display = item->itemType;
+        portrait_string = item->portrait;
+        ret = false;
+        break;
+    case EVENT_TRADE_DEPOT_LIST:
         // clear other list selections
-        m_playerListValue->SetSelectedIndex(-1);
-        m_sellListValue->SetSelectedIndex(-1);
-        m_buyListValue->SetSelectedIndex(-1);
+        m_player_items->clear_selected();
+        m_sell_items->clear_selected();
+        m_buy_items->clear_selected();
         playBtnClick = true;
 
         // determine item type of selected item so that we can show the correct
         // portrait
-        Item item;
-        int numItems;
-        m_depotItemsFiltered.GetStack(
-            m_depotListValue->GetSelectedIndex(), item, numItems);
-        item_to_display = item.itemType;
-        portrait_string = item.portrait;
-    } else if (eventType == SELLLIST_EVENT) {
-        m_sellListValue->SetSelectedIndex(-1);
-    } else if (eventType == BUYLIST_EVENT) {
-        m_buyListValue->SetSelectedIndex(-1);
-    } else if (eventType == BTNEVENT_SELLBUY) {
-        if (m_playerListValue->GetSelectedIndex() >= 0) {
-            Item item;
-            int numItems;
-            m_playerItemsFiltered.GetStack(
-                m_playerListValue->GetSelectedIndex(), item, numItems);
+        item = g_game->dataMgr->GetItemByID(m_depot_items->get_selected());
+        item_to_display = item->itemType;
+        portrait_string = item->portrait;
+        ret = false;
+        break;
+    case EVENT_TRADE_SELL_LIST:
+        m_sell_items->clear_selected();
+        ret = false;
+        break;
+    case EVENT_TRADE_BUY_LIST:
+        m_buy_items->clear_selected();
+        ret = false;
+        break;
+    case EVENT_TRADE_SELL_BUY:
+        ID selected_item;
+
+        if ((selected_item = m_player_items->get_selected()) >= 0) {
+            int num_items = m_player_items->get_count(selected_item);
+            item = g_game->dataMgr->GetItemByID(selected_item);
+
             m_promptItem = item;
-            m_promptNumItems = numItems;
             m_promptType = PT_SELL;
-            m_tradeMode = TM_PROMPTING;
-            m_promptText = "1";
-        } else if (m_depotListValue->GetSelectedIndex() >= 0) {
-            Item item;
-            int numItems;
-            m_depotItemsFiltered.GetStack(
-                m_depotListValue->GetSelectedIndex(), item, numItems);
+            m_amount_chooser->set_unit_price(item->value);
+            m_amount_chooser->set_max_units(num_items);
+            m_amount_chooser->set_amount(1);
+            set_modal_child(m_amount_chooser);
+        } else if ((selected_item = m_depot_items->get_selected()) >= 0) {
+            int num_items = m_depot_items->get_count(selected_item);
+            item = g_game->dataMgr->GetItemByID(selected_item);
+
             m_promptItem = item;
-            m_promptNumItems = numItems;
             m_promptType = PT_BUY;
-            m_tradeMode = TM_PROMPTING;
-            m_promptText = "1";
+            int available_credits =
+                g_game->gameState->getCredits() + m_sellTotal - m_buyTotal;
+            Item already_in_cart_item;
+            int already_in_cart_amount = 0;
+
+            m_buyItems.Get_Item_By_ID(
+                item->id, already_in_cart_item, already_in_cart_amount);
+            if (already_in_cart_amount) {
+                available_credits +=
+                    static_cast<int>(item->value * already_in_cart_amount);
+            }
+            int max_to_buy = available_credits / item->value;
+
+            if (max_to_buy > num_items) {
+                max_to_buy = num_items;
+            }
+            int available_space = g_game->gameState->m_ship.getAvailableSpace();
+            if (max_to_buy > available_space) {
+                max_to_buy = available_space;
+            }
+
+            m_amount_chooser->set_unit_price(item->value);
+            m_amount_chooser->set_max_units(max_to_buy);
+            m_amount_chooser->set_amount(0);
+            set_modal_child(m_amount_chooser);
         }
 
         playBtnClick = true;
-    } else if (eventType == BTNEVENT_EXIT) {
+        ret = false;
+        break;
+    case EVENT_TRADE_EXIT:
         exitToStarportCommons = true;
         playBtnClick = true;
-    } else if (eventType == BTNEVENT_CHECKOUT) {
+        ret = false;
+        break;
+    case EVENT_TRADE_CHECKOUT:
         DoFinalizeTransaction();
         playBtnClick = true;
-    } else if (eventType == BTNEVENT_CLEAR) {
+        ret = false;
+        break;
+    case EVENT_TRADE_CLEAR:
         m_sellItems.Reset();
         m_buyItems.Reset();
         UpdateLists();
 
         playBtnClick = true;
-    } else if (eventType == FILTEREVENT_ALL) {
+        ret = false;
+        break;
+    case EVENT_TRADE_FILTER_ALL:
         m_filterType = IT_INVALID;
         playBtnClick = true;
         UpdateLists();
-        m_playerListValue->ScrollToTop();
-        m_depotListValue->ScrollToTop();
-    } else if (eventType == FILTEREVENT_ARTIFACT) {
+        m_player_items->set_filter(m_filterType);
+        m_player_items->scroll_to_top();
+
+        m_depot_items->set_filter(m_filterType);
+        m_depot_items->scroll_to_top();
+        ret = false;
+        break;
+    case EVENT_TRADE_FILTER_ARTIFACT:
         m_filterType = IT_ARTIFACT;
         playBtnClick = true;
         UpdateLists();
-        m_playerListValue->ScrollToTop();
-        m_depotListValue->ScrollToTop();
-    } else if (eventType == FILTEREVENT_MINERAL) {
+        m_player_items->set_filter(m_filterType);
+        m_player_items->scroll_to_top();
+
+        m_depot_items->set_filter(m_filterType);
+        m_depot_items->scroll_to_top();
+        ret = false;
+        break;
+    case EVENT_TRADE_FILTER_MINERAL:
         m_filterType = IT_MINERAL;
         playBtnClick = true;
         UpdateLists();
-        m_playerListValue->ScrollToTop();
-        m_depotListValue->ScrollToTop();
-    } else if (eventType == FILTEREVENT_LIFEFORM) {
+        m_player_items->set_filter(m_filterType);
+        m_player_items->scroll_to_top();
+
+        m_depot_items->set_filter(m_filterType);
+        m_depot_items->scroll_to_top();
+        ret = false;
+        break;
+    case EVENT_TRADE_FILTER_LIFEFORM:
         m_filterType = IT_LIFEFORM;
         playBtnClick = true;
         UpdateLists();
-        m_playerListValue->ScrollToTop();
-        m_depotListValue->ScrollToTop();
-    } else if (eventType == FILTEREVENT_TRADEITEM) {
+        m_player_items->set_filter(m_filterType);
+        m_player_items->scroll_to_top();
+
+        m_depot_items->set_filter(m_filterType);
+        m_depot_items->scroll_to_top();
+        ret = false;
+        break;
+    case EVENT_TRADE_FILTER_TRADE_ITEM:
         m_filterType = IT_TRADEITEM;
         playBtnClick = true;
         UpdateLists();
-        m_playerListValue->ScrollToTop();
-        m_depotListValue->ScrollToTop();
-    } else if (eventType == BTNEVENT_SPINUP) {
-        int val = atoi(m_promptText.c_str());
-        val++;
-        if (val > m_promptNumItems)
-            val = m_promptNumItems;
-        if (val > 99999999)
-            val = 99999999;
-        ostringstream str;
-        str << val;
-        m_promptText = str.str();
+        m_player_items->set_filter(m_filterType);
+        m_player_items->scroll_to_top();
 
-        playBtnClick = true;
-    } else if (eventType == BTNEVENT_SPINDOWN) {
-        int val = atoi(m_promptText.c_str());
-        val--;
-        if (val < 0)
-            val = 0;
-        if (val > m_promptNumItems)
-            val = m_promptNumItems;
-        if (val > 99999999)
-            val = 99999999;
-        ostringstream str;
-        str << val;
-        m_promptText = str.str();
-
-        playBtnClick = true;
-    } else if (eventType == BTNEVENT_ALL) {
-        ostringstream str;
-        str << m_promptNumItems;
-        m_promptText = str.str();
-
-        playBtnClick = true;
-    } else if (eventType == BTNEVENT_OK) {
-        DoBuySell();
-        m_tradeMode = TM_TRADING;
+        m_depot_items->set_filter(m_filterType);
+        m_depot_items->scroll_to_top();
+        ret = false;
+        break;
+    case EVENT_TRADE_OK:
+        DoBuySell(m_amount_chooser->get_amount());
         playBtnClick = true;
         m_clearListSelOnUpdate = true;
-    } else if (eventType == BTNEVENT_CANCEL) {
-        m_tradeMode = TM_TRADING;
+        set_modal_child(nullptr);
+        ret = false;
+        break;
+    case EVENT_TRADE_CANCEL:
         playBtnClick = true;
         m_clearListSelOnUpdate = true;
+        set_modal_child(nullptr);
+        ret = false;
+        break;
     }
 
     if (playBtnClick) {
-        g_game->audioSystem->Play(
-            "buttonclick"); // switched to named sound: see debug log.
+        g_game->audioSystem->Play(samples[S_BUTTONCLICK]);
     }
 
     UpdateButtonStates();
+    return ret;
 }
 
 void
-ModuleTradeDepot::DoBuySell() {
-    int qty = atoi(m_promptText.c_str());
-
-    if (qty > m_promptNumItems)
-        qty = m_promptNumItems;
-    if (qty > 99999999)
-        qty = 99999999;
+ModuleTradeDepot::DoBuySell(int qty) {
     if (qty <= 0)
         return;
 
     if (m_promptType == PT_SELL) {
-        m_sellItems.SetItemCount(m_promptItem.id, qty);
+        m_sellItems.SetItemCount(m_promptItem->id, qty);
         UpdateLists();
     } else if (m_promptType == PT_BUY) {
         // verify the ship has cargo pods
         if (g_game->gameState->m_ship.getCargoPodCount() == 0) {
-            g_game->ShowMessageBoxWindow(
+            set_modal_child(make_shared<MessageBoxWindow>(
                 "",
                 "Your ship has no Cargo Pods! You must purchase one before "
-                "taking on cargo.",
-                300,
-                300,
-                WHITE);
+                "taking on cargo."));
             return;
         }
 
-        m_buyItems.SetItemCount(m_promptItem.id, qty);
+        m_buyItems.SetItemCount(m_promptItem->id, qty);
         UpdateLists();
     }
 }
@@ -1120,7 +908,7 @@ ModuleTradeDepot::DoFinalizeTransaction() {
         m_depotItems.AddItems(item.id, numItems);
     }
     m_sellItems.Reset();
-    m_playerListValue->ScrollToTop();
+    m_player_items->scroll_to_top();
     UpdateLists();
 
     // verify credit balance & cargo space before buying
@@ -1137,16 +925,14 @@ ModuleTradeDepot::DoFinalizeTransaction() {
     }
 
     if (buyValue > g_game->gameState->m_credits) {
-        g_game->ShowMessageBoxWindow("", "You can't afford it!", 250, 150);
+        set_modal_child(
+            make_shared<MessageBoxWindow>("", "You can't afford it!"));
         return;
     }
 
     if (neededSpace > g_game->gameState->m_ship.getAvailableSpace()) {
-        g_game->ShowMessageBoxWindow(
-            "",
-            "You don't have enough free space in your cargo hold!",
-            300,
-            300);
+        set_modal_child(make_shared<MessageBoxWindow>(
+            "", "You don't have enough free space in your cargo hold!"));
         return;
     }
 
@@ -1160,175 +946,76 @@ ModuleTradeDepot::DoFinalizeTransaction() {
         g_game->gameState->m_items.AddItems(item.id, numItems);
     }
     m_buyItems.Reset();
-    m_depotListValue->ScrollToTop();
+    m_depot_items->scroll_to_top();
     UpdateLists();
 }
 
 void
 ModuleTradeDepot::UpdateButtonStates() {
-    m_sellbuyBtn->SetVisible(false);
-    m_checkoutBtn->SetVisible(false);
-    m_cancelBtn->SetVisible(true);
-    m_clearBtn->SetVisible(false);
+    m_confirm_button->set_active(false);
+    m_buy_sell_button->set_active(false);
+    m_clear_button->set_active(false);
 
-    if (m_playerList->GetSelectedIndex() >= 0) {
-        m_sellbuyBtn->SetButtonText("Sell");
-        m_sellbuyBtn->SetVisible(true);
+    if (m_player_items->get_selected() >= 0) {
+        m_buy_sell_button->set_text("Sell");
+        m_buy_sell_button->set_active(true);
     }
 
-    if (m_depotList->GetSelectedIndex() >= 0) {
-        m_sellbuyBtn->SetButtonText("Buy");
-        m_sellbuyBtn->SetVisible(true);
+    if (m_depot_items->get_selected() >= 0) {
+        m_buy_sell_button->set_text("Buy");
+        m_buy_sell_button->set_active(true);
     }
 
-    if (m_sellList->getLines() > 0) {
-        m_checkoutBtn->SetVisible(true);
-        m_clearBtn->SetVisible(true);
+    if (m_sell_items->get_num_rows() > 0) {
+        m_confirm_button->set_active(true);
+        m_clear_button->set_active(true);
     }
 
-    if (m_buyList->getLines() > 0) {
-        m_checkoutBtn->SetVisible(true);
-        m_clearBtn->SetVisible(true);
+    if (m_buy_items->get_num_rows() > 0) {
+        m_confirm_button->set_active(true);
+        m_clear_button->set_active(true);
     }
 
-    m_filterAllBtn->SetHighlight(false);
-    m_filterSpecialtyGoodBtn->SetHighlight(false);
-    m_filterMineralBtn->SetHighlight(false);
-    m_filterLifeformBtn->SetHighlight(false);
-    m_filterTradeItemBtn->SetHighlight(false);
+    m_filter_buttons[IT_INVALID]->set_highlight(false);
+    m_filter_buttons[IT_ARTIFACT]->set_highlight(false);
+    m_filter_buttons[IT_MINERAL]->set_highlight(false);
+    m_filter_buttons[IT_LIFEFORM]->set_highlight(false);
+    m_filter_buttons[IT_TRADEITEM]->set_highlight(false);
 
-    switch (m_filterType) {
-    case IT_ARTIFACT:
-        break;
-    case IT_MINERAL:
-        m_filterMineralBtn->SetHighlight(true);
-        break;
-    case IT_LIFEFORM:
-        m_filterLifeformBtn->SetHighlight(true);
-        break;
-    case IT_TRADEITEM:
-        m_filterTradeItemBtn->SetHighlight(true);
-        break;
-    case IT_INVALID:
-    default:
-        m_filterAllBtn->SetHighlight(true);
-        break;
-    }
+    m_filter_buttons[m_filterType]->set_highlight(true);
 }
 
 void
 ModuleTradeDepot::UpdateLists() {
     // player items
-
-    m_playerItemsFiltered.Reset();
-    for (int i = 0; i < g_game->gameState->m_items.GetNumStacks(); i++) {
-        Item item;
-        int numItems;
-        g_game->gameState->m_items.GetStack(i, item, numItems);
-
-        if ((m_filterType == IT_INVALID) || (item.itemType == m_filterType)) {
-            m_playerItemsFiltered.AddItems(item.id, numItems);
-        }
-    }
-
-    m_playerListValue->Clear();
-    m_playerListValue->setLines(m_playerItemsFiltered.GetNumStacks());
-    for (int i = 0; i < m_playerItemsFiltered.GetNumStacks(); i++) {
-        Item item;
-        int numItems;
-        m_playerItemsFiltered.GetStack(i, item, numItems);
-
-        m_playerList->Write(item.name);
-        {
-            ostringstream str;
-            str << numItems;
-            m_playerListNumItems->Write(str.str());
-        }
-        {
-            ostringstream str;
-            str << item.value;
-            m_playerListValue->Write(str.str());
-        }
-    }
+    m_player_items->clear_selected();
+    m_player_items->set_filter(m_filterType);
+    m_player_items->update_items();
 
     // depot items
-
-    m_depotItemsFiltered.Reset();
-    for (int i = 0; i < m_depotItems.GetNumStacks(); i++) {
-        Item item;
-        int numItems;
-        m_depotItems.GetStack(i, item, numItems);
-
-        if ((m_filterType == IT_INVALID) || (item.itemType == m_filterType)) {
-            m_depotItemsFiltered.AddItems(item.id, numItems);
-        }
-    }
-
-    m_depotListValue->Clear();
-    m_depotListValue->setLines(m_depotItemsFiltered.GetNumStacks());
-    for (int i = 0; i < m_depotItemsFiltered.GetNumStacks(); i++) {
-        Item item;
-        int numItems;
-        m_depotItemsFiltered.GetStack(i, item, numItems);
-
-        m_depotList->Write(item.name);
-        {
-            ostringstream str;
-            str << numItems;
-            m_depotListNumItems->Write(str.str());
-        }
-        {
-            ostringstream str;
-            str << item.value;
-            m_depotListValue->Write(str.str());
-        }
-    }
+    m_depot_items->clear_selected();
+    m_depot_items->set_filter(m_filterType);
+    m_depot_items->update_items();
 
     // sell items
-
     int sellValue = 0;
-    m_sellListValue->Clear();
-    m_sellListValue->setLines(m_sellItems.GetNumStacks());
-    for (int i = 0; i < m_sellItems.GetNumStacks(); i++) {
-        Item item;
-        int numItems;
-        m_sellItems.GetStack(i, item, numItems);
-        sellValue += (int)(item.value * numItems);
+    m_sell_items->update_items();
 
-        m_sellList->Write(item.name);
-        {
-            ostringstream str;
-            str << numItems;
-            m_sellListNumItems->Write(str.str());
-        }
-        {
-            ostringstream str;
-            str << item.value;
-            m_sellListValue->Write(str.str());
+    for (auto &[id, count] : m_sellItems) {
+        if (count > 0) {
+            const Item *item = g_game->dataMgr->GetItemByID(id);
+            sellValue += static_cast<int>(item->value * count);
         }
     }
 
     // buy items
-
     int buyValue = 0;
-    m_buyListValue->Clear();
-    m_buyListValue->setLines(m_buyItems.GetNumStacks());
-    for (int i = 0; i < m_buyItems.GetNumStacks(); i++) {
-        Item item;
-        int numItems;
-        m_buyItems.GetStack(i, item, numItems);
-        buyValue += (int)(item.value * numItems);
+    m_buy_items->update_items();
 
-        m_buyList->Write(item.name);
-        {
-            ostringstream str;
-            str << numItems;
-            m_buyListNumItems->Write(str.str());
-        }
-        {
-            ostringstream str;
-            str << item.value;
-            m_buyListValue->Write(str.str());
+    for (auto &[id, count] : m_buyItems) {
+        if (count > 0) {
+            const Item *item = g_game->dataMgr->GetItemByID(id);
+            buyValue += static_cast<int>(item->value * count);
         }
     }
 
@@ -1341,3 +1028,4 @@ ModuleTradeDepot::UpdateLists() {
         m_buyTotal = buyValue - sellValue;
     }
 }
+// vi: ft=cpp

@@ -5,14 +5,13 @@
         Date: 10-29-2007
 */
 
+#include <cmath>
+
 #include "Flux.h"
-#include "cmath"
 
 static inline float
 distance_between_coords(const Point2D &a, const Point2D &b) {
-    int dx = a.x - b.x;
-    int dy = a.y - b.y;
-    return sqrt(dx * dx + dy * dy);
+    return hypot(a.x - b.x, a.y - b.y);
 }
 
 float

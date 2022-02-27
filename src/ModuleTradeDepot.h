@@ -1,55 +1,75 @@
 #ifndef MODULETRADEDEPOT_H
 #define MODULETRADEDEPOT_H
-//#pragma once
 
-#include "AudioSystem.h"
-#include "DataMgr.h"
-#include "Module.h"
-#include "ResourceManager.h"
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_font.h>
-#include <map>
 
-#define TRADEDEPOT_NUMBUTTONS 16
+#include "Bitmap.h"
+#include "Button.h"
+#include "GameState.h"
+#include "ItemStackButtonList.h"
+#include "Label.h"
+#include "Module.h"
+#include "ScrolledModule.h"
+#include "TextEntry.h"
 
-class Button;
-namespace ScrollBox {
-class ScrollBox;
-}
+class TradeDepotAmountChooser : public Module {
+  public:
+    TradeDepotAmountChooser(int unit_price, int max_units);
+
+    virtual bool on_event(ALLEGRO_EVENT *event) override;
+    virtual bool on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event) override;
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
+
+    int get_amount() const;
+    void set_amount(int amount);
+
+    void set_unit_price(int unit_price) {
+        if (unit_price != m_unit_price) {
+            m_unit_price = unit_price;
+            m_update_total = true;
+        }
+    }
+
+    void set_max_units(int max_units);
+
+  private:
+    std::shared_ptr<Bitmap> m_prompt_background;
+    std::shared_ptr<NumericTextEntry> m_text_entry;
+    std::shared_ptr<Label> m_price_label;
+
+    std::shared_ptr<Button> m_spin_up_button;
+    std::shared_ptr<Button> m_spin_down_button;
+    std::shared_ptr<TextButton> m_all_button;
+    std::shared_ptr<TextButton> m_ok_button;
+    std::shared_ptr<TextButton> m_cancel_button;
+    int m_unit_price;
+    int m_max_units;
+
+    bool m_update_total;
+};
+
+using ScrolledTradeDepotItemList = ScrolledModule<ItemStackButtonList>;
 
 class ModuleTradeDepot : public Module {
   public:
-    ModuleTradeDepot(void);
-    virtual ~ModuleTradeDepot(void);
-    virtual bool Init() override;
-    virtual void Update() override;
-    virtual void Draw() override;
-    virtual void OnKeyPress(int keyCode) override;
-    virtual void OnKeyPressed(int keyCode) override;
-    virtual void OnKeyReleased(int keyCode) override;
-    virtual void OnMouseMove(int x, int y) override;
-    virtual void OnMouseClick(int button, int x, int y) override;
-    virtual void OnMousePressed(int button, int x, int y) override;
-    virtual void OnMouseReleased(int button, int x, int y) override;
-    virtual void OnMouseWheelUp(int x, int y) override;
-    virtual void OnMouseWheelDown(int x, int y) override;
-    virtual void OnEvent(Event *event) override;
-    virtual void Close() override;
+    ModuleTradeDepot();
+    virtual bool on_init() override;
+    virtual bool on_update() override;
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
+    virtual bool on_event(ALLEGRO_EVENT *event) override;
+    virtual bool on_close() override;
 
   private:
     ItemType item_to_display;
 
-    // bug fix: needs 0-5, was capped at 5
-    std::map<ItemType, ALLEGRO_BITMAP *> m_item_portraits;
+    std::map<ItemType, std::shared_ptr<ALLEGRO_BITMAP>> m_item_portraits;
     std::string portrait_string;
-
-    typedef enum
-    {
-        TM_INVALID = 0,
-        TM_TRADING,
-        TM_PROMPTING
-    } TradeModeType;
-    TradeModeType m_tradeMode;
 
     typedef enum
     {
@@ -58,73 +78,41 @@ class ModuleTradeDepot : public Module {
         PT_BUY
     } PromptType;
     PromptType m_promptType;
-    Item m_promptItem;
-    int m_promptNumItems;
-    std::string m_promptText;
+    const Item *m_promptItem;
 
     bool m_clearListSelOnUpdate;
 
-    void DoBuySell();
+    void DoBuySell(int amount);
     void DoFinalizeTransaction();
 
-    ALLEGRO_BITMAP *m_background;
+    std::shared_ptr<Bitmap> m_background;
 
-    ScrollBox::ScrollBox *m_playerList;
-    ScrollBox::ScrollBox *m_playerListNumItems;
-    ScrollBox::ScrollBox *m_playerListValue;
-    ScrollBox::ScrollBox *m_sellList;
-    ScrollBox::ScrollBox *m_sellListNumItems;
-    ScrollBox::ScrollBox *m_sellListValue;
-    ScrollBox::ScrollBox *m_depotList;
-    ScrollBox::ScrollBox *m_depotListNumItems;
-    ScrollBox::ScrollBox *m_depotListValue;
-    ScrollBox::ScrollBox *m_buyList;
-    ScrollBox::ScrollBox *m_buyListNumItems;
-    ScrollBox::ScrollBox *m_buyListValue;
+    std::shared_ptr<ScrolledTradeDepotItemList> m_player_items;
+    std::shared_ptr<ScrolledTradeDepotItemList> m_sell_items;
+    std::shared_ptr<ScrolledTradeDepotItemList> m_depot_items;
+    std::shared_ptr<ScrolledTradeDepotItemList> m_buy_items;
 
-    Button *m_buttons[TRADEDEPOT_NUMBUTTONS];
-    std::map<Button *, bool> m_filterBtnMap;
-    std::map<Button *, TradeModeType> m_modeBtnMap;
-    Button *m_sellbuyBtn;
-    Button *m_exitBtn;
-    Button *m_checkoutBtn;
-    Button *m_clearBtn;
+    std::shared_ptr<TextButton> m_buy_sell_button;
+    std::shared_ptr<TextButton> m_exit_button;
+    std::shared_ptr<TextButton> m_confirm_button;
+    std::shared_ptr<TextButton> m_clear_button;
 
-    Button *m_filterAllBtn;
-    Button *m_filterArtifactBtn;
-    Button *m_filterSpecialtyGoodBtn;
-    Button *m_filterMineralBtn;
-    Button *m_filterLifeformBtn;
-    Button *m_filterTradeItemBtn;
-    Button *m_filterShipUpgradeBtn;
+    std::map<ItemType, std::shared_ptr<TextButton>> m_filter_buttons;
 
+    std::shared_ptr<TradeDepotAmountChooser> m_amount_chooser;
     bool exitToStarportCommons;
 
     ItemType m_filterType;
-    Items m_playerItemsFiltered;
     Items m_depotItems;
-    Items m_depotItemsFiltered;
     Items m_sellItems;
     Items m_buyItems;
-
-    ALLEGRO_BITMAP *m_promptBackground;
-    Button *m_spinUpBtn;
-    Button *m_spinDownBtn;
-    Button *m_allBtn;
-    Button *m_okBtn;
-    Button *m_cancelBtn;
-
-    ALLEGRO_BITMAP *m_cursor[2];
-    int m_cursorIdx;
-    int m_cursorIdxDelay;
 
     void UpdateButtonStates();
     void UpdateLists();
 
     int m_sellTotal;
     int m_buyTotal;
-
-    ResourceManager<ALLEGRO_BITMAP> m_resources;
 };
 
 #endif
+// vi: ft=cpp

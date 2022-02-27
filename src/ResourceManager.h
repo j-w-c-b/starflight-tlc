@@ -7,31 +7,44 @@
 
 #include <allegro5/allegro.h>
 
+#include "AudioSystem.h"
+
 struct ResourceName {
     std::string name;
     std::string path;
 };
 
 template <class T> struct Resource : public ResourceName {
-    std::unique_ptr<T, void (*)(T *)> data;
+    std::weak_ptr<T> data;
     static void deleter(T *);
 
-    Resource() : data(nullptr, deleter){};
-    Resource(ResourceName r) : ResourceName(r), data(nullptr, deleter){};
+    Resource() {}
+    explicit Resource(const ResourceName &r) : ResourceName(r) {}
 };
 
 template <class T> class ResourceManager {
   public:
+    ResourceManager();
     explicit ResourceManager(const ResourceName resource_names[]);
     virtual ~ResourceManager();
 
-    bool load();
-    void unload();
     void add(const ResourceName &name);
-    T *get(const std::string &name);
-    T *operator[](const std::string &name);
+    void add(const ResourceName resource_names[]);
+
+    void clear();
+
+    std::shared_ptr<T> get(const std::string &name);
+    std::shared_ptr<T> operator[](const std::string &name);
 
   private:
     std::map<std::string, Resource<T>> resources;
-    T *load(Resource<T> &data);
+    std::shared_ptr<T> load(Resource<T> &data);
 };
+
+using ImageManager = ResourceManager<ALLEGRO_BITMAP>;
+using SampleManager = ResourceManager<Sample>;
+
+extern ImageManager images;
+extern SampleManager samples;
+
+// vi: ft=cpp

@@ -1,49 +1,31 @@
 #include "Timer.h"
-#include <allegro5/allegro.h>
 
-Timer::Timer(void) {
-#if defined(_POSIX_SOURCE) || defined(__APPLE__)
-    gettimeofday(&initial, NULL);
-#endif
-
-    reset();
+Timer::Timer() {
+    timer_start = stopwatch_start = initial = al_get_time() * 1000;
 }
-
-Timer::~Timer(void) {}
 
 long
 Timer::getTimer() {
-#if defined(_MSC_VER) || defined(WIN32)
-    return (long)clock();
-
-#elif defined(_POSIX_SOURCE) || defined(__APPLE__)
-    timeval current, delta;
-    gettimeofday(&current, NULL);
-    timersub(&current, &initial, &delta);
-    return (long)(delta.tv_sec * 1000 + delta.tv_usec / 1000);
-
-#else
-#error Could not determine the function to get wall-clock time
-
-#endif
+    return al_get_time() * 1000;
 }
 
-long
+double
 Timer::getStartTimeMillis() {
     return getTimer() - timer_start;
 }
 
 void
 Timer::reset() {
-    timer_start = getTimer();
-    stopwatch_start = timer_start;
+    stopwatch_start = timer_start = getTimer();
 }
 
 bool
-Timer::stopwatch(long ms) {
+Timer::stopwatch(double ms) {
     if (getTimer() > stopwatch_start + ms) {
         stopwatch_start = getTimer();
         return true;
-    } else
+    } else {
         return false;
+    }
 }
+// vi: ft=cpp

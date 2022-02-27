@@ -5,24 +5,28 @@
         Date: April 2008
 */
 
-#ifndef _MODULETOPGUI_H
-#define _MODULETOPGUI_H
+#ifndef MODULETOPGUI_H
+#define MODULETOPGUI_H
 
+#include <memory>
+
+#include <allegro5/allegro.h>
+
+#include "Bitmap.h"
 #include "Module.h"
-#include "ResourceManager.h"
 
 class ModuleTopGUI : public Module {
   public:
-    ModuleTopGUI();
-    ~ModuleTopGUI();
-    virtual bool Init() override;
-    virtual void Update() override;
-    void UpdateInjector();
-    virtual void Draw() override;
-    virtual void Close() override;
+    virtual bool on_init() override;
+    virtual bool on_close() override;
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
 
   private:
-    ResourceManager<ALLEGRO_BITMAP> m_resources;
+    std::shared_ptr<Bitmap> m_top_gauge;
+    std::shared_ptr<Bitmap> m_hull_gauge;
+    std::shared_ptr<Bitmap> m_armor_gauge;
+    std::shared_ptr<Bitmap> m_shields_gauge;
+    std::shared_ptr<Bitmap> m_fuel_gauge;
 };
 
 #endif

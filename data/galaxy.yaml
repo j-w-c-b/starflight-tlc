@@ -1,0 +1,6494 @@
+---
+galaxy:
+  - star:
+      id: &mac_howg 1
+      name: Mac Howg
+      x: 42
+      y: 53
+      spectralclass: B
+      color: LT BLUE
+      temperature: 20138
+      mass: 7
+      radius: 4.2
+      luminosity: 21567
+  - star:
+      id: &sidhichean 2
+      name: Sidhichean
+      x: 125
+      y: 105
+      spectralclass: G
+      color: YELLOW
+      temperature: 5491
+      mass: 0.85
+      radius: 1.07
+      luminosity: 1.49
+  - star:
+      id: &fingola 5
+      name: Fingola
+      x: 18
+      y: 213
+      spectralclass: A
+      color: WHITE
+      temperature: 8924
+      mass: 3
+      radius: 2.7
+      luminosity: 23
+  - star:
+      id: &lairgnen 6
+      name: Lairgnen
+      x: 19
+      y: 209
+      spectralclass: A
+      color: WHITE
+      temperature: 9537
+      mass: 3
+      radius: 2.7
+      luminosity: 29
+  - star:
+      id: &cahir 7
+      name: Cahir
+      x: 30
+      y: 137
+      spectralclass: B
+      color: LT BLUE
+      temperature: 27314
+      mass: 8
+      radius: 6.6
+      luminosity: 38231
+  - star:
+      id: &ethniu 8
+      name: Ethniu
+      x: 170
+      y: 181
+      spectralclass: B
+      color: LT BLUE
+      temperature: 25744
+      mass: 8
+      radius: 6.7
+      luminosity: 25829
+  - star:
+      id: &drnid 9
+      name: Drnid
+      x: 181
+      y: 49
+      spectralclass: B
+      color: LT BLUE
+      temperature: 10562
+      mass: 8
+      radius: 5.7
+      luminosity: 13822
+  - star:
+      id: &lairgnen 10
+      name: Lairgnen
+      x: 70
+      y: 142
+      spectralclass: G
+      color: YELLOW
+      temperature: 5198
+      mass: 0.98
+      radius: 1.09
+      luminosity: 0.99
+  - star:
+      id: &ogma 11
+      name: Ogma
+      x: 114
+      y: 189
+      spectralclass: F
+      color: LT YELLOW
+      temperature: 6002
+      mass: 0.14
+      radius: 1.4
+      luminosity: 3
+  - star:
+      id: &fodla 12
+      name: Fodla
+      x: 109
+      y: 55
+      spectralclass: A
+      color: WHITE
+      temperature: 9178
+      mass: 3
+      radius: 2.2
+      luminosity: 19
+  - star:
+      id: &deach 13
+      name: Deoch
+      x: 224
+      y: 121
+      spectralclass: M
+      color: RED
+      temperature: 2545
+      mass: 0.08
+      radius: 0.35
+      luminosity: 0.075
+  - star:
+      id: &bodb 14
+      name: Bodb
+      x: 224
+      y: 208
+      spectralclass: G
+      color: YELLOW
+      temperature: 5664
+      mass: 1.08
+      radius: 1
+      luminosity: 0.74
+  - star:
+      id: &oifa 15
+      name: Oifa
+      x: 23
+      y: 23
+      spectralclass: F
+      color: LT YELLOW
+      temperature: 7168
+      mass: 0.14
+      radius: 1.6
+      luminosity: 2.2
+  - star:
+      id: &danand 16
+      name: Danand
+      x: 238
+      y: 14
+      spectralclass: M
+      color: RED
+      temperature: 2373
+      mass: 0.08
+      radius: 0.35
+      luminosity: 0.035
+  - star:
+      id: &caintigern 17
+      name: Caintigern
+      x: 106
+      y: 18
+      spectralclass: K
+      color: ORANGE
+      temperature: 4584
+      mass: 0.82
+      radius: 0.82
+      luminosity: 0.38
+  - star:
+      id: &airmed 18
+      name: Airmed
+      x: 84
+      y: 202
+      spectralclass: A
+      color: WHITE
+      temperature: 8768
+      mass: 2
+      radius: 2.6
+      luminosity: 15
+  - star:
+      id: &allod 19
+      name: Allod
+      x: 181
+      y: 190
+      spectralclass: F
+      color: LT YELLOW
+      temperature: 6212
+      mass: 0.15
+      radius: 1.6
+      luminosity: 2.7
+  - star:
+      id: &jurlagh 20
+      name: Jurlagh
+      x: 16
+      y: 70
+      spectralclass: M
+      color: RED
+      temperature: 2490
+      mass: 0.08
+      radius: 0.21
+      luminosity: 0.038
+  - star:
+      id: &cian 21
+      name: Cian
+      x: 25
+      y: 205
+      spectralclass: A
+      color: WHITE
+      temperature: 8136
+      mass: 2
+      radius: 2.3
+      luminosity: 26
+  - star:
+      id: &miach 22
+      name: Miach
+      x: 83
+      y: 197
+      spectralclass: B
+      color: LT BLUE
+      temperature: 22341
+      mass: 11
+      radius: 4.2
+      luminosity: 10760
+  - star:
+      id: &delbaeth 23
+      name: Delbaeth
+      x: 107
+      y: 183
+      spectralclass: G
+      color: YELLOW
+      temperature: 5982
+      mass: 0.92
+      radius: 0.96
+      luminosity: 1.5
+  - star:
+      id: &esar_brec 24
+      name: Esar Brec
+      x: 39
+      y: 134
+      spectralclass: G
+      color: YELLOW
+      temperature: 5469
+      mass: 0.94
+      radius: 0.99
+      luminosity: 0.67
+  - star:
+      id: &ove 25
+      name: Ove
+      x: 54
+      y: 134
+      spectralclass: K
+      color: ORANGE
+      temperature: 4554
+      mass: 0.74
+      radius: 0.78
+      luminosity: 0.28
+  - star:
+      id: &faidh 26
+      name: Faidh
+      x: 123
+      y: 102
+      spectralclass: F
+      color: LT YELLOW
+      temperature: 7023
+      mass: 0.14
+      radius: 1.6
+      luminosity: 3.1
+  - star:
+      id: &fiochra 27
+      name: Fiochra
+      x: 201
+      y: 192
+      spectralclass: G
+      color: YELLOW
+      temperature: 5706
+      mass: 1.02
+      radius: 0.98
+      luminosity: 0.75
+  - star:
+      id: &inchegeela 28
+      name: Inchegeela
+      x: 59
+      y: 210
+      spectralclass: M
+      color: RED
+      temperature: 2929
+      mass: 0.06
+      radius: 0.51
+      luminosity: 0.048
+  - star:
+      id: &dagda 29
+      name: Dagda
+      x: 228
+      y: 192
+      spectralclass: K
+      color: ORANGE
+      temperature: 3586
+      mass: 0.73
+      radius: 0.67
+      luminosity: 0.23
+  - star:
+      id: &fiacha 30
+      name: Fiacha
+      x: 219
+      y: 179
+      spectralclass: M
+      color: RED
+      temperature: 2027
+      mass: 0.07
+      radius: 0.18
+      luminosity: 0.009
+  - star:
+      id: &beothach 31
+      name: Beothach
+      x: 127
+      y: 102
+      spectralclass: G
+      color: YELLOW
+      temperature: 5201
+      mass: 0.88
+      radius: 1.02
+      luminosity: 1.03
+  - star:
+      id: &iarbonel 32
+      name: Iarbonel
+      x: 125
+      y: 99
+      spectralclass: K
+      color: ORANGE
+      temperature: 4087
+      mass: 0.79
+      radius: 0.77
+      luminosity: 0.18
+  - star:
+      id: &nemed 33
+      name: Nemed
+      x: 125
+      y: 96
+      spectralclass: M
+      color: RED
+      temperature: 2907
+      mass: 0.08
+      radius: 0.61
+      luminosity: 0.065
+  - star:
+      id: &breothigernd 34
+      name: Breothigernd
+      x: 118
+      y: 47
+      spectralclass: A
+      color: WHITE
+      temperature: 9376
+      mass: 2
+      radius: 2.2
+      luminosity: 15
+  - star:
+      id: &credne 35
+      name: Credne
+      x: 245
+      y: 11
+      spectralclass: G
+      color: YELLOW
+      temperature: 5008
+      mass: 1.03
+      radius: 0.93
+      luminosity: 1.43
+  - star:
+      id: &boibniu 36
+      name: Boibniu
+      x: 231
+      y: 17
+      spectralclass: M
+      color: RED
+      temperature: 2051
+      mass: 0.08
+      radius: 0.2
+      luminosity: 0.049
+  - star:
+      id: &cu 37
+      name: Cu
+      x: 47
+      y: 163
+      spectralclass: F
+      color: LT YELLOW
+      temperature: 6213
+      mass: 0.16
+      radius: 1.4
+      luminosity: 3
+  - star:
+      id: &boann 38
+      name: Boann
+      x: 115
+      y: 184
+      spectralclass: G
+      color: YELLOW
+      temperature: 5068
+      mass: 1.1
+      radius: 0.92
+      luminosity: 0.74
+  - star:
+      id: &macha 39
+      name: Macha
+      x: 85
+      y: 92
+      spectralclass: G
+      color: YELLOW
+      temperature: 5223
+      mass: 0.88
+      radius: 0.85
+      luminosity: 1.17
+  - star:
+      id: &etarlam 40
+      name: Etarlam
+      x: 172
+      y: 118
+      spectralclass: F
+      color: LT YELLOW
+      temperature: 6070
+      mass: 0.15
+      radius: 1.3
+      luminosity: 3.5
+  - star:
+      id: &cyffoden 41
+      name: Cyffoden
+      x: 116
+      y: 142
+      spectralclass: K
+      color: ORANGE
+      temperature: 4811
+      mass: 0.8
+      radius: 0.83
+      luminosity: 0.2
+  - star:
+      id: &lusmore 42
+      name: Lusmore
+      x: 227
+      y: 73
+      spectralclass: K
+      color: ORANGE
+      temperature: 3998
+      mass: 0.74
+      radius: 0.72
+      luminosity: 0.12
+  - star:
+      id: &maccecht 43
+      name: MacCecht
+      x: 235
+      y: 74
+      spectralclass: F
+      color: LT YELLOW
+      temperature: 6401
+      mass: 0.13
+      radius: 1.3
+      luminosity: 3.6
+  - star:
+      id: &magmor 44
+      name: Magmor
+      x: 18
+      y: 117
+      spectralclass: K
+      color: ORANGE
+      temperature: 4492
+      mass: 0.75
+      radius: 0.83
+      luminosity: 0.33
+  - star:
+      id: &fir_bolg 45
+      name: Fir Bolg
+      x: 17
+      y: 93
+      spectralclass: M
+      color: RED
+      temperature: 2853
+      mass: 0.06
+      radius: 0.32
+      luminosity: 0.058
+  - star:
+      id: &ernmas 46
+      name: Ernmas
+      x: 8
+      y: 93
+      spectralclass: M
+      color: RED
+      temperature: 2963
+      mass: 0.06
+      radius: 0.58
+      luminosity: 0.039
+  - star:
+      id: &elatha 47
+      name: Elatha
+      x: 156
+      y: 217
+      spectralclass: B
+      color: LT BLUE
+      temperature: 12741
+      mass: 15
+      radius: 3.2
+      luminosity: 35904
+  - star:
+      id: &tuireann 48
+      name: Tuireann
+      x: 122
+      y: 184
+      spectralclass: A
+      color: WHITE
+      temperature: 9051
+      mass: 2
+      radius: 2.2
+      luminosity: 49
+  - star:
+      id: &bec_felmas 49
+      name: Bec-Felmas
+      x: 16
+      y: 183
+      spectralclass: M
+      color: RED
+      temperature: 3087
+      mass: 0.07
+      radius: 0.54
+      luminosity: 0.014
+  - star:
+      id: &lir 50
+      name: Lir
+      x: 175
+      y: 181
+      spectralclass: M
+      color: RED
+      temperature: 3138
+      mass: 0.05
+      radius: 0.55
+      luminosity: 0.02
+  - star:
+      id: &manannan 51
+      name: Manannan
+      x: 181
+      y: 185
+      spectralclass: A
+      color: WHITE
+      temperature: 8630
+      mass: 3
+      radius: 2.5
+      luminosity: 39
+  - star:
+      id: &brigid 52
+      name: Brigid
+      x: 245
+      y: 109
+      spectralclass: F
+      color: LT YELLOW
+      temperature: 6455
+      mass: 0.11
+      radius: 1.6
+      luminosity: 3.1
+  - star:
+      id: &midir 53
+      name: Midir
+      x: 201
+      y: 105
+      spectralclass: K
+      color: ORANGE
+      temperature: 4675
+      mass: 0.68
+      radius: 0.76
+      luminosity: 0.39
+  - star:
+      id: &aengus 54
+      name: Aengus
+      x: 241
+      y: 125
+      spectralclass: B
+      color: LT BLUE
+      temperature: 19563
+      mass: 13
+      radius: 8
+      luminosity: 51029
+  - star:
+      id: &briann 55
+      name: Briann
+      x: 235
+      y: 65
+      spectralclass: F
+      color: LT YELLOW
+      temperature: 7116
+      mass: 0.11
+      radius: 1.6
+      luminosity: 2.8
+  - star:
+      id: &iuchar 56
+      name: Iuchar
+      x: 215
+      y: 44
+      spectralclass: A
+      color: WHITE
+      temperature: 9422
+      mass: 3
+      radius: 2.2
+      luminosity: 34
+  - star:
+      id: &ollam 57
+      name: Ollam
+      x: 180
+      y: 7
+      spectralclass: G
+      color: YELLOW
+      temperature: 5118
+      mass: 0.99
+      radius: 0.94
+      luminosity: 1.44
+  - star:
+      id: &aoi 58
+      name: Aoi
+      x: 167
+      y: 16
+      spectralclass: M
+      color: RED
+      temperature: 2804
+      mass: 0.06
+      radius: 0.21
+      luminosity: 0.063
+  - star:
+      id: &ailil 59
+      name: Ailil
+      x: 188
+      y: 88
+      spectralclass: A
+      color: WHITE
+      temperature: 9222
+      mass: 3
+      radius: 2.4
+      luminosity: 17
+  - star:
+      id: &nechtan 60
+      name: Nechtan
+      x: 218
+      y: 116
+      spectralclass: M
+      color: RED
+      temperature: 3477
+      mass: 0.05
+      radius: 0.45
+      luminosity: 0.008
+  - star:
+      id: &orda 61
+      name: Orda
+      x: 148
+      y: 135
+      spectralclass: F
+      color: LT YELLOW
+      temperature: 6152
+      mass: 0.11
+      radius: 1.6
+      luminosity: 3.9
+  - star:
+      id: &bres 62
+      name: Bres
+      x: 119
+      y: 189
+      spectralclass: G
+      color: YELLOW
+      temperature: 5018
+      mass: 0.91
+      radius: 1.07
+      luminosity: 1.15
+  - star:
+      id: &ochone 63
+      name: Ochone
+      x: 151
+      y: 168
+      spectralclass: G
+      color: YELLOW
+      temperature: 5754
+      mass: 1.03
+      radius: 1.06
+      luminosity: 1.19
+  - star:
+      id: &balor 64
+      name: Balor
+      x: 154
+      y: 161
+      spectralclass: A
+      color: WHITE
+      temperature: 7953
+      mass: 3
+      radius: 2.5
+      luminosity: 11
+  - star:
+      id: &nuada 65
+      name: Nuada
+      x: 185
+      y: 119
+      spectralclass: F
+      color: LT YELLOW
+      temperature: 7255
+      mass: 0.14
+      radius: 1.6
+      luminosity: 3.8
+  - star:
+      id: &dian_cecht 66
+      name: Dian Cecht
+      x: 35
+      y: 139
+      spectralclass: F
+      color: LT YELLOW
+      temperature: 7417
+      mass: 0.16
+      radius: 1.5
+      luminosity: 3.1
+  - star:
+      id: &nemain 67
+      name: Nemain
+      x: 196
+      y: 93
+      spectralclass: G
+      color: YELLOW
+      temperature: 5083
+      mass: 0.96
+      radius: 0.94
+      luminosity: 0.9
+  - star:
+      id: &elcmar 68
+      name: Elcmar
+      x: 190
+      y: 98
+      spectralclass: G
+      color: YELLOW
+      temperature: 4930
+      mass: 1.1
+      radius: 0.91
+      luminosity: 0.83
+  - star:
+      id: &banba 69
+      name: Banba
+      x: 150
+      y: 65
+      spectralclass: K
+      color: ORANGE
+      temperature: 3632
+      mass: 0.66
+      radius: 0.73
+      luminosity: 0.19
+  - star:
+      id: &eriu 70
+      name: Eriu
+      x: 154
+      y: 76
+      spectralclass: G
+      color: YELLOW
+      temperature: 5179
+      mass: 0.96
+      radius: 1.02
+      luminosity: 0.71
+  - star:
+      id: &tat 71
+      name: Tat
+      x: 132
+      y: 125
+      spectralclass: M
+      color: RED
+      temperature: 2621
+      mass: 0.07
+      radius: 0.45
+      luminosity: 0.007
+  - star:
+      id: &allai 72
+      name: Allai
+      x: 136
+      y: 125
+      spectralclass: F
+      color: LT YELLOW
+      temperature: 6621
+      mass: 0.11
+      radius: 1.4
+      luminosity: 6.3
+  - star:
+      id: &iobath 73
+      name: Iobath
+      x: 108
+      y: 109
+      spectralclass: K
+      color: ORANGE
+      temperature: 3901
+      mass: 0.76
+      radius: 0.65
+      luminosity: 0.41
+  - star:
+      id: &enna 74
+      name: Enna
+      x: 105
+      y: 112
+      spectralclass: O
+      color: BLUE
+      temperature: 33518
+      mass: 54
+      radius: 15
+      luminosity: 580000
+  - star:
+      id: &tabarn 75
+      name: Tabarn
+      x: 102
+      y: 105
+      spectralclass: B
+      color: LT BLUE
+      temperature: 18581
+      mass: 9
+      radius: 6.1
+      luminosity: 32533
+  - star:
+      id: &net 76
+      name: Net
+      x: 55
+      y: 114
+      spectralclass: F
+      color: LT YELLOW
+      temperature: 6405
+      mass: 0.16
+      radius: 1.5
+      luminosity: 4.9
+  - star:
+      id: &indai 77
+      name: Indai
+      x: 61
+      y: 114
+      spectralclass: G
+      color: YELLOW
+      temperature: 5722
+      mass: 1.05
+      radius: 1.06
+      luminosity: 1
+  - star:
+      id: &anu 78
+      name: Anu
+      x: 65
+      y: 110
+      spectralclass: K
+      color: ORANGE
+      temperature: 4557
+      mass: 0.83
+      radius: 0.79
+      luminosity: 0.18
+  - star:
+      id: &morrigan 79
+      name: Morrigan
+      x: 67
+      y: 103
+      spectralclass: B
+      color: LT BLUE
+      temperature: 17842
+      mass: 6
+      radius: 5.5
+      luminosity: 8014
+  - star:
+      id: &mag_rein 80
+      name: Mag Rein
+      x: 101
+      y: 15
+      spectralclass: M
+      color: RED
+      temperature: 2826
+      mass: 0.06
+      radius: 0.33
+      luminosity: 0.069
+  - star:
+      id: &aircthech 81
+      name: Aircthech
+      x: 100
+      y: 8
+      spectralclass: G
+      color: YELLOW
+      temperature: 5539
+      mass: 1.08
+      radius: 1.06
+      luminosity: 1.04
+  - star:
+      id: &murias 82
+      name: Murias
+      x: 26
+      y: 16
+      spectralclass: A
+      color: WHITE
+      temperature: 9024
+      mass: 3
+      radius: 2.1
+      luminosity: 25
+  - star:
+      id: &morfesa 83
+      name: Morfesa
+      x: 3
+      y: 59
+      spectralclass: M
+      color: RED
+      temperature: 2586
+      mass: 0.07
+      radius: 0.3
+      luminosity: 0.072
+  - star:
+      id: &semias 84
+      name: Semias
+      x: 5
+      y: 66
+      spectralclass: K
+      color: ORANGE
+      temperature: 3714
+      mass: 0.83
+      radius: 0.74
+      luminosity: 0.22
+  - star:
+      id: &cermait 85
+      name: Cermait
+      x: 247
+      y: 218
+      spectralclass: A
+      color: WHITE
+      temperature: 9031
+      mass: 2
+      radius: 1.9
+      luminosity: 19
+  - star:
+      id: &abean 86
+      name: Abean
+      x: 15
+      y: 203
+      spectralclass: A
+      color: WHITE
+      temperature: 9196
+      mass: 3
+      radius: 2
+      luminosity: 31
+  - star:
+      id: &mathgen 87
+      name: Mathgen
+      x: 212
+      y: 3
+      spectralclass: F
+      color: LT YELLOW
+      temperature: 7423
+      mass: 0.12
+      radius: 1.5
+      luminosity: 4
+  - star:
+      id: &maccuill 88
+      name: MacCuill
+      x: 245
+      y: 162
+      spectralclass: G
+      color: YELLOW
+      temperature: 5341
+      mass: 0.95
+      radius: 1.09
+      luminosity: 1.02
+  - star:
+      id: &cethan 89
+      name: Cethan
+      x: 3
+      y: 165
+      spectralclass: G
+      color: YELLOW
+      temperature: 5324
+      mass: 0.98
+      radius: 1.03
+      luminosity: 0.71
+  - star:
+      id: &vupra 90
+      name: Vupra
+      x: 6
+      y: 120
+      spectralclass: M
+      color: RED
+      temperature: 2671
+      mass: 0.07
+      radius: 0.36
+      luminosity: 0.021
+  - star:
+      id: &falias 91
+      name: Falias
+      x: 9
+      y: 3
+      spectralclass: F
+      color: LT YELLOW
+      temperature: 6812
+      mass: 0.12
+      radius: 1.6
+      luminosity: 3.5
+  - star:
+      id: &gorias 92
+      name: Gorias
+      x: 5
+      y: 16
+      spectralclass: G
+      color: YELLOW
+      temperature: 5846
+      mass: 1.08
+      radius: 1.04
+      luminosity: 1.28
+  - star:
+      id: &mongan 93
+      name: Mongan
+      x: 64
+      y: 4
+      spectralclass: B
+      color: LT BLUE
+      temperature: 15462
+      mass: 10
+      radius: 5.4
+      luminosity: 34695
+  - star:
+      id: &forgoll 94
+      name: Forgoll
+      x: 67
+      y: 11
+      spectralclass: O
+      color: BLUE
+      temperature: 39003
+      mass: 34
+      radius: 14
+      luminosity: 378000
+  - star:
+      id: &findias 95
+      name: Findias
+      x: 58
+      y: 10
+      spectralclass: B
+      color: LT BLUE
+      temperature: 15900
+      mass: 3
+      radius: 4.8
+      luminosity: 47731
+  - star:
+      id: &badb 96
+      name: Badb
+      x: 79
+      y: 42
+      spectralclass: G
+      color: YELLOW
+      temperature: 4906
+      mass: 1.02
+      radius: 1.09
+      luminosity: 1.05
+  - star:
+      id: &cailte 97
+      name: Cailte
+      x: 61
+      y: 22
+      spectralclass: A
+      color: WHITE
+      temperature: 7681
+      mass: 3
+      radius: 2.3
+      luminosity: 54
+  - star:
+      id: &macgreine 98
+      name: MacGreine
+      x: 157
+      y: 42
+      spectralclass: G
+      color: YELLOW
+      temperature: 5704
+      mass: 0.87
+      radius: 0.88
+      luminosity: 0.74
+  - star:
+      id: &oende 99
+      name: Oende
+      x: 134
+      y: 30
+      spectralclass: F
+      color: LT YELLOW
+      temperature: 7306
+      mass: 0.12
+      radius: 1.5
+      luminosity: 3
+  - star:
+      id: &lug 100
+      name: Lug
+      x: 26
+      y: 200
+      spectralclass: A
+      color: WHITE
+      temperature: 8430
+      mass: 2
+      radius: 2.5
+      luminosity: 32
+  - star:
+      id: &krykie 101
+      name: Krykie
+      x: 68
+      y: 66
+      spectralclass: M
+      color: RED
+      temperature: 2800
+      mass: 0.08
+      radius: 0.48
+      luminosity: 0.033
+  - star:
+      id: &anskiere 102
+      name: Anskiere
+      x: 52
+      y: 188
+      spectralclass: M
+      color: RED
+      temperature: 3318
+      mass: 0.06
+      radius: 0.6
+      luminosity: 0.037
+  - star:
+      id: &othearipi 103
+      name: Othearipi
+      x: 54
+      y: 20
+      spectralclass: O
+      color: BLUE
+      temperature: 47985
+      mass: 26
+      radius: 14
+      luminosity: 743000
+  - star:
+      id: &kercso 104
+      name: Kercso
+      x: 192
+      y: 152
+      spectralclass: O
+      color: BLUE
+      temperature: 41564
+      mass: 55
+      radius: 9
+      luminosity: 134000
+  - star:
+      id: &knari 105
+      name: Knari
+      x: 176
+      y: 185
+      spectralclass: B
+      color: LT BLUE
+      temperature: 18175
+      mass: 10
+      radius: 6.3
+      luminosity: 20626
+  - star:
+      id: &gabtcr_lorin 106
+      name: Gabtcr Lorin
+      x: 188
+      y: 148
+      spectralclass: A
+      color: WHITE
+      temperature: 8752
+      mass: 3
+      radius: 2.1
+      luminosity: 11
+  - star:
+      id: &chichifa 107
+      name: Chichifa
+      x: 117
+      y: 153
+      spectralclass: K
+      color: ORANGE
+      temperature: 4887
+      mass: 0.83
+      radius: 0.84
+      luminosity: 0.3
+  - star:
+      id: &meldin_harbr 108
+      name: Meldin Harbr
+      x: 98
+      y: 105
+      spectralclass: B
+      color: LT BLUE
+      temperature: 17643
+      mass: 4
+      radius: 5.4
+      luminosity: 44388
+  - star:
+      id: &p_atch 109
+      name: P'Atch
+      x: 240
+      y: 26
+      spectralclass: K
+      color: ORANGE
+      temperature: 4385
+      mass: 0.77
+      radius: 0.73
+      luminosity: 0.33
+  - planet:
+      id: 2
+      hoststar: *sidhichean
+      name: Islay
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: VERY LOW
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 3
+      hoststar: *sidhichean
+      name: Killaloe
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: INFERNO
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 9
+      hoststar: *sidhichean
+      name: Senlabor
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 8
+      hoststar: *sidhichean
+      name: Myrrdan
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: TROPICAL
+      gravity: OPTIMAL
+      atmosphere: BREATHABLE
+      weather: CALM
+      landable: false
+  - planet:
+      id: 7
+      hoststar: *beothach
+      name: Emain
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: OPTIMAL
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 12
+      hoststar: *beothach
+      name: Lurga
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 20
+      hoststar: *beothach
+      name: Airgdech
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: TEMPERATE
+      gravity: OPTIMAL
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 21
+      hoststar: *beothach
+      name: Moy-Fevin
+      size: LARGE
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: OPTIMAL
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 22
+      hoststar: *beothach
+      name: Breo
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: SUB-ARCTIC
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 23
+      hoststar: *beothach
+      name: Bran 2334
+      size: SMALL
+      type: ASTEROID
+      color: GRAY
+      temperature: SUB-ARCTIC
+      gravity: NEGLIGIBLE
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 24
+      hoststar: *faidh
+      name: Coracle
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: INFERNO
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 5
+      hoststar: *beothach
+      name: Cnocc 3945
+      size: SMALL
+      type: ASTEROID
+      color: GRAY
+      temperature: SUB-ARCTIC
+      gravity: VERY LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 6
+      hoststar: *beothach
+      name: Bane
+      size: LARGE
+      type: ACIDIC
+      color: GREEN
+      temperature: ARCTIC
+      gravity: VERY HEAVY
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 25
+      hoststar: *sidhichean
+      name: Ildathach
+      size: SMALL
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: LOW
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 26
+      hoststar: *faidh
+      name: Ciuin
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 27
+      hoststar: *beothach
+      name: Duma Granerit
+      size: LARGE
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: VERY HEAVY
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 28
+      hoststar: *iarbonel
+      name: Lethet
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 29
+      hoststar: *iarbonel
+      name: Oidni
+      size: MEDIUM
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 30
+      hoststar: *nemed
+      name: Findtigernd
+      size: MEDIUM
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: LOW
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 31
+      hoststar: *lug
+      name: Lug I 600
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: TROPICAL
+      gravity: LOW
+      atmosphere: BREATHABLE
+      weather: NONE
+      landable: false
+  - planet:
+      id: 32
+      hoststar: *orda
+      name: Niubias
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 33
+      hoststar: *orda
+      name: Oenias
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: SUB-ARCTIC
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 34
+      hoststar: *iuchar
+      name: Iuchar I 412
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: INFERNO
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 35
+      hoststar: *iuchar
+      name: Iuchar II 371
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: TROPICAL
+      gravity: OPTIMAL
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 36
+      hoststar: *briann
+      name: Brian I 364
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: SUB-ARCTIC
+      gravity: CRUSHING
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 37
+      hoststar: *briann
+      name: Brian II 608
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 38
+      hoststar: *maccecht
+      name: MacCecht I 338
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 39
+      hoststar: *maccecht
+      name: MacCecht II 219
+      size: MEDIUM
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: OPTIMAL
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 40
+      hoststar: *maccecht
+      name: MacCecht III 541
+      size: MEDIUM
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 41
+      hoststar: *maccecht
+      name: Caldenwyrd 1956
+      size: SMALL
+      type: ASTEROID
+      color: GRAY
+      temperature: SUB-ARCTIC
+      gravity: NEGLIGIBLE
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 42
+      hoststar: *maccecht
+      name: MacCecht IV 493
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: TROPICAL
+      gravity: LOW
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 43
+      hoststar: *danand
+      name: Danand I 389
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: VERY HEAVY
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 44
+      hoststar: *danand
+      name: Danand II 968
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: VERY LOW
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 45
+      hoststar: *danand
+      name: Danand III 302
+      size: LARGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: INFERNO
+      gravity: CRUSHING
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 46
+      hoststar: *boibniu
+      name: Boibniu I 421
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: INFERNO
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 47
+      hoststar: *boibniu
+      name: Boibniu II 861
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: TROPICAL
+      gravity: LOW
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 48
+      hoststar: *boibniu
+      name: Boibniu III 258
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: INFERNO
+      gravity: VERY HEAVY
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 49
+      hoststar: *boibniu
+      name: Boibniu IV 300
+      size: LARGE
+      type: ACIDIC
+      color: GREEN
+      temperature: INFERNO
+      gravity: CRUSHING
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 50
+      hoststar: *credne
+      name: Credne I 284
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: OPTIMAL
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 51
+      hoststar: *credne
+      name: Credne II 842
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: VERY LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 52
+      hoststar: *credne
+      name: Credne III 160
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: TROPICAL
+      gravity: OPTIMAL
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 53
+      hoststar: *credne
+      name: Credne IV 319
+      size: LARGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 54
+      hoststar: *credne
+      name: Credne V 506
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: INFERNO
+      gravity: CRUSHING
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 55
+      hoststar: *mathgen
+      name: Mathgen I 409
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: TEMPERATE
+      gravity: LOW
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 56
+      hoststar: *mathgen
+      name: Mathgen II 799
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: VERY LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 57
+      hoststar: *mathgen
+      name: Mathgen III 371
+      size: LARGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: INFERNO
+      gravity: OPTIMAL
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 58
+      hoststar: *ollam
+      name: Ollam I 183
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+      landable: false
+  - planet:
+      id: 59
+      hoststar: *ollam
+      name: Cadwyr 1806
+      size: SMALL
+      type: ASTEROID
+      color: GRAY
+      temperature: SUB-ARCTIC
+      gravity: LOW
+      atmosphere: TRACE GASES
+      weather: NONE
+      landable: false
+  - planet:
+      id: 60
+      hoststar: *ollam
+      name: Ollam II 913
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: SUB-ARCTIC
+      gravity: NEGLIGIBLE
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 61
+      hoststar: *ollam
+      name: Ollam III 130
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: CRUSHING
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 62
+      hoststar: *brigid
+      name: Brigid I 796
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: VERY LOW
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 63
+      hoststar: *brigid
+      name: Brigid II 246
+      size: HUGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 64
+      hoststar: *brigid
+      name: Brigid III 453
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: CRUSHING
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 65
+      hoststar: *brigid
+      name: Brigid IV 267
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: SUB-ARCTIC
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 66
+      hoststar: *brigid
+      name: Brigid V 570
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 67
+      hoststar: *brigid
+      name: Brigid VI 587
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 68
+      hoststar: *brigid
+      name: Brigid VII 991
+      size: SMALL
+      type: ACIDIC
+      color: GREEN
+      temperature: ARCTIC
+      gravity: NEGLIGIBLE
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 69
+      hoststar: *brigid
+      name: Brigid VII 308
+      size: LARGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 70
+      hoststar: *tat
+      name: Alastir
+      size: MEDIUM
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 71
+      hoststar: *tat
+      name: Fodlem
+      size: LARGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: INFERNO
+      gravity: OPTIMAL
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 72
+      hoststar: *tat
+      name: Tethra
+      size: SMALL
+      type: ACIDIC
+      color: GREEN
+      temperature: ARCTIC
+      gravity: OPTIMAL
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 73
+      hoststar: *allai
+      name: Mata
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: INFERNO
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 74
+      hoststar: *allai
+      name: Carbre
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 75
+      hoststar: *allai
+      name: Niafer
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 76
+      hoststar: *allai
+      name: Imchiuin
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: TROPICAL
+      gravity: LOW
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 77
+      hoststar: *elcmar
+      name: Cualeinech
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 78
+      hoststar: *elcmar
+      name: Samildanach
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 79
+      hoststar: *elcmar
+      name: Cerdre
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: TEMPERATE
+      gravity: LOW
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 80
+      hoststar: *elcmar
+      name: Bicelmois
+      size: MEDIUM
+      type: ACIDIC
+      color: GREEN
+      temperature: TEMPERATE
+      gravity: OPTIMAL
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 81
+      hoststar: *elcmar
+      name: Luchtyn
+      size: SMALL
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: VERY LOW
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 82
+      hoststar: *elcmar
+      name: Luachada
+      size: LARGE
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 83
+      hoststar: *aoi
+      name: Aoi I 603
+      size: MEDIUM
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: VERY HEAVY
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 84
+      hoststar: *aoi
+      name: Aoi II 156
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: VERY LOW
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 85
+      hoststar: *aoi
+      name: Aoi III 402
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 86
+      hoststar: *aoi
+      name: Aoi IV 512
+      size: MEDIUM
+      type: ACIDIC
+      color: GREEN
+      temperature: TEMPERATE
+      gravity: LOW
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 87
+      hoststar: *aoi
+      name: Aoi V 896
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 88
+      hoststar: *aoi
+      name: Aoi VI 274
+      size: LARGE
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: CRUSHING
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 89
+      hoststar: *aoi
+      name: Aoi VII 478
+      size: SMALL
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 90
+      hoststar: *macgreine
+      name: Modron
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: INFERNO
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 91
+      hoststar: *macgreine
+      name: Mabon
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: TROPICAL
+      gravity: LOW
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 92
+      hoststar: *macgreine
+      name: Olwen
+      size: MEDIUM
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: VERY HEAVY
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 93
+      hoststar: *macgreine
+      name: Olwain
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: CRUSHING
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 94
+      hoststar: *oende
+      name: Oende I 092
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+      landable: false
+  - planet:
+      id: 95
+      hoststar: *oende
+      name: Oende II 362
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: TRACE GASES
+      weather: NONE
+      landable: false
+  - planet:
+      id: 96
+      hoststar: *oende
+      name: Oende III 603
+      size: MEDIUM
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: FIRESTORM
+      weather: NONE
+      landable: false
+  - planet:
+      id: 97
+      hoststar: *oende
+      name: Oende IV 195
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: INFERNO
+      gravity: CRUSHING
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 98
+      hoststar: *oende
+      name: Oende V 236
+      size: LARGE
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: VERY HEAVY
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 99
+      hoststar: *ailil
+      name: Arawn
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: CRUSHING
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 100
+      hoststar: *ailil
+      name: Blodeuwedd
+      size: MEDIUM
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 101
+      hoststar: *ailil
+      name: Ceridwen
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: SUB-ARCTIC
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 102
+      hoststar: *ailil
+      name: Gwenn Teir
+      size: MEDIUM
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 103
+      hoststar: *ailil
+      name: Llefelys
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 104
+      hoststar: *ailil
+      name: Llaw
+      size: HUGE
+      type: ACIDIC
+      color: GREEN
+      temperature: INFERNO
+      gravity: VERY HEAVY
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 105
+      hoststar: *ailil
+      name: Eraint
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: INFERNO
+      gravity: CRUSHING
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 106
+      hoststar: *banba
+      name: Essylt
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 107
+      hoststar: *banba
+      name: Gwyrthe
+      size: MEDIUM
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 108
+      hoststar: *banba
+      name: Gwenhwyfar
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 109
+      hoststar: *banba
+      name: Macsen
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: INFERNO
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 110
+      hoststar: *banba
+      name: Iseult
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SUB-ARCTIC
+      gravity: CRUSHING
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 111
+      hoststar: *caintigern
+      name: Caintigern I 245
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: VERY HEAVY
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 112
+      hoststar: *caintigern
+      name: Caintigern II 129
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 113
+      hoststar: *caintigern
+      name: Caintigern III 335
+      size: LARGE
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: CRUSHING
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 114
+      hoststar: *caintigern
+      name: Caintigern IV 489
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: INFERNO
+      gravity: CRUSHING
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 115
+      hoststar: *mag_rein
+      name: Mag Rein I 591
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: TEMPERATE
+      gravity: LOW
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 116
+      hoststar: *mag_rein
+      name: Mag Rein II 844
+      size: LARGE
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: CRUSHING
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 117
+      hoststar: *mag_rein
+      name: Esthe Magan 1563
+      size: SMALL
+      type: ASTEROID
+      color: GRAY
+      temperature: SUB-ARCTIC
+      gravity: VERY LOW
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 118
+      hoststar: *mag_rein
+      name: Esthe Fagan 1755
+      size: SMALL
+      type: ASTEROID
+      color: GRAY
+      temperature: SUB-ARCTIC
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 119
+      hoststar: *aircthech
+      name: Aircthech I 312
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: CRUSHING
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 120
+      hoststar: *aircthech
+      name: Aircthech II 856
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: VERY LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 121
+      hoststar: *aircthech
+      name: Aircthech III 505
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: TROPICAL
+      gravity: OPTIMAL
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 122
+      hoststar: *aircthech
+      name: Aircthech IV 623
+      size: SMALL
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: NEGLIGIBLE
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 123
+      hoststar: *aircthech
+      name: Bor Tuatheh 2019
+      size: SMALL
+      type: ASTEROID
+      color: GRAY
+      temperature: SUB-ARCTIC
+      gravity: VERY LOW
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 124
+      hoststar: *findias
+      name: Findias I 796
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: VERY LOW
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 125
+      hoststar: *findias
+      name: Findias II 367
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: CRUSHING
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 126
+      hoststar: *findias
+      name: Findias III 886
+      size: SMALL
+      type: ASTEROID
+      color: GRAY
+      temperature: SUB-ARCTIC
+      gravity: NEGLIGIBLE
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 127
+      hoststar: *findias
+      name: Findias IV 561
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: INFERNO
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 128
+      hoststar: *findias
+      name: Findias V 210
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 129
+      hoststar: *murias
+      name: Murias I 195
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: NEGLIGIBLE
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 130
+      hoststar: *murias
+      name: Murias II 791
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: LOW
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 131
+      hoststar: *murias
+      name: Murias III 531
+      size: MEDIUM
+      type: ACIDIC
+      color: GREEN
+      temperature: SEARING
+      gravity: LOW
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 132
+      hoststar: *murias
+      name: Murias IV 658
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 133
+      hoststar: *murias
+      name: Murias V 712
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 134
+      hoststar: *murias
+      name: Murias VI 372
+      size: LARGE
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: CRUSHING
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 135
+      hoststar: *falias
+      name: Falias I 847
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 136
+      hoststar: *falias
+      name: Falias II 582
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: TROPICAL
+      gravity: LOW
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 137
+      hoststar: *falias
+      name: Falias III 774
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 138
+      hoststar: *falias
+      name: Falias IV 225
+      size: LARGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 139
+      hoststar: *gorias
+      name: Gorias I 135
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: CRUSHING
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 140
+      hoststar: *gorias
+      name: Gorias II 2559
+      size: SMALL
+      type: ASTEROID
+      color: GRAY
+      temperature: SUB-ARCTIC
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 141
+      hoststar: *gorias
+      name: Gorias III 189
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: TEMPERATE
+      gravity: OPTIMAL
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 142
+      hoststar: *gorias
+      name: Gorias IV 426
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 143
+      hoststar: *gorias
+      name: Gorias V 515
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: TEMPERATE
+      gravity: OPTIMAL
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 144
+      hoststar: *cailte
+      name: Cailte I 962
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 145
+      hoststar: *cailte
+      name: Cailte II 401
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 146
+      hoststar: *cailte
+      name: Cailte III 512
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: TROPICAL
+      gravity: OPTIMAL
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 147
+      hoststar: *cailte
+      name: Cailte IV 116
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: TEMPERATE
+      gravity: OPTIMAL
+      atmosphere: BREATHABLE
+      weather: NONE
+      landable: false
+  - planet:
+      id: 148
+      hoststar: *badb
+      name: Badb I 487
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: INFERNO
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 149
+      hoststar: *badb
+      name: Badb II 263
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: NEGLIGIBLE
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 150
+      hoststar: *badb
+      name: Badb III 584
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 151
+      hoststar: *badb
+      name: Badb IV 293
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: CRUSHING
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 152
+      hoststar: *badb
+      name: Badb V 315
+      size: LARGE
+      type: ACIDIC
+      color: GREEN
+      temperature: INFERNO
+      gravity: OPTIMAL
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 153
+      hoststar: *badb
+      name: Lludd 1641
+      size: SMALL
+      type: ASTEROID
+      color: GRAY
+      temperature: SUB-ARCTIC
+      gravity: LOW
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 154
+      hoststar: *badb
+      name: Taliesin
+      size: LARGE
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: OPTIMAL
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 155
+      hoststar: *badb
+      name: Tiernon
+      size: LARGE
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: CRUSHING
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 156
+      hoststar: *breothigernd
+      name: Cigfa
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: LOW
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 157
+      hoststar: *breothigernd
+      name: Gwern
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: INFERNO
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 158
+      hoststar: *breothigernd
+      name: Mathonyn
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: TROPICAL
+      gravity: VERY HEAVY
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 159
+      hoststar: *breothigernd
+      name: Matholwych
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 160
+      hoststar: *breothigernd
+      name: Pwyll
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 161
+      hoststar: *fodla
+      name: Peredur
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 162
+      hoststar: *fodla
+      name: Urien
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: VERY LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 163
+      hoststar: *fodla
+      name: Medrawd
+      size: MEDIUM
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: OPTIMAL
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 164
+      hoststar: *fodla
+      name: Wledig 2026
+      size: SMALL
+      type: ASTEROID
+      color: GRAY
+      temperature: SUB-ARCTIC
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 165
+      hoststar: *macha
+      name: Sreng mac Sengainn
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 166
+      hoststar: *macha
+      name: Tuirill
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 167
+      hoststar: *macha
+      name: Bicreo
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: NEGLIGIBLE
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 168
+      hoststar: *macha
+      name: Maeth Sceni
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: CRUSHING
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 169
+      hoststar: *macha
+      name: Eochu
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: CRUSHING
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 170
+      hoststar: *macha
+      name: Coirpre
+      size: MEDIUM
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: LOW
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 173
+      hoststar: *morfesa
+      name: Morfesa I 498
+      size: MEDIUM
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: OPTIMAL
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 174
+      hoststar: *morfesa
+      name: Morfesa II 264
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: OPTIMAL
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 175
+      hoststar: *morfesa
+      name: Morfesa III 300
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 176
+      hoststar: *morfesa
+      name: Morfesa IV 195
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: INFERNO
+      gravity: CRUSHING
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 177
+      hoststar: *morfesa
+      name: Morfesa V 578
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 178
+      hoststar: *morfesa
+      name: Morfesa VI 284
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: CRUSHING
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 179
+      hoststar: *morfesa
+      name: Morfesa VII 630
+      size: MEDIUM
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 180
+      hoststar: *semias
+      name: Semias I 852
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: INFERNO
+      gravity: VERY LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 181
+      hoststar: *semias
+      name: Semias II 246
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 182
+      hoststar: *semias
+      name: Semias III 170
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: BREATHABLE
+      weather: NONE
+      landable: false
+  - planet:
+      id: 183
+      hoststar: *semias
+      name: Semias IV 536
+      size: LARGE
+      type: ACIDIC
+      color: GREEN
+      temperature: ARCTIC
+      gravity: LOW
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 184
+      hoststar: *semias
+      name: Semias V 791
+      size: SMALL
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: LOW
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 185
+      hoststar: *semias
+      name: Semias VI 610
+      size: LARGE
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: VERY HEAVY
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 186
+      hoststar: *eriu
+      name: Elatha mac Delbaith
+      size: MEDIUM
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: LOW
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 187
+      hoststar: *eriu
+      name: Edleo mac Echo
+      size: MEDIUM
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 188
+      hoststar: *eriu
+      name: Camall
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 189
+      hoststar: *eriu
+      name: Figail
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 190
+      hoststar: *eriu
+      name: Abcan
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 191
+      hoststar: *eriu
+      name: Corum 1445
+      size: SMALL
+      type: ASTEROID
+      color: GRAY
+      temperature: SUB-ARCTIC
+      gravity: NEGLIGIBLE
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 192
+      hoststar: *ernmas
+      name: Ernmas I 184
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 193
+      hoststar: *ernmas
+      name: Ernmas II 875
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 194
+      hoststar: *ernmas
+      name: Ernmas III 401
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 195
+      hoststar: *ernmas
+      name: Ernmas IV 596
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 196
+      hoststar: *ernmas
+      name: Ernmas V 312
+      size: LARGE
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: VERY HEAVY
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 197
+      hoststar: *fir_bolg
+      name: Fir Bolg I 412
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: VERY LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 198
+      hoststar: *fir_bolg
+      name: Fir Bolg II 563
+      size: MEDIUM
+      type: ACIDIC
+      color: GREEN
+      temperature: TEMPERATE
+      gravity: OPTIMAL
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 199
+      hoststar: *fir_bolg
+      name: Fir Bolg III 964
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 200
+      hoststar: *fir_bolg
+      name: Beywyrd Lloch 1710
+      size: SMALL
+      type: ASTEROID
+      color: GRAY
+      temperature: SUB-ARCTIC
+      gravity: VERY LOW
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 201
+      hoststar: *fir_bolg
+      name: Fir Bolg IV 201
+      size: LARGE
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: CRUSHING
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 202
+      hoststar: *morrigan
+      name: Conall
+      size: MEDIUM
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: VERY HEAVY
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 203
+      hoststar: *morrigan
+      name: Dylais
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 204
+      hoststar: *morrigan
+      name: Ogyruan
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 205
+      hoststar: *morrigan
+      name: Efnysien
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: SUB-ARCTIC
+      gravity: CRUSHING
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 206
+      hoststar: *morrigan
+      name: Modryn
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: INFERNO
+      gravity: CRUSHING
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 207
+      hoststar: *morrigan
+      name: Annwyn
+      size: MEDIUM
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: OPTIMAL
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 208
+      hoststar: *magmor
+      name: Magmor I 861
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: NEGLIGIBLE
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 209
+      hoststar: *magmor
+      name: Magmor II 209
+      size: MEDIUM
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: LOW
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 210
+      hoststar: *magmor
+      name: Magmor III 410
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 211
+      hoststar: *magmor
+      name: Magmor IV 913
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 212
+      hoststar: *nemain
+      name: Lugus
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: NEGLIGIBLE
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 213
+      hoststar: *nemain
+      name: Lugdunum
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 214
+      hoststar: *nemain
+      name: Ertwyn 2189
+      size: SMALL
+      type: ASTEROID
+      color: GRAY
+      temperature: SUB-ARCTIC
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 215
+      hoststar: *nemain
+      name: Lughnasa
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 216
+      hoststar: *nemain
+      name: Batavorum
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 217
+      hoststar: *nemain
+      name: Llech Wynn 1456
+      size: SMALL
+      type: ASTEROID
+      color: GRAY
+      temperature: SUB-ARCTIC
+      gravity: OPTIMAL
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 218
+      hoststar: *nemain
+      name: Rhianarwyn
+      size: MEDIUM
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: OPTIMAL
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 219
+      hoststar: *cu
+      name: Cu I 386
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: VERY HEAVY
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 220
+      hoststar: *cu
+      name: Cu II 964
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 221
+      hoststar: *cu
+      name: Cu III 354
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 222
+      hoststar: *cu
+      name: Cu IV 430
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: TROPICAL
+      gravity: OPTIMAL
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 223
+      hoststar: *anu
+      name: Kygwyn
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 224
+      hoststar: *anu
+      name: Arturwen
+      size: MEDIUM
+      type: ACIDIC
+      color: GREEN
+      temperature: TROPICAL
+      gravity: VERY HEAVY
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 225
+      hoststar: *anu
+      name: Inghean
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 226
+      hoststar: *anu
+      name: Emer
+      size: MEDIUM
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: VERY HEAVY
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 227
+      hoststar: *anu
+      name: Gyffes
+      size: MEDIUM
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: VERY HEAVY
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 228
+      hoststar: *indai
+      name: Teig
+      size: MEDIUM
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 229
+      hoststar: *indai
+      name: Gae Bulg
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: INFERNO
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 230
+      hoststar: *indai
+      name: Nisien
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: VERY LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 231
+      hoststar: *indai
+      name: Ogyryn
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: CRUSHING
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 232
+      hoststar: *indai
+      name: Arianrhod
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: CRUSHING
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 233
+      hoststar: *net
+      name: Latiaran
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 234
+      hoststar: *net
+      name: Glaistig
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 235
+      hoststar: *net
+      name: Ossian
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 236
+      hoststar: *net
+      name: Crom Dubwyn
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 237
+      hoststar: *net
+      name: Elenwyrd
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: INFERNO
+      gravity: VERY HEAVY
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 238
+      hoststar: *net
+      name: Bedwyr
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: CRUSHING
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 239
+      hoststar: *etarlam
+      name: Cualnge
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: CRUSHING
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 240
+      hoststar: *etarlam
+      name: Eocho
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: SUB-ARCTIC
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 241
+      hoststar: *etarlam
+      name: Fedlech
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 242
+      hoststar: *etarlam
+      name: Medb
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: INFERNO
+      gravity: CRUSHING
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 243
+      hoststar: *nuada
+      name: Findoman
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: LOW
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 244
+      hoststar: *nuada
+      name: Findguin
+      size: MEDIUM
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: VERY HEAVY
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 245
+      hoststar: *nuada
+      name: Rigen
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 246
+      hoststar: *nuada
+      name: Enna Agnech
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 247
+      hoststar: *nuada
+      name: Berbriu
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: VERY LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 248
+      hoststar: *nuada
+      name: Ethne
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: SUB-ARCTIC
+      gravity: CRUSHING
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 249
+      hoststar: *nuada
+      name: Ele
+      size: SMALL
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: OPTIMAL
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 250
+      hoststar: *nuada
+      name: Clothru
+      size: MEDIUM
+      type: ACIDIC
+      color: GREEN
+      temperature: INFERNO
+      gravity: CRUSHING
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 251
+      hoststar: *nechtan
+      name: Llebinogion
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: CRUSHING
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 252
+      hoststar: *nechtan
+      name: Ogmios
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: OPTIMAL
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 253
+      hoststar: *nechtan
+      name: Taranis
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: SUB-ARCTIC
+      gravity: CRUSHING
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 254
+      hoststar: *nechtan
+      name: Teutates 1446
+      size: SMALL
+      type: ASTEROID
+      color: GRAY
+      temperature: SUB-ARCTIC
+      gravity: VERY LOW
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 255
+      hoststar: *nechtan
+      name: Esus
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 256
+      hoststar: *midir
+      name: Midir I 356
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 257
+      hoststar: *midir
+      name: Midir II 275
+      size: MEDIUM
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: VERY HEAVY
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 258
+      hoststar: *midir
+      name: Midir III 487
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: INFERNO
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 259
+      hoststar: *midir
+      name: Midir IV 259
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 260
+      hoststar: *midir
+      name: Midir V 395
+      size: MEDIUM
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: OPTIMAL
+      atmosphere: BREATHABLE
+      weather: NONE
+      landable: false
+  - planet:
+      id: 261
+      hoststar: *midir
+      name: Midir VI 538
+      size: MEDIUM
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 262
+      hoststar: *aengus
+      name: Aengus I 652
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: NEGLIGIBLE
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 263
+      hoststar: *aengus
+      name: Aengus II 366
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: CRUSHING
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 264
+      hoststar: *aengus
+      name: Aengus III 825
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: NEGLIGIBLE
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 265
+      hoststar: *aengus
+      name: Aengus IV 461
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: CRUSHING
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 266
+      hoststar: *aengus
+      name: Aengus V 497
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 267
+      hoststar: *aengus
+      name: Aengus VI 246
+      size: HUGE
+      type: ROCKY
+      color: BROWN
+      temperature: SUB-ARCTIC
+      gravity: CRUSHING
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 268
+      hoststar: *aengus
+      name: Aengus VII 472
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: TROPICAL
+      gravity: OPTIMAL
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 269
+      hoststar: *aengus
+      name: Aengus VIII 214
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: INFERNO
+      gravity: VERY HEAVY
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 270
+      hoststar: *maccuill
+      name: MacCuill I 330
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 271
+      hoststar: *maccuill
+      name: MacCuill II 286
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: CRUSHING
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 272
+      hoststar: *maccuill
+      name: Marnwy 2101
+      size: SMALL
+      type: ASTEROID
+      color: GRAY
+      temperature: SUB-ARCTIC
+      gravity: NEGLIGIBLE
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 273
+      hoststar: *maccuill
+      name: MacCuill III 581
+      size: MEDIUM
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: VERY HEAVY
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 274
+      hoststar: *maccuill
+      name: MacCuill IV 302
+      size: LARGE
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 275
+      hoststar: *maccuill
+      name: MacCuill V 570
+      size: MEDIUM
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 276
+      hoststar: *ethniu
+      name: Icaunus
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: VERY LOW
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 277
+      hoststar: *ethniu
+      name: Senua
+      size: MEDIUM
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: OPTIMAL
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 278
+      hoststar: *ethniu
+      name: Cocidius
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 279
+      hoststar: *ethniu
+      name: Aveta
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: CRUSHING
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 280
+      hoststar: *ethniu
+      name: Sidhe
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 281
+      hoststar: *ethniu
+      name: Plor na Wyn
+      size: LARGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 282
+      hoststar: *ethniu
+      name: Aife
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: INFERNO
+      gravity: VERY HEAVY
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 283
+      hoststar: *balor
+      name: Don
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 284
+      hoststar: *balor
+      name: Amaethwyn 2296
+      size: SMALL
+      type: ASTEROID
+      color: GRAY
+      temperature: SUB-ARCTIC
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 285
+      hoststar: *balor
+      name: Cessaire
+      size: MEDIUM
+      type: ACIDIC
+      color: GREEN
+      temperature: TEMPERATE
+      gravity: OPTIMAL
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 286
+      hoststar: *balor
+      name: Borvo
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 287
+      hoststar: *balor
+      name: Smertrios
+      size: MEDIUM
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: VERY HEAVY
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 288
+      hoststar: *balor
+      name: Clellwyn
+      size: LARGE
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: VERY HEAVY
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 289
+      hoststar: *esar_brec
+      name: Esar Brec I 322
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: OPTIMAL
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 290
+      hoststar: *esar_brec
+      name: Esar Brec II 591
+      size: MEDIUM
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: LOW
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 291
+      hoststar: *esar_brec
+      name: Esar Brec III 249
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 292
+      hoststar: *esar_brec
+      name: Esar Brec IV 786
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 293
+      hoststar: *esar_brec
+      name: Esar Brec V 502
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: TROPICAL
+      gravity: LOW
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 294
+      hoststar: *esar_brec
+      name: Esar Brec VI 462
+      size: MEDIUM
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: LOW
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 295
+      hoststar: *esar_brec
+      name: Esar Brec VII 510
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: INFERNO
+      gravity: CRUSHING
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 296
+      hoststar: *esar_brec
+      name: Esar Brec VIII 243
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 297
+      hoststar: *esar_brec
+      name: Cellwy 1830
+      size: SMALL
+      type: ASTEROID
+      color: GRAY
+      temperature: SUB-ARCTIC
+      gravity: NEGLIGIBLE
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 298
+      hoststar: *dian_cecht
+      name: Dian Cecht I 281
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: CRUSHING
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 299
+      hoststar: *dian_cecht
+      name: Dian Cecht II 386
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: OPTIMAL
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 300
+      hoststar: *dian_cecht
+      name: Dian Cecht III 957
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: TROPICAL
+      gravity: OPTIMAL
+      atmosphere: BREATHABLE
+      weather: NONE
+      landable: false
+  - planet:
+      id: 301
+      hoststar: *dian_cecht
+      name: Dian Cecht IV
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 302
+      hoststar: *dian_cecht
+      name: Dian Cecht V 349
+      size: LARGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: INFERNO
+      gravity: OPTIMAL
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 303
+      hoststar: *dian_cecht
+      name: Clellwyr Sidhe 1917
+      size: SMALL
+      type: ASTEROID
+      color: GRAY
+      temperature: SUB-ARCTIC
+      gravity: OPTIMAL
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 304
+      hoststar: *vupra
+      name: Vupra I 415
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: CRUSHING
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 305
+      hoststar: *vupra
+      name: Vupra II 296
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 306
+      hoststar: *vupra
+      name: Borrhod 1944
+      size: SMALL
+      type: ASTEROID
+      color: GRAY
+      temperature: SUB-ARCTIC
+      gravity: OPTIMAL
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 307
+      hoststar: *vupra
+      name: Vupra III 562
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: TROPICAL
+      gravity: OPTIMAL
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 308
+      hoststar: *vupra
+      name: Vupra IV 768
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 309
+      hoststar: *vupra
+      name: Vupra V 450
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 310
+      hoststar: *cethan
+      name: Cethan I 310
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: CRUSHING
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 311
+      hoststar: *cethan
+      name: Cethan II 429
+      size: MEDIUM
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 312
+      hoststar: *cethan
+      name: Cethan III 826
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: OPTIMAL
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 313
+      hoststar: *cethan
+      name: Cethan IV 333
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 314
+      hoststar: *cethan
+      name: Cethan V 452
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 315
+      hoststar: *cethan
+      name: Cethan VI 587
+      size: MEDIUM
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: LOW
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 316
+      hoststar: *cethan
+      name: Cethan VII 241
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: CRUSHING
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 317
+      hoststar: *cethan
+      name: Cethan VIII 161
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: CRUSHING
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 318
+      hoststar: *bec_felmas
+      name: Bec-Felmas I
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 319
+      hoststar: *bec_felmas
+      name: Bec-Felmas II
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 320
+      hoststar: *bec_felmas
+      name: Bec-Felmas III
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: TEMPERATE
+      gravity: LOW
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 321
+      hoststar: *bec_felmas
+      name: Bec-Felmas IV
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: SUB-ARCTIC
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 322
+      hoststar: *bec_felmas
+      name: Bec-Felmas V
+      size: LARGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 323
+      hoststar: *abean
+      name: Abean I 608
+      size: MEDIUM
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 324
+      hoststar: *abean
+      name: Abean II 324
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 325
+      hoststar: *abean
+      name: Abean III 517
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 326
+      hoststar: *abean
+      name: Abean IV 436
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 327
+      hoststar: *abean
+      name: Abean V 149
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: CRUSHING
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 328
+      hoststar: *abean
+      name: Ravynwyrd 1812
+      size: SMALL
+      type: ASTEROID
+      color: GRAY
+      temperature: SUB-ARCTIC
+      gravity: NEGLIGIBLE
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 329
+      hoststar: *cian
+      name: Cian I 548
+      size: MEDIUM
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 330
+      hoststar: *cian
+      name: Cian II 783
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 331
+      hoststar: *cian
+      name: Weartyne 1969
+      size: SMALL
+      type: ASTEROID
+      color: GRAY
+      temperature: SUB-ARCTIC
+      gravity: NEGLIGIBLE
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 332
+      hoststar: *cian
+      name: Cian III 402
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: TEMPERATE
+      gravity: OPTIMAL
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 333
+      hoststar: *cian
+      name: Cian IV 190
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: CRUSHING
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 334
+      hoststar: *cian
+      name: Cian V 384
+      size: LARGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: INFERNO
+      gravity: CRUSHING
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 335
+      hoststar: *airmed
+      name: Airmed I 814
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: NEGLIGIBLE
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 336
+      hoststar: *airmed
+      name: Airmed II 303
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: SUB-ARCTIC
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 337
+      hoststar: *airmed
+      name: Airmed III 435
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: SUB-ARCTIC
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 338
+      hoststar: *airmed
+      name: Airmed IV 551
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 339
+      hoststar: *airmed
+      name: Airmed V 167
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 340
+      hoststar: *airmed
+      name: Airmed VI 269
+      size: LARGE
+      type: ACIDIC
+      color: GREEN
+      temperature: ARCTIC
+      gravity: CRUSHING
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 341
+      hoststar: *miach
+      name: Miach I 915
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 342
+      hoststar: *miach
+      name: Miach II 497
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: INFERNO
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 343
+      hoststar: *miach
+      name: Miach III 181
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: INFERNO
+      gravity: CRUSHING
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 344
+      hoststar: *miach
+      name: Miach IV 891
+      size: SMALL
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: OPTIMAL
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 345
+      hoststar: *iuchar
+      name: Iuchar III 964
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: VERY LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 346
+      hoststar: *delbaeth
+      name: Heddwyn
+      size: MEDIUM
+      type: ACIDIC
+      color: GREEN
+      temperature: TEMPERATE
+      gravity: VERY HEAVY
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 347
+      hoststar: *delbaeth
+      name: Aeronwy
+      size: LARGE
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: VERY HEAVY
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 348
+      hoststar: *delbaeth
+      name: Belmawr
+      size: SMALL
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: NEGLIGIBLE
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 349
+      hoststar: *delbaeth
+      name: Deirdre
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: CRUSHING
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 350
+      hoststar: *delbaeth
+      name: Fogwyrd
+      size: SMALL
+      type: ACIDIC
+      color: GREEN
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 351
+      hoststar: *boann
+      name: Beira
+      size: MEDIUM
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 352
+      hoststar: *boann
+      name: Anextiomarus
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: INFERNO
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 353
+      hoststar: *boann
+      name: Andraste
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 354
+      hoststar: *boann
+      name: Mogwyrd
+      size: LARGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 355
+      hoststar: *boann
+      name: Scotwyn
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 356
+      hoststar: *ogma
+      name: Ogma I 612
+      size: MEDIUM
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: VERY HEAVY
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 357
+      hoststar: *ogma
+      name: Ogma II 254
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 358
+      hoststar: *ogma
+      name: Ogma III 796
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: VERY LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 359
+      hoststar: *ogma
+      name: Ogma IV 219
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 360
+      hoststar: *ogma
+      name: Ogma V 326
+      size: LARGE
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: VERY HEAVY
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 361
+      hoststar: *ogma
+      name: Ogma VI 468
+      size: MEDIUM
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: OPTIMAL
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 362
+      hoststar: *ogma
+      name: Lloch Fendwyn 1864
+      size: SMALL
+      type: ASTEROID
+      color: GRAY
+      temperature: SUB-ARCTIC
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 363
+      hoststar: *tuireann
+      name: Tuireann I 386
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 364
+      hoststar: *tuireann
+      name: Tuireann II 924
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 365
+      hoststar: *tuireann
+      name: Tuireann III 408
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: CRUSHING
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 366
+      hoststar: *tuireann
+      name: Tuireann IV 417
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: TROPICAL
+      gravity: VERY HEAVY
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 367
+      hoststar: *tuireann
+      name: Tuireann V 412
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 368
+      hoststar: *bres
+      name: Rosmerta
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 369
+      hoststar: *bres
+      name: Artio
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 370
+      hoststar: *bres
+      name: Buxena 1872
+      size: SMALL
+      type: ASTEROID
+      color: GRAY
+      temperature: SUB-ARCTIC
+      gravity: VERY LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 371
+      hoststar: *bres
+      name: Eprecura
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: OPTIMAL
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 372
+      hoststar: *bres
+      name: Rudianwyr
+      size: LARGE
+      type: ACIDIC
+      color: GREEN
+      temperature: ARCTIC
+      gravity: CRUSHING
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 373
+      hoststar: *bres
+      name: Cuchulainn
+      size: MEDIUM
+      type: ACIDIC
+      color: GREEN
+      temperature: SEARING
+      gravity: LOW
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 374
+      hoststar: *bres
+      name: Cissonius
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: INFERNO
+      gravity: VERY HEAVY
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 375
+      hoststar: *bres
+      name: Cumulus
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: INFERNO
+      gravity: CRUSHING
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 376
+      hoststar: *ochone
+      name: Ambartanen
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 377
+      hoststar: *ochone
+      name: Clota
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: CRUSHING
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 378
+      hoststar: *ochone
+      name: Oisin
+      size: MEDIUM
+      type: ACIDIC
+      color: GREEN
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 379
+      hoststar: *ochone
+      name: Tethryn
+      size: MEDIUM
+      type: ACIDIC
+      color: GREEN
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 380
+      hoststar: *ochone
+      name: Connlyn
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: CRUSHING
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 381
+      hoststar: *ochone
+      name: Solais
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: SEARING
+      gravity: CRUSHING
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 382
+      hoststar: *allod
+      name: Allod I 401
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: INFERNO
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 383
+      hoststar: *allod
+      name: Allod II 374
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 384
+      hoststar: *allod
+      name: Allod III 517
+      size: MEDIUM
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: OPTIMAL
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 385
+      hoststar: *allod
+      name: Allod IV 349
+      size: LARGE
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: OPTIMAL
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 386
+      hoststar: *allod
+      name: Allod V 956
+      size: SMALL
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: VERY LOW
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 387
+      hoststar: *lir
+      name: Lir I 298
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: CRUSHING
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 388
+      hoststar: *lir
+      name: Andewyr 1776
+      size: SMALL
+      type: ASTEROID
+      color: GRAY
+      temperature: SUB-ARCTIC
+      gravity: NEGLIGIBLE
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 389
+      hoststar: *lir
+      name: Lir II 364
+      size: LARGE
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: CRUSHING
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 390
+      hoststar: *lir
+      name: Lir III 251
+      size: SMALL
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: VERY LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 391
+      hoststar: *lir
+      name: Lir IV 531
+      size: MEDIUM
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: OPTIMAL
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 392
+      hoststar: *lir
+      name: Lir V 274
+      size: LARGE
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: VERY HEAVY
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 393
+      hoststar: *manannan
+      name: Manannan I 821
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: VERY LOW
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 394
+      hoststar: *manannan
+      name: Manannan II 341
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 395
+      hoststar: *manannan
+      name: Manannan III 476
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: TEMPERATE
+      gravity: LOW
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 396
+      hoststar: *manannan
+      name: Manannan IV 784
+      size: SMALL
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: VERY LOW
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 397
+      hoststar: *elatha
+      name: Elatha I 443
+      size: MEDIUM
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: OPTIMAL
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 398
+      hoststar: *elatha
+      name: Elatha II 482
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 399
+      hoststar: *elatha
+      name: Elatha III 316
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 400
+      hoststar: *elatha
+      name: Aled Lluin 2096
+      size: SMALL
+      type: ASTEROID
+      color: GRAY
+      temperature: SUB-ARCTIC
+      gravity: NEGLIGIBLE
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 401
+      hoststar: *elatha
+      name: Elatha IV 403
+      size: LARGE
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: CRUSHING
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 402
+      hoststar: *elatha
+      name: Aled Aerona 2102
+      size: SMALL
+      type: ASTEROID
+      color: GRAY
+      temperature: SUB-ARCTIC
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 403
+      hoststar: *fiacha
+      name: Fiacha I 225
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 404
+      hoststar: *fiacha
+      name: Fiacha II 852
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: VERY LOW
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 405
+      hoststar: *fiacha
+      name: Fiacha III 483
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: INFERNO
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 406
+      hoststar: *fiacha
+      name: Fiacha IV 271
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: SUB-ARCTIC
+      gravity: CRUSHING
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 407
+      hoststar: *fiacha
+      name: Fiacha V 549
+      size: MEDIUM
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: VERY HEAVY
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 408
+      hoststar: *fiacha
+      name: Fiacha VI 212
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: INFERNO
+      gravity: CRUSHING
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 409
+      hoststar: *dagda
+      name: Dagda I 538
+      size: MEDIUM
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 410
+      hoststar: *dagda
+      name: Dagda II 408
+      size: MEDIUM
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: LOW
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 411
+      hoststar: *dagda
+      name: Dagda III 246
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 412
+      hoststar: *dagda
+      name: Dagda IV 482
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 413
+      hoststar: *dagda
+      name: Dagda V 836
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 414
+      hoststar: *dagda
+      name: Dagda VI 301
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: INFERNO
+      gravity: CRUSHING
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 415
+      hoststar: *dagda
+      name: Dagda VII 819
+      size: SMALL
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: LOW
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 416
+      hoststar: *dagda
+      name: Dagda VIII 620
+      size: MEDIUM
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: OPTIMAL
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 417
+      hoststar: *bodb
+      name: Bodb I 410
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 418
+      hoststar: *bodb
+      name: Bodb II 381
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: CRUSHING
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 419
+      hoststar: *bodb
+      name: Bodb III 862
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 420
+      hoststar: *bodb
+      name: Bodb IV 268
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 421
+      hoststar: *bodb
+      name: Bodb V 571
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 422
+      hoststar: *bodb
+      name: Lloch Wyrdling 1864
+      size: SMALL
+      type: ASTEROID
+      color: GRAY
+      temperature: SUB-ARCTIC
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 423
+      hoststar: *bodb
+      name: Bodb VI 309
+      size: LARGE
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: OPTIMAL
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 424
+      hoststar: *cermait
+      name: Cermait I 582
+      size: MEDIUM
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 425
+      hoststar: *cermait
+      name: Cermait II 476
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 426
+      hoststar: *cermait
+      name: Cermait III 476
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 427
+      hoststar: *cermait
+      name: Cermait IV 236
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 428
+      hoststar: *cermait
+      name: Cermait V 546
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: TEMPERATE
+      gravity: OPTIMAL
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 429
+      hoststar: *cermait
+      name: Cermait VI 384
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: OPTIMAL
+      atmosphere: BREATHABLE
+      weather: NONE
+      landable: false
+  - planet:
+      id: 430
+      hoststar: *cermait
+      name: Cermait VII 953
+      size: SMALL
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: LOW
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 431
+      hoststar: *cermait
+      name: Cermait VIII 470
+      size: MEDIUM
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: OPTIMAL
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 432
+      hoststar: *gorias
+      name: Gorias VI 663
+      size: MEDIUM
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: LOW
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 433
+      hoststar: *gorias
+      name: Gorias VII 899
+      size: SMALL
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: NEGLIGIBLE
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 434
+      hoststar: *fingola
+      name: Fingola I 841
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: VERY LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 435
+      hoststar: *fingola
+      name: Fingola II 582
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 436
+      hoststar: *fingola
+      name: Fingola III 736
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 437
+      hoststar: *fingola
+      name: Fingola IV 350
+      size: LARGE
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: OPTIMAL
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 438
+      hoststar: *fingola
+      name: Fingola V 319
+      size: LARGE
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: CRUSHING
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 439
+      hoststar: *nemed
+      name: Tuatha
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: CRUSHING
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 440
+      hoststar: *nemed
+      name: De Dannan 1876
+      size: SMALL
+      type: ASTEROID
+      color: GRAY
+      temperature: SUB-ARCTIC
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 441
+      hoststar: *iobath
+      name: Diar
+      size: LARGE
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: OPTIMAL
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 442
+      hoststar: *iobath
+      name: Diar-Mait
+      size: MEDIUM
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: LOW
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 443
+      hoststar: *enna
+      name: Findtha 1220
+      size: SMALL
+      type: ASTEROID
+      color: GRAY
+      temperature: SUB-ARCTIC
+      gravity: LOW
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 444
+      hoststar: *tabarn
+      name: En mac Ethamain
+      size: MEDIUM
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 445
+      hoststar: *tabarn
+      name: Culum Cuale
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: NEGLIGIBLE
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 446
+      hoststar: *mongan
+      name: Mongan I 186
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: VERY LOW
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 447
+      hoststar: *mongan
+      name: Mongan II 361
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 448
+      hoststar: *cyffoden
+      name: Aflafar
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 449
+      hoststar: *cyffoden
+      name: Cariadferch
+      size: SMALL
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: LOW
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 450
+      hoststar: *sidhichean
+      name: Lough Leane 2389
+      size: SMALL
+      type: ASTEROID
+      color: GRAY
+      temperature: SUB-ARCTIC
+      gravity: NEGLIGIBLE
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 451
+      hoststar: *sidhichean
+      name: Dearg
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: INFERNO
+      gravity: VERY HEAVY
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 452
+      hoststar: *sidhichean
+      name: Samhain
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: INFERNO
+      gravity: CRUSHING
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 453
+      hoststar: *sidhichean
+      name: Oilell
+      size: MEDIUM
+      type: ACIDIC
+      color: GREEN
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 454
+      hoststar: *sidhichean
+      name: Aran
+      size: MEDIUM
+      type: ACIDIC
+      color: GREEN
+      temperature: ARCTIC
+      gravity: VERY HEAVY
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 455
+      hoststar: *forgoll
+      name: Forgoll I 452
+      size: MEDIUM
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: LOW
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 456
+      hoststar: *forgoll
+      name: Forgoll II 635
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 457
+      hoststar: *oifa
+      name: Oifa I 284
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: CRUSHING
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 458
+      hoststar: *oifa
+      name: Oifa II 496
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: INFERNO
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 459
+      hoststar: *drnid
+      name: Drnid I 312
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 460
+      hoststar: *mac_howg
+      name: Mac Howg I 299
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 461
+      hoststar: *mac_howg
+      name: Mac Howg II 865
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 462
+      hoststar: *jurlagh
+      name: Jurlagh I
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: TROPICAL
+      gravity: LOW
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 463
+      hoststar: *jurlagh
+      name: Jurlagh II
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: CRUSHING
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 464
+      hoststar: *jurlagh
+      name: Jurlagh III
+      size: MEDIUM
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: OPTIMAL
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 465
+      hoststar: *lusmore
+      name: Lusmore I 563
+      size: MEDIUM
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: VERY HEAVY
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 466
+      hoststar: *lusmore
+      name: Lusmore II 752
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: NEGLIGIBLE
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 467
+      hoststar: *iarbonel
+      name: Dermod
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 468
+      hoststar: *deach
+      name: Deoch I 846
+      size: LARGE
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: OPTIMAL
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 469
+      hoststar: *deach
+      name: Deoch II 469
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: SEARING
+      gravity: VERY HEAVY
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 470
+      hoststar: *deach
+      name: Deoch III 371
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: TEMPERATE
+      gravity: VERY HEAVY
+      atmosphere: ACIDIC
+      weather: NONE
+  - planet:
+      id: 471
+      hoststar: *cahir
+      name: Cahir I 768
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 472
+      hoststar: *cahir
+      name: Cahir II 602
+      size: SMALL
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: OPTIMAL
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 473
+      hoststar: *cahir
+      name: Cahir III 357
+      size: LARGE
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: OPTIMAL
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 474
+      hoststar: *cahir
+      name: Cahir IV 241
+      size: LARGE
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: CRUSHING
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 475
+      hoststar: *ove
+      name: Imlogue
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: VERY LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 476
+      hoststar: *ove
+      name: Fada
+      size: MEDIUM
+      type: OCEANIC
+      color: BLUE
+      temperature: TEMPERATE
+      gravity: LOW
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 477
+      hoststar: *lairgnen
+      name: Conn
+      size: LARGE
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: CRUSHING
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 478
+      hoststar: *inchegeela
+      name: Inchegeela I 812
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: VERY LOW
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 479
+      hoststar: *inchegeela
+      name: Inchegeela II 536
+      size: MEDIUM
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 480
+      hoststar: *inchegeela
+      name: Inchegeela III 273
+      size: LARGE
+      type: FROZEN
+      color: WHITE
+      temperature: SUB-ARCTIC
+      gravity: CRUSHING
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 481
+      hoststar: *fiochra
+      name: Fiochra I 597
+      size: MEDIUM
+      type: MOLTEN
+      color: RED
+      temperature: INFERNO
+      gravity: OPTIMAL
+      atmosphere: FIRESTORM
+      weather: NONE
+  - planet:
+      id: 482
+      hoststar: *fiochra
+      name: Fiochra II 891
+      size: SMALL
+      type: MOLTEN
+      color: RED
+      temperature: SEARING
+      gravity: VERY LOW
+      atmosphere: TRACE GASES
+      weather: NONE
+  - planet:
+      id: 483
+      hoststar: *fiochra
+      name: Fiochra III 136
+      size: HUGE
+      type: GAS GIANT
+      color: VIOLET
+      temperature: INFERNO
+      gravity: CRUSHING
+      atmosphere: TOXIC
+      weather: NONE
+  - planet:
+      id: 484
+      hoststar: *lairgnen
+      name: Lairgnen I 916
+      size: SMALL
+      type: ROCKY
+      color: BROWN
+      temperature: ARCTIC
+      gravity: VERY LOW
+      atmosphere: NONE
+      weather: NONE
+  - planet:
+      id: 485
+      hoststar: *lairgnen
+      name: Lairgnen II 857
+      size: SMALL
+      type: FROZEN
+      color: WHITE
+      temperature: ARCTIC
+      gravity: NEGLIGIBLE
+      atmosphere: BREATHABLE
+      weather: NONE
+  - planet:
+      id: 486
+      hoststar: *mathgen
+      name: Mathgen IV 486
+      size: MEDIUM
+      type: ACIDIC
+      color: BLUE
+      temperature: TEMPERATE
+      gravity: OPTIMAL
+      atmosphere: ACIDIC
+      weather: NONE
+  - flux:
+      id: 1
+      endpoints:
+        - [110, 120]
+        - [10, 18]
+  - flux:
+      id: 2
+      endpoints:
+        - [126, 110]
+        - [142, 110]
+  - flux:
+      id: 3
+      endpoints:
+        - [118, 123]
+        - [74, 182]
+  - flux:
+      id: 4
+      endpoints:
+        - [143, 137]
+        - [173, 186]
+  - flux:
+      id: 5
+      endpoints:
+        - [100, 130]
+        - [75, 169]
+  - flux:
+      id: 6
+      endpoints:
+        - [80, 134]
+        - [96, 82]
+  - flux:
+      id: 7
+      endpoints:
+        - [174, 70]
+        - [167, 120]
+  - flux:
+      id: 8
+      endpoints:
+        - [91, 68]
+        - [40, 28]
+  - flux:
+      id: 9
+      endpoints:
+        - [62, 163]
+        - [45, 178]
+  - flux:
+      id: 10
+      endpoints:
+        - [188, 156]
+        - [161, 151]
+  - flux:
+      id: 11
+      endpoints:
+        - [201, 172]
+        - [216, 184]
+  - flux:
+      id: 12
+      endpoints:
+        - [185, 67]
+        - [193, 70]
+  - flux:
+      id: 13
+      endpoints:
+        - [48, 54]
+        - [97, 215]
+  - flux:
+      id: 14
+      endpoints:
+        - [35, 36]
+        - [242, 92]
+  - flux:
+      id: 15
+      endpoints:
+        - [213, 217]
+        - [235, 7]
+  - flux:
+      id: 16
+      endpoints:
+        - [223, 219]
+        - [232, 29]
+  - flux:
+      id: 17
+      endpoints:
+        - [236, 6]
+        - [205, 171]
+  - flux:
+      id: 18
+      endpoints:
+        - [222, 214]
+        - [227, 208]
+  - flux:
+      id: 19
+      endpoints:
+        - [33, 209]
+        - [227, 26]
+  - flux:
+      id: 20
+      endpoints:
+        - [24, 159]
+        - [69, 186]

@@ -39,34 +39,13 @@ class PlayerShipSprite {
     void applybraking();
 
     void draw(ALLEGRO_BITMAP *dest);
-    double
-    getX() {
-        return ship.getX();
-    }
-    double
-    getY() {
-        return ship.getY();
-    }
-    Point2D
-    get_screen_position() {
-        return Point2D(ship.getX(), ship.getY());
-    }
-    void
-    setX(double value) {
-        ship.setX(value);
-    }
-    void
-    setX(int value) {
-        ship.setX(value);
-    }
-    void
-    setY(double value) {
-        ship.setY(value);
-    }
-    void
-    setY(int value) {
-        ship.setY(value);
-    }
+    double getX() { return ship.getX(); }
+    double getY() { return ship.getY(); }
+    Point2D get_screen_position() { return Point2D(ship.getX(), ship.getY()); }
+    void setX(double value) { ship.setX(value); }
+    void setX(int value) { ship.setX(value); }
+    void setY(double value) { ship.setY(value); }
+    void setY(int value) { ship.setY(value); }
     float getVelocityX();
     float getVelocityY();
     void setVelocityX(float value);

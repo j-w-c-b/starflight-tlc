@@ -31,8 +31,8 @@ using namespace std;
 #define NOVEMBER 11
 #define DECEMBER 12
 
-int daysPassedByMonth[] = {
-    0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
+int daysPassedByMonth[] =
+    {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
 
 Stardate::Stardate()
     : m_day(DEFAULT_DAY), m_hour(DEFAULT_HOUR), m_month(DEFAULT_MONTH),
@@ -171,8 +171,9 @@ Stardate::GetFullDateString() const {
 
 bool
 Stardate::operator==(const Stardate &stardate) const {
-    return (m_day == stardate.GetDay() && m_hour == stardate.GetHour() &&
-            m_month == stardate.GetMonth() && m_year == stardate.GetYear());
+    return (
+        m_day == stardate.GetDay() && m_hour == stardate.GetHour()
+        && m_month == stardate.GetMonth() && m_year == stardate.GetYear());
 }
 
 bool
@@ -261,43 +262,59 @@ Stardate::Reset() {
     SetDate(DEFAULT_DAY, DEFAULT_HOUR, DEFAULT_MONTH, DEFAULT_YEAR);
 }
 
-bool
-Stardate::Serialize(Archive &ar) {
-    string ClassName = "Stardate";
-    int Schema = 0;
+InputArchive &
+operator>>(InputArchive &ar, Stardate &stardate) {
+    string class_name = string(Stardate::class_name);
+    int schema = 0;
 
-    if (ar.IsStoring()) {
-        ar << ClassName;
-        ar << Schema;
+    stardate.Reset();
 
-        ar << m_day;
-        ar << m_hour;
-        ar << m_month;
-        ar << m_year;
-    } else {
-        Reset();
-
-        string LoadClassName;
-        ar >> LoadClassName;
-        if (LoadClassName != ClassName)
-            return false;
-
-        int LoadSchema;
-        ar >> LoadSchema;
-        if (LoadSchema > Schema)
-            return false;
-
-        ar >> m_day;
-        ar >> m_hour;
-        ar >> m_month;
-        ar >> m_year;
+    string load_class_name;
+    ar >> load_class_name;
+    if (load_class_name != class_name) {
+        std::error_code ec(al_get_errno(), std::system_category());
+        throw std::system_error(
+            ec,
+            "Invalid save file: expected " + class_name + ", got "
+                + load_class_name);
     }
 
-    return true;
+    int load_schema;
+    ar >> load_schema;
+    if (load_schema > schema) {
+        std::error_code ec(al_get_errno(), std::system_category());
+        throw std::system_error(
+            ec,
+            "Invalid save file: unknown schema: " + class_name + " version "
+                + std::to_string(load_schema));
+    }
+
+    ar >> stardate.m_day;
+    ar >> stardate.m_hour;
+    ar >> stardate.m_month;
+    ar >> stardate.m_year;
+
+    return ar;
+}
+
+OutputArchive &
+operator<<(OutputArchive &ar, const Stardate &stardate) {
+    string class_name = string(Stardate::class_name);
+    int schema = 0;
+
+    ar << class_name;
+    ar << schema;
+
+    ar << stardate.m_day;
+    ar << stardate.m_hour;
+    ar << stardate.m_month;
+    ar << stardate.m_year;
+
+    return ar;
 }
 
 int
-Stardate::get_current_date_in_days(void) {
+Stardate::get_current_date_in_days() const {
     int i_current_year = m_year;
     int i_current_month = m_month;
     int i_current_day = m_day;

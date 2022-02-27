@@ -19,189 +19,275 @@
 #include "Util.h"
 #include "engineer_resources.h"
 
-using namespace engineer_resources;
+using namespace engineer;
+using namespace std;
 
-// bar 1 = Lasers
-// bar 2 = Missiles
-// bar 3 = Hull
-// bar 4 = Armor
-// bar 5 = Shields (4)
-// bar 6 = Engines (5)
-#define X_OFFSET 120
-#define EVENT_REPAIR_LASERS -9301
-#define EVENT_REPAIR_MISSILES -9302
-#define EVENT_REPAIR_HULL -9303
-#define EVENT_REPAIR_SHIELDS -9304
-#define EVENT_REPAIR_ENGINES -9305
+static const int VIEWER_X = 120;
+static const int VIEWER_Y = 0;
+static const int VIEWER_W = 799;
+static const int VIEWER_H = 500;
+static const int VIEWER_CONTENT_X = VIEWER_X + 54;
+static const int VIEWER_CONTENT_Y = VIEWER_Y + 78;
+static const int SHIP_W = 132;
+static const int SHIP_H = 342;
+static const int TITLE_W = 114;
+static const int TITLE_H = 12;
+static const int GAUGE_W = 120;
+static const int GAUGE_H = 20;
+
+static const int SHIP_X = VIEWER_CONTENT_X + 345 - SHIP_W / 2;
+static const int SHIP_Y = VIEWER_CONTENT_Y + 192 - SHIP_H / 2;
+static const int REPAIR_BUTTON_W = 20;
+static const int REPAIR_BUTTON_H = 20;
+static const int LEFT_TITLE_OFFSET_X = 0;
+static const int RIGHT_TITLE_OFFSET_X = REPAIR_BUTTON_W + 5;
+static const int TITLE_OFFSET_Y = 0;
+
+static const int LEFT_REPAIR_BUTTON_OFFSET_X = GAUGE_W + 5;
+static const int RIGHT_REPAIR_BUTTON_OFFSET_X = 0;
+static const int REPAIR_BUTTON_OFFSET_Y = 20;
+static const int GAUGE_OFFSET_Y = REPAIR_BUTTON_OFFSET_Y;
+static const int REPAIR_GAUGE_OFFSET_Y = VIEWER_CONTENT_Y + 80;
+static const int LEFT_GAUGE_X_OFFSET = 150;
+static const int RIGHT_GAUGE_X_OFFSET = 500;
+static const int GAUGE_VERTICAL_SPACING = 80;
+static const int LINE_W = GAUGE_W + REPAIR_BUTTON_W + 5;
+static const int LINE_Y_OFFSET =
+    TITLE_OFFSET_Y + REPAIR_BUTTON_OFFSET_Y / 2 + 5;
+
+static const int MISSILE_Y = 74;
+static const int ARMOR_X = 50;
+static const int ARMOR_Y = 146;
+static const int ENGINE_X = 64;
+static const int ENGINE_Y = 260;
+static const int LASER_X = 67;
+static const int LASER_Y = 5;
+static const int HULL_X = 67;
+static const int HULL_Y = 155;
+static const int SHIELDS_X = 67;
+static const int SHIELDS_Y = 222;
+static const int REPAIR_GAUGE_W = LINE_W;
+static const int REPAIR_GAUGE_H = 2 * GAUGE_H;
 
 ALLEGRO_DEBUG_CHANNEL("ModuleEngineer")
 
-ModuleEngineer::ModuleEngineer()
-    : img_window(NULL), img_bar_base(NULL), text(NULL), img_bar_laser(NULL),
-      img_bar_missile(NULL), img_bar_hull(NULL), img_bar_armor(NULL),
-      img_bar_shield(NULL), img_ship(NULL), img_button_repair(NULL),
-      img_button_repair_over(NULL), resources(ENGINEER_IMAGES) {}
+RepairGauge::RepairGauge(
+    int x,
+    int y,
+    const std::string &fill_image_name,
+    EventType repair_event,
+    const std::string &title,
+    GaugeSide gauge_side)
+    : Module(
+        x
+            + ((gauge_side == RepairGauge::GAUGE_LEFT) ? LEFT_GAUGE_X_OFFSET
+                                                       : RIGHT_GAUGE_X_OFFSET),
+        y + TITLE_OFFSET_Y,
+        REPAIR_GAUGE_W,
+        REPAIR_GAUGE_H),
+      m_title(make_shared<Label>(
+          title,
+          x
+              + ((gauge_side == RepairGauge::GAUGE_LEFT)
+                     ? (LEFT_GAUGE_X_OFFSET + LEFT_TITLE_OFFSET_X)
+                     : (RIGHT_GAUGE_X_OFFSET + RIGHT_TITLE_OFFSET_X)),
+          y + TITLE_OFFSET_Y,
+          TITLE_W,
+          TITLE_H,
+          false,
+          gauge_side == RepairGauge::GAUGE_LEFT ? 0 : ALLEGRO_ALIGN_RIGHT,
+          g_game->font10,
+          WHITE)),
+      m_repair_button(make_shared<Button>(
+          x
+              + ((gauge_side == RepairGauge::GAUGE_LEFT)
+                     ? (LEFT_GAUGE_X_OFFSET + LEFT_REPAIR_BUTTON_OFFSET_X)
+                     : (RIGHT_GAUGE_X_OFFSET + RIGHT_REPAIR_BUTTON_OFFSET_X)),
+          y + REPAIR_BUTTON_OFFSET_Y,
+          REPAIR_BUTTON_W,
+          REPAIR_BUTTON_H,
+          EVENT_NONE,
+          repair_event,
+          images[I_AUX_REPAIR],
+          images[I_AUX_REPAIR_HOVER],
+          nullptr)),
 
-ModuleEngineer::~ModuleEngineer() {}
+      m_background(make_shared<Bitmap>(
+          images[I_ELEMENT_GAUGE_GRAY],
+          x
+              + ((gauge_side == RepairGauge::GAUGE_LEFT)
+                     ? LEFT_GAUGE_X_OFFSET
+                     : (RIGHT_GAUGE_X_OFFSET + RIGHT_REPAIR_BUTTON_OFFSET_X
+                        + REPAIR_BUTTON_W + 5)),
+          y + GAUGE_OFFSET_Y,
+          GAUGE_W,
+          GAUGE_H)),
+      m_fill(make_shared<Bitmap>(
+          images[fill_image_name],
+          x
+              + ((gauge_side == RepairGauge::GAUGE_LEFT)
+                     ? LEFT_GAUGE_X_OFFSET
+                     : (RIGHT_GAUGE_X_OFFSET + RIGHT_REPAIR_BUTTON_OFFSET_X
+                        + REPAIR_BUTTON_W + 5)),
+          y + GAUGE_OFFSET_Y,
+          GAUGE_W,
+          GAUGE_H)),
+      m_line(shared_ptr<ALLEGRO_BITMAP>(
+          al_create_bitmap(LINE_W, 1),
+          al_destroy_bitmap)),
+      m_line_bitmap(make_shared<Bitmap>(
+          m_line,
+          x
+              + ((gauge_side == RepairGauge::GAUGE_LEFT)
+                     ? (LEFT_GAUGE_X_OFFSET)
+                     : (RIGHT_GAUGE_X_OFFSET)),
+          y + LINE_Y_OFFSET,
+          LINE_W,
+          1)),
+      m_line_node_x(
+          x
+          + ((gauge_side == RepairGauge::GAUGE_LEFT)
+                 ? (LEFT_GAUGE_X_OFFSET + LINE_W)
+                 : (RIGHT_GAUGE_X_OFFSET))),
+      m_line_node_y(y + LINE_Y_OFFSET) {
+    al_set_target_bitmap(m_line.get());
+    al_draw_line(0, 0, LINE_W, 0, GREEN, 1);
+    add_child_module(m_title);
+    add_child_module(m_repair_button);
+
+    if (repair_event == EVENT_NONE) {
+        m_repair_button->set_active(false);
+    }
+    add_child_module(m_background);
+    add_child_module(m_fill);
+    add_child_module(m_line_bitmap);
+}
+
+RepairGauge::~RepairGauge() {}
+
+void
+RepairGauge::set_value(int value) {
+    int fill = value * GAUGE_W / 100;
+    if (value == 100 || value == 0) {
+        m_repair_button->set_enabled(false);
+    }
+    m_fill->set_clip_width(fill);
+}
+
+ModuleEngineer::ModuleEngineer()
+    : Module(VIEWER_X, VIEWER_Y, VIEWER_W, VIEWER_H),
+      m_viewer(make_shared<SlidingModule<Bitmap>>(
+          SLIDE_FROM_TOP,
+          EVENT_NONE,
+          0.6,
+          images[I_GUI],
+          VIEWER_X,
+          VIEWER_Y)),
+      m_ship(make_shared<Bitmap>(nullptr, SHIP_X, SHIP_Y, SHIP_W, SHIP_H)),
+      m_lines(
+          make_shared<Bitmap>(nullptr, VIEWER_X, VIEWER_Y, VIEWER_W, VIEWER_H)),
+      m_missile_gauge(make_shared<RepairGauge>(
+          VIEWER_X,
+          REPAIR_GAUGE_OFFSET_Y,
+          I_ELEMENT_GAUGE_PURPLE,
+          EVENT_ENGINEER_REPAIR_MISSILES,
+          "MISSILES",
+          RepairGauge::GAUGE_LEFT)),
+      m_armor_gauge(make_shared<RepairGauge>(
+          VIEWER_X,
+          REPAIR_GAUGE_OFFSET_Y + GAUGE_VERTICAL_SPACING,
+          I_ELEMENT_GAUGE_RED,
+          EVENT_NONE,
+          "ARMOR",
+          RepairGauge::GAUGE_LEFT)),
+      m_engine_gauge(make_shared<RepairGauge>(
+          VIEWER_X,
+          REPAIR_GAUGE_OFFSET_Y + 2 * GAUGE_VERTICAL_SPACING,
+          I_ELEMENT_GAUGE_ORANGE,
+          EVENT_ENGINEER_REPAIR_ENGINES,
+          "ENGINES",
+          RepairGauge::GAUGE_LEFT)),
+      m_laser_gauge(make_shared<RepairGauge>(
+          VIEWER_X,
+          REPAIR_GAUGE_OFFSET_Y,
+          I_ELEMENT_GAUGE_MAGENTA,
+          EVENT_ENGINEER_REPAIR_LASERS,
+          "LASERS",
+          RepairGauge::GAUGE_RIGHT)),
+      m_hull_gauge(make_shared<RepairGauge>(
+          VIEWER_X,
+          REPAIR_GAUGE_OFFSET_Y + GAUGE_VERTICAL_SPACING,
+          I_ELEMENT_GAUGE_GREEN,
+          EVENT_ENGINEER_REPAIR_HULL,
+          "HULL",
+          RepairGauge::GAUGE_RIGHT)),
+      m_shield_gauge(make_shared<RepairGauge>(
+          VIEWER_X,
+          REPAIR_GAUGE_OFFSET_Y + 2 * GAUGE_VERTICAL_SPACING,
+          I_ELEMENT_GAUGE_BLUE,
+          EVENT_ENGINEER_REPAIR_SHIELDS,
+          "SHIELDS",
+          RepairGauge::GAUGE_RIGHT)) {
+    add_child_module(m_viewer);
+    m_viewer->add_child_module(m_ship);
+    m_viewer->add_child_module(m_missile_gauge);
+    m_viewer->add_child_module(m_armor_gauge);
+    m_viewer->add_child_module(m_engine_gauge);
+    m_viewer->add_child_module(m_laser_gauge);
+    m_viewer->add_child_module(m_hull_gauge);
+    m_viewer->add_child_module(m_shield_gauge);
+
+    m_lines->set_bitmap(create_lines_bitmap());
+    m_viewer->add_child_module(m_lines);
+}
 
 bool
-ModuleEngineer::Init() {
+ModuleEngineer::on_init() {
     ALLEGRO_DEBUG("  ModuleEngineer Initialize\n");
 
-    module_active = false;
-
-    VIEWER_WIDTH = 800;
-    VIEWER_HEIGHT = 500;
-    VIEWER_TARGET_OFFSET = VIEWER_HEIGHT;
-    VIEWER_MOVE_RATE = 12;
-    viewer_offset_y = -VIEWER_TARGET_OFFSET;
-
-    g_game->audioSystem->Load("data/engineer/buttonclick.ogg", "click");
-
-    if (!resources.load()) {
-        g_game->message("Engineer: Error loading resources");
-        return false;
+    m_viewer_is_active = false;
+    if (m_viewer->is_open()) {
+        m_viewer->toggle();
     }
-
-    img_window = resources[I_GUI];
-    img_bar_base = resources[I_ELEMENT_GAUGE_GRAY];
-    img_bar_laser = resources[I_ELEMENT_GAUGE_MAGENTA];
-    img_bar_missile = resources[I_ELEMENT_GAUGE_PURPLE];
-    img_bar_hull = resources[I_ELEMENT_GAUGE_GREEN];
-    img_bar_armor = resources[I_ELEMENT_GAUGE_RED];
-    img_bar_shield = resources[I_ELEMENT_GAUGE_BLUE];
-    img_bar_engine = resources[I_ELEMENT_GAUGE_ORANGE];
 
     switch (g_game->gameState->getProfession()) {
     case PROFESSION_FREELANCE:
-        img_ship = resources[I_HIGH_RES_SHIP_FREELANCE];
+        m_ship->set_bitmap(images[I_HIGH_RES_SHIP_FREELANCE]);
         break;
 
     case PROFESSION_MILITARY:
-        img_ship = resources[I_HIGH_RES_SHIP_MILITARY];
+        m_ship->set_bitmap(images[I_HIGH_RES_SHIP_MILITARY]);
         break;
 
     case PROFESSION_SCIENTIFIC:
     default:
-        img_ship = resources[I_HIGH_RES_SHIP_SCIENCE];
+        m_ship->set_bitmap(images[I_HIGH_RES_SHIP_SCIENCE]);
         break;
-    }
-
-    text = al_create_bitmap(VIEWER_WIDTH, VIEWER_HEIGHT);
-    al_set_target_bitmap(text);
-    al_clear_to_color(al_map_rgba(0, 0, 0, 0));
-
-    // load button images
-    img_button_repair = resources[I_AUX_REPAIR];
-    img_button_repair_over = resources[I_AUX_REPAIR_HOVER];
-
-    // Create and initialize the crew buttons
-    button[0] = new Button(img_button_repair,
-                           img_button_repair_over,
-                           img_button_repair,
-                           700 + X_OFFSET,
-                           135,
-                           0,
-                           EVENT_REPAIR_LASERS,
-                           g_game->font22,
-                           "",
-                           al_map_rgb(255, 255, 255),
-                           "click");
-    button[1] = new Button(img_button_repair,
-                           img_button_repair_over,
-                           img_button_repair,
-                           150 + X_OFFSET,
-                           180,
-                           0,
-                           EVENT_REPAIR_MISSILES,
-                           g_game->font22,
-                           "",
-                           al_map_rgb(255, 255, 255),
-                           "click");
-    button[2] = new Button(img_button_repair,
-                           img_button_repair_over,
-                           img_button_repair,
-                           683 + X_OFFSET,
-                           230,
-                           0,
-                           EVENT_REPAIR_HULL,
-                           g_game->font22,
-                           "",
-                           al_map_rgb(255, 255, 255),
-                           "click");
-    button[3] = new Button(img_button_repair,
-                           img_button_repair_over,
-                           img_button_repair,
-                           670 + X_OFFSET,
-                           325,
-                           0,
-                           EVENT_REPAIR_SHIELDS,
-                           g_game->font22,
-                           "",
-                           al_map_rgb(255, 255, 255),
-                           "click");
-    button[4] = new Button(img_button_repair,
-                           img_button_repair_over,
-                           img_button_repair,
-                           150 + X_OFFSET,
-                           385,
-                           0,
-                           EVENT_REPAIR_ENGINES,
-                           g_game->font22,
-                           "",
-                           al_map_rgb(255, 255, 255),
-                           "click");
-
-    for (int i = 0; i < 5; i++) {
-        if (button[i] == NULL) {
-            return false;
-        }
-        if (!button[i]->IsInitialized()) {
-            return false;
-        }
     }
 
     return true;
 }
 
-void
-ModuleEngineer::Close() {
-    al_destroy_bitmap(text);
-
-    resources.unload();
-
-    for (int i = 0; i < 5; i++) {
-        delete button[i];
-        button[i] = NULL;
-    }
-}
-
-void
-ModuleEngineer::Update() {}
-
 // return false if repair ceased due to lack of mineral, true otherwise
 bool
-ModuleEngineer::useMineral(Ship &ship) {
+ModuleEngineer::use_mineral(Ship &ship) {
 
     GameState *gs = g_game->gameState;
     ShipPart repairing = ship.partInRepair;
 
     if (repairing == PART_NONE) {
-        ALLEGRO_DEBUG("engineer: [ERROR] useMineral() was called while no "
+        ALLEGRO_DEBUG("engineer: [ERROR] use_mineral() was called while no "
                       "repair were in progress\n");
         return false;
     }
 
-    // we do up to MAX_REPAIR_COUNT (defined as 3 in GameState.h) repair
-    // iterations before consuming one mineral
+    // we do up to MAX_REPAIR_COUNT repair iterations before consuming one
+    // mineral
     if (ship.repairCounters[repairing - 1] < MAX_REPAIR_COUNT) {
         ship.repairCounters[repairing - 1]++;
         return true;
 
     } else {
-
-        Officer *currentEngineer = g_game->gameState->getCurrentEng();
-        std::string eng = currentEngineer->getLastName() + "-> ";
         int neededMineral = ship.repairMinerals[repairing - 1];
         Item mineral;
         int num_mineral;
@@ -212,23 +298,25 @@ ModuleEngineer::useMineral(Ship &ship) {
             // mineral not in the cargo hold, stop repair
             std::string mineralName =
                 g_game->dataMgr->GetItemByID(neededMineral)->name;
-            std::string msg =
-                eng + "Repairing ceased due to lack of " + mineralName + ".";
-            g_game->ShowMessageBoxWindow("", msg);
+            g_game->printout(
+                OFFICER_ENGINEER,
+                "Repairing ceased due to lack of " + mineralName + ".",
+                RED,
+                5000);
             return false;
 
         } else {
             // consume the mineral
-            std::string msg =
-                eng + "Using one cubic meter of " + mineral.name + ".";
-            g_game->printout(g_game->g_scrollbox, msg, GREEN, 1000);
+            std::string msg = "Using one cubic meter of " + mineral.name + ".";
+            g_game->printout(OFFICER_ENGINEER, msg, GREEN, 1000);
 
             gs->m_items.RemoveItems(mineral.id, 1);
-            Event e(CARGO_EVENT_UPDATE);
-            g_game->modeMgr->BroadcastEvent(&e);
+            ALLEGRO_EVENT e = {
+                .type = static_cast<unsigned int>(EVENT_CARGO_UPDATE)};
+            g_game->broadcast_event(&e);
 
             // roll a new one
-            switch (rand() % 5) {
+            switch (sfrand() % 5) {
             case 0:
                 ship.repairMinerals[repairing - 1] = ITEM_COBALT;
                 break;
@@ -248,19 +336,12 @@ ModuleEngineer::useMineral(Ship &ship) {
                 ALLEGRO_ASSERT(0);
             }
 
-            // increase engineering skill every 4 minerals consumed
-            // doing it here ensures the player will never be able to get free
-            // skill increase
-            currentEngineer->attributes.extra_variable++;
-            if (currentEngineer->attributes.extra_variable >= 4) {
-                currentEngineer->attributes.extra_variable = 0;
-
-                if (currentEngineer->SkillUp(SKILL_ENGINEERING))
-                    g_game->printout(g_game->g_scrollbox,
-                                     eng +
-                                         "I think I'm getting better at this.",
-                                     PURPLE,
-                                     5000);
+            if (g_game->gameState->add_experience(SKILL_ENGINEERING, 1)) {
+                g_game->printout(
+                    OFFICER_ENGINEER,
+                    "I think I'm getting better at this.",
+                    PURPLE,
+                    5000);
             }
 
             // reset the counter
@@ -274,197 +355,120 @@ ModuleEngineer::useMineral(Ship &ship) {
     ALLEGRO_ASSERT(0);
 }
 
-void
-ModuleEngineer::Draw() {
-    std::string s;
-    al_set_target_bitmap(g_game->GetBackBuffer());
+shared_ptr<ALLEGRO_BITMAP>
+ModuleEngineer::create_lines_bitmap() {
+    ALLEGRO_BITMAP *target = al_create_bitmap(VIEWER_W, VIEWER_H);
+    ALLEGRO_TRANSFORM translate;
+    al_identity_transform(&translate);
+    al_translate_transform(&translate, -VIEWER_X, -VIEWER_Y);
+    al_set_target_bitmap(target);
+    al_clear_to_color(al_map_rgba(0, 0, 0, 0));
+    al_use_transform(&translate);
 
-    if (g_game->gameState->getCurrentSelectedOfficer() != OFFICER_ENGINEER)
-        module_active = false;
+    pair<int, int> coords;
+    auto &[x, y] = coords;
 
-    if (viewer_offset_y > -VIEWER_TARGET_OFFSET) {
-        al_draw_bitmap(img_window, X_OFFSET, viewer_offset_y, 0);
+    coords = m_missile_gauge->get_line_node();
+    al_draw_line(x, y, SHIP_X + SHIP_W / 2, SHIP_Y + MISSILE_Y, GREEN, 1);
 
-        // draw the ship
-        al_draw_bitmap(img_ship, 342 + X_OFFSET, 95 + viewer_offset_y, 0);
+    coords = m_armor_gauge->get_line_node();
+    al_draw_line(
+        coords.first,
+        coords.second,
+        SHIP_X + ARMOR_X,
+        SHIP_Y + ARMOR_Y,
+        GREEN,
+        1);
 
-#pragma region Bars Base
-        al_draw_bitmap(
-            img_bar_base, 580 + X_OFFSET, 135 + viewer_offset_y, 0); // laser
-        al_draw_bitmap(
-            img_bar_base, 175 + X_OFFSET, 180 + viewer_offset_y, 0); // missile
-        al_draw_bitmap(
-            img_bar_base, 565 + X_OFFSET, 230 + viewer_offset_y, 0); // hull
-        al_draw_bitmap(
-            img_bar_base, 155 + X_OFFSET, 270 + viewer_offset_y, 0); // Armor
-        al_draw_bitmap(
-            img_bar_base, 550 + X_OFFSET, 325 + viewer_offset_y, 0); // shields
-        al_draw_bitmap(
-            img_bar_base, 170 + X_OFFSET, 385 + viewer_offset_y, 0); // engines
-#pragma endregion
-#pragma region Bars Actual
-        float percentage = 0;
-        percentage = g_game->gameState->getShip().getLaserIntegrity() / 100.0f;
-        al_draw_bitmap_region(img_bar_laser,
-                              0,
-                              0,
-                              al_get_bitmap_width(img_bar_laser) * percentage,
-                              al_get_bitmap_height(img_bar_base),
-                              580 + X_OFFSET,
-                              135 + viewer_offset_y,
-                              0); // laser
+    coords = m_engine_gauge->get_line_node();
+    al_draw_line(
+        coords.first,
+        coords.second,
+        SHIP_X + ENGINE_X,
+        SHIP_Y + ENGINE_Y,
+        GREEN,
+        1);
 
-        percentage =
-            g_game->gameState->getShip().getMissileLauncherIntegrity() / 100.0f;
-        al_draw_bitmap_region(img_bar_missile,
-                              0,
-                              0,
-                              al_get_bitmap_width(img_bar_missile) * percentage,
-                              al_get_bitmap_height(img_bar_base),
-                              175 + X_OFFSET,
-                              180 + viewer_offset_y,
-                              0); // missile
+    coords = m_laser_gauge->get_line_node();
+    al_draw_line(
+        coords.first,
+        coords.second,
+        SHIP_X + LASER_X,
+        SHIP_Y + LASER_Y,
+        GREEN,
+        1);
 
-        percentage = g_game->gameState->getShip().getHullIntegrity() / 100.0f;
-        al_draw_bitmap_region(img_bar_hull,
-                              0,
-                              0,
-                              al_get_bitmap_width(img_bar_hull) * percentage,
-                              al_get_bitmap_height(img_bar_base),
-                              565 + X_OFFSET,
-                              230 + viewer_offset_y,
-                              0); // hull
+    coords = m_hull_gauge->get_line_node();
+    al_draw_line(
+        coords.first,
+        coords.second,
+        SHIP_X + HULL_X,
+        SHIP_Y + HULL_Y,
+        GREEN,
+        1);
 
-        if (g_game->gameState->getShip().getMaxArmorIntegrity() <= 0) {
-            percentage = 0;
-        } else {
-            percentage = g_game->gameState->getShip().getArmorIntegrity() /
-                         g_game->gameState->getShip().getMaxArmorIntegrity();
+    coords = m_shield_gauge->get_line_node();
+    al_draw_line(
+        coords.first,
+        coords.second,
+        SHIP_X + SHIELDS_X,
+        SHIP_Y + SHIELDS_Y,
+        GREEN,
+        1);
+
+    return shared_ptr<ALLEGRO_BITMAP>(target, al_destroy_bitmap);
+}
+
+bool
+ModuleEngineer::on_update() {
+    auto current_officer = g_game->gameState->getCurrentSelectedOfficer();
+
+    if (current_officer != OFFICER_ENGINEER) {
+        if (!m_viewer->is_closed()) {
+            m_viewer->toggle();
         }
-        al_draw_bitmap_region(img_bar_armor,
-                              0,
-                              0,
-                              al_get_bitmap_width(img_bar_armor) * percentage,
-                              al_get_bitmap_height(img_bar_base),
-                              155 + X_OFFSET,
-                              270 + viewer_offset_y,
-                              0); // Armor
-
-        percentage = g_game->gameState->getShip().getShieldIntegrity() / 100.0f;
-        al_draw_bitmap_region(img_bar_shield,
-                              0,
-                              0,
-                              al_get_bitmap_width(img_bar_shield) * percentage,
-                              al_get_bitmap_height(img_bar_base),
-                              550 + X_OFFSET,
-                              325 + viewer_offset_y,
-                              0); // shields
-
-        percentage = g_game->gameState->getShip().getEngineIntegrity() / 100.0f;
-        al_draw_bitmap_region(img_bar_engine,
-                              0,
-                              0,
-                              al_get_bitmap_width(img_bar_engine) * percentage,
-                              al_get_bitmap_height(img_bar_base),
-                              170 + X_OFFSET,
-                              385 + viewer_offset_y,
-                              0); // engines
-#pragma endregion
-#pragma region Lines
-        al_draw_line(407 + X_OFFSET,
-                     104 + viewer_offset_y,
-                     560 + X_OFFSET,
-                     130 + viewer_offset_y,
-                     GREEN,
-                     1); // laser line
-        al_draw_line(560 + X_OFFSET,
-                     130 + viewer_offset_y,
-                     690 + X_OFFSET,
-                     130 + viewer_offset_y,
-                     GREEN,
-                     1); // laser line
-
-        al_draw_line(410 + X_OFFSET,
-                     175 + viewer_offset_y,
-                     175 + X_OFFSET,
-                     175 + viewer_offset_y,
-                     GREEN,
-                     1); // missile line
-
-        al_draw_line(405 + X_OFFSET,
-                     250 + viewer_offset_y,
-                     540 + X_OFFSET,
-                     225 + viewer_offset_y,
-                     GREEN,
-                     1); // hull line
-        al_draw_line(540 + X_OFFSET,
-                     225 + viewer_offset_y,
-                     675 + X_OFFSET,
-                     225 + viewer_offset_y,
-                     GREEN,
-                     1); // hull line
-
-        al_draw_line(395 + X_OFFSET,
-                     235 + viewer_offset_y,
-                     280 + X_OFFSET,
-                     265 + viewer_offset_y,
-                     GREEN,
-                     1); // armor line
-        al_draw_line(280 + X_OFFSET,
-                     265 + viewer_offset_y,
-                     155 + X_OFFSET,
-                     265 + viewer_offset_y,
-                     GREEN,
-                     1); // armor line
-
-        al_draw_line(408 + X_OFFSET,
-                     320 + viewer_offset_y,
-                     660 + X_OFFSET,
-                     320 + viewer_offset_y,
-                     GREEN,
-                     1); // shield line
-
-        al_draw_line(408 + X_OFFSET,
-                     355 + viewer_offset_y,
-                     275 + X_OFFSET,
-                     380 + viewer_offset_y,
-                     GREEN,
-                     1); // engine line
-        al_draw_line(275 + X_OFFSET,
-                     380 + viewer_offset_y,
-                     170 + X_OFFSET,
-                     380 + viewer_offset_y,
-                     GREEN,
-                     1); // engine line
-#pragma endregion
-#pragma region Buttons
-        button[0]->SetY(135 + viewer_offset_y);
-        button[1]->SetY(180 + viewer_offset_y);
-        button[2]->SetY(230 + viewer_offset_y);
-        button[3]->SetY(325 + viewer_offset_y);
-        button[4]->SetY(385 + viewer_offset_y);
-        for (int i = 0; i < 5; i++) {
-            button[i]->Run(g_game->GetBackBuffer());
-        }
-#pragma endregion
+        m_viewer_is_active = false;
+    } else if (m_viewer_is_active && !m_viewer->is_visible()) {
+        m_viewer_is_active = false;
+        return true;
     }
 
-#pragma region Text
-    Officer *currentEngineer = g_game->gameState->getCurrentEng();
-    std::string eng = currentEngineer->getLastName() + "-> ";
     Ship ship = g_game->gameState->getShip();
     float repair_time, repair_rate = 0;
     float repair_skill =
         g_game->gameState->CalcEffectiveSkill(SKILL_ENGINEERING);
+    std::string s;
 
-    al_set_target_bitmap(text);
-    al_clear_to_color(al_map_rgba(0, 0, 0, 0));
+    s = "MISSILES: " + ship.getMissileLauncherClassString();
+    m_missile_gauge->set_title(s);
+    m_missile_gauge->set_value(ship.getMissileLauncherIntegrity());
+
+    s = "ARMOR: " + ship.getArmorClassString();
+    m_armor_gauge->set_title(s);
+    m_armor_gauge->set_value(
+        100 * ship.getArmorIntegrity() / ship.getMaxArmorIntegrity());
+
+    s = "ENGINES: " + ship.getEngineClassString();
+    m_engine_gauge->set_title(s);
+    m_engine_gauge->set_value(ship.getEngineIntegrity());
+
     s = "LASERS: " + ship.getLaserClassString();
+    m_laser_gauge->set_title(s);
+    m_laser_gauge->set_value(ship.getLaserIntegrity());
+
+    s = "HULL";
+    m_shield_gauge->set_title(s);
+    m_hull_gauge->set_value(ship.getHullIntegrity());
+
+    s = "SHIELDS: " + ship.getShieldClassString();
+    m_shield_gauge->set_title(s);
+    m_shield_gauge->set_value(ship.getShieldIntegrity());
+
     if (ship.partInRepair == PART_LASERS) {
         if (ship.getLaserIntegrity() < 100 && ship.getLaserIntegrity() > 0) {
-            if (currentEngineer->CanSkillCheck() == true) {
-                currentEngineer->FakeSkillCheck();
-                if (useMineral(ship)) {
+            if (g_game->gameState->CanSkillCheck(SKILL_ENGINEERING)) {
+                g_game->gameState->add_experience(SKILL_ENGINEERING, 0);
+                if (use_mineral(ship)) {
                     repair_time = 8 * (6 - repair_skill / 50);
                     repair_rate = 100 / repair_time;
                     ship.augLaserIntegrity(repair_rate);
@@ -473,23 +477,21 @@ ModuleEngineer::Draw() {
             }
         } else {
             ship.partInRepair = PART_NONE;
-            g_game->printout(g_game->g_scrollbox,
-                             eng + "The lasers are now fully functional!",
-                             BLUE,
-                             5000);
+            g_game->printout(
+                OFFICER_ENGINEER,
+                "The lasers are now fully functional!",
+                BLUE,
+                5000);
         }
-        al_draw_text(g_game->font10, LTGREEN, 580, 115, 0, s.c_str());
-    } else {
-        al_draw_text(g_game->font10, LTBLUE, 580, 115, 0, s.c_str());
     }
 
     s = "MISSILES: " + ship.getMissileLauncherClassString();
     if (ship.partInRepair == PART_MISSILES) {
-        if (ship.getMissileLauncherIntegrity() < 100 &&
-            ship.getMissileLauncherIntegrity() > 0) {
-            if (currentEngineer->CanSkillCheck() == true) {
-                currentEngineer->FakeSkillCheck();
-                if (useMineral(ship)) {
+        if (ship.getMissileLauncherIntegrity() < 100
+            && ship.getMissileLauncherIntegrity() > 0) {
+            if (g_game->gameState->CanSkillCheck(SKILL_ENGINEERING)) {
+                g_game->gameState->add_experience(SKILL_ENGINEERING, 0);
+                if (use_mineral(ship)) {
                     repair_time = 8 * (6 - repair_skill / 50);
                     repair_rate = 100 / repair_time;
                     ship.augMissileLauncherIntegrity(repair_rate);
@@ -498,23 +500,20 @@ ModuleEngineer::Draw() {
             }
         } else {
             ship.partInRepair = PART_NONE;
-            g_game->printout(g_game->g_scrollbox,
-                             eng +
-                                 "The missile system is now fully functional!",
-                             BLUE,
-                             5000);
+            g_game->printout(
+                OFFICER_ENGINEER,
+                "The missile system is now fully functional!",
+                BLUE,
+                5000);
         }
-        al_draw_text(g_game->font10, LTGREEN, 175, 160, 0, s.c_str());
-    } else {
-        al_draw_text(g_game->font10, LTBLUE, 175, 160, 0, s.c_str());
     }
 
     s = "HULL";
     if (ship.partInRepair == PART_HULL) {
         if (ship.getHullIntegrity() < 100 && ship.getHullIntegrity() > 0) {
-            if (currentEngineer->CanSkillCheck() == true) {
-                currentEngineer->FakeSkillCheck();
-                if (useMineral(ship)) {
+            if (g_game->gameState->CanSkillCheck(SKILL_ENGINEERING)) {
+                g_game->gameState->add_experience(SKILL_ENGINEERING, 0);
+                if (use_mineral(ship)) {
                     repair_time = 25 * (6 - repair_skill / 50);
                     repair_rate = 100 / repair_time;
                     ship.augHullIntegrity(repair_rate);
@@ -523,35 +522,20 @@ ModuleEngineer::Draw() {
             }
         } else {
             ship.partInRepair = PART_NONE;
-            g_game->printout(g_game->g_scrollbox,
-                             eng + "The hull is now fully repaired!",
-                             BLUE,
-                             5000);
+            g_game->printout(
+                OFFICER_ENGINEER,
+                "The hull is now fully repaired!",
+                BLUE,
+                5000);
         }
-        al_draw_text(g_game->font10,
-                     LTGREEN,
-                     565 + al_get_bitmap_width(img_bar_base) / 2,
-                     210,
-                     ALLEGRO_ALIGN_CENTER,
-                     s.c_str());
-    } else {
-        al_draw_text(g_game->font10,
-                     LTBLUE,
-                     565 + al_get_bitmap_width(img_bar_base) / 2,
-                     210,
-                     ALLEGRO_ALIGN_CENTER,
-                     s.c_str());
     }
-
-    s = "ARMOR: " + ship.getArmorClassString();
-    al_draw_text(g_game->font10, LTBLUE, 155, 250, 0, s.c_str());
 
     s = "SHIELDS: " + ship.getShieldClassString();
     if (ship.partInRepair == PART_SHIELDS) {
         if (ship.getShieldIntegrity() < 100 && ship.getShieldIntegrity() > 0) {
-            if (currentEngineer->CanSkillCheck() == true) {
-                currentEngineer->FakeSkillCheck();
-                if (useMineral(ship)) {
+            if (g_game->gameState->CanSkillCheck(SKILL_ENGINEERING)) {
+                g_game->gameState->add_experience(SKILL_ENGINEERING, 0);
+                if (use_mineral(ship)) {
                     repair_time = 10 * (6 - repair_skill / 50);
                     repair_rate = 100 / repair_time;
                     ship.augShieldIntegrity(repair_rate);
@@ -562,22 +546,20 @@ ModuleEngineer::Draw() {
         } else {
             ship.partInRepair = PART_NONE;
             ship.setShieldCapacity(ship.getMaxShieldCapacity());
-            g_game->printout(g_game->g_scrollbox,
-                             eng + "The shields are now fully functional!",
-                             BLUE,
-                             5000);
+            g_game->printout(
+                OFFICER_ENGINEER,
+                "The shields are now fully functional!",
+                BLUE,
+                5000);
         }
-        al_draw_text(g_game->font10, LTGREEN, 550, 305, 0, s.c_str());
-    } else {
-        al_draw_text(g_game->font10, LTBLUE, 550, 305, 0, s.c_str());
     }
 
     s = "ENGINES: " + ship.getEngineClassString();
     if (ship.partInRepair == PART_ENGINES) {
         if (ship.getEngineIntegrity() < 100 && ship.getEngineIntegrity() > 0) {
-            if (currentEngineer->CanSkillCheck() == true) {
-                currentEngineer->FakeSkillCheck();
-                if (useMineral(ship)) {
+            if (g_game->gameState->CanSkillCheck(SKILL_ENGINEERING)) {
+                g_game->gameState->add_experience(SKILL_ENGINEERING, 0);
+                if (use_mineral(ship)) {
                     repair_time = 10 * (6 - repair_skill / 50);
                     repair_rate = 100 / repair_time;
                     ship.augEngineIntegrity(repair_rate);
@@ -586,82 +568,80 @@ ModuleEngineer::Draw() {
             }
         } else {
             ship.partInRepair = PART_NONE;
-            g_game->printout(g_game->g_scrollbox,
-                             eng + "The engines are now fully repaired!",
-                             BLUE,
-                             5000);
+            g_game->printout(
+                OFFICER_ENGINEER,
+                "The engines are now fully repaired!",
+                BLUE,
+                5000);
         }
-        al_draw_text(g_game->font10, LTGREEN, 170, 365, 0, s.c_str());
-    } else {
-        al_draw_text(g_game->font10, LTBLUE, 170, 365, 0, s.c_str());
     }
     g_game->gameState->setShip(ship);
-    al_set_target_bitmap(g_game->GetBackBuffer());
-    al_draw_bitmap(text, X_OFFSET, viewer_offset_y, 0);
-#pragma endregion
-
-    if (module_active) {
-        if (viewer_offset_y < -30)
-            viewer_offset_y += VIEWER_MOVE_RATE;
-    } else {
-        if (viewer_offset_y > -VIEWER_TARGET_OFFSET)
-            viewer_offset_y -= VIEWER_MOVE_RATE;
-    }
+    return true;
 }
 
-void
-ModuleEngineer::OnEvent(Event *event) {
+bool
+ModuleEngineer::on_event(ALLEGRO_EVENT *event) {
     ShipPart repairing = g_game->gameState->m_ship.partInRepair;
 
-    switch (event->getEventType()) {
-    case 5001: // repair systems button
-        module_active = !module_active;
-        break;
-    case EVENT_REPAIR_LASERS:
-        if (g_game->gameState->getShip().getLaserIntegrity() > 0 &&
-            g_game->gameState->getShip().getLaserIntegrity() < 100 &&
-            g_game->gameState->officerEng->CanSkillCheck() == true &&
-            repairing != PART_LASERS) {
+    switch (event->type) {
+    case EVENT_ENGINEER_REPAIR:
+        m_viewer->toggle();
+        if (!m_viewer_is_active) {
+            m_viewer_is_active = true;
+        }
+        return true;
+    case EVENT_ENGINEER_INJECT:
+        if (!m_viewer->is_closed()) {
+            m_viewer_is_active = false;
+            m_viewer->toggle();
+        }
+        return true;
+
+    case EVENT_ENGINEER_REPAIR_LASERS:
+        if (g_game->gameState->getShip().getLaserIntegrity() > 0
+            && g_game->gameState->getShip().getLaserIntegrity() < 100
+            && g_game->gameState->CanSkillCheck(SKILL_ENGINEERING)
+            && repairing != PART_LASERS) {
             repairing = PART_LASERS;
         } else {
             repairing = PART_NONE;
         }
         break;
-    case EVENT_REPAIR_MISSILES:
-        if (g_game->gameState->getShip().getMissileLauncherIntegrity() > 0 &&
-            g_game->gameState->getShip().getMissileLauncherIntegrity() < 100 &&
-            g_game->gameState->officerEng->CanSkillCheck() == true &&
-            repairing != PART_MISSILES) {
+    case EVENT_ENGINEER_REPAIR_MISSILES:
+        if (g_game->gameState->getShip().getMissileLauncherIntegrity() > 0
+            && g_game->gameState->getShip().getMissileLauncherIntegrity() < 100
+            && g_game->gameState->CanSkillCheck(SKILL_ENGINEERING)
+            && repairing != PART_MISSILES) {
             repairing = PART_MISSILES;
         } else {
             repairing = PART_NONE;
         }
         break;
-    case EVENT_REPAIR_HULL:
-        if (g_game->gameState->getShip().getHullIntegrity() > 0 &&
-            g_game->gameState->getShip().getHullIntegrity() < 100 &&
-            g_game->gameState->officerEng->CanSkillCheck() == true &&
-            repairing != PART_HULL) {
+    case EVENT_ENGINEER_REPAIR_HULL:
+        if (g_game->gameState->getShip().getHullIntegrity() > 0
+            && g_game->gameState->getShip().getHullIntegrity() < 100
+            && g_game->gameState->CanSkillCheck(SKILL_ENGINEERING)
+            && repairing != PART_HULL) {
             repairing = PART_HULL;
         } else {
             repairing = PART_NONE;
         }
         break;
-    case EVENT_REPAIR_SHIELDS:
-        if (g_game->gameState->getShip().getShieldIntegrity() > 0 &&
-            g_game->gameState->getShip().getShieldIntegrity() < 100 &&
-            g_game->gameState->officerEng->CanSkillCheck() == true &&
-            repairing != PART_SHIELDS) {
+    case EVENT_ENGINEER_REPAIR_SHIELDS:
+        if (g_game->gameState->getShip().getShieldIntegrity() > 0
+            && g_game->gameState->getShip().getShieldIntegrity() < 100
+            && g_game->gameState->CanSkillCheck(SKILL_ENGINEERING)
+            && repairing != PART_SHIELDS) {
             repairing = PART_SHIELDS;
         } else {
             repairing = PART_NONE;
         }
         break;
-    case EVENT_REPAIR_ENGINES:
-        if (g_game->gameState->getShip().getEngineIntegrity() > 0 &&
-            g_game->gameState->getShip().getEngineIntegrity() < 100 &&
-            g_game->gameState->officerEng->CanSkillCheck() == true &&
-            repairing != PART_ENGINES) {
+    case EVENT_ENGINEER_REPAIR_ENGINES:
+        if (g_game->gameState->getShip().getEngineIntegrity() > 0
+            && g_game->gameState->getShip().getEngineIntegrity() < 100
+            && g_game->gameState->CanSkillCheck(SKILL_ENGINEERING)
+            && repairing != PART_ENGINES) {
             repairing = PART_ENGINES;
         } else {
             repairing = PART_NONE;
@@ -672,23 +652,11 @@ ModuleEngineer::OnEvent(Event *event) {
         break;
     }
 
-    if (g_game->gameState->m_ship.partInRepair != repairing)
+    if (g_game->gameState->m_ship.partInRepair != repairing) {
         g_game->gameState->m_ship.partInRepair = repairing;
-}
+        g_game->audioSystem->Play(samples[S_BUTTONCLICK]);
+    }
 
-void
-ModuleEngineer::OnMouseMove(int x, int y) {
-    if (!module_active)
-        return;
-
-    for (int i = 0; i < 5; i++)
-        button[i]->OnMouseMove(x, y);
+    return true;
 }
-void
-ModuleEngineer::OnMouseReleased(int button, int x, int y) {
-    if (!module_active)
-        return;
-
-    for (int i = 0; i < 5; i++)
-        this->button[i]->OnMouseReleased(button, x, y);
-}
+// vi: ft=cpp

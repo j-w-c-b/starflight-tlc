@@ -6,15 +6,15 @@ function PlayerShipInitialize( )
 
 	--PROFESSION_SCIENTIFIC = 1
 	if (prof == 1) then
-		L_LoadImage("data/planetsurface/ship_science.bmp")
+		L_LoadImage("data/planetsurface/ship_science.png")
 
 	--PROFESSION_FREELANCE = 2
 	elseif (prof == 2) then
-		L_LoadImage("data/planetsurface/ship_freelance.bmp")
+		L_LoadImage("data/planetsurface/ship_freelance.png")
 
 	--PROFESSION_MILITARY = 4 and is the default
 	else 
-		L_LoadImage("data/planetsurface/ship_military.bmp")
+		L_LoadImage("data/planetsurface/ship_military.png")
 	end
 			
 

@@ -59,11 +59,11 @@ Sample::SetLoop(bool doLoop) {
     ALLEGRO_ASSERT(sample_instance != NULL);
 
     if (loop) {
-        return al_set_sample_instance_playmode(sample_instance,
-                                               ALLEGRO_PLAYMODE_LOOP);
+        return al_set_sample_instance_playmode(
+            sample_instance, ALLEGRO_PLAYMODE_LOOP);
     } else {
-        return al_set_sample_instance_playmode(sample_instance,
-                                               ALLEGRO_PLAYMODE_ONCE);
+        return al_set_sample_instance_playmode(
+            sample_instance, ALLEGRO_PLAYMODE_ONCE);
     }
 }
 
@@ -84,15 +84,11 @@ Sample::IsPlaying() const {
 AudioSystem::AudioSystem() : voice(nullptr), mixer(nullptr), bPlay(true) {}
 
 AudioSystem::~AudioSystem() {
-    samples.clear();
-
-    if (mixer != NULL) {
+    if (mixer) {
         al_destroy_mixer(mixer);
-        mixer = NULL;
     }
-    if (voice != NULL) {
+    if (voice) {
         al_destroy_voice(voice);
-        voice = NULL;
     }
 }
 
@@ -100,11 +96,6 @@ bool
 AudioSystem::Init() {
     // retrieve global music playback setting
     bPlay = g_game->getGlobalBoolean("AUDIO_GLOBAL");
-
-    if (!bPlay) {
-        ALLEGRO_DEBUG("bPlay=false, skipping audio setup\n");
-        return false;
-    }
 
     if (!al_install_audio()) {
         ALLEGRO_ERROR("al_init_acodec_addon failed\n");
@@ -138,9 +129,7 @@ shared_ptr<Sample>
 AudioSystem::Load(const string &filename, float volume) {
     if (filename.length() == 0)
         return NULL;
-    string data_filename = Util::resource_path(filename);
-
-    auto sample = make_shared<Sample>(data_filename.c_str(), volume);
+    auto sample = make_shared<Sample>(filename.c_str(), volume);
 
     if (!sample->IsInitialized()) {
         return nullptr;
@@ -150,45 +139,9 @@ AudioSystem::Load(const string &filename, float volume) {
     return sample;
 }
 
-bool
-AudioSystem::Load(const string &filename, const string &name, float volume) {
-    auto sample = Load(filename, volume);
-    if (!sample) {
-        ALLEGRO_ERROR("Could not load %s, const string &%s\n",
-                      filename.c_str(),
-                      name.c_str());
-        return false;
-    }
-    samples[name] = sample;
-    return true;
-}
-
 shared_ptr<Sample>
 AudioSystem::LoadMusic(const string &filename, float volume) {
     return Load(filename, volume);
-}
-
-bool
-AudioSystem::LoadMusic(const string &filename,
-                       const string &name,
-                       float volume) {
-    return Load(filename, name, volume);
-}
-
-bool
-AudioSystem::SampleExists(const string &name) {
-    auto i = samples.find(name);
-    return i != samples.end();
-}
-
-bool
-AudioSystem::IsPlaying(const string &name) {
-    auto i = samples.find(name);
-    if (i == samples.end()) {
-        ALLEGRO_DEBUG("Can't find sample %s\n", name.c_str());
-        return false;
-    }
-    return IsPlaying(i->second);
 }
 
 bool
@@ -197,42 +150,33 @@ AudioSystem::IsPlaying(shared_ptr<Sample> sample) {
 }
 
 bool
-AudioSystem::Play(const string &name, bool doLoop) {
-    // prevent playback based on global setting
-    if (!bPlay)
-        return true;
-
-    auto i = samples.find(name);
-    return Play(i->second, doLoop);
-}
-
-bool
 AudioSystem::Play(shared_ptr<Sample> sample, bool doLoop) {
     // prevent playback based on global setting
     if (!bPlay)
         return true;
 
-    return sample && sample->IsInitialized() && sample->SetLoop(doLoop) &&
-           sample->SetPaused(false);
-}
-
-bool
-AudioSystem::PlayMusic(const string &name, bool doLoop) {
-    return Play(name, doLoop);
+    return sample && sample->IsInitialized() && sample->SetLoop(doLoop)
+           && sample->SetPaused(false);
 }
 
 bool
 AudioSystem::PlayMusic(shared_ptr<Sample> sample, bool doLoop) {
+    m_music = sample;
     return Play(sample, doLoop);
 }
 
 void
-AudioSystem::Stop(const string &name) {
-    auto i = samples.find(name);
-    if (i == samples.end())
-        return;
+AudioSystem::StopMusic() {
+    if (m_music) {
+        m_music->SetPaused(true);
+    }
+}
 
-    Stop(i->second);
+void
+AudioSystem::StartMusic() {
+    if (m_music) {
+        m_music->SetPaused(false);
+    }
 }
 
 void
@@ -241,3 +185,4 @@ AudioSystem::Stop(shared_ptr<Sample> sample) {
         return;
     sample->SetPaused(true);
 }
+// vi: ft=cpp

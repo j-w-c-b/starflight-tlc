@@ -15,138 +15,102 @@
 #include "Events.h"
 #include "Game.h"
 #include "GameState.h"
+#include "MessageBoxWindow.h"
 #include "ModeMgr.h"
 #include "ModuleStarport.h"
 #include "PauseMenu.h"
 #include "QuestMgr.h"
-#include "ScrollBox.h"
 #include "Sprite.h"
 #include "starport_resources.h"
 
 using namespace std;
-using namespace starport_resources;
+using namespace starport;
 
+namespace {
 ALLEGRO_DEBUG_CHANNEL("ModuleStarport")
+
+struct doorArea {
+    static constexpr int DOOR_WIDTH = 228;
+    explicit doorArea(int left_, string_view module_name_)
+        : left(left_), right(left_ + DOOR_WIDTH), middle(left + DOOR_WIDTH / 2),
+          module_name(string(module_name_)) {}
+    bool within_door(int point) const {
+        return (point >= left && point <= right);
+    }
+    int left;
+    int right;
+    int middle;
+    string module_name;
+};
+
+static const std::vector<doorArea> doors = {
+    doorArea(558, MODULE_RESEARCHLAB),
+    doorArea(961, MODULE_CREWBUY),
+    doorArea(1299, MODULE_CAPTAINSLOUNGE),
+    doorArea(1958, MODULE_SHIPCONFIG),
+    doorArea(2326, MODULE_TRADEDEPOT),
+    doorArea(2807, MODULE_BANK),
+    doorArea(3194, MODULE_CANTINA),
+    doorArea(3615, MODULE_MILITARYOPS),
+};
+}; // namespace
 
 //***********************************************
 // Constructor
 //***********************************************
-ModuleStarport::ModuleStarport(void) : resources(STARPORT_IMAGES) {
-    // load the starport background
-    if (!resources.load()) {
-        g_game->message("Starport: Error loading datafile");
-    }
-
+ModuleStarport::ModuleStarport() : Module() {
     // enable the Pause Menu
-    g_game->pauseMenu->setEnabled(true);
     flag_showWelcome = true;
 }
-//***********************************************
-// Destructor
-//***********************************************
-ModuleStarport::~ModuleStarport(void) { resources.unload(); }
 
 //***********************************************
 // Private Funtions
 //***********************************************
 bool
 ModuleStarport::testDoors() {
-    int px = playerx + g_game->gameState->player->posStarport.x +
-             (avatar->getFrameWidth() / 2);
+    int px = playerx + g_game->gameState->player.posStarport.x
+             + (avatar->getFrameWidth() / 2);
+    ProfessionType profession = g_game->gameState->getProfession();
+    string message;
+
     for (int a = 0; a < NUMBER_OF_DOORS; a++) {
-        if (px >= doors[a].left && px <= doors[a].right) {
+        if (doors[a].within_door(px)) {
             if (a == 0 || a == 6 || a == 7) {
                 // Science Profession - wrong doors
-                if (g_game->gameState->getProfession() ==
-                        PROFESSION_SCIENTIFIC &&
-                    a == 6) {
-                    g_game->ShowMessageBoxWindow(
-                        "",
-                        "We don't serve your kind here! Go to the science lab "
-                        "where you belong.",
-                        400,
-                        200,
-                        WHITE,
-                        312,
-                        284,
-                        false);
-                    return false;
+                if (profession == PROFESSION_SCIENTIFIC && a == 6) {
+                    message = "We don't serve your kind here! Go to the "
+                              "science lab where you belong.";
+                    break;
                 }
-                if (g_game->gameState->getProfession() ==
-                        PROFESSION_SCIENTIFIC &&
-                    a == 7) {
-                    g_game->ShowMessageBoxWindow(
-                        "",
-                        "Invalid Military Rank! Go to the science lab where "
-                        "you belong.",
-                        400,
-                        200,
-                        WHITE,
-                        312,
-                        284,
-                        false);
-                    return false;
+                if (profession == PROFESSION_SCIENTIFIC && a == 7) {
+                    message = "Invalid Military Rank! Go to the science lab "
+                              "where you belong.";
+                    break;
                 }
 
                 // Freelance - wrong doors
-                if (g_game->gameState->getProfession() ==
-                        PROFESSION_FREELANCE &&
-                    a == 0) {
-                    g_game->ShowMessageBoxWindow(
-                        "",
-                        "ACCESS DENIED! Wouldn't you feel more at home in the "
-                        "Cantina?",
-                        400,
-                        200,
-                        WHITE,
-                        312,
-                        284,
-                        false);
-                    return false;
+                if (profession == PROFESSION_FREELANCE && a == 0) {
+                    message = "ACCESS DENIED! Wouldn't you feel more at home "
+                              "in the Cantina?";
+                    break;
                 }
-                if (g_game->gameState->getProfession() ==
-                        PROFESSION_FREELANCE &&
-                    a == 7) {
-                    g_game->ShowMessageBoxWindow(
-                        "",
-                        "Invalid Military Rank! Go check out the Cantina.",
-                        400,
-                        200,
-                        WHITE,
-                        312,
-                        284,
-                        false);
-                    return false;
+                if (profession == PROFESSION_FREELANCE && a == 7) {
+                    message =
+                        "Invalid Military Rank! Go check out the Cantina.";
+
+                    break;
                 }
 
                 // Military - wrong doors
-                if (g_game->gameState->getProfession() == PROFESSION_MILITARY &&
-                    a == 0) {
-                    g_game->ShowMessageBoxWindow(
-                        "",
-                        "The military has no jurisdiction here! Go report to "
-                        "your commander or whoever.",
-                        400,
-                        200,
-                        WHITE,
-                        312,
-                        284,
-                        false);
-                    return false;
+                if (profession == PROFESSION_MILITARY && a == 0) {
+                    message = "The military has no jurisdiction here! Go "
+                              "report to your commander or whoever.";
+                    break;
                 }
-                if (g_game->gameState->getProfession() == PROFESSION_MILITARY &&
-                    a == 6) {
-                    g_game->ShowMessageBoxWindow("",
-                                                 "Hey bub, aren't you late for "
-                                                 "a briefing in the War Room?",
-                                                 400,
-                                                 200,
-                                                 WHITE,
-                                                 312,
-                                                 284,
-                                                 false);
-
-                    return false;
+                if (profession == PROFESSION_MILITARY && a == 6) {
+                    message = "Hey bub, aren't you late for a briefing in the "
+                              "War Room?";
+                    break;
                 }
             }
 
@@ -155,105 +119,87 @@ ModuleStarport::testDoors() {
             return true;
         }
     }
+
+    if (message != "") {
+        set_modal_child(make_shared<MessageBoxWindow>(
+            "", message, 400, 200, 312, 284, WHITE, false));
+        return false;
+    }
     return false;
 }
 
 void
-ModuleStarport::movePlayerLeft(int distanceInPixels) {
-    if (g_game->gameState->player->posStarport.x <=
-        0) // If we're scrolled atw left...
+ModuleStarport::move_player(int distanceInPixels) {
+    int width = al_get_bitmap_width(m_background_image.get());
+    int player_width = avatar->getFrameWidth();
+
+    if (g_game->gameState->player.posStarport.x
+        <= 0) // If we're scrolled atw left...
     {
-        if (playerx - distanceInPixels < SCREEN_EDGE_PADDING)
+        if (playerx + distanceInPixels < SCREEN_EDGE_PADDING) {
             playerx = SCREEN_EDGE_PADDING;
-        else
-            playerx -= distanceInPixels;
-    } else if (g_game->gameState->player->posStarport.x + SCREEN_WIDTH >=
-               al_get_bitmap_width(starport)) // If we're scrolled atw right...
-    {
-        if (playerx - distanceInPixels > SCREEN_WIDTH / 2 - 237 / 2)
-            playerx -= distanceInPixels;
-        else {
-            playerx = SCREEN_WIDTH / 2 - 237 / 2;
-            g_game->gameState->player->posStarport.x -= distanceInPixels;
-        }
-    } else // If we're inbetween...
-    {
-        g_game->gameState->player->posStarport.x -= distanceInPixels;
-        if (g_game->gameState->player->posStarport.x < 0)
-            g_game->gameState->player->posStarport.x = 0;
-    }
-}
-void
-ModuleStarport::movePlayerRight(int distanceInPixels) {
-    if (g_game->gameState->player->posStarport.x <=
-        0) // If we're scrolled atw left...
-    {
-        if (playerx + distanceInPixels < SCREEN_WIDTH / 2 - 237 / 2)
+        } else if (
+            playerx + distanceInPixels < (SCREEN_WIDTH - player_width) / 2) {
             playerx += distanceInPixels;
-        else {
-            playerx = SCREEN_WIDTH / 2 - 237 / 2;
-            g_game->gameState->player->posStarport.x += distanceInPixels;
+        } else {
+            playerx = SCREEN_WIDTH / 2 - player_width / 2;
+            g_game->gameState->player.posStarport.x += distanceInPixels;
         }
-    } else if (g_game->gameState->player->posStarport.x + SCREEN_WIDTH >=
-               al_get_bitmap_width(starport)) // If we're scrolled atw right...
-    {
-        if (playerx + distanceInPixels + 237 + SCREEN_EDGE_PADDING >
-            SCREEN_WIDTH)
-            playerx = SCREEN_WIDTH - 237 - SCREEN_EDGE_PADDING;
-        else
+    } else if (
+        g_game->gameState->player.posStarport.x + SCREEN_WIDTH >= width) {
+        // If we're scrolled atw right...
+        if (playerx + distanceInPixels + player_width + SCREEN_EDGE_PADDING
+            > SCREEN_WIDTH) {
+            playerx = SCREEN_WIDTH - player_width - SCREEN_EDGE_PADDING;
+        } else if (
+            playerx + distanceInPixels > (SCREEN_WIDTH - player_width) / 2) {
             playerx += distanceInPixels;
-    } else // If we're inbetween...
-    {
-        g_game->gameState->player->posStarport.x += distanceInPixels;
-        if (g_game->gameState->player->posStarport.x + SCREEN_WIDTH >
-            al_get_bitmap_width(starport))
-            g_game->gameState->player->posStarport.x =
-                al_get_bitmap_width(starport) - SCREEN_WIDTH;
+        } else {
+            playerx = (SCREEN_WIDTH - player_width) / 2;
+            g_game->gameState->player.posStarport.x += distanceInPixels;
+        }
+    } else { // If we're inbetween...
+        g_game->gameState->player.posStarport.x += distanceInPixels;
+        if (g_game->gameState->player.posStarport.x < 0) {
+            g_game->gameState->player.posStarport.x = 0;
+        } else if (
+            g_game->gameState->player.posStarport.x + SCREEN_WIDTH > width) {
+            g_game->gameState->player.posStarport.x = width - SCREEN_WIDTH;
+        }
     }
 }
 
 //***********************************************
 // Public Functions
 //***********************************************
-void
-ModuleStarport::Close() {
-    delete avatar;
-    delete door;
+bool
+ModuleStarport::on_close() {
+    avatar.reset();
+    door.reset();
+    return true;
 }
 
 bool
-ModuleStarport::Init() {
+ModuleStarport::on_init() {
     g_game->SetTimePaused(true); // game-time frozen in this module.
 
     ALLEGRO_DEBUG("  Starport Initialize\n");
 
+    m_background_image = images[I_STARPORT];
     // enable the Pause Menu
-    g_game->pauseMenu->setEnabled(true);
-
-    // load the sound effects
-    // NOTE: a missing wav file is a soft error for the time being
-    if (!g_game->audioSystem->SampleExists("dooropen.wav")) {
-        if (!g_game->audioSystem->Load("data/starport/dooropen.wav",
-                                       "dooropen")) {
-            ALLEGRO_DEBUG(
-                "Starport: Error loading data/starport/dooropen.wav\n");
-        }
-    }
-
-    // load the starport background
-    starport = resources[I_STARPORT];
+    g_game->enable_pause_menu(true);
 
     // load door
-    door = new Sprite();
-    door->setImage(resources[I_STARPORT_DOOR]);
+    door = make_unique<Sprite>();
+    door->setImage(images[I_STARPORT_DOOR]);
     door->setAnimColumns(2);
     door->setFrameWidth(180);
     door->setFrameHeight(237);
     door->setTotalFrames(2);
 
     // load avatar
-    avatar = new Sprite();
-    avatar->setImage(resources[I_STARPORT_AVATAR]);
+    avatar = make_unique<Sprite>();
+    avatar->setImage(images[I_STARPORT_AVATAR]);
     avatar->setAnimColumns(8);
     avatar->setTotalFrames(16);
     avatar->setFrameHeight(237);
@@ -264,15 +210,15 @@ ModuleStarport::Init() {
     playery = g_game->getGlobalNumber("PLAYER_STARPORT_START_Y");
 
     // set avatar starting position in starport (first time only)
-    if (g_game->gameState->player->posStarport.x == -1) {
-        g_game->gameState->player->posStarport.x =
+    if (g_game->gameState->player.posStarport.x == -1) {
+        g_game->gameState->player.posStarport.x =
             g_game->getGlobalNumber("PLAYER_STARPORT_START_X");
     }
 
     avatar->setPos(playerx, playery);
     avatar->setFrameDelay(3);
 
-    movement = 0;
+    movement = STOP_RIGHT;
     enteringDoor = false;
     openingDoor = false;
     closingDoor = false;
@@ -281,153 +227,83 @@ ModuleStarport::Init() {
     doorDistance = 0;
     destinationDoor = 0;
 
-    // create doors
-    doors[0].left = DOOR_0_X;
-    doors[1].left = DOOR_1_X;
-    doors[2].left = DOOR_2_X;
-    doors[3].left = DOOR_3_X;
-    doors[4].left = DOOR_4_X;
-    doors[5].left = DOOR_5_X;
-    doors[6].left = DOOR_6_X;
-    doors[7].left = DOOR_7_X;
-
-    for (int a = 0; a < NUMBER_OF_DOORS; ++a) {
-        doors[a].right = doors[a].left + DOOR_WIDTH;
-        doors[a].middle =
-            ((doors[a].right - doors[a].left) / 2) + doors[a].left;
-    }
-
-    /*
-            //show welcome message for first-time visitor
-            if ( (g_game->gameState->firstTimeVisitor ||
-       g_game->gameState->getActiveQuest() < 2) )
-            {
-                    g_game->gameState->firstTimeVisitor = false;
-                    flag_showWelcome = false;
-            }
-    */
     return true;
 }
-void
-ModuleStarport::OnEvent(Event *event) {
+
+bool
+ModuleStarport::on_event(ALLEGRO_EVENT *event) {
     std::string escape;
 
     // check for general events
-    switch (event->getEventType()) {
-    case EVENT_SAVE_GAME: // save game
+    switch (event->type) {
+    case EVENT_CLOSE:
+        set_modal_child(nullptr);
+        return true;
+    case EVENT_SAVE_GAME:
         g_game->gameState->AutoSave();
-        return;
-        break;
-    case EVENT_LOAD_GAME: // load game
+        return true;
+    case EVENT_LOAD_GAME:
         g_game->gameState->AutoLoad();
-        return;
-        break;
-    case EVENT_QUIT_GAME: // quit game
+        return true;
+    case EVENT_QUIT_GAME:
         escape = g_game->getGlobalString("ESCAPEMODULE");
         g_game->LoadModule(escape);
-        return;
-        break;
+        return false;
     }
+    return true;
 }
 
-void
-ModuleStarport::OnKeyPressed(int keyCode) {
-    switch (keyCode) {
-        // turn right
+bool
+ModuleStarport::on_key_down(ALLEGRO_KEYBOARD_EVENT *event) {
+    switch (event->keycode) {
     case ALLEGRO_KEY_D:
     case ALLEGRO_KEY_RIGHT:
-        movement = 1;
+        // turn right
+        movement = MOVE_RIGHT;
         break;
 
-        // turn left
     case ALLEGRO_KEY_A:
     case ALLEGRO_KEY_LEFT:
-        movement = -1;
+        // turn left
+        movement = MOVE_LEFT;
         break;
 
-        // thrust/forward
     case ALLEGRO_KEY_W:
     case ALLEGRO_KEY_UP:
+        // thrust/forward
         if (testDoors()) {
             enteringDoor = true;
             openingDoor = true;
-            if (g_game->audioSystem->SampleExists("dooropen"))
-                g_game->audioSystem->Play("dooropen");
+            g_game->audioSystem->Play(samples[S_DOOROPEN]);
         }
         break;
     }
+    return true;
 }
-void
-ModuleStarport::OnKeyReleased(int keyCode) {
-    switch (keyCode) {
+
+bool
+ModuleStarport::on_key_up(ALLEGRO_KEYBOARD_EVENT *event) {
+    switch (event->keycode) {
         // turn right
     case ALLEGRO_KEY_D:
     case ALLEGRO_KEY_RIGHT:
-        movement = 2; // to indicate stopped in this direction
+        movement = STOP_RIGHT;
         break;
 
         // turn left
     case ALLEGRO_KEY_A:
     case ALLEGRO_KEY_LEFT:
-        movement = -2; // to indicate stopped in this direction
+        movement = STOP_LEFT;
         break;
-
-#ifdef DEBUGMODE
-    case STARPORT_JUMP_LEFT:
-        movePlayerLeft(400);
-        break;
-    case STARPORT_JUMP_RIGHT:
-        movePlayerRight(400);
-        break;
-
-    case STARPORT_QUEST_PLUS: {
-        int questnum = g_game->gameState->getActiveQuest();
-        g_game->gameState->setActiveQuest(questnum + 1);
-    } break;
-
-    case STARPORT_QUEST_MINUS: {
-        int questnum = g_game->gameState->getActiveQuest();
-        g_game->gameState->setActiveQuest(questnum - 1);
-    } break;
-
-    case STARPORT_ADD_CREDITS:
-        g_game->gameState->augCredits(1000);
-        break;
-#endif
 
     case ALLEGRO_KEY_ESCAPE:
         break;
     }
+    return true;
 }
-void
-ModuleStarport::OnMouseClick(int button, int x, int y) {
-    Module::OnMouseClick(button, x, y);
-}
-void
-ModuleStarport::OnMouseMove(int x, int y) {
-    Module::OnMouseMove(x, y);
-}
-void
-ModuleStarport::OnMousePressed(int button, int x, int y) {
-    Module::OnMousePressed(button, x, y);
-}
-void
-ModuleStarport::OnMouseReleased(int button, int x, int y) {
-    Module::OnMouseReleased(button, x, y);
-}
-void
-ModuleStarport::OnMouseWheelDown(int x, int y) {
-    Module::OnMouseWheelDown(x, y);
-}
-void
-ModuleStarport::OnMouseWheelUp(int x, int y) {
-    Module::OnMouseWheelUp(x, y);
-}
-void
-ModuleStarport::Update() {}
 
 void
-ModuleStarport::drawDoors() {
+ModuleStarport::drawDoors(ALLEGRO_BITMAP *target) {
     for (int a = 0; a < NUMBER_OF_DOORS; a++) {
         if (enteringDoor) {
             if (openingDoor)
@@ -439,36 +315,40 @@ ModuleStarport::drawDoors() {
             if (destinationDoor != a) {
                 // draw left door frame
                 door->setCurrFrame(0);
-                door->setPos(doors[a].left -
-                                 g_game->gameState->player->posStarport.x - 42,
-                             348);
-                door->drawframe(g_game->GetBackBuffer());
+                door->setPos(
+                    doors[a].left - g_game->gameState->player.posStarport.x
+                        - 42,
+                    348);
+                door->drawframe(target);
 
                 // draw right door frame
                 door->setCurrFrame(1);
-                door->setPos(doors[a].right - 180 -
-                                 g_game->gameState->player->posStarport.x,
-                             348);
-                door->drawframe(g_game->GetBackBuffer());
+                door->setPos(
+                    doors[a].right - 180
+                        - g_game->gameState->player.posStarport.x,
+                    348);
+                door->drawframe(target);
             }
         } else {
             // draw this door if it's in view
-            if (doors[a].right > g_game->gameState->player->posStarport.x &&
-                doors[a].left <
-                    g_game->gameState->player->posStarport.x + SCREEN_WIDTH) {
+            if (doors[a].right > g_game->gameState->player.posStarport.x
+                && doors[a].left < g_game->gameState->player.posStarport.x
+                                       + SCREEN_WIDTH) {
                 // draw left door frame
                 door->setCurrFrame(0);
-                door->setPos(doors[a].left -
-                                 g_game->gameState->player->posStarport.x - 42,
-                             348);
-                door->drawframe(g_game->GetBackBuffer());
+                door->setPos(
+                    doors[a].left - g_game->gameState->player.posStarport.x
+                        - 42,
+                    348);
+                door->drawframe(target);
 
                 // draw right door frame
                 door->setCurrFrame(1);
-                door->setPos(doors[a].right - 180 -
-                                 g_game->gameState->player->posStarport.x,
-                             348);
-                door->drawframe(g_game->GetBackBuffer());
+                door->setPos(
+                    doors[a].right - 180
+                        - g_game->gameState->player.posStarport.x,
+                    348);
+                door->drawframe(target);
             }
         }
     }
@@ -476,22 +356,23 @@ ModuleStarport::drawDoors() {
 
 void
 ModuleStarport::enterDoor() {
-    int px = playerx + g_game->gameState->player->posStarport.x +
-             (avatar->getFrameWidth() / 2);
-    if (px < doors[destinationDoor].middle &&
-        doors[destinationDoor].middle - px > HORIZONTAL_MOVE_DISTANCE) {
-        movePlayerRight(HORIZONTAL_MOVE_DISTANCE);
+    int px = playerx + g_game->gameState->player.posStarport.x
+             + (avatar->getFrameWidth() / 2);
+    if (px < doors[destinationDoor].middle
+        && doors[destinationDoor].middle - px > HORIZONTAL_MOVE_DISTANCE) {
+        move_player(HORIZONTAL_MOVE_DISTANCE);
         if (px > doors[destinationDoor].middle)
-            playerx = doors[destinationDoor].middle -
-                      g_game->gameState->player->posStarport.x -
-                      (avatar->getFrameWidth() / 2);
-    } else if (px > doors[destinationDoor].middle &&
-               px - doors[destinationDoor].middle > HORIZONTAL_MOVE_DISTANCE) {
-        movePlayerLeft(HORIZONTAL_MOVE_DISTANCE);
+            playerx = doors[destinationDoor].middle
+                      - g_game->gameState->player.posStarport.x
+                      - (avatar->getFrameWidth() / 2);
+    } else if (
+        px > doors[destinationDoor].middle
+        && px - doors[destinationDoor].middle > HORIZONTAL_MOVE_DISTANCE) {
+        move_player(-HORIZONTAL_MOVE_DISTANCE);
         if (px < doors[destinationDoor].middle)
-            playerx = doors[destinationDoor].middle -
-                      g_game->gameState->player->posStarport.x -
-                      (avatar->getFrameWidth() / 2);
+            playerx = doors[destinationDoor].middle
+                      - g_game->gameState->player.posStarport.x
+                      - (avatar->getFrameWidth() / 2);
     } else {
         // OPEN DOOR CODE HERE
         if (playery > AVATAR_INSIDE_DOOR_Y)
@@ -501,40 +382,7 @@ ModuleStarport::enterDoor() {
             if (doorDistance <= 0) {
                 closingDoor = false;
                 enteringDoor = false;
-                switch (destinationDoor) {
-                case 0:
-                    g_game->LoadModule(MODULE_RESEARCHLAB);
-                    return;
-                    break;
-                case 1:
-                    g_game->LoadModule(MODULE_CREWBUY);
-                    return;
-                    break;
-                case 2:
-                    g_game->LoadModule(MODULE_CAPTAINSLOUNGE);
-                    return;
-                    break;
-                case 3:
-                    g_game->LoadModule(MODULE_SHIPCONFIG);
-                    return;
-                    break;
-                case 4:
-                    g_game->LoadModule(MODULE_TRADEDEPOT);
-                    return;
-                    break;
-                case 5:
-                    g_game->LoadModule(MODULE_BANK);
-                    return;
-                    break;
-                case 6:
-                    g_game->LoadModule(MODULE_CANTINA);
-                    return;
-                    break;
-                case 7:
-                    g_game->LoadModule(MODULE_MILITARYOPS);
-                    return;
-                    break;
-                }
+                g_game->LoadModule(doors[destinationDoor].module_name);
                 return;
             } else
                 doorDistance -= DOOR_SPEED;
@@ -542,116 +390,96 @@ ModuleStarport::enterDoor() {
     }
 }
 
-void
-ModuleStarport::Draw() {
+bool
+ModuleStarport::on_draw(ALLEGRO_BITMAP *target) {
     // move avatar
     if (!enteringDoor) {
         switch (movement) {
-        case 1: // Move Right
-            movePlayerRight(HORIZONTAL_MOVE_DISTANCE);
+        case MOVE_RIGHT: // Move Right
+            move_player(HORIZONTAL_MOVE_DISTANCE);
             avatar->animate(0, 7);
             break;
-        case 2: // stop right
+        case STOP_RIGHT: // stop right
             avatar->setCurrFrame(0);
             break;
-        case -1: // move left
-            movePlayerLeft(HORIZONTAL_MOVE_DISTANCE);
+        case MOVE_LEFT: // move left
+            move_player(-HORIZONTAL_MOVE_DISTANCE);
             avatar->animate(8, 15);
             break;
-        case -2: // stop left
+        case STOP_LEFT: // stop left
             avatar->setCurrFrame(8);
             break;
         }
     }
 
     // clear background
-    al_set_target_bitmap(g_game->GetBackBuffer());
+    al_set_target_bitmap(target);
     al_clear_to_color(BLACK);
 
     // update and draw doors
-    drawDoors();
+    drawDoors(target);
 
-    // draw starport top section
-    al_draw_bitmap_region(starport,
-                          g_game->gameState->player->posStarport.x,
-                          0,
-                          SCREEN_WIDTH,
-                          348,
-                          0,
-                          0,
-                          0);
-
-    // draw starport floor section
-    al_draw_bitmap_region(starport,
-                          g_game->gameState->player->posStarport.x,
-                          585,
-                          SCREEN_WIDTH,
-                          183,
-                          0,
-                          585,
-                          0);
-
-    // draw starport middle section
-    al_draw_bitmap_region(starport,
-                          g_game->gameState->player->posStarport.x,
-                          348,
-                          SCREEN_WIDTH,
-                          237,
-                          0,
-                          348,
-                          0);
+    // draw starport
+    al_draw_bitmap_region(
+        m_background_image.get(),
+        g_game->gameState->player.posStarport.x,
+        0,
+        SCREEN_WIDTH,
+        348 + 183 + 348,
+        0,
+        0,
+        0);
 
     // draw avatar
     avatar->setPos(playerx, playery);
-    avatar->drawframe(g_game->GetBackBuffer());
+    avatar->drawframe(target);
 
     // draw door over top of avatar if closing
     if (enteringDoor || closingDoor) {
         // draw left door panel
         door->setCurrFrame(0);
-        door->setPos(doors[destinationDoor].left -
-                         g_game->gameState->player->posStarport.x -
-                         doorDistance - 42,
-                     348);
-        door->drawframe(g_game->GetBackBuffer());
+        door->setPos(
+            doors[destinationDoor].left
+                - g_game->gameState->player.posStarport.x - doorDistance - 42,
+            348);
+        door->drawframe(target);
 
         // draw right door panel
         door->setCurrFrame(1);
-        door->setPos(doors[destinationDoor].right - 180 -
-                         g_game->gameState->player->posStarport.x +
-                         doorDistance,
-                     348);
-        door->drawframe(g_game->GetBackBuffer());
+        door->setPos(
+            doors[destinationDoor].right - 180
+                - g_game->gameState->player.posStarport.x + doorDistance,
+            348);
+        door->drawframe(target);
 
         // draw starport center section
-        al_draw_bitmap_region(starport,
-                              g_game->gameState->player->posStarport.x,
-                              348,
-                              SCREEN_WIDTH,
-                              237,
-                              0,
-                              348,
-                              0);
+        al_draw_bitmap_region(
+            m_background_image.get(),
+            g_game->gameState->player.posStarport.x,
+            348,
+            SCREEN_WIDTH,
+            237,
+            0,
+            348,
+            0);
     }
 
-    if (g_game->gameState->player->hasOverdueLoan() &&
-        g_game->gameState->player->hasHyperspacePermit()) {
+    if (g_game->gameState->player.hasOverdueLoan()
+        && g_game->gameState->player.hasHyperspacePermit()) {
         if (!m_bNotified) {
-            g_game->ShowMessageBoxWindow(
+            set_modal_child(make_shared<MessageBoxWindow>(
                 "",
                 " The bank has disabled your hyperspace engine due to overdue "
-                "loans! ",
-                400,
-                200);
+                "loans! "));
             m_bNotified = true;
-            g_game->gameState->player->set_HyperspacePermit(false);
+            g_game->gameState->player.set_HyperspacePermit(false);
         }
     }
 
     // launch new module when door entered (must be last!)
     if (enteringDoor) {
         enterDoor();
-        return;
+        return true;
     }
 
     // show welcome message for first-time visitor
@@ -676,7 +504,8 @@ ModuleStarport::Draw() {
             " for your first assignment. Use the cursor keys to move "
             "left/right, use the up key to enter a room. You can change the "
             "default keys from the Settings option on the Title Screen.";
-        g_game->ShowMessageBoxWindow(
-            "", message, 400, 350, WHITE, 600, 400, false);
+        set_modal_child(make_shared<MessageBoxWindow>(
+            "", message, 400, 350, 600, 400, WHITE, false));
     }
+    return true;
 }
