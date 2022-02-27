@@ -23,16 +23,16 @@ PlayerShipSprite::PlayerShipSprite() : ship() {
     // initialize and load the ship sprite
     switch (g_game->gameState->getProfession()) {
     case PROFESSION_FREELANCE:
-        ship.load("data/spacetravel/ship_freelance.bmp");
+        ship.load("data/spacetravel/ship_freelance.png");
         break;
 
     case PROFESSION_MILITARY:
-        ship.load("data/spacetravel/ship_military.bmp");
+        ship.load("data/spacetravel/ship_military.png");
         break;
 
     case PROFESSION_SCIENTIFIC:
     default:
-        ship.load("data/spacetravel/ship_science.bmp");
+        ship.load("data/spacetravel/ship_science.png");
         break;
     }
     if (!ship.getImage()) {
@@ -245,10 +245,12 @@ PlayerShipSprite::starboard() {
     // slow down ship movement to 60 fps
     if (timer.stopwatch(TIMER_RATE)) {
         ship.setMoveAngle(ship.getFaceAngle());
-        ship.setVelX(ship.getVelX() +
-                     ship.calcAngleMoveX(ship.getMoveAngle()) * lateral_thrust);
-        ship.setVelY(ship.getVelY() +
-                     ship.calcAngleMoveY(ship.getMoveAngle()) * lateral_thrust);
+        ship.setVelX(
+            ship.getVelX()
+            + ship.calcAngleMoveX(ship.getMoveAngle()) * lateral_thrust);
+        ship.setVelY(
+            ship.getVelY()
+            + ship.calcAngleMoveY(ship.getMoveAngle()) * lateral_thrust);
         limitvelocity();
     }
 
@@ -264,10 +266,12 @@ PlayerShipSprite::port() {
     if (timer.stopwatch(TIMER_RATE)) {
         // move angle should be 180 degrees clockwise from face angle
         ship.setMoveAngle(ship.getFaceAngle() - 180);
-        ship.setVelX(ship.getVelX() +
-                     ship.calcAngleMoveX(ship.getMoveAngle()) * lateral_thrust);
-        ship.setVelY(ship.getVelY() +
-                     ship.calcAngleMoveY(ship.getMoveAngle()) * lateral_thrust);
+        ship.setVelX(
+            ship.getVelX()
+            + ship.calcAngleMoveX(ship.getMoveAngle()) * lateral_thrust);
+        ship.setVelY(
+            ship.getVelY()
+            + ship.calcAngleMoveY(ship.getMoveAngle()) * lateral_thrust);
         limitvelocity();
     }
 
@@ -281,10 +285,12 @@ PlayerShipSprite::applythrust() {
         ship.setMoveAngle(ship.getFaceAngle() - 90);
         if (ship.getMoveAngle() < 0)
             ship.setMoveAngle(359 + ship.getMoveAngle());
-        ship.setVelX(ship.getVelX() +
-                     ship.calcAngleMoveX(ship.getMoveAngle()) * forward_thrust);
-        ship.setVelY(ship.getVelY() +
-                     ship.calcAngleMoveY(ship.getMoveAngle()) * forward_thrust);
+        ship.setVelX(
+            ship.getVelX()
+            + ship.calcAngleMoveX(ship.getMoveAngle()) * forward_thrust);
+        ship.setVelY(
+            ship.getVelY()
+            + ship.calcAngleMoveY(ship.getMoveAngle()) * forward_thrust);
         limitvelocity();
     }
 

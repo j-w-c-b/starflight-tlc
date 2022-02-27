@@ -8,24 +8,24 @@
 #ifndef MODULECREDITS_H
 #define MODULECREDITS_H
 
-#include "GameState.h"
+#include <memory>
+
+#include "Bitmap.h"
+#include "Label.h"
 #include "Module.h"
-#include "ResourceManager.h"
 
 class ModuleCredits : public Module {
   public:
-    ModuleCredits();
-    virtual ~ModuleCredits();
-    virtual bool Init() override;
-    virtual void Update() override;
-    virtual void Draw() override;
-    virtual void OnKeyReleased(int keyCode) override;
-    virtual void OnMouseReleased(int button, int x, int y) override;
-    virtual void Close() override;
+    virtual bool on_init() override;
+    virtual bool on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event) override;
+    virtual bool on_mouse_button_click(ALLEGRO_MOUSE_EVENT *event) override;
+    virtual bool on_close() override;
 
   private:
-    ALLEGRO_BITMAP *background;
-    ResourceManager<ALLEGRO_BITMAP> resources;
+    std::shared_ptr<Bitmap> m_background;
+    std::shared_ptr<Label> m_contributors;
+    std::shared_ptr<Label> m_credits_left;
+    std::shared_ptr<Label> m_credits_right;
 };
 
 #endif

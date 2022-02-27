@@ -1,39 +1,43 @@
-///*
+//
 //	STARFLIGHT - THE LOST COLONY
 //	ModuleCrewHire.cpp - This module gives the player the ability to hire,
 // fire, and reassign crew members. 	Author: Justin Sargent 	Date: 9/21/07
 // Mods: Jim Haga - JJH 	Date: 3/16/21
-//*/
+//
 
-#include "ModuleCrewHire.h"
-#include "AudioSystem.h"
+#include <utility>
+
+#include <allegro5/allegro.h>
+
 #include "DataMgr.h"
 #include "Events.h"
 #include "Game.h"
 #include "Label.h"
+#include "MessageBoxWindow.h"
 #include "ModeMgr.h"
+#include "ModuleCrewHire.h"
 #include "PauseMenu.h"
 #include "QuestMgr.h"
 #include "Util.h"
 #include "crewhire_resources.h"
 
 using namespace std;
-using namespace crewhire_resources;
+using namespace crewhire;
 
 ALLEGRO_DEBUG_CHANNEL("ModuleCrewHire")
 
-#define PERSONEL_SCREEN 0
-#define UNEMPLOYEED_SCREEN 1
+#define PERSONNEL_SCREEN 0
+#define UNEMPLOYED_SCREEN 1
 
 #define CREW_X 561
 #define CREW_Y 509
 #define CREW_HEIGHT 174
 #define CREW_WIDTH 465
 
-#define UNEMPLOYEED_X 564
-#define UNEMPLOYEED_Y 68
-#define UNEMPLOYEED_HEIGHT 594
-#define UNEMPLOYEED_WIDTH 460
+#define UNEMPLOYED_X 564
+#define UNEMPLOYED_Y 68
+#define UNEMPLOYED_HEIGHT 594
+#define UNEMPLOYED_WIDTH 460
 
 #define EXITBTN_X 16
 #define EXITBTN_Y 698
@@ -44,15 +48,15 @@ ALLEGRO_DEBUG_CHANNEL("ModuleCrewHire")
 #define FIREBTN_X 815
 #define FIREBTN_Y 698
 
-#define HIREBTN_X 815
-#define HIREBTN_Y 698
-
 #define UNASSIGNBTN_X 606
 #define UNASSIGNBTN_Y 698
 
 #define CATBTN_X 531
 #define CATBTN_Y 65
 #define CATSPACING 59
+
+#define UNASSIGNED_CREW_X 561
+#define UNASSIGNED_CREW_Y 478
 
 #define SKILLBAR_X 73
 #define SKILLBAR_Y 240
@@ -61,1252 +65,513 @@ ALLEGRO_DEBUG_CHANNEL("ModuleCrewHire")
 #define SKILLICONS_Y 220
 #define SKILLSPACING 50
 
-#define SKILLMAXIUM 200
-#define ATTRIBUTEMAXIUM 65
-
 #define CREWPOSITION_X 580
 #define CREWPOSITION_Y 100
 #define CREWSPACING 59
 
-#define PORTRAITPOSITION_X 25
-#define PORTRAITPOSITION_Y 170
+string ModuleCrewHire::c_directions =
+    "Click on your crew members to the right to reassign or fire "
+    "them. You can also browse for future employees by clicking "
+    "on the Hire Crew button";
 
-#define EMPLOYEE_SPAWN_RATE 1
+string ModuleCrewHire::c_hire_more_directions =
+    "On the right is a list potential galactic faring employees. "
+    "You can view their statistics by clicking on them.";
 
-#define EVENT_CAP_CLICK 0
-#define EVENT_SCI_CLICK 1
-#define EVENT_NAV_CLICK 2
-#define EVENT_ENG_CLICK 3
-#define EVENT_COM_CLICK 4
-#define EVENT_MED_CLICK 5
-#define EVENT_TAC_CLICK 6
-#define EVENT_UNK_CLICK 7
-#define EVENT_NONE 8
-#define EVENT_EXIT_CLICK 9
-#define EVENT_HIREMORE_CLICK 10
-#define EVENT_FIRE_CLICK 11
-#define EVENT_UNASSIGN_CLICK 12
-#define EVENT_BACK_CLICK 13
-#define EVENT_HIRE_CLICK 14
-#define EVENT_CREWLISTBOX_CLICK 15
-#define EVENT_UNEMPLOYEEDLISTBOX_CLICK 16
+string ModuleCrewHire::c_title = "Welcome to Crew Match";
+string ModuleCrewHire::c_statistics_title = "Statistics";
 
-#define AVAILABLE_TEXT_COLOR WHITE
-#define UNASSIGNED_TEXT_COLOR YELLOW
+ModuleCrewHire::ModuleCrewHire() : Module(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT) {}
 
-ModuleCrewHire::ModuleCrewHire(void)
-    : lastEmployeeSpawn(-1), title(NULL), slogan(NULL), directions(NULL),
-      hiremoreDirections(NULL), stats(NULL), m_exitBtn(NULL), m_hireBtn(NULL),
-      m_hiremoreBtn(NULL), m_fireBtn(NULL), m_unassignBtn(NULL),
-      m_backBtn(NULL), selectedOfficer(NULL), unassignedCrew(NULL),
-      unemployeed(NULL), unemployeedType(NULL), resources(CREWHIRE_IMAGES) {
+bool
+ModuleCrewHire::on_init() {
+    ALLEGRO_DEBUG("  Crew Hire Initialize\n");
+    g_game->enable_pause_menu(true);
 
-    for (int i = 0; i < 8; ++i)
-        m_PositionBtns[i] = NULL;
-}
+    auto background = make_shared<Bitmap>(images[I_PERSONNEL_BACKGROUND]);
+    add_child_module(background);
 
-ModuleCrewHire::~ModuleCrewHire(void) {}
+    m_title = make_shared<Label>(
+        c_title,
+        28,
+        170,
+        456,
+        30,
+        false,
+        0,
+        g_game->font32,
+        al_map_rgb(0, 255, 128));
+    add_child_module(m_title);
 
-void
-ModuleCrewHire::OnMouseMove(int x, int y) {
-    Module::OnMouseMove(x, y);
+    m_slogan = make_shared<Label>(
+        "Where you can hire the finest galactic crew!",
+        28,
+        200,
+        456,
+        80,
+        true,
+        0,
+        g_game->font22,
+        al_map_rgb(0, 255, 255));
+    add_child_module(m_slogan);
 
-    switch (currentScreen) {
-    case PERSONEL_SCREEN:
-        if (selectedPosition != -1) {
-            m_fireBtn->OnMouseMove(x, y);
-            m_unassignBtn->OnMouseMove(x, y);
+    m_directions = make_shared<Label>(
+        c_directions,
+        28,
+        280,
+        456,
+        408,
+        true,
+        0,
+        g_game->font18,
+        al_map_rgb(0, 255, 255));
+    add_child_module(m_directions);
+
+    m_selected_slot = nullopt;
+
+    m_unemployed_panel = make_shared<UnemployedPanel>();
+    add_child_module(m_unemployed_panel);
+
+    m_officer_info = make_shared<OfficerInfo>(15, 155);
+    add_child_module(m_officer_info);
+    m_officer_info->set_active(false);
+
+    // Create escape button for the module
+    shared_ptr<ALLEGRO_BITMAP> btnNorm, btnOver, btnDis;
+
+    m_personnel_panel = make_shared<Module>();
+    add_child_module(m_personnel_panel);
+
+    m_personnel_unassigned_panel = make_shared<Module>();
+    m_personnel_panel->add_child_module(m_personnel_unassigned_panel);
+    btnNorm = images[I_GENERIC_EXIT_BTN_NORM];
+    btnOver = images[I_GENERIC_EXIT_BTN_OVER];
+    m_exit_button = make_shared<TextButton>(
+        "Exit",
+        g_game->font24,
+        al_map_rgb(255, 0, 0),
+        ALLEGRO_ALIGN_CENTER,
+        EXITBTN_X,
+        EXITBTN_Y,
+        EVENT_NONE,
+        EVENT_CREWHIRE_EXIT,
+        btnNorm,
+        btnOver,
+        nullptr,
+        samples[S_BUTTONCLICK]);
+    add_child_module(m_exit_button);
+
+    // Create and initialize the HireMore button for the module
+    btnNorm = images[I_PERSONNEL_BTN2];
+    btnOver = images[I_PERSONNEL_BTN2_HOV];
+    btnDis = images[I_PERSONNEL_BTN2_DIS];
+    auto personnel_hire_more = make_shared<TextButton>(
+        "Hire Crew",
+        g_game->font24,
+        al_map_rgb(0, 255, 255),
+        ALLEGRO_ALIGN_CENTER,
+        HIREMOREBTN_X,
+        HIREMOREBTN_Y,
+        EVENT_NONE,
+        EVENT_CREWHIRE_HIRE_MORE,
+        btnNorm,
+        btnOver,
+        btnDis,
+        samples[S_BUTTONCLICK]);
+    m_personnel_panel->add_child_module(personnel_hire_more);
+
+    // Create and initialize the Fire button for the module
+    m_personnel_fire = make_shared<TextButton>(
+        "Fire",
+        g_game->font24,
+        al_map_rgb(0, 255, 255),
+        ALLEGRO_ALIGN_CENTER,
+        FIREBTN_X,
+        FIREBTN_Y,
+        EVENT_NONE,
+        EVENT_CREWHIRE_FIRE,
+        images[I_PERSONNEL_BTN2],
+        images[I_PERSONNEL_BTN2_HOV],
+        images[I_PERSONNEL_BTN2_DIS],
+        samples[S_BUTTONCLICK]);
+    m_personnel_panel->add_child_module(m_personnel_fire);
+    m_personnel_fire->set_enabled(false);
+
+    // Create and initialize the Assign Position button for the module
+    m_personnel_unassign = make_shared<TextButton>(
+        "Unassign",
+        g_game->font24,
+        al_map_rgb(0, 255, 255),
+        ALLEGRO_ALIGN_CENTER,
+        UNASSIGNBTN_X,
+        UNASSIGNBTN_Y,
+        EVENT_NONE,
+        EVENT_CREWHIRE_UNASSIGN,
+        images[I_PERSONNEL_BTN2],
+        images[I_PERSONNEL_BTN2_HOV],
+        images[I_PERSONNEL_BTN2_DIS],
+        samples[S_BUTTONCLICK]);
+    m_personnel_panel->add_child_module(m_personnel_unassign);
+    m_personnel_unassign->set_enabled(false);
+
+    int i = 0;
+    for (auto &type : OfficerIterator) {
+        auto button = make_shared<PersonnelSlotButton>(
+            CATBTN_X, CATBTN_Y + (i * PersonnelSlotButton::spacing), type);
+        m_personnel_slot_buttons[button->get_id()] = button;
+        auto officer = g_game->gameState->get_officer(type);
+        if (officer) {
+            button->set_officer(officer);
         }
-        m_exitBtn->OnMouseMove(x, y);
-        m_hiremoreBtn->OnMouseMove(x, y);
-
-        for (int i = 0; i < 8; i++)
-            m_PositionBtns[i]->OnMouseMove(x, y);
-
-        if (FALSEHover > -1 && FALSEHover < 8)
-            m_PositionBtns[FALSEHover]->OnMouseMove(
-                m_PositionBtns[FALSEHover]->GetX(),
-                m_PositionBtns[FALSEHover]->GetY());
-
-        if (selectedPosition == -1 || selectedPosition == 7)
-            unassignedCrew->OnMouseMove(x, y);
-        break;
-
-    case UNEMPLOYEED_SCREEN:
-        unemployeedType->OnMouseMove(x, y);
-        m_hireBtn->OnMouseMove(x, y);
-        m_backBtn->OnMouseMove(x, y);
-        break;
+        m_personnel_panel->add_child_module(button);
+        ++i;
     }
+
+    // tell questmgr that Personnel event has occurred
+    g_game->questMgr->raiseEvent(18);
+    m_personnel_panel->set_active(true);
+    m_unemployed_panel->set_active(false);
+
+    return true;
 }
-void
-ModuleCrewHire::OnMouseClick(int button, int x, int y) {
-    Module::OnMouseClick(button, x, y);
 
-    switch (currentScreen) {
-    case PERSONEL_SCREEN:
-        if (selectedPosition == -1 || selectedPosition == 7)
-            unassignedCrew->OnMouseClick(button, x, y);
-        break;
-
-    case UNEMPLOYEED_SCREEN:
-        unemployeedType->OnMouseClick(button, x, y);
-        break;
-    }
-}
-void
-ModuleCrewHire::OnMousePressed(int button, int x, int y) {
-    Module::OnMousePressed(button, x, y);
-}
-void
-ModuleCrewHire::OnMouseReleased(int button, int x, int y) {
-    Module::OnMouseReleased(button, x, y);
-
-    switch (currentScreen) {
-    case PERSONEL_SCREEN:
-        if (selectedPosition != -1) {
-            m_fireBtn->OnMouseReleased(button, x, y);
-            m_unassignBtn->OnMouseReleased(button, x, y);
-        }
-
-        m_hiremoreBtn->OnMouseReleased(button, x, y);
-
-        for (int i = 0; i < 8; i++)
-            m_PositionBtns[i]->OnMouseReleased(button, x, y);
-
-        if (selectedPosition == -1 || selectedPosition == 7)
-            unassignedCrew->OnMouseReleased(button, x, y);
-
-        // Always call the backBtn "Exit" last
-        m_exitBtn->OnMouseReleased(button, x, y);
-        break;
-
-    case UNEMPLOYEED_SCREEN:
-        unemployeedType->OnMouseReleased(button, x, y);
-        m_hireBtn->OnMouseReleased(button, x, y);
-        m_backBtn->OnMouseReleased(button, x, y);
-        break;
-    }
-}
-void
-ModuleCrewHire::OnMouseWheelUp(int x, int y) {
-    Module::OnMouseWheelUp(x, y);
-
-    switch (currentScreen) {
-    case UNEMPLOYEED_SCREEN:
-        unemployeedType->OnMouseWheelUp(x, y);
-        break;
-    }
-}
-void
-ModuleCrewHire::OnMouseWheelDown(int x, int y) {
-    Module::OnMouseWheelDown(x, y);
-
-    switch (currentScreen) {
-    case UNEMPLOYEED_SCREEN:
-        unemployeedType->OnMouseWheelDown(x, y);
-        break;
-    }
-}
-void
-ModuleCrewHire::OnEvent(Event *event) {
-
+bool
+ModuleCrewHire::on_event(ALLEGRO_EVENT *event) {
     bool exitToStarportCommons = false;
     string escape = "";
 
-    switch (event->getEventType()) {
-    case EVENT_SAVE_GAME: // save game
+    switch (event->type) {
+    case EVENT_CLOSE:
+        set_modal_child(nullptr);
+        break;
+    case EVENT_SAVE_GAME:
         g_game->gameState->AutoSave();
         break;
-    case EVENT_LOAD_GAME: // load game
+    case EVENT_LOAD_GAME:
         g_game->gameState->AutoLoad();
         break;
-    case EVENT_QUIT_GAME: // quit game
-        g_game->setVibration(0);
+    case EVENT_QUIT_GAME:
+        g_game->set_vibration(0);
         escape = g_game->getGlobalString("ESCAPEMODULE");
         g_game->LoadModule(escape);
         break;
 
-    case EVENT_EXIT_CLICK: {
-        bool passedCheck = true;
-        for (int i = 0; i < (int)tOfficers.size(); i++) {
-            if (tOfficers[i]->GetOfficerType() == OFFICER_NONE) {
-                passedCheck = false;
-            }
-        }
-
-        if (passedCheck)
-            exitToStarportCommons = true;
-    } break;
-
-    case EVENT_HIREMORE_CLICK:
-        currentScreen = UNEMPLOYEED_SCREEN;
-        selectedOfficer = NULL;
-        selectedPosition = 1;
-        this->RefreshUnemployeedCrewBox();
-        break;
-
-    case EVENT_HIRE_CLICK:
-        if (tOfficers.size() <= 6) {
-            for (int i = 0;
-                 i < (int)g_game->gameState->m_unemployedOfficers.size();
-                 i++) {
-                if (g_game->gameState->m_unemployedOfficers[i] ==
-                    selectedOfficer) {
-                    g_game->gameState->m_unemployedOfficers.erase(
-                        g_game->gameState->m_unemployedOfficers.begin() + i);
-                    tOfficers.push_back(selectedOfficer);
-                    selectedPosition = -1;
-                    selectedOfficer = NULL;
-                    RefreshUnemployeedCrewBox();
-                }
-            }
-        } else {
-            g_game->ShowMessageBoxWindow(
-                "", "You can't hire any more crew members!", 400, 150);
-        }
-        break;
-
-    case EVENT_BACK_CLICK:
-        currentScreen = PERSONEL_SCREEN;
-        selectedOfficer = NULL;
-        selectedPosition = -1;
-        RefreshUnassignedCrewBox();
-        break;
-
-    case EVENT_FIRE_CLICK:
-
-        for (int i = 0; i < (int)tOfficers.size(); i++) {
-            if (tOfficers[i] == selectedOfficer) {
-                if (selectedOfficer->GetOfficerType() != OFFICER_CAPTAIN) {
-                    tOfficers.erase(tOfficers.begin() + i);
-                    g_game->gameState->m_unemployedOfficers.push_back(
-                        selectedOfficer);
-                    selectedPosition = -1;
-                    selectedOfficer = NULL;
-                    RefreshUnassignedCrewBox();
-                } else {
-                    g_game->ShowMessageBoxWindow(
-                        "", "You can't fire yourself, Captain!");
-                }
-            }
-        }
-        break;
-
-    case EVENT_UNASSIGN_CLICK:
-        for (int i = 0; i < (int)tOfficers.size();
-             i++) // Find the officer we are clicking on and unassign him
+    case EVENT_CREWHIRE_EXIT:
         {
-            if (tOfficers[i]->GetOfficerType() - 1 == selectedPosition) {
-                if (selectedOfficer->GetOfficerType() != OFFICER_CAPTAIN) {
-                    tOfficers[i]->SetOfficerType(
-                        OFFICER_NONE);     // unassign the officer
-                    selectedPosition = -1; // set the selected position to none
-                    RefreshUnassignedCrewBox();
+            bool passedCheck = true;
+            for (auto type : OfficerIterator) {
+                if (!g_game->gameState->has_officer(type)) {
+                    passedCheck = false;
                     break;
-                } else {
-                    g_game->ShowMessageBoxWindow(
-                        "", "You can't unassign yourself, Captain!");
                 }
             }
+            if (passedCheck)
+                exitToStarportCommons = true;
         }
-        selectedPositionLastRun =
-            -2; // This forces a refresh in the run function
         break;
 
-    case EVENT_CREWLISTBOX_CLICK: {
-        // Find the selected officer
-        int j = 0;
-        for (int i = 0; i < (int)tOfficers.size();
-             i++) // Loop through all the officers
+    case EVENT_CREWHIRE_HIRE_MORE:
+        m_unemployed_panel->set_active(true);
+        m_personnel_panel->set_active(false);
+        m_exit_button->set_active(false);
+        m_directions->set_text(c_hire_more_directions);
+        m_selected_slot = nullopt;
+        break;
+
+    case EVENT_CREWHIRE_HIRE:
         {
-            if (tOfficers[i]->GetOfficerType() ==
-                OFFICER_NONE) // Count the officers that aren't assigned a
-                              // position
-            {
-                selectedOfficer = NULL;
-                selectedPosition = -1;
-                // If there are at least as many unassigned officers as the
-                // selected Index then its valid
-                if (j == unassignedCrew->GetSelectedIndex()) {
-                    selectedOfficer = tOfficers[i];
-                    selectedPosition = 7;
-                    break;
-                } else {
-                    j++; // apparently it wasn't this officer perhaps the next
-                         // one
-                }
-            }
-        }
-    } break;
+            auto officer = m_unemployed_panel->hire();
+            if (officer) {
+                auto pref = officer->get_preferred_profession();
 
-    case EVENT_UNEMPLOYEEDLISTBOX_CLICK: {
-        if (unemployeed->GetSelectedIndex() != -1) {
-            // If there are at least as many officers as the selected Index then
-            // its valid
-            if ((int)g_game->gameState->m_unemployedOfficers.size() >
-                unemployeed->GetSelectedIndex()) {
-                selectedOfficer =
-                    g_game->gameState
-                        ->m_unemployedOfficers[unemployeed->GetSelectedIndex()];
-                selectedPosition = -1;
-            } else {
-                selectedOfficer = NULL;
-                selectedPosition = -1;
-            }
-        } else {
-            selectedOfficer = NULL;
-            selectedPosition = -1;
-        }
-    } break;
+                if (!g_game->gameState->has_officer(pref)) {
+                    // If no officer in the preferred slot, hire into that
+                    // position
+                    g_game->gameState->set_officer(pref, officer);
 
-    case EVENT_CAP_CLICK:
-    case EVENT_NAV_CLICK:
-    case EVENT_MED_CLICK:
-    case EVENT_ENG_CLICK:
-    case EVENT_COM_CLICK:
-    case EVENT_TAC_CLICK:
-    case EVENT_SCI_CLICK:
-    case EVENT_UNK_CLICK:
-        if (currentScreen == PERSONEL_SCREEN) {
-#pragma region Personel Screen functions
-
-            // no position selected yet, so we need to highlight it
-            if (selectedPosition == -1) {
-                // check to see if there is an officer in this position
-                for (int i = 0; i < (int)tOfficers.size(); i++) {
-                    if (tOfficers[i]->GetOfficerType() - 1 ==
-                        event->getEventType()) // If there is
-                    {
-                        selectedPosition =
-                            event->getEventType(); // Then select him
-                        selectedOfficer = tOfficers[i];
-                        break;
-                    }
-                }
-            } else {
-                if (selectedPosition ==
-                    event->getEventType()) // Did we click on the same officer
-                                           // we already had selected?
-                {
-                    if (selectedPosition == 7)
-                        this->RefreshUnassignedCrewBox();
-
-                    selectedPosition = -1; // Then Deselect him
-                    selectedOfficer = NULL;
-                } else {
-                    // If we are clicking on a new position, we can assume this
-                    // position is open and the player wants it filled with the
-                    // selected officer
-
-                    // First check to see if the position clicked is the
-                    // unassigned button
-                    if (event->getEventType() == EVENT_UNK_CLICK) {
-                        // if it is...
-                        for (int i = 0; i < (int)tOfficers.size();
-                             i++) // Find the officer we are clicking on and
-                                  // unassign him
-                        {
-                            if (tOfficers[i]->GetOfficerType() - 1 ==
-                                selectedPosition) {
-                                tOfficers[i]->SetOfficerType(
-                                    OFFICER_NONE); // unassign the officer
-                                selectedPosition =
-                                    -1; // set the selected position to none
-                                selectedOfficer = NULL;
-                                RefreshUnassignedCrewBox(); // refresh the crew
-                                                            // listbox
-                                break;
-                            }
+                    for (auto &i : m_personnel_slot_buttons) {
+                        if (i.second->get_officer_type() == pref) {
+                            i.second->set_officer(officer);
+                            officer = nullptr;
+                            break;
                         }
-                        selectedPositionLastRun =
-                            -2; // This forces a refresh in the run function
+                    }
+                    ALLEGRO_ASSERT(officer == nullptr);
+                } else {
+                    // Hire into unassigned
+                    auto unassigned_button = make_shared<UnemployedSlotButton>(
+                        UNASSIGNED_CREW_X,
+                        UNASSIGNED_CREW_Y
+                            + m_personnel_unassigned_slot_buttons.size()
+                                  * UnemployedSlotButton::spacing,
+                        officer,
+                        EVENT_CREWHIRE_UNASSIGNED_CREW_CLICK);
+                    m_personnel_unassigned_slot_buttons[unassigned_button
+                                                            ->get_id()] =
+                        unassigned_button;
+                    m_personnel_unassigned_panel->add_child_module(
+                        unassigned_button);
+                }
+            }
+            m_selected_slot = nullopt;
+        }
+        break;
+
+    case EVENT_CREWHIRE_BACK:
+        m_unemployed_panel->set_active(false);
+        m_exit_button->set_active(true);
+        m_personnel_panel->set_active(true);
+        m_directions->set_text(c_directions);
+        m_selected_slot = nullopt;
+        break;
+
+    case EVENT_CREWHIRE_FIRE:
+        if (m_selected_slot) {
+            const Officer *officer = nullptr;
+            if (m_selected_slot->slot_type == CREW) {
+                auto button = m_personnel_slot_buttons[m_selected_slot->slot];
+                OfficerType type = button->get_officer_type();
+                if (type != OFFICER_CAPTAIN) {
+                    officer = button->fire_officer();
+                }
+                button->set_highlight(false);
+            } else {
+                auto button =
+                    m_personnel_unassigned_slot_buttons[m_selected_slot->slot];
+                officer = button->fire_officer();
+
+                m_personnel_unassigned_panel->remove_child_module(button);
+                m_personnel_unassigned_slot_buttons.erase(
+                    m_selected_slot->slot);
+                for (auto &b : m_personnel_unassigned_slot_buttons) {
+                    auto [x, y] = b.second->get_position();
+                    b.second->move(x, y - UnemployedSlotButton::spacing);
+                }
+            }
+            if (officer) {
+                m_unemployed_panel->add(officer);
+            }
+            m_selected_slot = nullopt;
+        }
+        break;
+
+    case EVENT_CREWHIRE_UNASSIGN:
+        if (m_selected_slot) {
+            if (m_selected_slot->slot_type == CREW) {
+                auto button = m_personnel_slot_buttons[m_selected_slot->slot];
+                OfficerType type = button->get_officer_type();
+                if (type != OFFICER_CAPTAIN) {
+                    auto unassigned_button = make_shared<UnemployedSlotButton>(
+                        UNASSIGNED_CREW_X,
+                        UNASSIGNED_CREW_Y
+                            + m_personnel_unassigned_slot_buttons.size()
+                                  * UnemployedSlotButton::spacing,
+                        button->unassign_officer(),
+                        EVENT_CREWHIRE_UNASSIGNED_CREW_CLICK);
+                    m_personnel_unassigned_slot_buttons[unassigned_button
+                                                            ->get_id()] =
+                        unassigned_button;
+                    m_personnel_unassigned_panel->add_child_module(
+                        unassigned_button);
+                }
+                button->set_highlight(false);
+            }
+            m_selected_slot = nullopt;
+        }
+        break;
+
+    case EVENT_CREWHIRE_UNASSIGNED_CREW_CLICK:
+        {
+            int slot_id = static_cast<int>(event->user.data1);
+            auto button = m_personnel_unassigned_slot_buttons[slot_id];
+            if (m_selected_slot && slot_id == m_selected_slot->slot) {
+                // Select the same slot, clear highlight and selection
+                button->set_highlight(false);
+                m_selected_slot = nullopt;
+            } else if (
+                m_selected_slot && m_selected_slot->slot_type == CREW
+                && m_personnel_slot_buttons[m_selected_slot->slot]
+                           ->get_officer_type()
+                       == OFFICER_CAPTAIN) {
+                // Previously selected officer was captain; clear selection and
+                // highlight on the captain. highlight and select the new
+                // officer
+                m_personnel_slot_buttons[m_selected_slot->slot]->set_highlight(
+                    false);
+                m_selected_slot = {UNASSIGNED, slot_id};
+                button->set_highlight(true);
+            } else if (m_selected_slot) {
+                // Swap officer
+                if (m_selected_slot->slot_type == CREW) {
+                    auto old_button =
+                        m_personnel_slot_buttons[m_selected_slot->slot];
+
+                    button->set_officer(
+                        old_button->set_officer(button->get_officer()));
+                    old_button->set_highlight(false);
+                    m_selected_slot = nullopt;
+                } else {
+                    // Old selection was also unassigned; no point in swapping
+                    // so just set new selection.
+                    auto old_slot_button =
+                        m_personnel_unassigned_slot_buttons[m_selected_slot
+                                                                ->slot];
+                    old_slot_button->set_highlight(false);
+                    button->set_highlight(true);
+                    m_selected_slot = {UNASSIGNED, slot_id};
+                }
+            } else {
+                // no officer selected, set selection to this one
+                button->set_highlight(true);
+                m_selected_slot = {UNASSIGNED, slot_id};
+            }
+        }
+        break;
+
+    case EVENT_CREWHIRE_PERSONNEL_CLICK:
+        {
+            int slot_id = static_cast<int>(event->user.data1);
+            auto personnel_slot_button = m_personnel_slot_buttons[slot_id];
+            OfficerType slot_officer_type =
+                personnel_slot_button->get_officer_type();
+
+            if (m_selected_slot && slot_id == m_selected_slot->slot) {
+                // Select the same slot, clear highlight and selection
+                personnel_slot_button->set_highlight(false);
+                m_selected_slot = nullopt;
+            } else if (slot_officer_type == OFFICER_CAPTAIN) {
+                // clear previous highlight;
+                // set highlight and selection to the captain slot
+                if (m_selected_slot && m_selected_slot->slot_type == CREW) {
+                    m_personnel_slot_buttons[m_selected_slot->slot]
+                        ->set_highlight(false);
+                } else if (
+                    m_selected_slot
+                    && m_selected_slot->slot_type == UNASSIGNED) {
+                    m_personnel_unassigned_slot_buttons[m_selected_slot->slot]
+                        ->set_highlight(false);
+                }
+                m_selected_slot = {CREW, slot_id};
+                personnel_slot_button->set_highlight(true);
+            } else if (
+                m_selected_slot && m_selected_slot->slot_type == CREW
+                && m_personnel_slot_buttons[m_selected_slot->slot]
+                           ->get_officer_type()
+                       == OFFICER_CAPTAIN) {
+                // Previously selected officer was captain; clear
+                // highlight from the captain. Highlight and select the new
+                // officer
+                m_personnel_slot_buttons[m_selected_slot->slot]->set_highlight(
+                    false);
+                personnel_slot_button->set_highlight(true);
+                m_selected_slot = {CREW, slot_id};
+            } else if (m_selected_slot) {
+                // Swap officer
+                if (m_selected_slot->slot_type == CREW) {
+                    auto old_slot_button =
+                        m_personnel_slot_buttons[m_selected_slot->slot];
+                    personnel_slot_button->set_officer(
+                        old_slot_button->set_officer(
+                            personnel_slot_button->get_officer()));
+                    old_slot_button->set_highlight(false);
+                } else if (m_selected_slot->slot_type == UNASSIGNED) {
+                    auto old_button =
+                        m_personnel_unassigned_slot_buttons[m_selected_slot
+                                                                ->slot];
+                    personnel_slot_button->set_officer(old_button->set_officer(
+                        personnel_slot_button->get_officer()));
+
+                    if (old_button->has_officer()) {
+                        old_button->set_highlight(false);
                     } else {
-                        for (int i = 0; i < (int)tOfficers.size();
-                             i++) // Find the officer we have selected already,
-                                  // and assign him to the new position
-                        {
-                            if (selectedPosition ==
-                                7) // If an unassigned officer was selected we
-                                   // have to do it different
-                            {
-                                // Find the selected officer
-                                int j = 0;
-                                for (int i = 0; i < (int)tOfficers.size();
-                                     i++) // Loop through all the officers
-                                {
-                                    if (tOfficers[i]->GetOfficerType() ==
-                                        OFFICER_NONE) // Count the officers that
-                                                      // aren't assign a
-                                                      // position
-                                    {
-                                        // If there are at least as many
-                                        // unassigned officers as the selected
-                                        // Index then its valid
-                                        if (j == unassignedCrew
-                                                     ->GetSelectedIndex()) {
-                                            // assign that officer to the newly
-                                            // selected position
-                                            tOfficers[i]->SetOfficerType((
-                                                OfficerType)(event
-                                                                 ->getEventType() +
-                                                             1));
-                                            selectedPosition =
-                                                event
-                                                    ->getEventType(); // Set the
-                                                                      // selectedPosition
-                                                                      // to the
-                                                                      // newly
-                                                                      // assigned
-                                                                      // position
-                                            selectedOfficer = tOfficers[i];
-                                            this->RefreshUnassignedCrewBox();
-                                            break;
-                                        } else {
-                                            j++; // apparently it wasn't this
-                                                 // officer perhaps the next one
-                                        }
-                                    }
-                                }
-                            } else {
-                                if (tOfficers[i]->GetOfficerType() - 1 ==
-                                    selectedPosition) {
-                                    tOfficers[i]->SetOfficerType(
-                                        (OfficerType)(event->getEventType() +
-                                                      1)); // assign the officer
-                                    selectedPosition =
-                                        event
-                                            ->getEventType(); // Set the
-                                                              // selectedPosition
-                                                              // to the newly
-                                                              // assigned
-                                                              // position
-                                    selectedOfficer = tOfficers[i];
-                                    m_PositionBtns[FALSEHover]->OnMouseMove(
-                                        0, 0); // Remove the FALSEHover glow
-                                               // from the old position
-                                    break;
-                                }
-                            }
+                        m_personnel_unassigned_panel->remove_child_module(
+                            old_button);
+                        m_personnel_unassigned_slot_buttons.erase(
+                            m_selected_slot->slot);
+                        for (auto &i : m_personnel_unassigned_slot_buttons) {
+                            auto [x, y] = i.second->get_position();
+                            i.second->move(
+                                x, y - UnemployedSlotButton::spacing);
                         }
                     }
                 }
+                if (personnel_slot_button->has_officer()) {
+                    personnel_slot_button->set_highlight(true);
+                    m_selected_slot = {CREW, personnel_slot_button->get_id()};
+                } else {
+                    m_selected_slot = nullopt;
+                }
+            } else {
+                // no officer selected, set selection to this one
+                personnel_slot_button->set_highlight(true);
+                m_selected_slot = {CREW, slot_id};
             }
-#pragma endregion
-        } else if (currentScreen == UNEMPLOYEED_SCREEN) {
-#pragma region Unemployeed Screen functions
-
-#pragma endregion
         }
-        selectedPositionLastRun =
-            -2; // This forces a refresh in the run function
         break;
     }
 
     if (exitToStarportCommons) {
         g_game->LoadModule(MODULE_STARPORT);
-        return;
-    }
-}
-// Close is where you release all your resources
-void
-ModuleCrewHire::Close() {
-    ALLEGRO_DEBUG("CrewHire Close\n");
-
-    // We must save all the officers to the game state class before closing
-    g_game->gameState->officerSci = NULL;
-    g_game->gameState->officerNav = NULL;
-    g_game->gameState->officerEng = NULL;
-    g_game->gameState->officerCom = NULL;
-    g_game->gameState->officerDoc = NULL;
-    g_game->gameState->officerTac = NULL;
-
-    for (int i = 0; i < (int)tOfficers.size(); ++i) {
-        // No need to save the captain as they shouldn't of made any changes to
-        // begin with
-        if (tOfficers[i]->GetOfficerType() == OFFICER_SCIENCE)
-            g_game->gameState->officerSci = tOfficers[i];
-        if (tOfficers[i]->GetOfficerType() == OFFICER_NAVIGATION)
-            g_game->gameState->officerNav = tOfficers[i];
-        if (tOfficers[i]->GetOfficerType() == OFFICER_ENGINEER)
-            g_game->gameState->officerEng = tOfficers[i];
-        if (tOfficers[i]->GetOfficerType() == OFFICER_COMMUNICATION)
-            g_game->gameState->officerCom = tOfficers[i];
-        if (tOfficers[i]->GetOfficerType() == OFFICER_MEDICAL)
-            g_game->gameState->officerDoc = tOfficers[i];
-        if (tOfficers[i]->GetOfficerType() == OFFICER_TACTICAL)
-            g_game->gameState->officerTac = tOfficers[i];
-    }
-
-    if (g_game->gameState->officerSci == NULL)
-        g_game->gameState->officerSci = new Officer(OFFICER_NONE);
-    if (g_game->gameState->officerNav == NULL)
-        g_game->gameState->officerNav = new Officer(OFFICER_NONE);
-    if (g_game->gameState->officerEng == NULL)
-        g_game->gameState->officerEng = new Officer(OFFICER_NONE);
-    if (g_game->gameState->officerCom == NULL)
-        g_game->gameState->officerCom = new Officer(OFFICER_NONE);
-    if (g_game->gameState->officerDoc == NULL)
-        g_game->gameState->officerDoc = new Officer(OFFICER_NONE);
-    if (g_game->gameState->officerTac == NULL)
-        g_game->gameState->officerTac = new Officer(OFFICER_NONE);
-
-    if (title != NULL)
-        delete title;
-    if (slogan != NULL)
-        delete slogan;
-    if (directions != NULL)
-        delete directions;
-    if (hiremoreDirections != NULL)
-        delete hiremoreDirections;
-    if (stats != NULL)
-        delete stats;
-
-    // delete the crew position button images
-    for (int i = 0; i < 8; i++) {
-        al_destroy_bitmap(posNormImages[i]);
-        al_destroy_bitmap(posOverImages[i]);
-        al_destroy_bitmap(posDisImages[i]);
-    }
-
-    if (m_exitBtn) {
-        delete m_exitBtn;
-        m_exitBtn = NULL;
-    }
-
-    if (m_hireBtn) {
-        delete m_hireBtn;
-        m_hireBtn = NULL;
-    }
-
-    if (m_hiremoreBtn) {
-        delete m_hiremoreBtn;
-        m_hiremoreBtn = NULL;
-    }
-
-    if (m_fireBtn) {
-        delete m_fireBtn;
-        m_fireBtn = NULL;
-    }
-
-    if (m_unassignBtn) {
-        delete m_unassignBtn;
-        m_unassignBtn = NULL;
-    }
-
-    if (m_backBtn) {
-        delete m_backBtn;
-        m_backBtn = NULL;
-    }
-
-    for (int i = 0; i < 8; i++) {
-        delete m_PositionBtns[i];
-        m_PositionBtns[i] = NULL;
-    }
-
-    if (unassignedCrew) {
-        delete unassignedCrew;
-        unassignedCrew = NULL;
-    }
-
-    // This will also delete unemployeed
-    if (unemployeedType) {
-        delete unemployeedType;
-        unemployeedType = NULL;
-    }
-
-    // unload the data file (thus freeing all resources at once)
-    resources.unload();
-}
-
-// InitModule is where you load all your resources
-bool
-ModuleCrewHire::Init() {
-    ALLEGRO_BITMAP *btnNorm, *btnOver, *btnDis;
-
-    ALLEGRO_DEBUG("  Crew Hire Initialize\n");
-
-    // load the resources
-    if (!resources.load()) {
-        g_game->message("CrewHire: Error loading resources");
         return false;
+    } else if (
+        m_selected_slot && m_selected_slot->slot_type == CREW
+        && m_personnel_slot_buttons[m_selected_slot->slot]->get_officer_type()
+               != OFFICER_CAPTAIN
+        && m_personnel_slot_buttons[m_selected_slot->slot]->has_officer()) {
+        m_title->set_active(false);
+        m_slogan->set_active(false);
+        m_directions->set_active(false);
+        m_officer_info->set_officer(
+            m_personnel_slot_buttons[m_selected_slot->slot]->get_officer());
+        m_officer_info->set_active(true);
+        m_personnel_fire->set_enabled(true);
+        m_personnel_unassign->set_enabled(true);
+    } else if (m_selected_slot && m_selected_slot->slot_type == UNASSIGNED) {
+        auto button =
+            m_personnel_unassigned_slot_buttons[m_selected_slot->slot];
+        auto officer = button->get_officer();
+        m_title->set_active(false);
+        m_slogan->set_active(false);
+        m_directions->set_active(false);
+        m_officer_info->set_officer(officer);
+        m_officer_info->set_active(true);
+        m_personnel_fire->set_enabled(true);
+    } else {
+        m_title->set_active(true);
+        m_slogan->set_active(true);
+        m_officer_info->set_active(false);
+        m_directions->set_active(true);
+        m_personnel_fire->set_enabled(false);
+        m_personnel_unassign->set_enabled(false);
     }
-
-    // enable the Pause Menu
-    g_game->pauseMenu->setEnabled(true);
-
-    currentScreen = PERSONEL_SCREEN;
-    selectedPosition = -1; // Set the selectedPosition to none
-    selectedEntryLastRun =
-        -1; // Set the crew listbox selection previous run to unselected
-    selectedOfficer = NULL;
-
-    g_game->audioSystem->Load("data/crewhire/buttonclick.ogg", "click");
-
-    // Load label for title
-    title = new Label("Welcome to Crew Match v.0.3!",
-                      28,
-                      170,
-                      456,
-                      30,
-                      al_map_rgb(0, 255, 128),
-                      g_game->font32);
-    title->Refresh();
-
-    // Load label for slogan
-    slogan = new Label("Where you can hire the finest galactic crew!",
-                       28,
-                       200,
-                       456,
-                       80,
-                       al_map_rgb(0, 255, 255),
-                       g_game->font22);
-    slogan->Refresh();
-
-    // Load label for directions
-    directions =
-        new Label("Click on your crew members to the right to reassign or fire "
-                  "them. You can also browse for future employees by clicking "
-                  "on the Hire Crew button",
-                  28,
-                  280,
-                  456,
-                  408,
-                  al_map_rgb(0, 255, 255),
-                  g_game->font18);
-    directions->Refresh();
-
-    // Load label for hiremoreDirections
-    hiremoreDirections =
-        new Label("On the right is a list potential galactic faring employees. "
-                  "You can view their statistics by clicking on them.",
-                  28,
-                  280,
-                  456,
-                  408,
-                  al_map_rgb(0, 255, 255),
-                  g_game->font18);
-    hiremoreDirections->Refresh();
-
-    // Load label for stats
-    stats = new Label("                  - Statistics -",
-                      28,
-                      170,
-                      456,
-                      30,
-                      al_map_rgb(0, 255, 128),
-                      g_game->font32);
-    stats->Refresh();
-
-    // setup unassignedCrew scrollbox
-    unassignedCrew = new ScrollBox::ScrollBox(g_game->font24,
-                                              ScrollBox::SB_LIST,
-                                              CREW_X,
-                                              CREW_Y,
-                                              CREW_WIDTH,
-                                              CREW_HEIGHT,
-                                              EVENT_CREWLISTBOX_CLICK);
-    unassignedCrew->DrawScrollBar(false);
-    unassignedCrew->setLines(6);
-
-    // setup unemployeed scrollbox
-    unemployeed = new ScrollBox::ScrollBox(g_game->font24,
-                                           ScrollBox::SB_LIST,
-                                           UNEMPLOYEED_X,
-                                           UNEMPLOYEED_Y,
-                                           UNEMPLOYEED_WIDTH,
-                                           UNEMPLOYEED_HEIGHT,
-                                           EVENT_UNEMPLOYEEDLISTBOX_CLICK);
-    unemployeed->DrawScrollBar(false);
-    unemployeed->setLines(25);
-
-    // setup unemployeed type column scrollbox
-    unemployeedType =
-        new ScrollBox::ScrollBox(g_game->font24,
-                                 ScrollBox::SB_LIST,
-                                 (int)(UNEMPLOYEED_X + UNEMPLOYEED_WIDTH * .66),
-                                 UNEMPLOYEED_Y,
-                                 UNEMPLOYEED_WIDTH / 3,
-                                 UNEMPLOYEED_HEIGHT,
-                                 EVENT_UNEMPLOYEEDLISTBOX_CLICK);
-    unemployeedType->DrawScrollBar(false);
-    unemployeedType->setLines(25);
-    unemployeedType->LinkBox(unemployeed);
-
-    // Must clear the vectors incase this isn't the first time this module
-    // loaded
-    tOfficers.clear();
-
-    // Load current officers into the officer array
-    //  NOTE: Explicitly defined officers (i.e. officerCap) will ALWAYS exist
-    //  and NEVER be null
-    if (g_game->gameState->officerCap->name.length() > 0)
-        tOfficers.push_back(g_game->gameState->officerCap);
-    if (g_game->gameState->officerSci->name.length() > 0)
-        tOfficers.push_back(g_game->gameState->officerSci);
-    if (g_game->gameState->officerNav->name.length() > 0)
-        tOfficers.push_back(g_game->gameState->officerNav);
-    if (g_game->gameState->officerEng->name.length() > 0)
-        tOfficers.push_back(g_game->gameState->officerEng);
-    if (g_game->gameState->officerCom->name.length() > 0)
-        tOfficers.push_back(g_game->gameState->officerCom);
-    if (g_game->gameState->officerTac->name.length() > 0)
-        tOfficers.push_back(g_game->gameState->officerTac);
-    if (g_game->gameState->officerDoc->name.length() > 0)
-        tOfficers.push_back(g_game->gameState->officerDoc);
-
-    // if PERSONS FOR HIRE list is empty, fill it
-    if (g_game->gameState->m_unemployedOfficers.size() == 0) {
-        for (int i = 0; g_game->gameState->m_unemployedOfficers.size() <= 18;
-             i++) {
-            // create a random dude
-            Officer *dude = new Officer(OFFICER_NONE);
-            dude->name = g_game->dataMgr->GetRandMixedName();
-            for (int att = 0; att < 6; att++)
-                dude->attributes[att] = Util::Random(5, 50);
-
-            // specialization in a random skill
-            dude->attributes[Util::Random(0, 5)] = Util::Random(50, 75);
-
-            dude->attributes[6] = 5;
-            dude->attributes[7] = 5;
-
-            // add this dude to the FOR HIRE list
-            g_game->gameState->m_unemployedOfficers.push_back(dude);
-        }
-    }
-
-    if (lastEmployeeSpawn == -1) { // it hasn't been initialized
-        lastEmployeeSpawn =
-            g_game->gameState->stardate.get_current_date_in_days();
-    }
-
-    currentVisit = g_game->gameState->stardate.get_current_date_in_days();
-
-    // refresh the list of random employees (we do it unconditionally for the
-    // time being) if ( (currentVisit - lastEmployeeSpawn)/EMPLOYEE_SPAWN_RATE
-    // >= 1 )
-    if (true) {
-        // Save the new time for Employee Spawn
-        lastEmployeeSpawn =
-            g_game->gameState->stardate.get_current_date_in_days();
-
-        // Remove some old faces
-        int facesToRemove = Util::Random(2, 6);
-        for (int i = 0; i < facesToRemove; ++i) {
-            g_game->gameState->m_unemployedOfficers.erase(
-                g_game->gameState->m_unemployedOfficers.begin() +
-                Util::Random(
-                    0,
-                    (int)g_game->gameState->m_unemployedOfficers.size() - 1));
-        }
-
-        // Add some new ones (exactly has many has we removed for the time
-        // being; so we don't have to worry about the list growing or shrinking)
-        int facesToAdd = facesToRemove;
-        for (int i = 0; i < facesToAdd; ++i) {
-            // create a random dude
-            Officer *dude = new Officer(OFFICER_NONE);
-            dude->name = g_game->dataMgr->GetRandMixedName();
-            for (int att = 0; att < 6; att++)
-                dude->attributes[att] = Util::Random(5, 50);
-
-            // specialization in a random skill
-            dude->attributes[Util::Random(0, 5)] = Util::Random(50, 75);
-
-            dude->attributes[6] = 5;
-            dude->attributes[7] = 5;
-
-            // add this dude to the FOR HIRE list
-            g_game->gameState->m_unemployedOfficers.push_back(dude);
-        }
-    }
-
-    for (int i = 0; i < (int)g_game->gameState->m_unemployedOfficers.size();
-         ++i) {
-        // add this person to the AVAILABLE FOR HIRE list
-        unemployeed->Write(g_game->gameState->m_unemployedOfficers[i]->name,
-                           AVAILABLE_TEXT_COLOR);
-
-        unemployeedType->Write(g_game->gameState->m_unemployedOfficers[i]
-                                   ->GetPreferredProfession(),
-                               AVAILABLE_TEXT_COLOR);
-    }
-
-    // Create escape button for the module
-    btnNorm = resources[I_GENERIC_EXIT_BTN_NORM];
-    btnOver = resources[I_GENERIC_EXIT_BTN_OVER];
-    m_exitBtn = new Button(btnNorm,
-                           btnOver,
-                           NULL,
-                           EXITBTN_X,
-                           EXITBTN_Y,
-                           EVENT_NONE,
-                           EVENT_EXIT_CLICK,
-                           g_game->font24,
-                           "Exit",
-                           al_map_rgb(255, 0, 0),
-                           "click");
-    if (m_exitBtn == NULL)
-        return false;
-    if (!m_exitBtn->IsInitialized())
-        return false;
-
-    // Create and initialize the Back button for the module
-    m_backBtn = new Button(btnNorm,
-                           btnOver,
-                           NULL,
-                           EXITBTN_X,
-                           EXITBTN_Y,
-                           EVENT_NONE,
-                           EVENT_BACK_CLICK,
-                           g_game->font24,
-                           "Back",
-                           al_map_rgb(255, 0, 0),
-                           "click");
-    if (m_backBtn == NULL)
-        return false;
-    if (!m_backBtn->IsInitialized())
-        return false;
-
-    // Create and initialize the HireMore button for the module
-    btnNorm = resources[I_PERSONEL_BTN2];
-    btnOver = resources[I_PERSONEL_BTN2_HOV];
-    btnDis = resources[I_PERSONEL_BTN2_DIS];
-    m_hiremoreBtn = new Button(btnNorm,
-                               btnOver,
-                               btnDis,
-                               HIREMOREBTN_X,
-                               HIREMOREBTN_Y,
-                               EVENT_NONE,
-                               EVENT_HIREMORE_CLICK,
-                               g_game->font24,
-                               "Hire Crew",
-                               al_map_rgb(0, 255, 255),
-                               "click");
-    if (m_hiremoreBtn == NULL)
-        return false;
-    if (!m_hiremoreBtn->IsInitialized())
-        return false;
-
-    // Create and initialize the Hire button for the module
-    btnNorm = resources[I_PERSONEL_BTN];
-    btnOver = resources[I_PERSONEL_BTN_HOV];
-    btnDis = resources[I_PERSONEL_BTN_DIS];
-    m_hireBtn = new Button(btnNorm,
-                           btnOver,
-                           btnDis,
-                           HIREBTN_X,
-                           HIREBTN_Y,
-                           EVENT_NONE,
-                           EVENT_HIRE_CLICK,
-                           g_game->font24,
-                           "Hire",
-                           al_map_rgb(0, 255, 255),
-                           "click");
-    if (m_hireBtn == NULL)
-        return false;
-    if (!m_hireBtn->IsInitialized())
-        return false;
-
-    // Create and initialize the Fire button for the module
-    m_fireBtn = new Button(btnNorm,
-                           btnOver,
-                           btnDis,
-                           FIREBTN_X,
-                           FIREBTN_Y,
-                           EVENT_NONE,
-                           EVENT_FIRE_CLICK,
-                           g_game->font24,
-                           "Fire",
-                           al_map_rgb(0, 255, 255),
-                           "click");
-    if (m_fireBtn == NULL)
-        return false;
-    if (!m_fireBtn->IsInitialized())
-        return false;
-
-    // Create and initialize the Assign Position button for the module
-    m_unassignBtn = new Button(btnNorm,
-                               btnOver,
-                               btnDis,
-                               UNASSIGNBTN_X,
-                               UNASSIGNBTN_Y,
-                               EVENT_NONE,
-                               EVENT_UNASSIGN_CLICK,
-                               g_game->font24,
-                               "Unassign",
-                               al_map_rgb(0, 255, 255),
-                               "click");
-    if (m_unassignBtn == NULL)
-        return false;
-    if (!m_unassignBtn->IsInitialized())
-        return false;
-
-    ALLEGRO_BITMAP *blackIcons = resources[I_ICONS_SMALL];
-    ALLEGRO_BITMAP *greenIcons = resources[I_ICONS_SMALL_GREEN];
-    ALLEGRO_BITMAP *redIcons = resources[I_ICONS_SMALL_RED];
-
-    btnNorm = resources[I_PERSONEL_CATBTN];
-    btnOver = resources[I_PERSONEL_CATBTN_HOV];
-    btnDis = resources[I_PERSONEL_CATBTN_DIS];
-
-    // create crew buttons
-    char positions[8][20] = {"- Captain - ",
-                             "- Science -",
-                             "- Navigation -",
-                             "- Engineering -",
-                             "- Communication -",
-                             "- Medical -",
-                             "- Tactical -",
-                             "- Unassigned -"};
-
-    for (int i = 0; i < 8; i++) {
-        // create a normal image for each crew position button
-        posNormImages[i] = al_create_bitmap(al_get_bitmap_width(btnNorm),
-                                            al_get_bitmap_height(btnNorm));
-        al_set_target_bitmap(posNormImages[i]);
-        al_clear_to_color(al_map_rgba(0, 0, 0, 0));
-        al_draw_bitmap(btnNorm, 0, 0, 0);
-        // create an over image for each crew position button
-        posOverImages[i] = al_create_bitmap(al_get_bitmap_width(btnOver),
-                                            al_get_bitmap_height(btnOver));
-        al_set_target_bitmap(posOverImages[i]);
-        al_clear_to_color(al_map_rgba(0, 0, 0, 0));
-        al_draw_bitmap(btnOver, 0, 0, 0);
-        // create a disabled image for each crew position button
-        posDisImages[i] = al_create_bitmap(al_get_bitmap_width(btnDis),
-                                           al_get_bitmap_height(btnDis));
-        al_set_target_bitmap(posDisImages[i]);
-        al_clear_to_color(al_map_rgba(0, 0, 0, 0));
-        al_draw_bitmap(btnDis, 0, 0, 0);
-
-        // Create and initialize the new button
-        m_PositionBtns[i] = new Button(posNormImages[i],
-                                       posOverImages[i],
-                                       posDisImages[i],
-                                       CATBTN_X,
-                                       CATBTN_Y + (i * CATSPACING),
-                                       EVENT_NONE,
-                                       i,
-                                       "click");
-
-        if (m_PositionBtns[i] == NULL)
-            return false;
-        if (!m_PositionBtns[i]->IsInitialized())
-            return false;
-
-        al_set_target_bitmap(m_PositionBtns[i]->GetImgNormal());
-        al_draw_bitmap_region(blackIcons, 30 * i, 0, 30, 30, 0, 0, 0);
-
-        al_set_target_bitmap(m_PositionBtns[i]->GetImgMouseOver());
-        al_draw_bitmap_region(greenIcons, 30 * i, 0, 30, 30, 0, 0, 0);
-        al_draw_bitmap_region(blackIcons, 30 * i, 0, 30, 30, 1, 1, 0);
-
-        al_set_target_bitmap(m_PositionBtns[i]->GetImgDisabled());
-        al_draw_bitmap_region(blackIcons, 30 * i, 0, 30, 30, 1, 1, 0);
-        al_draw_bitmap_region(redIcons, 30 * i, 0, 30, 30, 0, 0, 0);
-
-        al_set_target_bitmap(m_PositionBtns[i]->GetImgNormal());
-        al_draw_text(
-            g_game->font24, al_map_rgb(0, 255, 255), 35, 4, 0, positions[i]);
-        al_set_target_bitmap(m_PositionBtns[i]->GetImgMouseOver());
-        al_draw_text(
-            g_game->font24, al_map_rgb(0, 255, 255), 35, 4, 0, positions[i]);
-        al_set_target_bitmap(m_PositionBtns[i]->GetImgDisabled());
-        al_draw_text(
-            g_game->font24, al_map_rgb(0, 255, 255), 35, 4, 0, positions[i]);
-    }
-
-    // tell questmgr that Personnel event has occurred
-    g_game->questMgr->raiseEvent(18);
-
     return true;
 }
 
-void
-ModuleCrewHire::Update() {
-    Module::Update();
-}
+bool
+ModuleCrewHire::on_close() {
+    ALLEGRO_DEBUG("CrewHire Close\n");
 
-void
-ModuleCrewHire::Draw() {
-    al_set_target_bitmap(g_game->GetBackBuffer());
-    al_draw_bitmap(resources[I_PERSONEL_BACKGROUND], 0, 0, 0);
+    remove_child_module(m_exit_button);
+    m_exit_button = nullptr;
 
-    switch (currentScreen) {
-    case PERSONEL_SCREEN:
-#pragma region Personel Screen
-        if (selectedEntryLastRun != unassignedCrew->GetSelectedIndex()) {
-            selectedEntryLastRun = unassignedCrew->GetSelectedIndex();
-            if (selectedEntryLastRun == -1) {
-                selectedOfficer = NULL;
-                selectedPosition = -1;
-            } else {
-                int j = 0;
-                for (int i = 0; i < (int)tOfficers.size();
-                     i++) // Loop through all the officers
-                {
-                    if (tOfficers[i]->GetOfficerType() ==
-                        OFFICER_NONE) // Count the officers that aren't assigned
-                                      // a position
-                    {
-                        // If there are at least as many unassigned officers as
-                        // the selected Index then its valid
-                        if (j == unassignedCrew->GetSelectedIndex()) {
-                            selectedOfficer = tOfficers[i];
-                            // Can't fire the captain
-                            if (selectedOfficer->GetOfficerType() !=
-                                OFFICER_CAPTAIN)
-                                m_fireBtn->SetEnabled(true);
-                            else
-                                m_fireBtn->SetEnabled(false);
+    m_personnel_fire = nullptr;
+    m_personnel_unassign = nullptr;
+    m_personnel_slot_buttons.clear();
 
-                            break;
-                        } else {
-                            j++; // apparently it wasn't this officer perhaps
-                                 // the next one
-                        }
-                    }
-                }
+    remove_child_module(m_personnel_panel);
+    m_personnel_panel = nullptr;
 
-                if (selectedOfficer != NULL &&
-                    selectedOfficer->GetOfficerType() != OFFICER_CAPTAIN) {
-                    m_PositionBtns[7]->SetEnabled(true);
-                    selectedPosition = 7;
-                }
-            }
-        }
+    remove_child_module(m_officer_info);
+    m_officer_info = nullptr;
 
-        if (selectedPosition == -1) {
-            if (selectedPositionLastRun != -1) {
-                for (int i = 0; i < 8; i++)
-                    m_PositionBtns[i]->SetEnabled(true);
+    remove_child_module(m_title);
+    m_title = nullptr;
 
-                m_fireBtn->SetEnabled(false);
-                m_unassignBtn->SetEnabled(false);
+    remove_child_module(m_slogan);
+    m_slogan = nullptr;
 
-                FALSEHover = -1;
-            }
-            selectedPositionLastRun = -1;
+    remove_child_module(m_directions);
+    m_directions = nullptr;
 
-            title->Draw(g_game->GetBackBuffer());
-            slogan->Draw(g_game->GetBackBuffer());
-            directions->Draw(g_game->GetBackBuffer());
-        } else {
-            if (selectedPositionLastRun != selectedPosition) {
-                if (selectedOfficer != NULL) {
-                    if (selectedOfficer->GetOfficerType() != OFFICER_CAPTAIN) {
-                        // Turn all the Position buttons on, except the no
-                        // position button and the captain button
-                        for (int i = 0; i < 8; i++)
-                            m_PositionBtns[i]->SetEnabled(true);
-
-                        // Turn off only the ones that already have officers
-                        for (int i = 0; i < (int)tOfficers.size(); i++) {
-                            if (tOfficers[i]->GetOfficerType() !=
-                                    OFFICER_NONE &&
-                                tOfficers[i]->GetOfficerType() - 1 !=
-                                    selectedPosition) {
-                                m_PositionBtns[tOfficers[i]->GetOfficerType() -
-                                               1]
-                                    ->SetEnabled(false);
-                            }
-                        }
-
-                        FALSEHover = selectedPosition; // Set the FALSEhover for
-                                                       // the selectedPosition
-
-                        if (selectedOfficer != NULL) {
-                            if (selectedOfficer->GetOfficerType() !=
-                                OFFICER_CAPTAIN) {
-                                if (selectedOfficer->GetOfficerType() ==
-                                    OFFICER_NONE) {
-                                    m_fireBtn->SetEnabled(true);
-                                    m_unassignBtn->SetEnabled(false);
-                                } else {
-                                    m_fireBtn->SetEnabled(false);
-                                    m_unassignBtn->SetEnabled(true);
-                                }
-                            }
-                        }
-                    } else {
-                        FALSEHover = selectedPosition; // Set the FALSEhover for
-                                                       // the selectedPosition
-
-                        // Turn all the other Position buttons off,this prevents
-                        // the Captain from ever moving
-                        for (int i = 1; i < 8; i++)
-                            m_PositionBtns[i]->SetEnabled(false);
-                    }
-                }
-                selectedPositionLastRun = selectedPosition;
-            }
-
-            m_fireBtn->Run(g_game->GetBackBuffer());
-            m_unassignBtn->Run(g_game->GetBackBuffer());
-
-            if (selectedOfficer != NULL)
-                DrawOfficerInfo(selectedOfficer);
-        }
-
-        for (int i = 0; i < 8; i++)
-            m_PositionBtns[i]->Run(g_game->GetBackBuffer());
-
-        m_exitBtn->Run(g_game->GetBackBuffer());
-        m_hiremoreBtn->Run(g_game->GetBackBuffer());
-        unassignedCrew->Draw(g_game->GetBackBuffer());
-
-        for (int i = 0; i < (int)tOfficers.size(); i++) {
-            if (tOfficers[i]->GetOfficerType() != OFFICER_NONE)
-                al_draw_text(
-                    g_game->font24,
-                    ((tOfficers[i]->GetOfficerType() - 1) == selectedPosition
-                         ? al_map_rgb(0, 255, 255)
-                         : al_map_rgb(255, 255, 255)),
-                    CREWPOSITION_X,
-                    CREWPOSITION_Y +
-                        ((tOfficers[i]->GetOfficerType() - 1) * CREWSPACING),
-                    0,
-                    tOfficers[i]->name.c_str());
-        }
-#pragma endregion
-        break;
-
-    case UNEMPLOYEED_SCREEN:
-#pragma region Unemployeed Screen
-        unemployeedType->Draw(g_game->GetBackBuffer());
-
-        m_backBtn->Run(g_game->GetBackBuffer());
-
-        if (selectedOfficer != NULL) {
-            stats->Draw(g_game->GetBackBuffer());
-
-            m_hireBtn->Run(g_game->GetBackBuffer());
-            DrawOfficerInfo(selectedOfficer);
-        } else {
-            title->Draw(g_game->GetBackBuffer());
-            slogan->Draw(g_game->GetBackBuffer());
-            hiremoreDirections->Draw(g_game->GetBackBuffer());
-        }
-#pragma endregion
-        break;
-    }
-}
-
-void
-ModuleCrewHire::DrawOfficerInfo(Officer *officer) {
-    static const string skillnames[] = {"science",
-                                        "navigation",
-                                        "engineering",
-                                        "communication",
-                                        "medical",
-                                        "tactical",
-                                        "learning",
-                                        "durability"};
-
-    al_draw_bitmap(
-        resources[I_PERSONEL_MINIPOSITIONS], SKILLICONS_X, SKILLICONS_Y, 0);
-
-    stats->Draw(g_game->GetBackBuffer());
-
-    // draw names and skills
-    ostringstream os;
-
-    // Print Captain jjh
-    string offtitle = "Officer ";
-    if (officer->GetOfficerType() == OFFICER_CAPTAIN) {
-        offtitle = "Captain ";
-    }
-    os << offtitle << officer->getFirstName() << " " << officer->getLastName();
-    g_game->Print22(g_game->GetBackBuffer(),
-                    SKILLBAR_X + 70,
-                    SKILLBAR_Y - 30,
-                    os.str(),
-                    WHITE);
-    os.str("");
-
-    // find officer's highest skill jjh
-    int tempi = 0;
-    int tempval = 0;
-    for (int i = 0; i < 6; i++) {
-        if (officer->attributes[i] > tempval) {
-            tempval = officer->attributes[i];
-            tempi = i;
-        }
-    }
-
-    // print skill name and skill level JJH (using 2 prints in hopes of
-    // highlighting one of the skills & readabiltiy) jjh
-    for (int i = 0; i < 6; i++) {
-        os << skillnames[i];
-        g_game->Print22(g_game->GetBackBuffer(),
-                        SKILLBAR_X + 20,
-                        SKILLBAR_Y + (SKILLSPACING * i) + 2,
-                        os.str(),
-                        STEEL);
-        os.str("");
-        os << officer->attributes[i];
-        if (tempi != i) {
-            g_game->Print22(g_game->GetBackBuffer(),
-                            SKILLBAR_X + 180,
-                            SKILLBAR_Y + (SKILLSPACING * i) + 2,
-                            os.str(),
-                            STEEL);
-        } else {
-            g_game->Print22(g_game->GetBackBuffer(),
-                            SKILLBAR_X + 180,
-                            SKILLBAR_Y + (SKILLSPACING * i) + 2,
-                            os.str(),
-                            RED);
-        }
-        os.str("");
-    }
-    // print attribute name and level JJH (using 2 prints for readabiltiy) jjh
-    for (int i = 6; i < 8; i++) {
-        os << skillnames[i];
-        g_game->Print22(g_game->GetBackBuffer(),
-                        SKILLBAR_X + 20,
-                        SKILLBAR_Y + (SKILLSPACING * i) + 2,
-                        os.str(),
-                        STEEL);
-        os.str("");
-        os << officer->attributes[i];
-        g_game->Print22(g_game->GetBackBuffer(),
-                        SKILLBAR_X + 180,
-                        SKILLBAR_Y + (SKILLSPACING * i) + 2,
-                        os.str(),
-                        STEEL);
-        os.str("");
-    }
-}
-
-void
-ModuleCrewHire::RefreshUnassignedCrewBox() {
-    unassignedCrew->Clear();
-
-    for (int i = 0; i < (int)tOfficers.size(); i++) {
-        if (tOfficers[i]->GetOfficerType() == OFFICER_NONE) {
-            unassignedCrew->Write(tOfficers[i]->name, UNASSIGNED_TEXT_COLOR);
-        }
-    }
-    unassignedCrew->OnMouseMove(unassignedCrew->GetX(), unassignedCrew->GetY());
-    unassignedCrew->OnMouseMove(0, 0);
-}
-
-void
-ModuleCrewHire::RefreshUnemployeedCrewBox() {
-    unemployeedType->Clear();
-
-    for (int i = 0; i < (int)g_game->gameState->m_unemployedOfficers.size();
-         i++) {
-        unemployeed->Write(g_game->gameState->m_unemployedOfficers[i]->name,
-                           UNASSIGNED_TEXT_COLOR);
-        unemployeedType->Write(g_game->gameState->m_unemployedOfficers[i]
-                                   ->GetPreferredProfession(),
-                               UNASSIGNED_TEXT_COLOR);
-    }
-    unemployeedType->OnMouseMove(unemployeedType->GetX(),
-                                 unemployeedType->GetY());
-    unemployeedType->OnMouseMove(0, 0);
+    return true;
 }

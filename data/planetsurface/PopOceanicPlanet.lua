@@ -15,107 +15,107 @@ lifeForms = {}
 
 
 -- 55 - Pop Berry Plant
-lifeForm = { 55, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Bush_Law.tga", 0, 1, 0, 21, 21, 0, "", "" }
+lifeForm = { 55, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Bush_Law.png", 0, 1, 0, 21, 21, 0, "", "" }
 lifeForms[0] = lifeForm 
 
 -- 58 - Rocket Melons
-lifeForm = { 58, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Bush_Law.tga", 0, 1, 0, 21, 21, 0, "", "" }
+lifeForm = { 58, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Bush_Law.png", 0, 1, 0, 21, 21, 0, "", "" }
 lifeForms[1] = lifeForm 
 
 -- 62 - Sticky Fruit
-lifeForm = { 62, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Plant_Small.tga", 0, 1, 0, 15, 15, 0, "", "" }
+lifeForm = { 62, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Plant_Small.png", 0, 1, 0, 15, 15, 0, "", "" }
 lifeForms[2] = lifeForm 
 
 -- 63 - Hive Plant
-lifeForm = { 63, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Plant_Small.tga", 0, 1, 0, 15, 15, 0, "", "" }
+lifeForm = { 63, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Plant_Small.png", 0, 1, 0, 15, 15, 0, "", "" }
 lifeForms[3] = lifeForm 
 
 -- 64 - Scaly Blue Hopper
-lifeForm = { 64, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Plain_Vertruk.tga", 0, 1, 0, 15, 15, 0, "", "" }
+lifeForm = { 64, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Plain_Vertruk.png", 0, 1, 0, 15, 15, 0, "", "" }
 lifeForms[4] = lifeForm 
 
 -- 66 - Hill Rat
-lifeForm = { 66, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_4Leg_Small.tga", 0, 1, 0, 13, 13, 0, "", "" }
+lifeForm = { 66, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_4Leg_Small.png", 0, 1, 0, 13, 13, 0, "", "" }
 lifeForms[5] = lifeForm 
 
 -- 67 - Pulsating Gummy			
-lifeForm = { 67, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Sponge_Large.tga", 0, 1, 0, 17, 17, 0, "", "" }
+lifeForm = { 67, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Sponge_Large.png", 0, 1, 0, 17, 17, 0, "", "" }
 lifeForms[6] = lifeForm
 
 -- 68 - Spinning Crab			
-lifeForm = { 68, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_2Leg_Small.tga", 0, 1, 0, 11, 11, 0, "", "" }
+lifeForm = { 68, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_2Leg_Small.png", 0, 1, 0, 11, 11, 0, "", "" }
 lifeForms[7] = lifeForm
 
 -- 72 - Vacuum Slug
-lifeForm = { 72, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Slug_Giant.tga", 0, 1, 0, 17, 17, 0, "", "" }
+lifeForm = { 72, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Slug_Giant.png", 0, 1, 0, 17, 17, 0, "", "" }
 lifeForms[8] = lifeForm 
 
 -- 75 - Oily Spore Bush
-lifeForm = { 75, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Bush_Law.tga", 0, 1, 0, 21, 21, 0, "", "" }
+lifeForm = { 75, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Bush_Law.png", 0, 1, 0, 21, 21, 0, "", "" }
 lifeForms[9] = lifeForm 
 
 -- 82 - Green Balloon
-lifeForm = { 82, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Tree_Small.tga", 0, 1, 0, 17, 17, 0, "", "" }
+lifeForm = { 82, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Tree_Small.png", 0, 1, 0, 17, 17, 0, "", "" }
 lifeForms[10] = lifeForm 
 
 -- 83 - Poison Glider
-lifeForm = { 83, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Plain_Galists.tga", 0, 1, 0, 11, 11, 0, "", "" }
+lifeForm = { 83, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Plain_Galists.png", 0, 1, 0, 11, 11, 0, "", "" }
 lifeForms[11] = lifeForm 
 
 -- 85 - Nid Berry Bush
-lifeForm = { 85, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Plant_Small.tga", 0, 1, 0, 15, 15, 0, "", "" }
+lifeForm = { 85, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Plant_Small.png", 0, 1, 0, 15, 15, 0, "", "" }
 lifeForms[12] = lifeForm 
 
 -- 87 - Expanding Hippo
-lifeForm = { 87, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Bird_Yellow.tga", 0, 1, 0, 17, 17, 0, "", "" }
+lifeForm = { 87, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Bird_Yellow.png", 0, 1, 0, 17, 17, 0, "", "" }
 lifeForms[13] = lifeForm 
 
 -- 89 - Single Leaf
-lifeForm = { 89, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Tree_Large.tga", 0, 1, 0, 22, 22, 0, "", "" }
+lifeForm = { 89, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Tree_Large.png", 0, 1, 0, 22, 22, 0, "", "" }
 lifeForms[14] = lifeForm 
 
 -- 90 - Yellow Hugger
-lifeForm = { 90, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_2Leg_Yellow.tga", 0, 1, 0, 19, 19, 0, "", "" }
+lifeForm = { 90, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_2Leg_Yellow.png", 0, 1, 0, 19, 19, 0, "", "" }
 lifeForms[15] = lifeForm 
 
 -- 92 - Fur Tree
-lifeForm = { 92, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Tree_Large.tga", 0, 1, 0, 22, 22, 0, "", "" }
+lifeForm = { 92, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Tree_Large.png", 0, 1, 0, 22, 22, 0, "", "" }
 lifeForms[16] = lifeForm 
 
 -- 94 - Electric Balloon
-lifeForm = { 94, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Bat_Large.tga", 0, 1, 0, 9, 9, 0, "", "" }
+lifeForm = { 94, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Bat_Large.png", 0, 1, 0, 9, 9, 0, "", "" }
 lifeForms[17] = lifeForm 
 
 -- 96 - Grey Anemone
-lifeForm = { 96, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_4Leg_Small.tga", 0, 1, 0, 13, 13, 0, "", "" }
+lifeForm = { 96, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_4Leg_Small.png", 0, 1, 0, 13, 13, 0, "", "" }
 lifeForms[18] = lifeForm 
 
 -- 98 - Green Blob
-lifeForm = { 98, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Slug_Giant.tga", 0, 1, 0, 17, 17, 0, "", "" }
+lifeForm = { 98, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Slug_Giant.png", 0, 1, 0, 17, 17, 0, "", "" }
 lifeForms[19] = lifeForm 
 
 -- 99 - Funnel Tree
-lifeForm = { 99, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Tree_Small.tga", 0, 1, 0, 17, 17, 0, "", "" }
+lifeForm = { 99, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Tree_Small.png", 0, 1, 0, 17, 17, 0, "", "" }
 lifeForms[20] = lifeForm 
 
 -- 103 - Purple Screecher
-lifeForm = { 103, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Bird_Large.tga", 0, 1, 0, 16, 16, 0, "", "" }
+lifeForm = { 103, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Bird_Large.png", 0, 1, 0, 16, 16, 0, "", "" }
 lifeForms[21] = lifeForm 
 
 -- 104 - Peacock Tree
-lifeForm = { 104, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Tree_Large.tga", 0, 1, 0, 22, 22, 0, "", "" }
+lifeForm = { 104, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Tree_Large.png", 0, 1, 0, 22, 22, 0, "", "" }
 lifeForms[22] = lifeForm 
 
 -- 106 - Eight-Legged Rhino
-lifeForm = { 106, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_2Leg_Fuzz.tga", 0, 1, 0, 17, 17, 0, "", "" }
+lifeForm = { 106, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_2Leg_Fuzz.png", 0, 1, 0, 17, 17, 0, "", "" }
 lifeForms[23] = lifeForm 
 
 -- 108 - Stinging Cone			
-lifeForm = { 108, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Tree_Small.tga", 0, 1, 0, 17, 17, 0, "", "" }
+lifeForm = { 108, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Tree_Small.png", 0, 1, 0, 17, 17, 0, "", "" }
 lifeForms[24] = lifeForm
 
 -- 109 - Brass Harpooner			
-lifeForm = { 109, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Rodent_Huge.tga", 0, 1, 0, 18, 18, 0, "", "" }
+lifeForm = { 109, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Rodent_Huge.png", 0, 1, 0, 18, 18, 0, "", "" }
 lifeForms[25] = lifeForm
 
 

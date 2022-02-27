@@ -29,19 +29,19 @@ HasLife = goodTemp and goodGrav and goodAtmos
 lifeForms = {}
 
 -- 73 - Hot Fungus
-lifeForm = { 73, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Spider_Giant.tga", 0, 1, 0, 19, 19, 0, "", "" }
+lifeForm = { 73, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Spider_Giant.png", 0, 1, 0, 19, 19, 0, "", "" }
 lifeForms[0] = lifeForm
 
 -- 76 - Parachute Spider
-lifeForm = { 76, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Starfish_Large.tga", 0, 1, 0, 15, 15, 0, "", "" }
+lifeForm = { 76, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Starfish_Large.png", 0, 1, 0, 15, 15, 0, "", "" }
 lifeForms[1] = lifeForm 
 
 -- 78 - Wheel Snake
-lifeForm = { 78, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Snake_Large.tga", 0, 1, 0, 9, 9, 0, "", "" }
+lifeForm = { 78, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Snake_Large.png", 0, 1, 0, 9, 9, 0, "", "" }
 lifeForms[2] = lifeForm 
 
 -- 113 - DARK LIGHTING
-lifeForm = { 113, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/Hypercube.tga", 0, 1, 0, 15, 15, 0, "", "" }
+lifeForm = { 113, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/Hypercube.png", 0, 1, 0, 15, 15, 0, "", "" }
 lifeForms[3] = lifeForm 
 
 if HasLife then

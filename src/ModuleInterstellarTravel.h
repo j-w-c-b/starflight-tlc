@@ -9,40 +9,31 @@
 #ifndef INTERSTELLARTRAVEL_H
 #define INTERSTELLARTRAVEL_H
 
+#include <string>
+
+#include <allegro5/allegro.h>
+#include <allegro5/allegro_font.h>
+
 #include "DataMgr.h"
 #include "Flux.h"
 #include "GameState.h"
-#include "ModeMgr.h"
 #include "Module.h"
 #include "PlayerShipSprite.h"
-#include "ResourceManager.h"
-#include "ScrollBox.h"
+#include "RichTextLabel.h"
+#include "ScrolledModule.h"
 #include "Sprite.h"
 #include "TileScroller.h"
 #include "Timer.h"
-#include "Util.h"
-#include <allegro5/allegro.h>
-#include <allegro5/allegro_font.h>
-#include <math.h>
-#include <typeinfo>
-#include <vector>
 
 class ModuleInterstellarTravel : public Module {
   private:
-    TileScroller *scroller;
+    std::shared_ptr<TileScroller> m_scroller;
 
-    int controlKey;
-    int shiftKey;
     int starFound;
 
-    Officer *tempOfficer;
-
     const Flux *flux;
-    Sprite *shield;
 
-    bool flag_Shields;
     bool flag_Weapons;
-    bool flag_Engaged;
     Timer timerEngaged;
     std::string alienRaceText, alienRaceTextPlural, depth;
     AlienRaces alienRace;
@@ -54,22 +45,13 @@ class ModuleInterstellarTravel : public Module {
     float ratioy;
     Star *starSystem;
     PlayerShipSprite *ship;
-    ScrollBox::ScrollBox *text;
+    std::shared_ptr<ScrolledModule<RichTextLabel>> m_text;
     bool flag_DoNormalSpace;
     bool flag_FoundFlux;
     bool flag_nav;
     bool flag_thrusting;
     int flag_rotation;
     bool flag_launchEncounter;
-
-    // shortcuts to crew last names to simplify code
-    std::string cap;
-    std::string com;
-    std::string sci;
-    std::string nav;
-    std::string tac;
-    std::string eng;
-    std::string doc;
 
     ALLEGRO_BITMAP *img_gui;
 
@@ -87,24 +69,17 @@ class ModuleInterstellarTravel : public Module {
     double getPlayerGalacticX();
     double getPlayerGalacticY();
     double Distance(double x1, double y1, double x2, double y2);
-    ResourceManager<ALLEGRO_BITMAP> resources;
 
   public:
-    ModuleInterstellarTravel(void);
-    ~ModuleInterstellarTravel(void);
-    virtual bool Init() override;
-    virtual void Update() override;
-    virtual void Draw() override;
-    virtual void OnKeyPress(int keyCode) override;
-    virtual void OnKeyReleased(int keyCode) override;
-    virtual void OnMouseMove(int x, int y) override;
-    virtual void OnMouseClick(int button, int x, int y) override;
-    virtual void OnMousePressed(int button, int x, int y) override;
-    virtual void OnMouseReleased(int button, int x, int y) override;
-    virtual void OnMouseWheelUp(int x, int y) override;
-    virtual void OnMouseWheelDown(int x, int y) override;
-    virtual void OnEvent(Event *event) override;
-    virtual void Close() override;
+    ModuleInterstellarTravel();
+    ~ModuleInterstellarTravel();
+    virtual bool on_init() override;
+    virtual bool on_update() override;
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
+    virtual bool on_key_down(ALLEGRO_KEYBOARD_EVENT *event) override;
+    virtual bool on_key_up(ALLEGRO_KEYBOARD_EVENT *event) override;
+    virtual bool on_event(ALLEGRO_EVENT *event) override;
+    virtual bool on_close() override;
 };
 
 #endif

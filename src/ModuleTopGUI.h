@@ -5,24 +5,17 @@
         Date: April 2008
 */
 
-#ifndef _MODULETOPGUI_H
-#define _MODULETOPGUI_H
+#ifndef MODULETOPGUI_H
+#define MODULETOPGUI_H
+
+#include <allegro5/allegro.h>
 
 #include "Module.h"
-#include "ResourceManager.h"
 
 class ModuleTopGUI : public Module {
   public:
-    ModuleTopGUI();
-    ~ModuleTopGUI();
-    virtual bool Init() override;
-    virtual void Update() override;
-    void UpdateInjector();
-    virtual void Draw() override;
-    virtual void Close() override;
-
-  private:
-    ResourceManager<ALLEGRO_BITMAP> m_resources;
+    virtual bool on_init() override;
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
 };
 
 #endif

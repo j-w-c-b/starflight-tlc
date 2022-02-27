@@ -8,27 +8,23 @@
 
 using namespace std;
 
-QuestMgr::QuestMgr() : script(), questName(""), questShort(""), questLong("") {}
+QuestMgr::QuestMgr() {}
 
-QuestMgr::~QuestMgr() { delete script; }
+QuestMgr::~QuestMgr() {}
 
 bool
 QuestMgr::Initialize() {
     debriefStatus = 0;
 
-    if (script != NULL)
-        delete script;
-
     // load quest script file
-    script = new Script();
-    if (!script->load("data/quests.lua")) {
+    if (!script.load("data/quests.lua")) {
         return false;
     }
 
     std::string prof = g_game->gameState->getProfessionString();
-    script->setGlobalString("profession", prof);
+    script.setGlobalString("profession", prof);
 
-    if (!script->runFunction("Initialize"))
+    if (!script.runFunction("Initialize"))
         return false;
 
     if (!getActiveQuest())
@@ -39,34 +35,34 @@ QuestMgr::Initialize() {
 
 void
 QuestMgr::getScriptGlobals() {
-    questName = script->getGlobalString("quest_name");
-    questShort = script->getGlobalString("quest_short");
-    questLong = script->getGlobalString("quest_long");
-    questDebrief = script->getGlobalString("quest_debrief");
-    questReqCode = script->getGlobalNumber("requirement_code");
-    questReqType = script->getGlobalNumber("requirement_type");
-    questReqAmt = script->getGlobalNumber("requirement_amount");
-    questRewCode = script->getGlobalNumber("reward_code");
-    questRewType = script->getGlobalNumber("reward_type");
-    questRewAmt = script->getGlobalNumber("reward_amount");
+    questName = script.getGlobalString("quest_name");
+    questShort = script.getGlobalString("quest_short");
+    questLong = script.getGlobalString("quest_long");
+    questDebrief = script.getGlobalString("quest_debrief");
+    questReqCode = script.getGlobalNumber("requirement_code");
+    questReqType = script.getGlobalNumber("requirement_type");
+    questReqAmt = script.getGlobalNumber("requirement_amount");
+    questRewCode = script.getGlobalNumber("reward_code");
+    questRewType = script.getGlobalNumber("reward_type");
+    questRewAmt = script.getGlobalNumber("reward_amount");
 
-    int active_quest = script->getGlobalNumber("active_quest");
+    int active_quest = script.getGlobalNumber("active_quest");
     g_game->gameState->setActiveQuest(active_quest);
 
-    int plot_stage = script->getGlobalNumber("plot_stage");
+    int plot_stage = script.getGlobalNumber("plot_stage");
     g_game->gameState->setPlotStage(plot_stage);
 }
 
 bool
 QuestMgr::getQuestByID(int id) {
-    script->setGlobalNumber("active_quest", id);
+    script.setGlobalNumber("active_quest", id);
     getScriptGlobals();
     return true;
 }
 
 bool
 QuestMgr::getNextQuest() {
-    if (!script->runFunction("getNextQuest")) {
+    if (!script.runFunction("getNextQuest")) {
         return false;
     }
     getScriptGlobals();
@@ -80,9 +76,9 @@ QuestMgr::getActiveQuest() {
     // otherwise script uses it's own numbering
     int active = g_game->gameState->getActiveQuest();
     if (active > 0)
-        script->setGlobalNumber("active_quest", active);
+        script.setGlobalNumber("active_quest", active);
 
-    if (!script->runFunction("getActiveQuest")) {
+    if (!script.runFunction("getActiveQuest")) {
         return false;
     }
     getScriptGlobals();
@@ -187,7 +183,7 @@ QuestMgr::VerifyRequirements(int reqCode, int reqType, int reqAmt) {
     g_game->gameState->setQuestCompleted(req);
 }
 
-void
+string
 QuestMgr::giveReward() {
     string reward = "Error: Reward is invalid";
     Item *item;
@@ -229,13 +225,10 @@ QuestMgr::giveReward() {
         }
 
         g_game->gameState->m_items.AddItems(id, amt);
-        reward = "You received " + Util::ToString(amt, 1, 1) +
-                 " cubic meters of " + item->name + ".";
+        reward = "You received " + Util::ToString(amt, 1, 1)
+                 + " cubic meters of " + item->name + ".";
         break;
     }
-
-    // show message
-    g_game->ShowMessageBoxWindow("", reward, 350, 300, YELLOW, 650, 440, false);
 
     /**
             reset stored value
@@ -243,4 +236,6 @@ QuestMgr::giveReward() {
     storedvalue represents the completion status of the current quest.
     **/
     g_game->gameState->setStoredValue(-1);
+    return reward;
 }
+// vi: ft=cpp

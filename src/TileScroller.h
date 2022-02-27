@@ -1,9 +1,12 @@
 #ifndef TILESCROLLER_H_
 #define TILESCROLLER_H_ 1
 
-#include "Point2D.h"
-#include <allegro5/allegro.h>
 #include <vector>
+
+#include <allegro5/allegro.h>
+
+#include "Module.h"
+#include "Point2D.h"
 
 /// Tileset for use with the TileScroller
 ///
@@ -33,7 +36,11 @@ class TileSet {
     ///     Layout of the tiles within bitmap: the number of rows of tile
     ///     images.
     TileSet(
-        ALLEGRO_BITMAP *bitmap, int width, int height, int columns, int rows);
+        std::shared_ptr<ALLEGRO_BITMAP> bitmap,
+        int width,
+        int height,
+        int columns,
+        int rows);
 
     /// Draw a tile to the current target bitmap
     ///
@@ -50,22 +57,16 @@ class TileSet {
     /// Retrieve width
     ///
     /// \return The width of tiles in the tile set.
-    inline int
-    get_tile_width() const {
-        return m_width;
-    }
+    inline int get_tile_width() const { return m_width; }
 
     /// Retrieve height
     ///
     /// \return The height of tiles in the tile set.
-    inline int
-    get_tile_height() const {
-        return m_height;
-    }
+    inline int get_tile_height() const { return m_height; }
 
   protected:
     //! Bitmap containing the tile subimages
-    ALLEGRO_BITMAP *m_tiles;
+    std::shared_ptr<ALLEGRO_BITMAP> m_tiles;
     //! Width of tiles in m_tiles
     int m_width;
     //! Height of tiles in m_tiles
@@ -84,7 +85,7 @@ class TileSet {
 /// the TileScroller, call set_scroll_position() to select which area to
 /// display, and then draw_scroll_window() to render the tiles at the desired
 /// location to a destination bitmap.
-class TileScroller {
+class TileScroller : public Module {
   public:
     /// Constructor
     ///
@@ -92,29 +93,36 @@ class TileScroller {
     /// draw_scroll_window() will render the entire area as tile 0 from the
     /// TileSet
     ///
+    /// \param[in] x
+    ///     The x coordination screen position of the scrolled display.
+    /// \param[in] y
+    ///     The y coordination screen position of the scrolled display.
+    /// \param[in] height
+    ///     The height (in pixels) of the scrolled display.
+    /// \param[in] width
+    ///     The width (in pixels) of the scrolled display.
+    /// \param[in] height
+    ///     The height (in pixels) of the scrolled display.
     /// \param[in] t
     ///    A TileSet containing the images to display.
     /// \param[in] max_x
     ///     The maximum horizontal dimension (in tiles) of the tile grid.
     /// \param[in] max_y
     ///     The maximum vertical dimension (in tiles) of the tile grid.
-    /// \param[in] region_width
-    ///     The width (in pixels) of the bitmap that this object creates from
-    ///     the tile data grid and the tile images.
-    /// \param[in] region_height
-    ///     The height (in pixels) of the bitmap that this object creates from
-    ///     the tile data grid and the tile images.
     /// \param[in] scroll_offset
     ///     Offset (in pixels) to shift the display relative to the current
     ///     scroll position. Set this value to have this object treat the values
     ///     passed to set_scroll_position() as other than the top left corner of
     ///     the view.
-    TileScroller(const TileSet &t,
-                 int max_x,
-                 int max_y,
-                 int region_width,
-                 int region_height,
-                 const Point2D &scroll_offset = Point2D(0, 0));
+    TileScroller(
+        int x,
+        int y,
+        int width,
+        int height,
+        const TileSet &t,
+        int max_x,
+        int max_y,
+        const Point2D &scroll_offset = Point2D(0, 0));
     ~TileScroller();
 
     //! Set all tile data in this object to use tile 0.
@@ -131,8 +139,7 @@ class TileScroller {
     /// \param[in] value
     ///     The tile to use at this position.
     /// \return void
-    inline void
-    set_tile(int x, int y, short value) {
+    inline void set_tile(int x, int y, short value) {
         ALLEGRO_ASSERT(x >= 0 && x < m_tile_max_x);
         ALLEGRO_ASSERT(y >= 0 && y < m_tile_max_y);
 
@@ -151,41 +158,27 @@ class TileScroller {
     /// \param[in] p
     ///     The position in tile coordinates to scoll to.
     /// \return void
-    void
-    set_scroll_position(const Point2D &p) {
-        Point2D new_position(p.x * m_tiles.get_tile_width() - m_scroll_offset.x,
-                             p.y * m_tiles.get_tile_height() -
-                                 m_scroll_offset.y);
+    void set_scroll_position(const Point2D &p) {
+        Point2D new_position(
+            p.x * m_tiles.get_tile_width() - m_scroll_offset.x,
+            p.y * m_tiles.get_tile_height() - m_scroll_offset.y);
         int tile_width = m_tiles.get_tile_width();
         int tile_height = m_tiles.get_tile_height();
 
-        if (static_cast<int>(new_position.x / tile_width) !=
-                static_cast<int>(m_scroll_position.x / tile_width) ||
-            static_cast<int>(new_position.y / tile_height) !=
-                static_cast<int>(m_scroll_position.y / tile_height)) {
+        if (static_cast<int>(new_position.x / tile_width)
+                != static_cast<int>(m_scroll_position.x / tile_width)
+            || static_cast<int>(new_position.y / tile_height)
+                   != static_cast<int>(m_scroll_position.y / tile_height)) {
             m_dirty = true;
         }
         m_scroll_position = new_position;
     }
 
-    /// Draw the scroll buffer to a bitmap
-    ///
-    /// Draws a section of the current scroll buffer to a position the \a dest
-    /// bitmap.
-    ///
-    /// \param[in,out] dest
+    /// Draw the scroll buffer to the target bitmap
+    /// \param[in,out] target
     ///     A pointer to the bitmap to draw to.
-    /// \param[in] x
-    ///     The x coordinate (in pixels) to draw to in the bitmap.
-    /// \param[in] y
-    ///     The y coordinate (in pixels) to draw to in the bitmap.
-    /// \param[in] width
-    ///     The width (in pixels) of the scroll buffer to draw to the bitmap.
-    /// \param[in] height
-    ///     The height (in pixels) of the scroll buffer to draw to the bitmap.
-    /// \return void
-    void draw_scroll_window(
-        ALLEGRO_BITMAP *dest, int x, int y, int width, int height);
+    /// \return true if drawing should proceed for other modules
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
 
   private:
     /// Get the tile value at a position
@@ -198,8 +191,7 @@ class TileScroller {
     /// \param y
     ///     Tile y coordinate.
     /// \return The value of the tile or 0 if the position is out of bounds.
-    inline short
-    get_tile(int x, int y) {
+    inline short get_tile(int x, int y) {
         if (x < 0 || x >= m_tile_max_x || y < 0 || y >= m_tile_max_y) {
             return 0;
         }
@@ -252,3 +244,4 @@ class TileScroller {
 };
 
 #endif
+// vi: ft=cpp

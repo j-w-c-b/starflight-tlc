@@ -8,18 +8,25 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include "Point2D.h"
-#include <allegro5/allegro.h>
+#include <cmath>
 #include <iomanip>
 #include <iostream>
-#include <math.h>
 #include <sstream>
-#include <stdlib.h>
 #include <string>
 #include <vector>
 
+#include <allegro5/allegro.h>
+
+#include "Point2D.h"
+
 #define DEGS2RADS ((float)(3.14159 / 180.0))
 #define CLOCKS2SECS(c) ((double)(c) / (double)CLOCKS_PER_SEC)
+
+extern "C" int
+sfrand(void);
+
+extern "C" void
+sfsrand(unsigned int seed);
 
 class Util {
   public:
@@ -30,8 +37,7 @@ class Util {
     static void Init();
 
     template <class T>
-    static std::string
-    ToString(const T &t, int width = 1, int precision = 2) {
+    static std::string ToString(const T &t, int width = 1, int precision = 2) {
         std::ostringstream oss;
         oss.precision(precision);
         oss.width(width);
@@ -41,8 +47,7 @@ class Util {
         return oss.str();
     }
 
-    static int
-    StringToInt(const std::string &str) {
+    static int StringToInt(const std::string &str) {
         int i;
         try {
             i = std::stoi(str);
@@ -55,9 +60,17 @@ class Util {
     /**
      * returns a random number in the range [min.max] inclusive
      */
-    static int
-    Random(int min, int max) {
-        return rand() % (max - min + 1) + min;
+    static int Random(int min, int max) {
+        return sfrand() % (max - min + 1) + min;
+    }
+
+    template <typename T> static auto random_choice(T t) {
+        typename T::iterator start = t.begin();
+        typename T::iterator end = t.end();
+        auto dis = std::distance(start, end) - 1;
+        std::advance(start, Random(0, dis));
+
+        return *start;
     }
 
     /**
@@ -86,9 +99,7 @@ class Util {
     /**
      * limit the signed value to having the specified magnitude
      */
-    template <class T>
-    static void
-    ClampValue(T &val, T mag) {
+    template <class T> static void ClampValue(T &val, T mag) {
         if (val > mag)
             val = mag;
         if (val < -mag)
@@ -98,9 +109,7 @@ class Util {
     /**
      * limit the signed value to having the specified magnitude
      */
-    template <class T>
-    static T
-    ClampValue(T val, T low, T high) {
+    template <class T> static T ClampValue(T val, T low, T high) {
         if (val > high)
             val = high;
         if (val < low)
@@ -114,10 +123,9 @@ class Util {
     static int ReentrantDelay(int ms);
 
     // converts a string to all upper case
-    static std::string ToUpper(std::string &str);
+    static std::string ToUpper(const std::string &str);
 
-    static std::string
-    resource_path(const std::string &relative_path) {
+    static std::string resource_path(const std::string &relative_path) {
         static ALLEGRO_PATH *data_dir =
             al_get_standard_path(ALLEGRO_RESOURCES_PATH);
         if (relative_path[0] == '/') {
@@ -160,18 +168,13 @@ class Rect {
         bottom = b;
     }
 
-    bool
-    contains(Point2D p) {
-        return contains(p.x, p.y);
-    }
+    bool contains(Point2D p) { return contains(p.x, p.y); }
 
-    bool
-    contains(int x, int y) {
+    bool contains(int x, int y) {
         return (x >= left && x <= right && y >= top && y <= bottom);
     }
 
-    bool
-    contains(double x, double y) {
+    bool contains(double x, double y) {
         return (x >= left && x <= right && y >= top && y <= bottom);
     }
 };

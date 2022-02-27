@@ -7,18 +7,19 @@
 #ifndef GAMEOVER_H
 #define GAMEOVER_H
 
-#include "Module.h"
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_font.h>
+
+#include "Module.h"
 
 class ModuleGameOver : public Module {
   private:
   public:
-    ModuleGameOver(void);
-    virtual ~ModuleGameOver(void);
-    virtual void Update() override;
-    virtual void Draw() override;
-    virtual void OnKeyReleased(int keyCode) override;
+    ModuleGameOver();
+    virtual ~ModuleGameOver();
+    virtual bool on_update() override;
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
+    virtual bool on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event) override;
 
     bool bQuickShutdown;
 };

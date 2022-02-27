@@ -6,9 +6,9 @@
 */
 
 #include <cmath>
-#include <fstream>
-#include <math.h>
-#include <sstream>
+#include <map>
+#include <stdexcept>
+#include <utility>
 
 #include "Archive.h"
 #include "DataMgr.h"
@@ -24,437 +24,7 @@ using namespace std;
 
 ALLEGRO_DEBUG_CHANNEL("GameState")
 
-// OFFICER CLASS
-
-Officer::Officer() { Reset(); }
-
-Officer::Officer(OfficerType type) {
-    Reset();
-    officerType = type;
-}
-
-Officer::~Officer() { Reset(); }
-
-/**
-    This function increases a crew member's skill in a specific area as a result
-of performing a task. The name of the skill is passed as a string to avoid our
-already prodigious use of enums. vcap: otoh, enum are nice because compilers
-know about them, also you can use the switch construct with them, so i did one
-anyway.
-**/
-bool
-Officer::SkillUp(const string &skill, int amount) {
-    // because of the way we use attributes.extra_variable, all sort of bad
-    // things will happen if we allow captain skills to increase thru this
-    // function and the captain is filling several roles.
-    if (this->officerType == OFFICER_CAPTAIN)
-        return false;
-
-    // level up a specific skill
-    if (skill == "science") {
-        if (this->attributes.science >= 255)
-            return false;
-        if (this->attributes.science + amount >= 255)
-            this->attributes.science = 255;
-        else
-            this->attributes.science += amount;
-    } else if (skill == "engineering") {
-        if (this->attributes.engineering >= 255)
-            return false;
-        if (this->attributes.engineering + amount >= 255)
-            this->attributes.engineering = 255;
-        else
-            this->attributes.engineering += amount;
-    } else if (skill == "navigation") {
-        if (this->attributes.navigation >= 255)
-            return false;
-        if (this->attributes.navigation + amount >= 255)
-            this->attributes.navigation = 255;
-        else
-            this->attributes.navigation += amount;
-    } else if (skill == "communication") {
-        if (this->attributes.communication >= 255)
-            return false;
-        if (this->attributes.communication + amount >= 255)
-            this->attributes.communication = 255;
-        else
-            this->attributes.communication += amount;
-    } else if (skill == "medical") {
-        if (this->attributes.medical >= 255)
-            return false;
-        if (this->attributes.medical + amount >= 255)
-            this->attributes.medical = 255;
-        else
-            this->attributes.medical += amount;
-    } else if (skill == "tactical") {
-        if (this->attributes.tactics >= 255)
-            return false;
-        if (this->attributes.tactics + amount >= 255)
-            this->attributes.tactics = 255;
-        else
-            this->attributes.tactics += amount;
-    } else
-        ALLEGRO_ASSERT(0);
-
-    return true;
-}
-
-// same as above but with the Skill enum
-bool
-Officer::SkillUp(Skill skill, int amount) {
-    // because of the way we use attributes.extra_variable, all sort of bad
-    // things will happen if we allow captain skills to increase thru this
-    // function and the captain is filling several roles.
-    if (this->officerType == OFFICER_CAPTAIN)
-        return false;
-
-    // level up a specific skill
-    switch (skill) {
-    case SKILL_SCIENCE:
-        if (this->attributes.science >= 255)
-            return false;
-        if (this->attributes.science + amount >= 255)
-            this->attributes.science = 255;
-        else
-            this->attributes.science += amount;
-        break;
-
-    case SKILL_ENGINEERING:
-        if (this->attributes.engineering >= 255)
-            return false;
-        if (this->attributes.engineering + amount >= 255)
-            this->attributes.engineering = 255;
-        else
-            this->attributes.engineering += amount;
-        break;
-
-    case SKILL_NAVIGATION:
-        if (this->attributes.navigation >= 255)
-            return false;
-        if (this->attributes.navigation + amount >= 255)
-            this->attributes.navigation = 255;
-        else
-            this->attributes.navigation += amount;
-        break;
-
-    case SKILL_COMMUNICATION:
-        if (this->attributes.communication >= 255)
-            return false;
-        if (this->attributes.communication + amount >= 255)
-            this->attributes.communication = 255;
-        else
-            this->attributes.communication += amount;
-        break;
-
-    case SKILL_MEDICAL:
-        if (this->attributes.medical >= 255)
-            return false;
-        if (this->attributes.medical + amount >= 255)
-            this->attributes.medical = 255;
-        else
-            this->attributes.medical += amount;
-        break;
-
-    case SKILL_TACTICAL:
-        if (this->attributes.tactics >= 255)
-            return false;
-        if (this->attributes.tactics + amount >= 255)
-            this->attributes.tactics = 255;
-        else
-            this->attributes.tactics += amount;
-        break;
-
-    default:
-        ALLEGRO_ASSERT(0);
-    }
-
-    return true;
-}
-
-Officer &
-Officer::operator=(const Officer &rhs) {
-    name = rhs.name;
-    attributes = rhs.attributes;
-    officerType = rhs.officerType;
-
-    return *this;
-}
-
-OfficerType
-Officer::GetOfficerType() const {
-    return officerType;
-}
-
-string
-Officer::GetTitle() {
-    string result = "";
-
-    switch (officerType) {
-    case OFFICER_CAPTAIN:
-        result = "Captain";
-        break;
-
-    case OFFICER_SCIENCE:
-        result = "Sciences";
-        break;
-
-    case OFFICER_NAVIGATION:
-        result = "Navigation";
-        break;
-
-    case OFFICER_ENGINEER:
-        result = "Engineering";
-        break;
-
-    case OFFICER_COMMUNICATION:
-        result = "Communications";
-        break;
-
-    case OFFICER_MEDICAL:
-        result = "Medical";
-        break;
-
-    case OFFICER_TACTICAL:
-        result = "Tactical";
-        break;
-
-    case OFFICER_NONE:
-    default:
-        result = "None";
-        break;
-    };
-
-    return result;
-}
-
-string
-Officer::GetTitle(OfficerType officerType) {
-    string result = "";
-
-    switch (officerType) {
-    case OFFICER_CAPTAIN:
-        result = "Captain";
-        break;
-
-    case OFFICER_SCIENCE:
-        result = "Sciences";
-        break;
-
-    case OFFICER_NAVIGATION:
-        result = "Navigation";
-        break;
-
-    case OFFICER_ENGINEER:
-        result = "Engineering";
-        break;
-
-    case OFFICER_COMMUNICATION:
-        result = "Communications";
-        break;
-
-    case OFFICER_MEDICAL:
-        result = "Medical";
-        break;
-
-    case OFFICER_TACTICAL:
-        result = "Tactical";
-        break;
-
-    case OFFICER_NONE:
-    default:
-        result = "None";
-        break;
-    };
-
-    return result;
-}
-
-std::string
-Officer::GetPreferredProfession() {
-    OfficerType prefferredType = OFFICER_NONE;
-    int highestValue = 0;
-
-    for (int i = 0; i < 7; ++i) {
-        if (attributes[i] > highestValue) {
-            highestValue = attributes[i];
-            prefferredType = (OfficerType)(i + 2);
-        }
-    }
-
-    return GetTitle(prefferredType);
-}
-
-void
-Officer::SetOfficerType(int type) {
-    switch (type) {
-    case 0:
-        officerType = OFFICER_NONE;
-        break;
-    case 1:
-        officerType = OFFICER_CAPTAIN;
-        break;
-    case 2:
-        officerType = OFFICER_SCIENCE;
-        break;
-    case 3:
-        officerType = OFFICER_NAVIGATION;
-        break;
-    case 4:
-        officerType = OFFICER_ENGINEER;
-        break;
-    case 5:
-        officerType = OFFICER_COMMUNICATION;
-        break;
-    case 6:
-        officerType = OFFICER_MEDICAL;
-        break;
-    case 7:
-        officerType = OFFICER_TACTICAL;
-        break;
-    }
-}
-
-void
-Officer::SetOfficerType(OfficerType type) {
-    officerType = type;
-}
-
-void
-Officer::Reset() {
-    name = "";
-    attributes.Reset();
-    officerType = OFFICER_NONE;
-    isHealing = false;
-    this->lastSkillCheck.SetYear(0);
-}
-
-bool
-Officer::Serialize(Archive &ar) {
-    string ClassName = "Officer";
-    int Schema = 0;
-
-    if (ar.IsStoring()) {
-        ar << ClassName;
-        ar << Schema;
-
-        ar << name;
-
-        if (!attributes.Serialize(ar))
-            return false;
-
-        ar << (int)officerType;
-    } else {
-        Reset();
-
-        string LoadClassName;
-        ar >> LoadClassName;
-        if (LoadClassName != ClassName)
-            return false;
-
-        int LoadSchema;
-        ar >> LoadSchema;
-        if (LoadSchema > Schema)
-            return false;
-
-        ar >> name;
-
-        if (!attributes.Serialize(ar))
-            return false;
-
-        int tmpi;
-        ar >> tmpi;
-        officerType = (OfficerType)tmpi;
-    }
-
-    return true;
-}
-
-bool
-Officer::SkillCheck() {
-    int skill_value = 0;
-    int chance = 0;
-
-    lastSkillCheck = g_game->gameState->stardate;
-
-    switch (this->GetOfficerType()) {
-    case OFFICER_SCIENCE:
-        skill_value = this->attributes.getScience();
-        break;
-    case OFFICER_ENGINEER:
-        skill_value = this->attributes.getEngineering();
-        break;
-    case OFFICER_MEDICAL:
-        skill_value = this->attributes.getMedical();
-        break;
-    case OFFICER_NAVIGATION:
-        skill_value = this->attributes.getNavigation();
-        break;
-    case OFFICER_TACTICAL:
-        skill_value = this->attributes.getTactics();
-        break;
-    case OFFICER_COMMUNICATION:
-        skill_value = this->attributes.getCommunication();
-        break;
-    default:
-        return false;
-    }
-
-    // 250+ is guaranteed pass
-    if (skill_value > 250) {
-        return true;
-    }
-    // any below 200 is % chance to pass skill check
-    else if (skill_value > 200) {
-        chance = 90;
-    } else if (skill_value > 150) {
-        chance = 80;
-    } else if (skill_value > 100) {
-        chance = 70;
-    } else if (skill_value > 75) {
-        chance = 60;
-    } else if (skill_value > 50) {
-        chance = 50;
-    } else
-        chance = 25;
-
-    int roll = rand() % 100;
-    return (roll < chance);
-}
-
-bool
-Officer::CanSkillCheck() {
-    return (this->lastSkillCheck < g_game->gameState->stardate);
-}
-
-void
-Officer::FakeSkillCheck() {
-    lastSkillCheck = g_game->gameState->stardate;
-}
-
-std::string
-Officer::getFirstName() {
-    string::size_type loc = name.find(
-        " ",
-        0); // if player entered just 1 name, return a blank - maybe a null? jjh
-    if (loc != string::npos)
-        // found space, return first name
-        return name.substr(0, loc);
-    else
-        // not found, return whole name
-        return ""; // name;
-}
-
-std::string
-Officer::getLastName() {
-    string::size_type loc = name.find(" ", 0);
-    if (loc != string::npos)
-        // found space, return last name
-        return name.substr(loc + 1);
-    else
-        // not found, return whole name
-        return name;
-}
-
+// SHIP CLASS
 std::string
 convertClassTypeToString(int num) {
     switch (num) {
@@ -496,7 +66,7 @@ Ship::initializeRepair() {
 
     // roll the minerals that will be used for repair
     for (int i = 0; i < NUM_REPAIR_PARTS; i++) {
-        switch (rand() % 5) {
+        switch (sfrand() % 5) {
         case 0:
             repairMinerals[i] = ITEM_COBALT;
             break;
@@ -619,13 +189,10 @@ Ship::getOccupiedSpace() {
 
     return occupiedSpace;
 }
+
 int
 Ship::getAvailableSpace() {
     int freeSpace = getTotalSpace() - getOccupiedSpace();
-    if (freeSpace < 0)
-        g_game->ShowMessageBoxWindow(
-            "",
-            "Your cargo hold contains more stuff than it's actual capacity!");
 
     return freeSpace;
 }
@@ -811,36 +378,36 @@ float
 Ship::getMaxShieldCapacity() {
     switch (shieldClass) {
     case 1:
-        return g_game->getGlobalNumber("SHIELD1_STRENGTH") * shieldIntegrity /
-               100.0f;
+        return g_game->getGlobalNumber("SHIELD1_STRENGTH") * shieldIntegrity
+               / 100.0f;
         break;
     case 2:
-        return g_game->getGlobalNumber("SHIELD2_STRENGTH") * shieldIntegrity /
-               100.0f;
+        return g_game->getGlobalNumber("SHIELD2_STRENGTH") * shieldIntegrity
+               / 100.0f;
         break;
     case 3:
-        return g_game->getGlobalNumber("SHIELD3_STRENGTH") * shieldIntegrity /
-               100.0f;
+        return g_game->getGlobalNumber("SHIELD3_STRENGTH") * shieldIntegrity
+               / 100.0f;
         break;
     case 4:
-        return g_game->getGlobalNumber("SHIELD4_STRENGTH") * shieldIntegrity /
-               100.0f;
+        return g_game->getGlobalNumber("SHIELD4_STRENGTH") * shieldIntegrity
+               / 100.0f;
         break;
     case 5:
-        return g_game->getGlobalNumber("SHIELD5_STRENGTH") * shieldIntegrity /
-               100.0f;
+        return g_game->getGlobalNumber("SHIELD5_STRENGTH") * shieldIntegrity
+               / 100.0f;
         break;
     case 6:
-        return g_game->getGlobalNumber("SHIELD6_STRENGTH") * shieldIntegrity /
-               100.0f;
+        return g_game->getGlobalNumber("SHIELD6_STRENGTH") * shieldIntegrity
+               / 100.0f;
         break;
     case 7:
-        return g_game->getGlobalNumber("SHIELD7_STRENGTH") * shieldIntegrity /
-               100.0f;
+        return g_game->getGlobalNumber("SHIELD7_STRENGTH") * shieldIntegrity
+               / 100.0f;
         break;
     case 8:
-        return g_game->getGlobalNumber("SHIELD8_STRENGTH") * shieldIntegrity /
-               100.0f;
+        return g_game->getGlobalNumber("SHIELD8_STRENGTH") * shieldIntegrity
+               / 100.0f;
         break;
     default:
         return 0;
@@ -962,18 +529,20 @@ Ship::injectEndurium() {
         // reduce endurium
         number_of_endurium--;
         g_game->gameState->m_items.RemoveItems(54, 1);
-        g_game->printout(g_game->g_scrollbox,
-                         "Consuming Endurium crystal... We have " +
-                             Util::ToString(number_of_endurium) + " left.",
-                         ORANGE,
-                         5000);
+        g_game->printout(
+            g_game->g_scrollbox,
+            "Consuming Endurium crystal... We have "
+                + Util::ToString(number_of_endurium) + " left.",
+            ORANGE,
+            5000);
 
         // use it to fill the fuel tank
         g_game->gameState->m_ship.augFuel(1.0f);
 
         // notify CargoHold to update itself
-        Event e(CARGO_EVENT_UPDATE);
-        g_game->modeMgr->BroadcastEvent(&e);
+        ALLEGRO_EVENT e = {
+            .type = static_cast<unsigned int>(EVENT_CARGO_UPDATE)};
+        g_game->broadcast_event(&e);
     } else
         g_game->printout(
             g_game->g_scrollbox, "We have no Endurium!", ORANGE, 5000);
@@ -1145,33 +714,34 @@ Ship::setMaxMissileLauncherClass(int missileLauncherClass) {
 void
 Ship::SendDistressSignal() {
     // calculate cost of rescue
-    int starport_x = g_game->getGlobalNumber("PLAYER_HYPERSPACE_START_X");
-    int starport_y = g_game->getGlobalNumber("PLAYER_HYPERSPACE_START_Y");
+    int starport_x = g_game->getGlobalNumber("PLAYER_HYPERSPACE_START_X") / 128;
+    int starport_y = g_game->getGlobalNumber("PLAYER_HYPERSPACE_START_Y") / 128;
     Point2D starport_pos(starport_x, starport_y);
     double distance = Point2D::Distance(
-        g_game->gameState->player->posHyperspace, starport_pos);
-    double cost = (5000 + (distance * 10.0));
+        g_game->gameState->getHyperspaceCoordinates(), starport_pos);
+    double cost = (5000 + (distance * 50.0));
 
-    string com = g_game->gameState->officerCom->getFirstName() + "-> ";
-
-    string message =
-        "Myrrdan Port Authority has dispatched a tow ship to bring us in. ";
-    message += "The cost of the rescue is " + Util::ToString(cost) + " MU.";
-    g_game->ShowMessageBoxWindow("",
-                                 message,
-                                 500,
-                                 300,
-                                 BLUE,
-                                 SCREEN_WIDTH / 2,
-                                 SCREEN_HEIGHT / 2,
-                                 true,
-                                 false);
+    /* string message = */
+    /*     "Myrrdan Port Authority has dispatched a tow ship to bring us in. ";
+     */
+    /* message += "The cost of the rescue is " + Util::ToString(cost) + " MU.";
+     */
+    /* g_game->ShowMessageBoxWindow( */
+    /*     "", */
+    /*     message, */
+    /*     500, */
+    /*     300, */
+    /*     BLUE, */
+    /*     SCREEN_WIDTH / 2, */
+    /*     SCREEN_HEIGHT / 2, */
+    /*     true, */
+    /*     false); */
 
     // charge player's account for the tow
     g_game->gameState->m_credits -= cost;
 
     // return to starport
-    g_game->setVibration(0);
+    g_game->set_vibration(0);
     g_game->LoadModule(MODULE_PORT);
 }
 
@@ -1201,67 +771,82 @@ Ship::Reset() {
     fuelPercentage = 1.0f;
 }
 
-bool
-Ship::Serialize(Archive &ar) {
-    string ClassName = "Ship";
-    int Schema = 0;
+InputArchive &
+operator>>(InputArchive &ar, Ship &ship) {
+    string class_name = string(Ship::class_name);
+    int schema = 0;
 
-    if (ar.IsStoring()) {
-        ar << ClassName;
-        ar << Schema;
+    ship.Reset();
 
-        ar << name;
-        ar << cargoPodCount;
-        ar << engineClass;
-        ar << shieldClass;
-        ar << armorClass;
-        ar << missileLauncherClass;
-        ar << laserClass;
-        ar << hullIntegrity;
-        ar << armorIntegrity;
-        ar << shieldIntegrity;
-        ar << engineIntegrity;
-        ar << missileLauncherIntegrity;
-        ar << laserIntegrity;
-        ar << hasTV;
-        ar << fuelPercentage;
-    } else {
-        Reset();
-
-        string LoadClassName;
-        ar >> LoadClassName;
-        if (LoadClassName != ClassName)
-            return false;
-
-        int LoadSchema;
-        ar >> LoadSchema;
-        if (LoadSchema > Schema)
-            return false;
-
-        ar >> name;
-        ar >> cargoPodCount;
-        ar >> engineClass;
-        ar >> shieldClass;
-        ar >> armorClass;
-        ar >> missileLauncherClass;
-        ar >> laserClass;
-        ar >> hullIntegrity;
-        ar >> armorIntegrity;
-        ar >> shieldIntegrity;
-        ar >> engineIntegrity;
-        ar >> missileLauncherIntegrity;
-        ar >> laserIntegrity;
-        ar >> hasTV;
-        ar >> fuelPercentage;
+    string load_class_name;
+    ar >> load_class_name;
+    if (load_class_name != class_name) {
+        std::error_code ec(al_get_errno(), std::system_category());
+        throw std::system_error(
+            ec,
+            "Invalid save file: expected " + class_name + ", got "
+                + load_class_name);
     }
+
+    int load_schema;
+    ar >> load_schema;
+    if (load_schema > schema) {
+        std::error_code ec(al_get_errno(), std::system_category());
+        throw std::system_error(
+            ec,
+            "Invalid save file: unknown schema: " + class_name + " version "
+                + std::to_string(load_schema));
+    }
+
+    ar >> ship.name;
+    ar >> ship.cargoPodCount;
+    ar >> ship.engineClass;
+    ar >> ship.shieldClass;
+    ar >> ship.armorClass;
+    ar >> ship.missileLauncherClass;
+    ar >> ship.laserClass;
+    ar >> ship.hullIntegrity;
+    ar >> ship.armorIntegrity;
+    ar >> ship.shieldIntegrity;
+    ar >> ship.engineIntegrity;
+    ar >> ship.missileLauncherIntegrity;
+    ar >> ship.laserIntegrity;
+    ar >> ship.hasTV;
+    ar >> ship.fuelPercentage;
 
     // we used to allow shieldIntegrity > 100.0f, but now that we distinguish
     // between shield integrity and capacity, integrity can't be greater than
     // 100 anymore.
-    if (shieldIntegrity > 100.0f)
-        shieldIntegrity = 100.0f;
+    if (ship.shieldIntegrity > 100.0f)
+        ship.shieldIntegrity = 100.0f;
 
-    return true;
+    return ar;
+}
+
+OutputArchive &
+operator<<(OutputArchive &ar, const Ship &ship) {
+    string class_name = string(Ship::class_name);
+    int schema = 0;
+
+    ar << class_name;
+    ar << schema;
+
+    ar << ship.name;
+    ar << ship.cargoPodCount;
+    ar << ship.engineClass;
+    ar << ship.shieldClass;
+    ar << ship.armorClass;
+    ar << ship.missileLauncherClass;
+    ar << ship.laserClass;
+    ar << ship.hullIntegrity;
+    ar << ship.armorIntegrity;
+    ar << ship.shieldIntegrity;
+    ar << ship.engineIntegrity;
+    ar << ship.missileLauncherIntegrity;
+    ar << ship.laserIntegrity;
+    ar << ship.hasTV;
+    ar << ship.fuelPercentage;
+    return ar;
 }
 
 Ship &
@@ -1323,16 +908,18 @@ Ship::damageRandomSystemOrCrew(int odds, int mindamage, int maxdamage) {
             amount -= damage;
             if (amount < 0) {
                 amount = 0;
-                g_game->printout(g_game->g_scrollbox,
-                                 "Ship's Hull has been destroyed.",
-                                 RED,
-                                 1000);
+                g_game->printout(
+                    g_game->g_scrollbox,
+                    "Ship's Hull has been destroyed.",
+                    RED,
+                    1000);
             }
         } else
-            g_game->printout(g_game->g_scrollbox,
-                             "Ship's Hull has been breached!",
-                             YELLOW,
-                             1000);
+            g_game->printout(
+                g_game->g_scrollbox,
+                "Ship's Hull has been breached!",
+                YELLOW,
+                1000);
         setHullIntegrity(amount);
         break;
     case 1:
@@ -1342,15 +929,17 @@ Ship::damageRandomSystemOrCrew(int odds, int mindamage, int maxdamage) {
             amount -= damage;
             if (amount < 1) {
                 amount = 1;
-                g_game->printout(g_game->g_scrollbox,
-                                 "Your laser has been heavily damaged!",
-                                 RED,
-                                 1000);
+                g_game->printout(
+                    g_game->g_scrollbox,
+                    "Your laser has been heavily damaged!",
+                    RED,
+                    1000);
             } else
-                g_game->printout(g_game->g_scrollbox,
-                                 "Laser is sustaining damage.",
-                                 YELLOW,
-                                 1000);
+                g_game->printout(
+                    g_game->g_scrollbox,
+                    "Laser is sustaining damage.",
+                    YELLOW,
+                    1000);
             setLaserIntegrity(amount);
         }
         break;
@@ -1367,10 +956,11 @@ Ship::damageRandomSystemOrCrew(int odds, int mindamage, int maxdamage) {
                     RED,
                     1000);
             } else
-                g_game->printout(g_game->g_scrollbox,
-                                 "Missile launcher is sustaining damage.",
-                                 YELLOW,
-                                 1000);
+                g_game->printout(
+                    g_game->g_scrollbox,
+                    "Missile launcher is sustaining damage.",
+                    YELLOW,
+                    1000);
             setMissileLauncherIntegrity(amount);
         }
         break;
@@ -1387,10 +977,11 @@ Ship::damageRandomSystemOrCrew(int odds, int mindamage, int maxdamage) {
                     RED,
                     1000);
             } else
-                g_game->printout(g_game->g_scrollbox,
-                                 "Shield generator is sustaining damage.",
-                                 YELLOW,
-                                 1000);
+                g_game->printout(
+                    g_game->g_scrollbox,
+                    "Shield generator is sustaining damage.",
+                    YELLOW,
+                    1000);
             setShieldIntegrity(amount);
         }
         break;
@@ -1401,332 +992,88 @@ Ship::damageRandomSystemOrCrew(int odds, int mindamage, int maxdamage) {
             amount -= damage;
             if (amount < 1) {
                 amount = 1;
-                g_game->printout(g_game->g_scrollbox,
-                                 "The engine has been heavily damaged!",
-                                 RED,
-                                 1000);
+                g_game->printout(
+                    g_game->g_scrollbox,
+                    "The engine has been heavily damaged!",
+                    RED,
+                    1000);
             } else
-                g_game->printout(g_game->g_scrollbox,
-                                 "Engine is sustaining damage.",
-                                 YELLOW,
-                                 1000);
+                g_game->printout(
+                    g_game->g_scrollbox,
+                    "Engine is sustaining damage.",
+                    YELLOW,
+                    1000);
             setEngineIntegrity(amount);
         }
         break;
     }
 }
 
-// ATTRIBUTES CLASS
-
-Attributes::Attributes() { Reset(); }
-
-Attributes::~Attributes() { Reset(); }
-
-int &
-Attributes::operator[](int i) {
-    static int Err = -1;
-
-    switch (i) {
-    case 0:
-        return science;
-        break;
-
-    case 1:
-        return navigation;
-        break;
-
-    case 2:
-        return engineering;
-        break;
-
-    case 3:
-        return communication;
-        break;
-
-    case 4:
-        return medical;
-        break;
-
-    case 5:
-        return tactics;
-        break;
-
-        /*
-            6 & 7 were reversed in the artwork so I'm just reversing them here
-            if this introduces any weird bugs in the game we'll deal with it
-        */
-    case 7: // 6:
-        return durability;
-        break;
-
-    case 6: // 7:
-        return learnRate;
-        break;
-
-    default:
-        return Err;
-        break;
-    }
-}
-
-Attributes &
-Attributes::operator=(const Attributes &rhs) {
-    durability = rhs.durability;
-    learnRate = rhs.learnRate;
-
-    science = rhs.science;
-    navigation = rhs.navigation;
-    tactics = rhs.tactics;
-    engineering = rhs.engineering;
-    communication = rhs.communication;
-    medical = rhs.medical;
-    vitality = rhs.vitality;
-
-    extra_variable = rhs.extra_variable;
-
-    return *this;
-}
-
-// accessors
-int
-Attributes::getDurability() const {
-    return durability;
-}
-int
-Attributes::getLearnRate() const {
-    return learnRate;
-}
-int
-Attributes::getScience() const {
-    return science;
-}
-int
-Attributes::getNavigation() const {
-    return navigation;
-}
-int
-Attributes::getTactics() const {
-    return tactics;
-}
-int
-Attributes::getEngineering() const {
-    return engineering;
-}
-int
-Attributes::getCommunication() const {
-    return communication;
-}
-int
-Attributes::getMedical() const {
-    return medical;
-}
-float
-Attributes::getVitality() const {
-    return vitality;
-}
-
-// mutators
-void
-Attributes::augVitality(float value) {
-    vitality += value;
-    capVitality();
-}
-void
-Attributes::capVitality() {
-    if (vitality > 100) {
-        vitality = 100;
-    }
-    if (vitality < 0) {
-        vitality = 0;
-    }
-}
-
-void
-Attributes::Reset() {
-    durability = 0;
-    learnRate = 0;
-
-    science = 0;
-    navigation = 0;
-    tactics = 0;
-    engineering = 0;
-    communication = 0;
-    medical = 0;
-
-    vitality = 100;
-    extra_variable = 0;
-}
-
-bool
-Attributes::Serialize(Archive &ar) {
-    string ClassName = "Attributes";
-    int Schema = 0;
-
-    if (ar.IsStoring()) {
-        ar << ClassName;
-        ar << Schema;
-
-        ar << durability;
-        ar << learnRate;
-        ar << science;
-        ar << navigation;
-        ar << tactics;
-        ar << engineering;
-        ar << communication;
-        ar << medical;
-        ar << vitality;
-        ar << extra_variable;
-    } else {
-        Reset();
-
-        string LoadClassName;
-        ar >> LoadClassName;
-        if (LoadClassName != ClassName)
-            return false;
-
-        int LoadSchema;
-        ar >> LoadSchema;
-        if (LoadSchema > Schema)
-            return false;
-
-        ar >> durability;
-        ar >> learnRate;
-        ar >> science;
-        ar >> navigation;
-        ar >> tactics;
-        ar >> engineering;
-        ar >> communication;
-        ar >> medical;
-        ar >> vitality;
-        ar >> extra_variable;
-    }
-
-    return true;
-}
-
 // GAMESTATE CLASS
+const map<Skill, OfficerType> GameState::skill_map = {
+    {SKILL_SCIENCE, OFFICER_SCIENCE},
+    {SKILL_NAVIGATION, OFFICER_NAVIGATION},
+    {SKILL_TACTICAL, OFFICER_TACTICAL},
+    {SKILL_ENGINEERING, OFFICER_ENGINEER},
+    {SKILL_COMMUNICATION, OFFICER_COMMUNICATION},
+    {SKILL_MEDICAL, OFFICER_MEDICAL}};
 
-GameState::GameState()
-    : m_items(*new Items), player(NULL), officerCap(NULL), officerSci(NULL),
-      officerNav(NULL), officerTac(NULL), officerEng(NULL), officerCom(NULL),
-      officerDoc(NULL) {
-    Reset();
-}
+GameState::GameState() : m_items(*new Items) { Reset(); }
 
 ALLEGRO_PATH *
 GameState::get_save_file_path(GameSaveSlot slot) {
     ALLEGRO_ASSERT(slot != GAME_SAVE_SLOT_UNKNOWN);
     string slotpathname;
     if (slot == GAME_SAVE_SLOT_NEW) {
-        slotpathname = "newcaptain.dat";
+        slotpathname = "saves/newcaptain.dat";
     } else {
         slotpathname =
             string("saves/savegame-") + to_string(slot) + string(".dat");
     }
-    if (save_dir_path == NULL) {
-        save_dir_path = al_get_standard_path(ALLEGRO_USER_DATA_PATH);
-    }
     ALLEGRO_PATH *save_file_path = al_create_path(slotpathname.c_str());
-    al_rebase_path(save_dir_path, save_file_path);
 
     return save_file_path;
 }
 
-GameState::~GameState() {
-    delete &m_items;
-    delete player;
-    player = NULL;
-    delete officerCap;
-    officerCap = NULL;
-    delete officerSci;
-    officerSci = NULL;
-    delete officerNav;
-    officerNav = NULL;
-    delete officerTac;
-    officerTac = NULL;
-    delete officerEng;
-    officerEng = NULL;
-    delete officerCom;
-    officerCom = NULL;
-    delete officerDoc;
-    officerDoc = NULL;
+GameState::~GameState() {}
 
-    for (int i = 0; i < (int)m_unemployedOfficers.size(); ++i) {
-        delete m_unemployedOfficers[i];
-        m_unemployedOfficers[i] = NULL;
+void
+GameState::operator=(const GameState &other) {
+    for (int i = 0; i < NUM_ALIEN_RACES; i++) {
+        alienAttitudes[i] = other.alienAttitudes[i];
     }
-    m_unemployedOfficers.clear();
-}
-
-GameState &
-GameState::operator=(const GameState &rhs) {
-    for (int i = 0; i < NUM_ALIEN_RACES; i++)
-        alienAttitudes[i] = rhs.alienAttitudes[i];
-
-    playerPosture = rhs.playerPosture;
-    m_gameTimeSecs = rhs.m_gameTimeSecs;
-    stardate = rhs.stardate;
-    m_captainSelected = rhs.m_captainSelected;
-    m_profession = rhs.m_profession;
-    m_credits = rhs.m_credits;
-    m_items = rhs.m_items;
-
-    delete player;
-    player = new PlayerInfo;
-    *player = *rhs.player;
-
-    m_ship = rhs.m_ship;
-
-    m_currentSelectedOfficer = rhs.m_currentSelectedOfficer;
-
-    for (int i = 0; i < (int)m_unemployedOfficers.size(); ++i) {
-        delete m_unemployedOfficers[i];
-        m_unemployedOfficers[i] = NULL;
+    flux_info = other.flux_info;
+    alienAttitudeUpdate = other.alienAttitudeUpdate;
+    playerPosture = other.playerPosture;
+    m_baseGameTimeSecs = other.m_baseGameTimeSecs;
+    m_gameTimeSecs = other.m_gameTimeSecs;
+    stardate = other.stardate;
+    m_captainSelected = other.m_captainSelected;
+    m_profession = other.m_profession;
+    m_credits = other.m_credits;
+    m_items = other.m_items;
+    player = other.player;
+    m_ship = other.m_ship;
+    m_currentSelectedOfficer = other.m_currentSelectedOfficer;
+    navigateStatus = other.navigateStatus;
+    shieldStatus = other.shieldStatus;
+    weaponStatus = other.weaponStatus;
+    plotStage = other.plotStage;
+    currentModule = other.currentModule;
+    firstTimeVisitor = other.firstTimeVisitor;
+    activeQuest = other.activeQuest;
+    storedValue = other.storedValue;
+    questCompleted = other.questCompleted;
+    currentModeWhenGameSaved = other.currentModeWhenGameSaved;
+    for (auto &i : other.m_unemployed_officers) {
+        m_unemployed_officers.insert(new Officer(*i));
     }
-    m_unemployedOfficers.clear();
-    for (int i = 0; i < (int)rhs.m_unemployedOfficers.size(); i++) {
-        Officer *newOfficer = new Officer;
-        *newOfficer = *rhs.m_unemployedOfficers[i];
-        m_unemployedOfficers.push_back(newOfficer);
+    for (auto &i : other.m_unassigned_officers) {
+        m_unassigned_officers.insert(new Officer(*i));
     }
-
-    delete officerCap;
-    officerCap = new Officer();
-    *officerCap = *rhs.officerCap;
-    delete officerSci;
-    officerSci = new Officer();
-    *officerSci = *rhs.officerSci;
-    delete officerNav;
-    officerNav = new Officer();
-    *officerNav = *rhs.officerNav;
-    delete officerTac;
-    officerTac = new Officer();
-    *officerTac = *rhs.officerTac;
-    delete officerEng;
-    officerEng = new Officer();
-    *officerEng = *rhs.officerEng;
-    delete officerCom;
-    officerCom = new Officer();
-    *officerCom = *rhs.officerCom;
-    delete officerDoc;
-    officerDoc = new Officer();
-    *officerDoc = *rhs.officerDoc;
-
-    TotalCargoStacks = rhs.TotalCargoStacks;
-    defaultShipCargoSize = rhs.defaultShipCargoSize;
-
-    m_baseGameTimeSecs = rhs.m_baseGameTimeSecs;
-    m_gameTimeSecs = rhs.m_gameTimeSecs;
-
-    activeQuest = rhs.activeQuest;
-    storedValue = rhs.storedValue;
-
-    currentModeWhenGameSaved = rhs.currentModeWhenGameSaved;
-    dirty = false;
-    for (auto &i : rhs.flux_info) {
-        flux_info[i.first] = i.second;
+    for (auto &i : other.m_crew) {
+        m_crew[i.first] = new Officer(*i.second);
     }
-    return *this;
 }
 
 void
@@ -1734,7 +1081,6 @@ PlayerInfo::Reset() {
     m_scanner = false;
     m_previous_scanner_state = false;
     m_bHasHyperspacePermit = true;
-    m_bHasOverdueLoan = false;
 
     currentStar = 2;
     currentPlanet = 450;
@@ -1757,6 +1103,37 @@ PlayerInfo::Reset() {
 
     m_is_lost = false;
     alive = true;
+}
+
+bool
+PlayerInfo::pay_loan(int amount) {
+    if (m_loan) {
+        if (m_loan->pay(amount)) {
+            m_loan = nullopt;
+            return true;
+        }
+        return false;
+    }
+    return true;
+}
+
+bool
+PlayerInfo::take_loan(int amount) {
+    if (m_loan) {
+        return false;
+    }
+    m_loan = Loan(amount);
+    return true;
+}
+
+void
+PlayerInfo::update_loan() {
+    if (m_loan && m_loan->is_paid_off()) {
+        m_loan = nullopt;
+    }
+    if (m_loan) {
+        m_loan->compute_interest();
+    }
 }
 
 std::string
@@ -1838,75 +1215,91 @@ PlayerInfo::getAlienRaceNamePlural(AlienRaces race) {
     return "";
 }
 
-bool
-PlayerInfo::Serialize(Archive &ar) {
-    string ClassName = "PlayerInfo";
-    int Schema = 0;
+InputArchive &
+operator>>(InputArchive &ar, PlayerInfo &info) {
+    string class_name = string(PlayerInfo::class_name);
+    int schema = 1;
+    // schema 1: remove hasOverdueLoan, replace with actual loan data
 
-    if (ar.IsStoring()) {
-        ar << ClassName;
-        ar << Schema;
-
-        ar << m_scanner;
-        ar << m_previous_scanner_state;
-        ar << m_bHasHyperspacePermit;
-        ar << m_bHasOverdueLoan;
-
-        ar << currentStar;
-        ar << currentPlanet;
-        ar << controlPanelMode;
-
-        if (!posHyperspace.Serialize(ar))
-            return false;
-
-        if (!posSystem.Serialize(ar))
-            return false;
-
-        if (!posPlanet.Serialize(ar))
-            return false;
-
-        if (!posStarport.Serialize(ar))
-            return false;
-
-        if (!posCombat.Serialize(ar))
-            return false;
-    } else {
-        string LoadedClassName;
-        ar >> LoadedClassName;
-        if (LoadedClassName != ClassName)
-            return false;
-
-        int LoadedSchema;
-        ar >> LoadedSchema;
-        if (LoadedSchema > Schema)
-            return false;
-
-        ar >> m_scanner;
-        ar >> m_previous_scanner_state;
-        ar >> m_bHasHyperspacePermit;
-        ar >> m_bHasOverdueLoan;
-
-        ar >> currentStar;
-        ar >> currentPlanet;
-        ar >> controlPanelMode;
-
-        if (!posHyperspace.Serialize(ar))
-            return false;
-
-        if (!posSystem.Serialize(ar))
-            return false;
-
-        if (!posPlanet.Serialize(ar))
-            return false;
-
-        if (!posStarport.Serialize(ar))
-            return false;
-
-        if (!posCombat.Serialize(ar))
-            return false;
+    string load_class_name;
+    ar >> load_class_name;
+    if (load_class_name != class_name) {
+        std::error_code ec(al_get_errno(), std::system_category());
+        throw std::system_error(
+            ec,
+            "Invalid save file: expected " + class_name + ", got "
+                + load_class_name);
     }
 
-    return true;
+    int load_schema;
+    ar >> load_schema;
+    if (load_schema > schema) {
+        std::error_code ec(al_get_errno(), std::system_category());
+        throw std::system_error(
+            ec,
+            "Invalid save file: unknown schema: " + class_name + " version "
+                + std::to_string(load_schema));
+    }
+
+    ar >> info.m_scanner;
+    ar >> info.m_previous_scanner_state;
+    ar >> info.m_bHasHyperspacePermit;
+    if (schema == 0) {
+        bool has_overdue_loan;
+        ar >> has_overdue_loan;
+    } else {
+        bool has_loan;
+        ar >> has_loan;
+
+        if (has_loan) {
+            info.m_loan = Loan(ar);
+        } else {
+            info.m_loan = nullopt;
+        }
+    }
+
+    ar >> info.currentStar;
+    ar >> info.currentPlanet;
+    ar >> info.controlPanelMode;
+
+    ar >> info.posHyperspace;
+    ar >> info.posSystem;
+    ar >> info.posPlanet;
+    ar >> info.posStarport;
+    ar >> info.posCombat;
+
+    return ar;
+}
+
+OutputArchive &
+operator<<(OutputArchive &ar, const PlayerInfo &info) {
+    string class_name = string(PlayerInfo::class_name);
+    int schema = 1;
+
+    ar << class_name;
+    ar << schema;
+
+    ar << info.m_scanner;
+    ar << info.m_previous_scanner_state;
+    ar << info.m_bHasHyperspacePermit;
+
+    ar << (info.m_loan != nullopt);
+
+    if (info.m_loan) {
+        ar << *info.m_loan;
+    }
+
+    ar << info.currentStar;
+    ar << info.currentPlanet;
+    ar << info.controlPanelMode;
+
+    ar << info.posHyperspace;
+    ar << info.posSystem;
+    ar << info.posPlanet;
+    ar << info.posStarport;
+    ar << info.posCombat;
+
+    return ar;
 }
 
 PlayerInfo &
@@ -1917,7 +1310,6 @@ PlayerInfo::operator=(const PlayerInfo &rhs) {
     m_scanner = rhs.m_scanner;
     m_previous_scanner_state = rhs.m_previous_scanner_state;
     m_bHasHyperspacePermit = rhs.m_bHasHyperspacePermit;
-    m_bHasOverdueLoan = rhs.m_bHasOverdueLoan;
 
     currentStar = rhs.currentStar;
     currentPlanet = rhs.currentPlanet;
@@ -1928,6 +1320,9 @@ PlayerInfo::operator=(const PlayerInfo &rhs) {
     posPlanet = rhs.posPlanet;
     posStarport = rhs.posStarport;
     posCombat = rhs.posCombat;
+    if (rhs.m_loan) {
+        m_loan = Loan(*rhs.m_loan);
+    }
 
     return *this;
 }
@@ -1969,179 +1364,16 @@ GameState::Reset() {
     m_items.Reset();
 
     // initialize player data
-    if (player != NULL) {
-        delete player;
-        player = NULL;
-    }
-    player = new PlayerInfo;
-    player->Reset();
+    player.Reset();
 
     // This returns the ship's values to the defaults
     m_ship.Reset();
 
-    // Those values are not used anywhere anymore but must be conserved to
-    // preserve savegame compatibility
-    defaultShipCargoSize = 0;
-    TotalCargoStacks = 0;
-
     m_currentSelectedOfficer = OFFICER_CAPTAIN;
 
-    for (int i = 0; i < (int)m_unemployedOfficers.size(); ++i) {
-        delete m_unemployedOfficers[i];
-        m_unemployedOfficers[i] = NULL;
-    }
-    m_unemployedOfficers.clear();
-
-    if (officerCap != NULL) {
-        delete officerCap;
-        officerCap = NULL;
-    }
-    officerCap = new Officer(OFFICER_CAPTAIN);
-
-    if (officerSci != NULL) {
-        delete officerSci;
-        officerSci = NULL;
-    }
-    officerSci = new Officer(OFFICER_SCIENCE);
-
-    if (officerNav != NULL) {
-        delete officerNav;
-        officerNav = NULL;
-    }
-    officerNav = new Officer(OFFICER_NAVIGATION);
-
-    if (officerTac != NULL) {
-        delete officerTac;
-        officerTac = NULL;
-    }
-    officerTac = new Officer(OFFICER_TACTICAL);
-
-    if (officerEng != NULL) {
-        delete officerEng;
-        officerEng = NULL;
-    }
-    officerEng = new Officer(OFFICER_ENGINEER);
-
-    if (officerCom != NULL) {
-        delete officerCom;
-        officerCom = NULL;
-    }
-    officerCom = new Officer(OFFICER_COMMUNICATION);
-
-    if (officerDoc != NULL) {
-        delete officerDoc;
-        officerDoc = NULL;
-    }
-    officerDoc = new Officer(OFFICER_MEDICAL);
-
-    ////////////////////////////////////////////////////////////////////////////
-    // RANDOM OFFICER POPULATION - BEGIN
-    // * These data should be overwritten when the crew is loaded from a
-    // savegame file
-    // * or replaced. This should eventually be removed.
-    ////////////////////////////////////////////////////////////////////////////
-    /*
-            setCaptainSelected(true);
-
-            //initialize profession (should be needed only during testing)
-            this->m_profession = PROFESSION_MILITARY;
-
-            if (officerCap != NULL)
-            {
-                    delete officerCap;
-                    officerCap = NULL;
-            }
-            //create the captain
-            officerCap = new Officer(OFFICER_CAPTAIN);
-            officerCap->name = g_game->dataMgr->GetRandMixedName();
-            for (int i=0; i < 6; i++)
-                    officerCap->attributes[i] = Util::Random(10,200);
-            officerCap->attributes[6] = Util::Random(1,25);
-            officerCap->attributes[7] = Util::Random(1,25);
-
-            if (officerSci != NULL)
-            {
-                    delete officerSci;
-                    officerSci = NULL;
-            }
-            //create the science officer
-            officerSci = new Officer(OFFICER_SCIENCE);
-            officerSci->name = g_game->dataMgr->GetRandMixedName();
-            for (int i=0; i < 6; i++)
-                    officerSci->attributes[i] = Util::Random(10,200);
-            officerSci->attributes[6] = Util::Random(1,25);
-            officerSci->attributes[7] = Util::Random(1,25);
-
-            if (officerNav != NULL)
-            {
-                    delete officerNav;
-                    officerNav = NULL;
-            }
-            //create the navigation officer
-            officerNav = new Officer(OFFICER_NAVIGATION);
-            officerNav->name = g_game->dataMgr->GetRandMixedName();
-            for (int i=0; i < 6; i++)
-                    officerNav->attributes[i] = Util::Random(10,200);
-            officerNav->attributes[6] = Util::Random(1,25);
-            officerNav->attributes[7] = Util::Random(1,25);
-
-            if (officerEng != NULL)
-            {
-                    delete officerEng;
-                    officerEng = NULL;
-            }
-            //create the engineering officer
-            officerEng = new Officer(OFFICER_ENGINEER);
-            officerEng->name = g_game->dataMgr->GetRandMixedName();
-            for (int i=0; i < 6; i++)
-                    officerEng->attributes[i] = Util::Random(10,200);
-            officerEng->attributes[6] = Util::Random(1,25);
-            officerEng->attributes[7] = Util::Random(1,25);
-
-            if (officerCom != NULL)
-            {
-                    delete officerCom;
-                    officerCom = NULL;
-            }
-            //create the communications officer
-            officerCom = new Officer(OFFICER_COMMUNICATION);
-            officerCom->name = g_game->dataMgr->GetRandMixedName();
-            for (int i=0; i < 6; i++)
-                    officerCom->attributes[i] = Util::Random(10,200);
-            officerCom->attributes[6] = Util::Random(1,25);
-            officerCom->attributes[7] = Util::Random(1,25);
-
-            if (officerDoc != NULL)
-            {
-                    delete officerDoc;
-                    officerDoc = NULL;
-            }
-            //create the medical officer
-            officerDoc = new Officer(OFFICER_MEDICAL);
-            officerDoc->name = g_game->dataMgr->GetRandMixedName();
-            for (int i=0; i < 6; i++)
-                    officerDoc->attributes[i] = Util::Random(10,200);
-            officerDoc->attributes[6] = Util::Random(1,25);
-            officerDoc->attributes[7] = Util::Random(1,25);
-
-            if (officerTac != NULL)
-            {
-                    delete officerTac;
-                    officerTac = NULL;
-            }
-            //create the tactical officer
-            officerTac = new Officer(OFFICER_TACTICAL);
-            officerTac->name = g_game->dataMgr->GetRandMixedName();
-            for (int i=0; i < 6; i++)
-                    officerTac->attributes[i] = Util::Random(10,200);
-            officerTac->attributes[6] = Util::Random(1,25);
-            officerTac->attributes[7] = Util::Random(1,25);
-    */
-    ////////////////////////////////////////////////////////////////////////////
-    //
-    // RANDOM OFFICER POPULATION - END
-    //
-    ////////////////////////////////////////////////////////////////////////////
+    m_unemployed_officers.clear();
+    m_unassigned_officers.clear();
+    m_crew.clear();
 
     // initial tactical properties
     shieldStatus = false;
@@ -2164,237 +1396,239 @@ GameState::Reset() {
     }
 }
 
-/*
- * This function will either serialize the current game into the Archive or pull
- * from it depending on whether the archive is flagged for storing.
- */
-bool
-GameState::Serialize(Archive &ar) {
-    string ClassName = "GameState";
-    int Schema = 3;
+InputArchive &
+operator>>(InputArchive &ar, GameState &game_state) {
+    string class_name = string(GameState::class_name);
+    int schema = 5;
     // schema 1 - added currentModeWhenGameSaved
     // schema 2 - removed fluxSeed, added flux_info
     // schema 3 - rework flux_info to include ID, data
+    // schema 4 - remove unused cargo stacks
+    // schema 5 - replace m_unemployed_officers and officerXXX with
+    //            m_unemployed_officers, m_unassigned_officers, m_crew
+    game_state.Reset();
 
-    if (ar.IsStoring()) {
-        ar << ClassName;
-        ar << Schema;
+    string load_class_name;
+    ar >> load_class_name;
+    if (load_class_name != class_name) {
+        std::error_code ec(al_get_errno(), std::system_category());
+        throw std::system_error(
+            ec,
+            "Invalid save file: expected " + class_name + ", got "
+                + load_class_name);
+    }
 
-        ar << (int)NUM_ALIEN_RACES;
-        for (int i = 0; i < NUM_ALIEN_RACES; i++)
-            ar << alienAttitudes[i];
+    int load_schema;
+    ar >> load_schema;
+    if (load_schema > schema) {
+        std::error_code ec(al_get_errno(), std::system_category());
+        throw std::system_error(
+            ec,
+            "Invalid save file: unknown schema: " + class_name + " version "
+                + std::to_string(load_schema));
+    }
 
-        ar << playerPosture;
+    int load_num_alien_races;
+    ar >> load_num_alien_races;
+    for (int i = 0; (i < load_num_alien_races) && (i < NUM_ALIEN_RACES); i++)
+        ar >> game_state.alienAttitudes[i];
 
-        // the base game time is added to the current ms timer to get an
-        // accurate date (from gameTimeSecs), so we save gameTimeSecs, but read
-        // back into
-        ar << (double)m_gameTimeSecs;
+    ar >> game_state.playerPosture;
 
-        if (!stardate.Serialize(ar))
-            return false;
+    // the base game time is added to the current ms timer to get an
+    // accurate date (from gameTimeSecs), so we save gameTimeSecs, but read
+    // back into baseGameTimeSecs:
+    ar >> game_state.m_baseGameTimeSecs;
+    ar >> game_state.stardate;
+    ar >> game_state.m_captainSelected;
 
-        ar << m_captainSelected;
-        ar << (int)m_profession;
+    int tmpi;
+    ar >> tmpi;
+    game_state.m_profession = (ProfessionType)tmpi;
 
-        ar << m_credits;
+    ar >> game_state.m_credits;
 
-        if (!m_items.Serialize(ar))
-            return false;
+    ar >> game_state.m_items;
+    ar >> game_state.player;
+    ar >> game_state.m_ship;
 
-        if (!player->Serialize(ar))
-            return false;
+    if (load_schema < 2) {
+        int flux_seed;
+        ar >> flux_seed;
+    }
 
-        if (!m_ship.Serialize(ar))
-            return false;
+    int load_currently_selected_officer;
+    ar >> load_currently_selected_officer;
+    game_state.m_currentSelectedOfficer =
+        static_cast<OfficerType>(load_currently_selected_officer);
 
-        ar << (int)m_currentSelectedOfficer;
+    if (load_schema < 5) {
+        int load_num_unemployed_officers;
+        ar >> load_num_unemployed_officers;
 
-        ar << (int)m_unemployedOfficers.size();
-        for (vector<Officer *>::iterator i = m_unemployedOfficers.begin();
-             i != m_unemployedOfficers.end();
-             ++i) {
-            if (!(*i)->Serialize(ar))
-                return false;
+        game_state.m_unemployed_officers.clear();
+        for (int i = 0; i < load_num_unemployed_officers; i++) {
+            Officer *officer = new Officer(ar);
+            game_state.m_unemployed_officers.insert(officer);
+        }
+        game_state.m_unassigned_officers.clear();
+
+        int load_num_officers;
+        ar >> load_num_officers;
+
+        for (int i = 0; i < load_num_officers; i++) {
+            Officer *crew_member = new Officer(ar);
+            game_state.m_crew[crew_member->get_officer_type()] = crew_member;
+        }
+    } else {
+        int loaded_unemployed;
+        ar >> loaded_unemployed;
+        for (int i = 0; i < loaded_unemployed; i++) {
+            Officer *unemployed_officer = new Officer(ar);
+            game_state.m_unemployed_officers.insert(unemployed_officer);
         }
 
-        // serialize the officers/crew
-        int numOfficers = 7;
-        ar << numOfficers;
-        if (!officerCap->Serialize(ar))
-            return false;
-        if (!officerSci->Serialize(ar))
-            return false;
-        if (!officerNav->Serialize(ar))
-            return false;
-        if (!officerEng->Serialize(ar))
-            return false;
-        if (!officerCom->Serialize(ar))
-            return false;
-        if (!officerTac->Serialize(ar))
-            return false;
-        if (!officerDoc->Serialize(ar))
-            return false;
+        int loaded_unassigned;
+        ar >> loaded_unassigned;
+        for (int i = 0; i < loaded_unassigned; i++) {
+            Officer *unassigned_officer = new Officer(ar);
+            game_state.m_unassigned_officers.insert(unassigned_officer);
+        }
 
-        ar << TotalCargoStacks;
-        ar << defaultShipCargoSize;
-
-        currentModeWhenGameSaved = g_game->modeMgr->GetCurrentModuleName();
-        ar << currentModeWhenGameSaved;
-
-        // save quest data
-        ar << activeQuest;
-        // storedValue keeps track of current quest objective
-        ar << storedValue;
-
-        ar << static_cast<int>(flux_info.size());
-        for (auto &i : flux_info) {
-            ar << i.first;
-            ar << i.second.endpoint_1_visible;
-            ar << i.second.endpoint_2_visible;
-            ar << i.second.path_visible;
+        int loaded_crew;
+        ar >> loaded_crew;
+        for (int i = 0; i < loaded_crew; i++) {
+            Officer *crew = new Officer(ar);
+            game_state.m_crew[crew->get_officer_type()] = crew;
         }
     }
-    // READING ARCHIVE INSTEAD OF STORING
-    else {
-        Reset();
 
-        string LoadClassName;
-        ar >> LoadClassName;
-        if (LoadClassName != ClassName)
-            return false;
-
-        int LoadSchema;
-        ar >> LoadSchema;
-        if (LoadSchema > Schema)
-            return false;
-
-        int LoadedNumAlienRaces;
-        ar >> LoadedNumAlienRaces;
-        for (int i = 0; (i < LoadedNumAlienRaces) && (i < NUM_ALIEN_RACES); i++)
-            ar >> alienAttitudes[i];
-
-        ar >> playerPosture;
-
-        // the base game time is added to the current ms timer to get an
-        // accurate date (from gameTimeSecs), so we save gameTimeSecs, but read
-        // back into baseGameTimeSecs:
-        ar >> m_baseGameTimeSecs;
-
-        if (!stardate.Serialize(ar))
-            return false;
-
-        ar >> m_captainSelected;
-
-        int tmpi;
-        ar >> tmpi;
-        m_profession = (ProfessionType)tmpi;
-
-        ar >> m_credits;
-
-        if (!m_items.Serialize(ar))
-            return false;
-
-        if (!player->Serialize(ar))
-            return false;
-
-        if (!m_ship.Serialize(ar))
-            return false;
-
-        if (LoadSchema < 2) {
-            int fluxSeed;
-            ar >> fluxSeed;
-        }
-
-        int LoadedCurrentlySelectedOfficer;
-        ar >> LoadedCurrentlySelectedOfficer;
-        m_currentSelectedOfficer = (OfficerType)LoadedCurrentlySelectedOfficer;
-
-        int LoadedNumUnemployedOfficers;
-        ar >> LoadedNumUnemployedOfficers;
-        for (int i = 0; i < LoadedNumUnemployedOfficers; i++) {
-            Officer *newOfficer = new Officer;
-            if (!newOfficer->Serialize(ar)) {
-                delete newOfficer;
-                return false;
-            }
-            m_unemployedOfficers.push_back(newOfficer);
-        }
-
-        // Load Officers
-        int LoadedNumOfficers;
-        ar >> LoadedNumOfficers;
-        if (!officerCap->Serialize(ar))
-            return false;
-        if (!officerSci->Serialize(ar))
-            return false;
-        if (!officerNav->Serialize(ar))
-            return false;
-        if (!officerEng->Serialize(ar))
-            return false;
-        if (!officerCom->Serialize(ar))
-            return false;
-        if (!officerTac->Serialize(ar))
-            return false;
-        if (!officerDoc->Serialize(ar))
-            return false;
-
+    if (load_schema < 4) {
+        int TotalCargoStacks;
+        int defaultShipCargoSize;
         ar >> TotalCargoStacks;
         ar >> defaultShipCargoSize;
+    }
 
-        if (LoadSchema >= 1)
-            ar >> currentModeWhenGameSaved;
+    if (load_schema >= 1)
+        ar >> game_state.currentModeWhenGameSaved;
 
-        // load quest data
-        ar >> activeQuest;
-        ar >> storedValue;
+    // load quest data
+    ar >> game_state.activeQuest;
+    ar >> game_state.storedValue;
 
-        if (LoadSchema == 2) {
-            int max_flux;
-            ar >> max_flux;
+    if (load_schema == 2) {
+        int max_flux;
+        ar >> max_flux;
 
-            ALLEGRO_ASSERT(max_flux == MAX_FLUX);
-            flux_info.clear();
-            for (int i = 0; i < MAX_FLUX; i++) {
-                FluxInfo fi;
+        ALLEGRO_ASSERT(max_flux == MAX_FLUX);
+        game_state.flux_info.clear();
+        for (int i = 0; i < MAX_FLUX; i++) {
+            FluxInfo fi;
 
-                ar >> fi.endpoint_1_visible;
-                ar >> fi.endpoint_2_visible;
-                ar >> fi.path_visible;
+            ar >> fi.endpoint_1_visible;
+            ar >> fi.endpoint_2_visible;
+            ar >> fi.path_visible;
 
-                if (fi.endpoint_1_visible || fi.endpoint_2_visible ||
-                    fi.path_visible) {
-                    flux_info[i] = fi;
-                }
+            if (fi.endpoint_1_visible || fi.endpoint_2_visible
+                || fi.path_visible) {
+                game_state.flux_info[i] = fi;
             }
-        } else if (LoadSchema == 3) {
-            int num_flux;
-            ar >> num_flux;
+        }
+    } else if (load_schema >= 3) {
+        int num_flux;
+        ar >> num_flux;
 
-            flux_info.clear();
-            for (int i = 0; i < num_flux; i++) {
-                FluxInfo fi;
-                ID flux_id;
+        game_state.flux_info.clear();
+        for (int i = 0; i < num_flux; i++) {
+            FluxInfo fi;
+            ID flux_id;
 
-                ar >> flux_id;
-                ar >> fi.endpoint_1_visible;
-                ar >> fi.endpoint_2_visible;
-                ar >> fi.path_visible;
+            ar >> flux_id;
+            ar >> fi.endpoint_1_visible;
+            ar >> fi.endpoint_2_visible;
+            ar >> fi.path_visible;
 
-                if (fi.endpoint_1_visible || fi.endpoint_2_visible ||
-                    fi.path_visible) {
-                    flux_info[i] = fi;
-                }
+            if (fi.endpoint_1_visible || fi.endpoint_2_visible
+                || fi.path_visible) {
+                game_state.flux_info[i] = fi;
             }
         }
     }
 
-    return true;
+    return ar;
+}
+
+OutputArchive &
+operator<<(OutputArchive &ar, const GameState &game_state) {
+    string class_name = string(GameState::class_name);
+    int schema = 5;
+    // schema 1 - added currentModeWhenGameSaved
+    // schema 2 - removed fluxSeed, added flux_info
+    // schema 3 - rework flux_info to include ID, data
+    // schema 4 - remove unused cargo stacks
+    // schema 5 - replace m_unemployed_officers and officerXXX with
+    //            m_unemployed_officers, m_unassigned_officers, m_crew
+
+    ar << class_name;
+    ar << schema;
+
+    ar << static_cast<int>(NUM_ALIEN_RACES);
+    for (int i = 0; i < NUM_ALIEN_RACES; i++)
+        ar << game_state.alienAttitudes[i];
+
+    ar << game_state.playerPosture;
+
+    // the base game time is added to the current ms timer to get an
+    // accurate date (from gameTimeSecs), so we save gameTimeSecs, but read
+    // back into
+    ar << static_cast<double>(game_state.m_gameTimeSecs);
+
+    ar << game_state.stardate;
+
+    ar << game_state.m_captainSelected;
+    ar << static_cast<int>(game_state.m_profession);
+
+    ar << game_state.m_credits;
+
+    ar << game_state.m_items;
+
+    ar << game_state.player;
+    ar << game_state.m_ship;
+    ar << static_cast<int>(game_state.m_currentSelectedOfficer);
+
+    ar << static_cast<int>(game_state.m_unemployed_officers.size());
+    for (auto &i : game_state.m_unemployed_officers) {
+        ar << *i;
+    }
+    ar << static_cast<int>(game_state.m_unassigned_officers.size());
+    for (auto &i : game_state.m_unassigned_officers) {
+        ar << *i;
+    }
+    ar << static_cast<int>(game_state.m_crew.size());
+    for (auto &i : game_state.m_crew) {
+        ar << *(i.second);
+    }
+
+    ar << g_game->modeMgr->GetCurrentModuleName();
+
+    // save quest data
+    ar << game_state.activeQuest;
+    // storedValue keeps track of current quest objective
+    ar << game_state.storedValue;
+
+    ar << static_cast<int>(game_state.flux_info.size());
+    for (auto &i : game_state.flux_info) {
+        ar << i.first;
+        ar << i.second.endpoint_1_visible;
+        ar << i.second.endpoint_2_visible;
+        ar << i.second.path_visible;
+    }
+    return ar;
 }
 
 GameState::GameSaveSlot GameState::currentSaveGameSlot =
     GameState::GAME_SAVE_SLOT_UNKNOWN;
-ALLEGRO_PATH *GameState::save_dir_path = nullptr;
 
 #define GAME_MAGIC 0xAAFFAAFF
 #define GAME_STRING "StarflightTLC-SaveGame"
@@ -2406,95 +1640,79 @@ GameState::SaveGame(GameSaveSlot slot) {
     ALLEGRO_PATH *slot_path = get_save_file_path(slot);
     ensure_save_dir();
 
-    Archive ar;
-    if (!ar.Open(slot_path, Archive::AM_STORE)) {
+    try {
+        OutputArchive ar(slot_path);
         al_destroy_path(slot_path);
+
+        int GameMagic = GAME_MAGIC;
+        ar << GameMagic;
+
+        string GameString = GAME_STRING;
+        ar << GameString;
+
+        int GameSchema = GAME_SCHEMA;
+        ar << GameSchema;
+
+        ar << *this;
+        ar << GameMagic;
+
+        ar.close();
+        return true;
+    } catch (const std::exception &e) {
         return false;
     }
-
-    int GameMagic = GAME_MAGIC; // studying
-    ar << GameMagic;
-
-    string GameString = GAME_STRING;
-    ar << GameString;
-
-    int GameSchema = GAME_SCHEMA;
-    ar << GameSchema;
-
-    if (!Serialize(ar)) {
-        ar.Close();
-        al_destroy_path(slot_path);
-        return false;
-    }
-
-    ar << GameMagic;
-
-    ar.Close();
-
-    al_destroy_path(slot_path);
-    return true;
 }
 
 GameState *
 GameState::ReadGame(GameSaveSlot slot) {
     currentSaveGameSlot = slot;
     ALLEGRO_PATH *slot_path = get_save_file_path(slot);
+    GameState *g = nullptr;
 
-    Archive ar;
-    if (!ar.Open(slot_path, Archive::AM_LOAD)) {
-        ALLEGRO_DEBUG("*** GameState: Cannot open save game file");
+    try {
+        InputArchive ar(slot_path);
         al_destroy_path(slot_path);
-        return NULL;
-    }
-    al_destroy_path(slot_path);
 
-    // numeric code uniquely identifying this game's file
-    int LoadedGameMagic;
-    ar >> LoadedGameMagic;
-    if ((unsigned int)LoadedGameMagic != GAME_MAGIC) {
-        g_game->message("Invalid save game file");
-        ALLEGRO_DEBUG("*** GameState: Invalid save game file");
-        al_destroy_path(slot_path);
-        return NULL;
-    }
+        // numeric code uniquely identifying this game's file
+        int LoadedGameMagic;
+        ar >> LoadedGameMagic;
+        if ((unsigned int)LoadedGameMagic != GAME_MAGIC) {
+            g_game->message("Invalid save game file");
+            ALLEGRO_DEBUG("*** GameState: Invalid save game file");
+            return nullptr;
+        }
 
-    // unique string for this savegame file
-    string LoadedGameString;
-    ar >> LoadedGameString;
-    if (LoadedGameString != GAME_STRING) {
-        g_game->message("Invalid save game file");
-        ALLEGRO_DEBUG("*** GameState: Invalid save game file");
-        return NULL;
-    }
+        // unique string for this savegame file
+        string LoadedGameString;
+        ar >> LoadedGameString;
+        if (LoadedGameString != GAME_STRING) {
+            g_game->message("Invalid save game file");
+            ALLEGRO_DEBUG("*** GameState: Invalid save game file");
+            return nullptr;
+        }
 
-    // schema number--not really needed
-    int LoadedGameSchema = 0;
-    ar >> LoadedGameSchema;
-    if (LoadedGameSchema > GAME_SCHEMA) {
-        ALLEGRO_DEBUG("*** GameState: Incorrect schema in save game file");
-        return NULL;
-    }
+        // schema number--not really needed
+        int LoadedGameSchema = 0;
+        ar >> LoadedGameSchema;
+        if (LoadedGameSchema > GAME_SCHEMA) {
+            ALLEGRO_DEBUG("*** GameState: Incorrect schema in save game file");
+            return nullptr;
+        }
 
-    GameState *g = new GameState;
-    g->Reset();
+        g = new GameState();
+        ar >> *g;
 
-    if (!g->Serialize(ar)) {
-        ALLEGRO_DEBUG("*** GameState: Error reading save game file");
+        LoadedGameMagic = 0;
+        ar >> LoadedGameMagic;
+        if ((unsigned int)LoadedGameMagic != GAME_MAGIC) {
+            ALLEGRO_DEBUG("*** GameState: Error loading save game file");
+            delete g;
+            return nullptr;
+        }
+    } catch (const std::exception &e) {
         delete g;
-        ar.Close();
-        return NULL;
+        return nullptr;
     }
-
-    LoadedGameMagic = 0;
-    ar >> LoadedGameMagic;
-    if ((unsigned int)LoadedGameMagic != GAME_MAGIC) {
-        ALLEGRO_DEBUG("*** GameState: Error loading save game file");
-        delete g;
-        ar.Close();
-        return NULL;
-    }
-
-    ar.Close();
     return g;
 }
 
@@ -2598,9 +1816,6 @@ GameState::LoadGame(GameSaveSlot slot) {
     // Roll random repair minerals and set the repair counters
     g_game->gameState->m_ship.initializeRepair();
 
-#ifdef DEBUG
-    DumpStats(g_game->gameState); // dump statistics to file.
-#endif
     ALLEGRO_DEBUG("Game state loaded successfully\n");
     return g_game->gameState; // return gs & leave deletion to caller?
 }
@@ -2608,45 +1823,40 @@ GameState::LoadGame(GameSaveSlot slot) {
 void
 GameState::DeleteGame(GameSaveSlot slot) {
     ALLEGRO_PATH *slot_path = get_save_file_path(slot);
-    if (al_filename_exists(al_path_cstr(slot_path, ALLEGRO_NATIVE_PATH_SEP))) {
-        al_remove_filename(al_path_cstr(slot_path, ALLEGRO_NATIVE_PATH_SEP));
+    const char *slot_string = al_path_cstr(slot_path, ALLEGRO_NATIVE_PATH_SEP);
+    if (al_filename_exists(slot_string)) {
+        bool rc = al_remove_filename(slot_string);
+
+        if (!rc) {
+            ALLEGRO_ERROR("Unable to delete %s\n", slot_string);
+        }
     }
 }
 
-void
+bool
 GameState::AutoSave() {
     if (currentSaveGameSlot == GAME_SAVE_SLOT_UNKNOWN) {
-        g_game->ShowMessageBoxWindow(
-            "", "There is no active player savegame file!");
-        return;
+        return false;
     }
 
-    SaveGame(currentSaveGameSlot);
-
-    g_game->ShowMessageBoxWindow(
-        "", "Game state has been saved", 400, 200, GREEN);
+    return SaveGame(currentSaveGameSlot);
 }
 
-void
+bool
 GameState::AutoLoad() {
     if (currentSaveGameSlot == GAME_SAVE_SLOT_UNKNOWN) {
-        g_game->ShowMessageBoxWindow(
-            "", "There is no active player savegame file to load!");
-        return;
+        return false;
     }
 
     GameState *lgs = LoadGame(currentSaveGameSlot);
-    if (lgs != NULL)
-        g_game->ShowMessageBoxWindow(
-            "", "Game has been restored to last save point", 400, 200, GREEN);
-    else
-        g_game->ShowMessageBoxWindow(
-            "", "Game save file could not be found/opened!", 400, 200, GREEN);
+    if (lgs == nullptr) {
+        return false;
+    }
 
     if (currentModeWhenGameSaved.size() > 0) {
         g_game->modeMgr->LoadModule(currentModeWhenGameSaved);
-        return;
     }
+    return true;
 }
 
 // accessors
@@ -2657,11 +1867,8 @@ GameState::getCredits() const {
 }
 
 string
-GameState::getProfessionString() {
-    switch (getProfession()) {
-    case PROFESSION_NONE:
-        return "none";
-        break;
+GameState::getProfessionString() const {
+    switch (m_profession) {
     case PROFESSION_FREELANCE:
         return "freelance";
         break;
@@ -2671,147 +1878,121 @@ GameState::getProfessionString() {
     case PROFESSION_SCIENTIFIC:
         return "scientific";
         break;
-    case PROFESSION_OTHER:
-        return "other";
-        break;
     }
     return "";
 }
 
-// Helper function in case some module doesn't like to work directly with
-// explicit officer objects
-Officer *
-GameState::getOfficer(int officerType) {
-    switch (officerType) {
-    case OFFICER_CAPTAIN:
-        return officerCap;
-        break;
-    case OFFICER_SCIENCE:
-        return officerSci;
-        break;
-    case OFFICER_NAVIGATION:
-        return officerNav;
-        break;
-    case OFFICER_ENGINEER:
-        return officerEng;
-        break;
-    case OFFICER_COMMUNICATION:
-        return officerCom;
-        break;
-    case OFFICER_MEDICAL:
-        return officerDoc;
-        break;
-    case OFFICER_TACTICAL:
-        return officerTac;
-        break;
-    default:
-        ALLEGRO_ASSERT(0);
+const Officer *
+GameState::set_officer(OfficerType type, const Officer *officer) {
+    auto old_officer_it = m_crew.find(type);
+    Officer *old_officer = nullptr;
+
+    ALLEGRO_ASSERT(type != OFFICER_NONE);
+    ALLEGRO_ASSERT(type != OFFICER_CAPTAIN);
+    ALLEGRO_ASSERT(officer != nullptr);
+
+    if (old_officer_it != m_crew.end()) {
+        old_officer = old_officer_it->second;
+        old_officer->set_officer_type(OFFICER_NONE);
+        m_unassigned_officers.insert(old_officer);
     }
 
-    // UNREACHABLE
+    if (officer->get_officer_type() == OFFICER_NONE) {
+        auto officer_it =
+            m_unassigned_officers.find(const_cast<Officer *>(officer));
 
-    // to keep the compiler happy
-    return NULL;
-}
+        ALLEGRO_ASSERT(officer_it != m_unassigned_officers.end());
+        auto unconst = *officer_it;
+        unconst->set_officer_type(type);
+        m_unassigned_officers.erase(officer_it);
+        m_crew[type] = unconst;
+    } else {
+        auto officer_it =
+            find_if(m_crew.begin(), m_crew.end(), [officer](auto i) {
+                return i.second == officer;
+            });
+        ALLEGRO_ASSERT(officer_it != m_crew.end());
+        ALLEGRO_ASSERT(
+            officer_it->second->get_officer_type() != OFFICER_CAPTAIN);
+        auto unconst = officer_it->second;
+        unconst->set_officer_type(type);
+        m_crew.erase(officer_it);
+        m_crew[type] = unconst;
+    }
 
-// Helper function in case some module doesn't like to work directly with
-// explicit officer objects
-Officer *
-GameState::getOfficer(const string &officerName) {
-    if (officerName == "CAPTAIN")
-        return officerCap;
-    else if (officerName == "SCIENCE" || officerName == "SCIENCE OFFICER")
-        return officerSci;
-    else if (officerName == "NAVIGATION" || officerName == "NAVIGATOR")
-        return officerNav;
-    else if (officerName == "ENGINEER" || officerName == "ENGINEERING" ||
-             officerName == "ENGINEERING OFFICER")
-        return officerEng;
-    else if (officerName == "COMMUNICATION" || officerName == "COMMUNICATIONS")
-        return officerCom;
-    else if (officerName == "MEDICAL" || officerName == "MEDICAL OFFICER" ||
-             officerName == "DOCTOR")
-        return officerDoc;
-    else if (officerName == "TACTICAL" || officerName == "TACTICAL OFFICER")
-        return officerTac;
-    else
-        ALLEGRO_ASSERT(0);
-
-    // to keep the compiler happy
-    return NULL;
+    return old_officer;
 }
 
-// return the officer who currently fill the given role
-Officer *
-GameState::getCurrentSci() {
-    return (officerSci->attributes.vitality > 0) ? officerSci : officerCap;
+void
+GameState::hire_officer(const Officer *officer) {
+    auto type = officer->get_officer_type();
+    ALLEGRO_ASSERT(type == OFFICER_NONE);
+
+    auto o = m_unemployed_officers.find(const_cast<Officer *>(officer));
+    ALLEGRO_ASSERT(o != m_unemployed_officers.end());
+    m_unassigned_officers.insert(*o);
+    m_unemployed_officers.erase(o);
 }
-Officer *
-GameState::getCurrentNav() {
-    return (officerNav->attributes.vitality > 0) ? officerNav : officerCap;
+
+void
+GameState::unassign_officer(const Officer *officer) {
+    auto type = officer->get_officer_type();
+    ALLEGRO_ASSERT(type != OFFICER_NONE);
+    auto o = m_crew.at(type);
+    m_crew.erase(type);
+    m_unassigned_officers.insert(o);
 }
-Officer *
-GameState::getCurrentTac() {
-    return (officerTac->attributes.vitality > 0) ? officerTac : officerCap;
+
+void
+GameState::fire_officer(const Officer *officer) {
+    ALLEGRO_ASSERT(officer != nullptr);
+    auto type = officer->get_officer_type();
+
+    if (type != OFFICER_NONE) {
+        auto o = m_crew.at(type);
+        m_crew.erase(type);
+        o->set_officer_type(OFFICER_NONE);
+        m_unemployed_officers.insert(o);
+    } else {
+        auto o = m_unassigned_officers.find(const_cast<Officer *>(officer));
+        ALLEGRO_ASSERT(o != m_unassigned_officers.end());
+        (*o)->set_officer_type(OFFICER_NONE);
+        m_unemployed_officers.insert(*o);
+        m_unassigned_officers.erase(o);
+    }
 }
-Officer *
-GameState::getCurrentEng() {
-    return (officerEng->attributes.vitality > 0) ? officerEng : officerCap;
-}
-Officer *
-GameState::getCurrentCom() {
-    return (officerCom->attributes.vitality > 0) ? officerCom : officerCap;
-}
-Officer *
-GameState::getCurrentDoc() {
-    return (officerDoc->attributes.vitality > 0) ? officerDoc : officerCap;
+
+void
+GameState::create_captain(
+    const string &name,
+    const map<Skill, int> &attributes) {
+    auto old_officer = m_crew.find(OFFICER_CAPTAIN);
+    auto captain = new Officer(name, attributes);
+    if (old_officer != m_crew.end()) {
+        old_officer->second = captain;
+    } else {
+        m_crew[OFFICER_CAPTAIN] = captain;
+    }
 }
 
 // calculate effective skill level taking into account vitality and captain
 // modifier
 int
-GameState::CalcEffectiveSkill(Skill skill) {
-    float cap_vitality = officerCap->attributes.vitality;
-    float cap_skill, off_vitality, off_skill;
+GameState::CalcEffectiveSkill(Skill skill) const {
 
-    switch (skill) {
-    case SKILL_SCIENCE:
-        cap_skill = officerCap->attributes.science;
-        off_skill = officerSci->attributes.science;
-        off_vitality = officerSci->attributes.vitality;
-        break;
-    case SKILL_NAVIGATION:
-        cap_skill = officerCap->attributes.navigation;
-        off_skill = officerNav->attributes.navigation;
-        off_vitality = officerNav->attributes.vitality;
-        break;
-    case SKILL_TACTICAL:
-        cap_skill = officerCap->attributes.tactics;
-        off_skill = officerTac->attributes.tactics;
-        off_vitality = officerTac->attributes.vitality;
-        break;
-    case SKILL_ENGINEERING:
-        cap_skill = officerCap->attributes.engineering;
-        off_skill = officerEng->attributes.engineering;
-        off_vitality = officerEng->attributes.vitality;
-        break;
-    case SKILL_COMMUNICATION:
-        cap_skill = officerCap->attributes.communication;
-        off_skill = officerCom->attributes.communication;
-        off_vitality = officerCom->attributes.vitality;
-        break;
-    case SKILL_MEDICAL:
-        cap_skill = officerCap->attributes.medical;
-        off_skill = officerDoc->attributes.medical;
-        off_vitality = officerDoc->attributes.vitality;
-        break;
+    ALLEGRO_ASSERT(skill != SKILL_DURABILITY);
+    ALLEGRO_ASSERT(skill != SKILL_LEARN_RATE);
 
-    default:
-        ALLEGRO_ASSERT(0);
-    }
+    auto captain = get_officer(OFFICER_CAPTAIN);
+    float cap_vitality = captain ? captain->get_vitality() : 0;
+    float cap_skill = captain ? captain->get_skill(skill) : 0;
 
-    float res = (off_vitality > 0) ? off_skill * off_vitality / 100 +
-                                         cap_skill / 10 * cap_vitality / 100
+    auto officer = get_officer(skill_map.at(skill));
+    float off_vitality = officer ? officer->get_vitality() : 0;
+    float off_skill = officer ? officer->get_skill(skill) : 0;
+
+    float res = (off_vitality > 0) ? off_skill * off_vitality / 100
+                                         + cap_skill / 10 * cap_vitality / 100
                                    : cap_skill * cap_vitality / 100;
 
     return res;
@@ -2824,41 +2005,13 @@ also does take into account vitality and captain modifier.
 **/
 bool
 GameState::SkillCheck(Skill skill) {
-    Officer *tempOfficer;
-    int skill_value = 0;
+    auto tempOfficer = m_crew.find(skill_map.at(skill));
+    int skill_value = CalcEffectiveSkill(skill);
     int chance = 0;
 
-    switch (skill) {
-    case SKILL_SCIENCE:
-        tempOfficer = getCurrentSci();
-        skill_value = CalcEffectiveSkill(SKILL_SCIENCE);
-        break;
-    case SKILL_ENGINEERING:
-        tempOfficer = getCurrentEng();
-        skill_value = CalcEffectiveSkill(SKILL_ENGINEERING);
-        break;
-    case SKILL_MEDICAL:
-        tempOfficer = getCurrentDoc();
-        skill_value = CalcEffectiveSkill(SKILL_MEDICAL);
-        break;
-    case SKILL_NAVIGATION:
-        tempOfficer = getCurrentNav();
-        skill_value = CalcEffectiveSkill(SKILL_NAVIGATION);
-        break;
-    case SKILL_TACTICAL:
-        tempOfficer = getCurrentTac();
-        skill_value = CalcEffectiveSkill(SKILL_TACTICAL);
-        break;
-    case SKILL_COMMUNICATION:
-        tempOfficer = getCurrentCom();
-        skill_value = CalcEffectiveSkill(SKILL_COMMUNICATION);
-        break;
-    default:
-        ALLEGRO_ASSERT(0);
+    if (tempOfficer != m_crew.end()) {
+        tempOfficer->second->add_experience(skill, 0);
     }
-
-    // this is to set tempOfficer->lastSkillCheck to current stardate
-    tempOfficer->FakeSkillCheck();
 
     // 250+ is guaranteed pass
     if (skill_value > 250) {
@@ -2878,28 +2031,49 @@ GameState::SkillCheck(Skill skill) {
     } else
         chance = 25;
 
-    int roll = rand() % 100;
+    int roll = sfrand() % 100;
     return roll < chance;
+}
+
+bool
+GameState::add_experience(Skill skill, int amount) {
+    auto officer = effective_officer(skill_map.at(skill));
+
+    return officer->add_experience(skill, amount);
+}
+
+bool
+GameState::SkillUp(Skill skill, int amount) {
+    auto off = effective_officer(GameState::skill_map.at(skill));
+
+    if (off != nullptr) {
+        return off->SkillUp(skill, amount);
+    } else {
+        return false;
+    }
+}
+
+bool
+GameState::CanSkillCheck(Skill skill) const {
+    auto off = effective_officer(GameState::skill_map.at(skill));
+
+    if (off != nullptr) {
+        return off->CanSkillCheck();
+    } else {
+        return false;
+    }
 }
 
 Ship
 GameState::getShip() const {
     return m_ship;
 }
+
 bool
 GameState::HaveFullCrew() const {
-    // officer assignment is determined now by NAME, not NULL condition
-    // if all officers have a name, then state will be true
-    bool state = (officerCap->name.length() != 0);
-    state &= (officerSci->name.length() != 0);
-    state &= (officerNav->name.length() != 0);
-    state &= (officerEng->name.length() != 0);
-    state &= (officerCom->name.length() != 0);
-    state &= (officerTac->name.length() != 0);
-    state &= (officerDoc->name.length() != 0);
-
-    return state;
+    return m_crew.size() == CREW_SIZE;
 }
+
 bool
 GameState::PreparedToLaunch() const {
     return HaveFullCrew() && m_ship.HaveEngines();
@@ -2907,11 +2081,11 @@ GameState::PreparedToLaunch() const {
 
 AlienRaces
 GameState::getCurrentAlien() {
-    return player->getGalacticRegion();
+    return player.getGalacticRegion();
 }
 string
 GameState::getCurrentAlienName() {
-    return player->getAlienRaceNamePlural(getCurrentAlien());
+    return player.getAlienRaceNamePlural(getCurrentAlien());
 }
 int
 GameState::getAlienAttitude() {
@@ -2924,8 +2098,9 @@ void
 GameState::setCaptainSelected(bool initCaptainSelected) {
     m_captainSelected = initCaptainSelected;
 }
+
 void
-GameState::setProfession(const ProfessionType &initProfession) {
+GameState::setProfession(ProfessionType initProfession) {
     m_profession = initProfession;
 }
 void
@@ -2942,22 +2117,6 @@ GameState::setShip(const Ship &initShip) {
 }
 
 void
-GameState::setProfession(const string &profession) {
-    if (profession == "none")
-        m_profession = PROFESSION_NONE;
-    else if (profession == "freelance")
-        m_profession = PROFESSION_FREELANCE;
-    else if (profession == "military")
-        m_profession = PROFESSION_MILITARY;
-    else if (profession == "scientific")
-        m_profession = PROFESSION_SCIENTIFIC;
-    else if (profession == "other")
-        m_profession = PROFESSION_OTHER;
-    else
-        m_profession = PROFESSION_OTHER;
-}
-
-void
 GameState::setAlienAttitude(int value) {
     if (value < 0)
         value = 0;
@@ -2967,15 +2126,39 @@ GameState::setAlienAttitude(int value) {
     alienAttitudes[region] = value;
 }
 
+void
+GameState::update_unemployed_officers() {
+    while (m_unemployed_officers.size() <= 18) {
+        m_unemployed_officers.insert(new Officer());
+    }
+}
+
+std::string
+GameState::get_saved_module_name() const {
+    static map<string_view, string_view> name_map = {
+        {MODULE_CAPTAINCREATION, "Captain Creation"},
+        {MODULE_CAPTAINSLOUNGE, "Captain's Lounge"},
+        {MODULE_HYPERSPACE, "Hyperspace"},
+        {MODULE_INTERPLANETARY, "Interplanetary space"},
+        {MODULE_ORBIT, "Planet Orbit"},
+        {MODULE_SURFACE, "Planet Surface"},
+        {MODULE_PORT, "Starport"},
+        {MODULE_STARPORT, "Starport"}};
+
+    auto val = name_map.find(currentModeWhenGameSaved);
+
+    if (val != name_map.end()) {
+        return string(val->second);
+    } else {
+        return "";
+    }
+}
+
 bool
 GameState::ensure_save_dir() {
     ALLEGRO_PATH *saves_subdir = al_create_path("saves");
     bool res = true;
 
-    if (save_dir_path == NULL) {
-        save_dir_path = al_get_standard_path(ALLEGRO_USER_DATA_PATH);
-    }
-    al_rebase_path(save_dir_path, saves_subdir);
     if (!al_filename_exists(
             al_path_cstr(saves_subdir, ALLEGRO_NATIVE_PATH_SEP))) {
         res = al_make_directory(
@@ -2983,4 +2166,115 @@ GameState::ensure_save_dir() {
     }
     al_destroy_path(saves_subdir);
     return res;
+}
+
+static const map<Skill, int> BASEATT_SCIENTIFIC = {
+    {SKILL_DURABILITY, 5},
+    {SKILL_LEARN_RATE, 5},
+    {SKILL_SCIENCE, 15},
+    {SKILL_NAVIGATION, 5},
+    {SKILL_TACTICAL, 0},
+    {SKILL_ENGINEERING, 5},
+    {SKILL_COMMUNICATION, 15},
+    {SKILL_MEDICAL, 10},
+};
+
+static const map<Skill, int> MAXATT_SCIENTIFIC = {
+    {SKILL_DURABILITY, 10},
+    {SKILL_LEARN_RATE, 10},
+    {SKILL_SCIENCE, 250},
+    {SKILL_NAVIGATION, 95},
+    {SKILL_TACTICAL, 65},
+    {SKILL_ENGINEERING, 95},
+    {SKILL_COMMUNICATION, 250},
+    {SKILL_MEDICAL, 125}};
+
+static const map<Skill, int> BASEATT_FREELANCE = {
+    {SKILL_DURABILITY, 5},
+    {SKILL_LEARN_RATE, 5},
+    {SKILL_SCIENCE, 5},
+    {SKILL_NAVIGATION, 15},
+    {SKILL_TACTICAL, 5},
+    {SKILL_ENGINEERING, 10},
+    {SKILL_COMMUNICATION, 15},
+    {SKILL_MEDICAL, 0},
+};
+
+static const map<Skill, int> MAXATT_FREELANCE = {
+    {SKILL_DURABILITY, 10},
+    {SKILL_LEARN_RATE, 10},
+    {SKILL_SCIENCE, 95},
+    {SKILL_NAVIGATION, 250},
+    {SKILL_TACTICAL, 95},
+    {SKILL_ENGINEERING, 125},
+    {SKILL_COMMUNICATION, 250},
+    {SKILL_MEDICAL, 65},
+};
+
+static const map<Skill, int> BASEATT_MILITARY = {
+    {SKILL_DURABILITY, 5},
+    {SKILL_LEARN_RATE, 5},
+    {SKILL_SCIENCE, 0},
+    {SKILL_NAVIGATION, 10},
+    {SKILL_TACTICAL, 15},
+    {SKILL_ENGINEERING, 10},
+    {SKILL_COMMUNICATION, 15},
+    {SKILL_MEDICAL, 0},
+};
+
+static const map<Skill, int> MAXATT_MILITARY = {
+    {SKILL_DURABILITY, 10},
+    {SKILL_LEARN_RATE, 10},
+    {SKILL_SCIENCE, 65},
+    {SKILL_NAVIGATION, 125},
+    {SKILL_TACTICAL, 250},
+    {SKILL_ENGINEERING, 125},
+    {SKILL_COMMUNICATION, 250},
+    {SKILL_MEDICAL, 65},
+};
+
+const std::map<Skill, int> &
+GameState::base_skills(ProfessionType type) {
+    ALLEGRO_ASSERT(
+        type == PROFESSION_FREELANCE || type == PROFESSION_MILITARY
+        || type == PROFESSION_SCIENTIFIC);
+
+    switch (type) {
+    case PROFESSION_MILITARY:
+        return BASEATT_MILITARY;
+    case PROFESSION_FREELANCE:
+        return BASEATT_FREELANCE;
+    case PROFESSION_SCIENTIFIC:
+        return BASEATT_SCIENTIFIC;
+    default:
+        throw std::domain_error("Invalid ProfessionType value");
+    }
+}
+
+const std::map<Skill, int> &
+GameState::base_skills() {
+    return base_skills(getProfession());
+}
+
+const std::map<Skill, int> &
+GameState::max_skills(ProfessionType type) {
+    ALLEGRO_ASSERT(
+        type == PROFESSION_FREELANCE || type == PROFESSION_MILITARY
+        || type == PROFESSION_SCIENTIFIC);
+
+    switch (type) {
+    case PROFESSION_MILITARY:
+        return MAXATT_MILITARY;
+    case PROFESSION_FREELANCE:
+        return MAXATT_FREELANCE;
+    case PROFESSION_SCIENTIFIC:
+        return MAXATT_SCIENTIFIC;
+    default:
+        throw std::domain_error("Invalid ProfessionType value");
+    }
+}
+
+const std::map<Skill, int> &
+GameState::max_skills() {
+    return max_skills(getProfession());
 }

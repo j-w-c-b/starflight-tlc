@@ -6,962 +6,405 @@
 */
 
 #include <allegro5/allegro.h>
-#include <allegro5/allegro_primitives.h>
+
+#include <utility>
 
 #include "AudioSystem.h"
+#include "Bitmap.h"
 #include "Events.h"
 #include "Game.h"
 #include "GameState.h"
-#include "ModeMgr.h"
 #include "ModuleControlPanel.h"
 #include "controlpanel_resources.h"
 
 using namespace std;
-using namespace controlpanel_resources;
+using namespace controlpanel;
 
 ALLEGRO_DEBUG_CHANNEL("ModuleControlPanel")
 
-int CMDBUTTONS_UL_X;
-int CMDBUTTONS_UL_Y;
-int OFFICERICON_UL_X;
-int OFFICERICON_UL_Y;
+class OfficerButton : public Button {
+  public:
+    OfficerButton(
+        int x,
+        int y,
+        EventType mouse_over_event,
+        EventType click_event,
+        OfficerType officer_type,
+        std::shared_ptr<ALLEGRO_BITMAP> normal,
+        std::shared_ptr<ALLEGRO_BITMAP> mouse_over)
+        : Button(
+            x,
+            y,
+            mouse_over_event,
+            click_event,
+            normal,
+            mouse_over,
+            nullptr,
+            samples[S_OFFICER_SELECTED]),
+          m_officer_type(officer_type) {}
+    OfficerType get_officer_type() const { return m_officer_type; }
 
-#define TRANSPARENTCLR al_map_rgb(255, 0, 255)
-#define CMDBUTTON_SPACING 0
+    virtual ALLEGRO_EVENT make_event(EventType t) override {
+        ALLEGRO_EVENT e = {
+            .user = {.type = t, .data1 = m_id, .data2 = m_officer_type}};
+        return e;
+    }
 
-ModuleControlPanel::ModuleControlPanel(void) : resources(CONTROLPANEL_IMAGES) {
-    controlPanelBackgroundImg = NULL;
-    mouseOverOfficer = NULL;
-    selectedOfficer = NULL;
-    mouseOverCommand = NULL;
-    selectedCommand = NULL;
-    bEnabled = true;
-}
+  private:
+    OfficerType m_officer_type;
+};
 
-ModuleControlPanel::~ModuleControlPanel(void) {}
+class CommandButton : public Button {
+  public:
+    CommandButton(
+        int x,
+        int y,
+        EventType mouse_over_event,
+        EventType click_event,
+        shared_ptr<ALLEGRO_BITMAP> icon,
+        const string &tooltip,
+        OfficerType officer_type)
+        : Button(
+            x,
+            y,
+            mouse_over_event,
+            click_event,
+            images[I_COMMAND_BUTTON_BG],
+            images[I_COMMAND_BUTTON_BG_SELECT],
+            images[I_COMMAND_BUTTON_BG_DISABLED],
+            samples[S_OFFICER_COMMAND_SELECTED]),
+          m_icon(make_shared<Bitmap>(icon, x, y)), m_tooltip(tooltip),
+          m_officer_type(officer_type) {
+        add_child_module(m_icon);
+    }
+    string get_tooltip() const { return m_tooltip; }
+    virtual ALLEGRO_EVENT make_event(EventType t) override {
+        ALLEGRO_EVENT e = {
+            .user = {.type = t, .data1 = m_id, .data2 = m_officer_type}};
+        return e;
+    }
+
+  private:
+    shared_ptr<Bitmap> m_icon;
+    string m_tooltip;
+    OfficerType m_officer_type;
+};
+
+class CommandPanel : public Module {
+  public:
+    CommandPanel(
+        OfficerType officer_type,
+        vector<tuple<string, string, EventType>> commands)
+        : Module(), m_officer_type(officer_type) {
+        int bx = (int)g_game->getGlobalNumber("GUI_CONTROLPANEL_POS_X");
+        int by = (int)g_game->getGlobalNumber("GUI_CONTROLPANEL_POS_Y");
+        int CMDBUTTONS_UL_X = bx + 18;
+        int CMDBUTTONS_UL_Y = by + 242;
+
+        int x = CMDBUTTONS_UL_X;
+        int y = CMDBUTTONS_UL_Y;
+
+        int count = 0;
+        for (auto &[icon, tooltip, event] : commands) {
+            auto cb = make_shared<CommandButton>(
+                x,
+                y,
+                EVENT_COMMAND_MOUSE_OVER,
+                event,
+                images[icon],
+                tooltip,
+                officer_type);
+            if ((++count % 3) == 0) {
+                x = CMDBUTTONS_UL_X;
+                y += cb->get_height();
+            } else {
+                x += cb->get_width();
+            }
+            add_child_module(cb);
+        }
+    }
+    OfficerType get_officer_type() const { return m_officer_type; }
+
+  private:
+    OfficerType m_officer_type;
+};
+
+ModuleControlPanel::ModuleControlPanel()
+    : Module(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT),
+      m_selected_officer(OFFICER_NONE), m_selected_command(EVENT_NONE) {}
 
 bool
-ModuleControlPanel::Init() {
-    // load the control panel datafile
-    if (!resources.load()) {
-        g_game->message("ControlPanel: Error loading datafile");
-        return false;
+ModuleControlPanel::on_init() {
+    m_background = make_shared<Bitmap>(
+        images[I_GUI_CONTROLPANEL],
+        static_cast<int>(g_game->getGlobalNumber("GUI_CONTROLPANEL_POS_X")),
+        static_cast<int>(g_game->getGlobalNumber("GUI_CONTROLPANEL_POS_Y")));
+    add_child_module(m_background);
+
+    map<OfficerType, pair<string, string>> officer_button_images = {
+        {OFFICER_CAPTAIN, {I_CP_CAPTAIN_MO, I_CP_CAPTAIN_SELECT}},
+        {OFFICER_SCIENCE, {I_CP_SCIENCE_MO, I_CP_SCIENCE_SELECT}},
+        {OFFICER_NAVIGATION, {I_CP_NAVIGATION_MO, I_CP_NAVIGATION_SELECT}},
+        {OFFICER_ENGINEER, {I_CP_ENGINEER_MO, I_CP_ENGINEER_SELECT}},
+        {OFFICER_COMMUNICATION, {I_CP_COMM_MO, I_CP_COMM_SELECT}},
+        {OFFICER_MEDICAL, {I_CP_MEDICAL_MO, I_CP_MEDICAL_SELECT}},
+        {OFFICER_TACTICAL, {I_CP_TACTICAL_MO, I_CP_TACTICAL_SELECT}},
+    };
+    map<OfficerType, vector<tuple<string, string, EventType>>>
+        officer_control_button_data = {
+            {OFFICER_CAPTAIN,
+             {
+                 {I_COMMANDICON_CAPTAIN_LAUNCH,
+                  "Break orbit",
+                  EVENT_CAPTAIN_LAUNCH},
+                 {I_COMMANDICON_CAPTAIN_DESCEND,
+                  "Descend to surface",
+                  EVENT_CAPTAIN_DESCEND},
+                 {I_COMMANDICON_CAPTAIN_CARGO,
+                  "Cargo hold",
+                  EVENT_CAPTAIN_CARGO},
+                 {I_COMMANDICON_COM_QUESTLOG,
+                  "Quest log",
+                  EVENT_CAPTAIN_QUESTLOG},
+             }},
+            {OFFICER_SCIENCE,
+             {{I_COMMANDICON_SCIENCE_SCAN, "Sensor scan", EVENT_SCIENCE_SCAN},
+              {I_COMMANDICON_SCIENCE_ANALYSIS,
+               "Sensor analysis",
+               EVENT_SCIENCE_ANALYSIS}}},
+            {OFFICER_NAVIGATION,
+             {
+                 {I_COMMANDICON_NAV_ORBIT,
+                  "Orbit planet",
+                  EVENT_NAVIGATOR_ORBIT},
+                 {I_COMMANDICON_NAV_DOCK,
+                  "Dock with Starport",
+                  EVENT_NAVIGATOR_DOCK},
+                 {I_COMMANDICON_NAV_HYPERSPACE,
+                  "Hyperspace engine",
+                  EVENT_NAVIGATOR_HYPERSPACE},
+                 {I_COMMANDICON_NAV_STARMAP,
+                  "Starmap",
+                  EVENT_NAVIGATOR_STARMAP},
+             }},
+            {
+                OFFICER_TACTICAL,
+                {
+                    {I_COMMANDICON_TAC_SHIELDS,
+                     "Raise/Lower Shields",
+                     EVENT_TACTICAL_SHIELDS},
+                    {I_COMMANDICON_TAC_WEAPONS,
+                     "Arm/Disarm Weapons",
+                     EVENT_TACTICAL_WEAPONS},
+                },
+            },
+            {
+                OFFICER_ENGINEER,
+                {
+                    {I_COMMANDICON_ENG_REPAIR,
+                     "Repair systems",
+                     EVENT_ENGINEER_REPAIR},
+                    {I_COMMANDICON_COM_RESPOND,
+                     "Inject fuel",
+                     EVENT_ENGINEER_INJECT},
+                },
+            },
+            {
+                OFFICER_COMMUNICATION,
+                {
+                    {I_COMMANDICON_COM_HAIL,
+                     "Hail or respond",
+                     EVENT_COMM_HAIL},
+                    {I_COMMANDICON_COM_QUESTION,
+                     "Ask a question",
+                     EVENT_COMM_QUESTION},
+                    // Not implemented in Lua modules
+                    /* {I_COMMANDICON_COM_STATEMENT, */
+                    /*  "Make a statement", */
+                    /*  EVENT_COMM_STATEMENT}, */
+                    {I_COMMANDICON_COM_POSTURE,
+                     "Change posture",
+                     EVENT_COMM_POSTURE},
+                    {I_COMMANDICON_COM_TERMINATE,
+                     "End communication",
+                     EVENT_COMM_TERMINATE},
+                    {I_COMMANDICON_COM_DISTRESS,
+                     "Send distress signal",
+                     EVENT_COMM_DISTRESS},
+                },
+            },
+            {
+                OFFICER_MEDICAL,
+                {
+                    {I_COMMANDICON_MED_EXAMINE,
+                     "Examine crew",
+                     EVENT_DOCTOR_EXAMINE},
+                    {I_COMMANDICON_MED_TREAT, "Treat crew", EVENT_DOCTOR_TREAT},
+                },
+            }};
+
+    int officer_icon_x_base =
+        static_cast<int>(g_game->getGlobalNumber("GUI_CONTROLPANEL_POS_X"))
+        + 45;
+    int officer_icon_x = officer_icon_x_base;
+    int officer_icon_y =
+        static_cast<int>(g_game->getGlobalNumber("GUI_CONTROLPANEL_POS_Y"))
+        + 157;
+    int officer_icon_width = 40;
+    int officer_icon_height = 40;
+    int officer_count = 0;
+
+    for (auto i : OfficerIterator) {
+        auto button = make_shared<OfficerButton>(
+            officer_icon_x,
+            officer_icon_y,
+            EVENT_COMMAND_OFFICER_MOUSE_OVER,
+            EVENT_COMMAND_OFFICER_CLICK,
+            i,
+            images[officer_button_images[i].first],
+            images[officer_button_images[i].second]);
+        m_officer_buttons[i] = button;
+        add_child_module(button);
+        if ((++officer_count % 4) == 0) {
+            officer_icon_x = officer_icon_x_base;
+            officer_icon_y += officer_icon_height;
+        } else {
+            officer_icon_x += officer_icon_width;
+        }
+        auto command_panel =
+            make_shared<CommandPanel>(i, officer_control_button_data[i]);
+        m_command_panels[i] = command_panel;
+        add_child_module(command_panel);
+        command_panel->set_active(false);
     }
 
-    static int bx = (int)g_game->getGlobalNumber("GUI_CONTROLPANEL_POS_X");
-    static int by = (int)g_game->getGlobalNumber("GUI_CONTROLPANEL_POS_Y");
-    CMDBUTTONS_UL_X = bx + 18;
-    CMDBUTTONS_UL_Y = by + 242;
-    OFFICERICON_UL_X = bx + 45;
-    OFFICERICON_UL_Y = by + 157;
+    m_selected_officer = OFFICER_CAPTAIN;
+    m_officer_buttons[OFFICER_CAPTAIN]->set_highlight(true);
+    m_command_panels[OFFICER_CAPTAIN]->set_active(true);
+    m_selected_command = EVENT_NONE;
 
-    // load background image
-    controlPanelBackgroundImg = resources[I_GUI_CONTROLPANEL];
-
-    const int officerIconWidth = 40;
-    const int officerIconHeight = 40;
-    int officerIconX = OFFICERICON_UL_X;
-    int officerIconY = OFFICERICON_UL_Y;
-
-    if (!CommandButton::InitCommon(*this))
-        return false;
-
-    if (!OfficerButton::InitCommon())
-        return false;
-
-    // reusable button object
-    CommandButton *cbtn;
-
-    /*
-     * CAPTAIN
-     */
-    OfficerButton *captainBtn;
-    captainBtn = new OfficerButton(*this,
-                                   OFFICER_CAPTAIN,
-                                   I_CP_CAPTAIN_MO,
-                                   I_CP_CAPTAIN_SELECT,
-                                   officerIconX,
-                                   officerIconY);
-
-    selectedOfficer = captainBtn;
-    officerButtons.push_back(captainBtn);
-
-    int cix = CMDBUTTONS_UL_X;
-    int ciy = CMDBUTTONS_UL_Y;
-
-    // LAUNCH BUTTON
-    cbtn = new CommandButton(
-        *this, I_COMMANDICON_CAPTAIN_LAUNCH, "Break orbit", cix, ciy);
-    cbtn->setEventID(EVENT_CAPTAIN_LAUNCH);
-    captainBtn->commandButtons.push_back(cbtn);
-
-    // DESCEND BUTTON
-    cix += CommandButton::GetCommonWidth() + CMDBUTTON_SPACING;
-    cbtn = new CommandButton(
-        *this, I_COMMANDICON_CAPTAIN_DESCEND, "Descend to surface", cix, ciy);
-    cbtn->setEventID(EVENT_CAPTAIN_DESCEND);
-    captainBtn->commandButtons.push_back(cbtn);
-
-    // CARGO HOLD BUTTON
-    cix += CommandButton::GetCommonWidth() + CMDBUTTON_SPACING;
-    cbtn = new CommandButton(
-        *this, I_COMMANDICON_CAPTAIN_CARGO, "Cargo hold", cix, ciy);
-    cbtn->setEventID(EVENT_CAPTAIN_CARGO);
-    captainBtn->commandButtons.push_back(cbtn);
-
-    // QUESTLOG BUTTON
-    cix = CMDBUTTONS_UL_X;
-    ciy += CommandButton::GetCommonHeight() + CMDBUTTON_SPACING;
-    cbtn = new CommandButton(
-        *this, I_COMMANDICON_COM_QUESTLOG, "Quest log", cix, ciy);
-    cbtn->setEventID(EVENT_CAPTAIN_QUESTLOG);
-    captainBtn->commandButtons.push_back(cbtn);
-
-    /*
-     * SCIENCE OFFICER
-     */
-    officerIconX += officerIconWidth;
-    OfficerButton *scienceBtn = new OfficerButton(*this,
-                                                  OFFICER_SCIENCE,
-                                                  I_CP_SCIENCE_MO,
-                                                  I_CP_SCIENCE_SELECT,
-                                                  officerIconX,
-                                                  officerIconY);
-    officerButtons.push_back(scienceBtn);
-
-    cix = CMDBUTTONS_UL_X;
-    ciy = CMDBUTTONS_UL_Y;
-
-    // SCAN BUTTON
-    cbtn = new CommandButton(
-        *this, I_COMMANDICON_SCIENCE_SCAN, "Sensor scan", cix, ciy);
-    cbtn->setEventID(EVENT_SCIENCE_SCAN);
-    scienceBtn->commandButtons.push_back(cbtn);
-
-    // ANALYSIS BUTTON
-    cix += CommandButton::GetCommonWidth() + CMDBUTTON_SPACING;
-    cbtn = new CommandButton(
-        *this, I_COMMANDICON_SCIENCE_ANALYSIS, "Sensor analysis", cix, ciy);
-    cbtn->setEventID(EVENT_SCIENCE_ANALYSIS);
-    scienceBtn->commandButtons.push_back(cbtn);
-
-    /*
-     * NAVIGATOR
-     */
-    officerIconX += officerIconWidth;
-    OfficerButton *navBtn = new OfficerButton(*this,
-                                              OFFICER_NAVIGATION,
-                                              I_CP_NAVIGATION_MO,
-                                              I_CP_NAVIGATION_SELECT,
-                                              officerIconX,
-                                              officerIconY);
-    officerButtons.push_back(navBtn);
-
-    cix = CMDBUTTONS_UL_X;
-    ciy = CMDBUTTONS_UL_Y;
-
-    // ORBIT BUTTON
-    cbtn = new CommandButton(
-        *this, I_COMMANDICON_NAV_ORBIT, "Orbit planet", cix, ciy);
-    cbtn->setEventID(EVENT_NAVIGATOR_ORBIT);
-    navBtn->commandButtons.push_back(cbtn);
-
-    // STARPORT DOCK BUTTON
-    cix += CommandButton::GetCommonWidth() + CMDBUTTON_SPACING;
-    cbtn = new CommandButton(
-        *this, I_COMMANDICON_NAV_DOCK, "Dock with Starport", cix, ciy);
-    cbtn->setEventID(EVENT_NAVIGATOR_DOCK);
-    navBtn->commandButtons.push_back(cbtn);
-
-    // HYPERSPACE ENGINE BUTTON
-    cix += CommandButton::GetCommonWidth() + CMDBUTTON_SPACING;
-    cbtn = new CommandButton(
-        *this, I_COMMANDICON_NAV_HYPERSPACE, "Hyperspace engine", cix, ciy);
-    cbtn->setEventID(EVENT_NAVIGATOR_HYPERSPACE);
-    navBtn->commandButtons.push_back(cbtn);
-
-    // STARMAP BUTTON
-    cix = CMDBUTTONS_UL_X;
-    ciy += CommandButton::GetCommonHeight() + CMDBUTTON_SPACING;
-    cbtn = new CommandButton(
-        *this, I_COMMANDICON_NAV_STARMAP, "Starmap", cix, ciy);
-    cbtn->setEventID(EVENT_NAVIGATOR_STARMAP);
-    navBtn->commandButtons.push_back(cbtn);
-
-    /*
-     * TACTICAL
-     */
-    officerIconX += officerIconWidth;
-    OfficerButton *tacBtn = new OfficerButton(*this,
-                                              OFFICER_TACTICAL,
-                                              I_CP_TACTICAL_MO,
-                                              I_CP_TACTICAL_SELECT,
-                                              officerIconX,
-                                              officerIconY);
-    officerButtons.push_back(tacBtn);
-
-    cix = CMDBUTTONS_UL_X;
-    ciy = CMDBUTTONS_UL_Y;
-
-    // SHIELDS BUTTON
-    cbtn = new CommandButton(
-        *this, I_COMMANDICON_TAC_SHIELDS, "Raise/Lower Shields", cix, ciy);
-    cbtn->setEventID(EVENT_TACTICAL_SHIELDS);
-    tacBtn->commandButtons.push_back(cbtn);
-
-    // WEAPONS BUTTON
-    cix += CommandButton::GetCommonWidth() + CMDBUTTON_SPACING;
-    cbtn = new CommandButton(
-        *this, I_COMMANDICON_TAC_WEAPONS, "Arm/Disarm Weapons", cix, ciy);
-    cbtn->setEventID(EVENT_TACTICAL_WEAPONS);
-    tacBtn->commandButtons.push_back(cbtn);
-
-    /*
-     * ENGINEER
-     */
-    officerIconX = OFFICERICON_UL_X;
-    officerIconY = OFFICERICON_UL_Y + officerIconHeight;
-    OfficerButton *engBtn = new OfficerButton(*this,
-                                              OFFICER_ENGINEER,
-                                              I_CP_ENGINEER_MO,
-                                              I_CP_ENGINEER_SELECT,
-                                              officerIconX,
-                                              officerIconY);
-    officerButtons.push_back(engBtn);
-
-    cix = CMDBUTTONS_UL_X;
-    ciy = CMDBUTTONS_UL_Y;
-
-    // REPAIR BUTTON
-    cbtn = new CommandButton(
-        *this, I_COMMANDICON_ENG_REPAIR, "Repair systems", cix, ciy);
-    cbtn->setEventID(EVENT_ENGINEER_REPAIR);
-    engBtn->commandButtons.push_back(cbtn);
-
-    // INJECT FUEL BUTTON
-    cix += CommandButton::GetCommonWidth() + CMDBUTTON_SPACING;
-    cbtn = new CommandButton(
-        *this, I_COMMANDICON_COM_RESPOND, "Inject fuel", cix, ciy);
-    cbtn->setEventID(EVENT_ENGINEER_INJECT);
-    engBtn->commandButtons.push_back(cbtn);
-
-    /*
-     * COMMUNICATIONS
-     */
-    officerIconX += officerIconWidth;
-    OfficerButton *comBtn = new OfficerButton(*this,
-                                              OFFICER_COMMUNICATION,
-                                              I_CP_COMM_MO,
-                                              I_CP_COMM_SELECT,
-                                              officerIconX,
-                                              officerIconY);
-    officerButtons.push_back(comBtn);
-
-    cix = CMDBUTTONS_UL_X;
-    ciy = CMDBUTTONS_UL_Y;
-
-    // HAIL BUTTON
-    cbtn = new CommandButton(
-        *this, I_COMMANDICON_COM_HAIL, "Hail or respond", cix, ciy);
-    cbtn->setEventID(EVENT_COMM_HAIL);
-    comBtn->commandButtons.push_back(cbtn);
-
-    // QUESTION BUTTON
-    cix += CommandButton::GetCommonWidth() + CMDBUTTON_SPACING;
-    cbtn = new CommandButton(
-        *this, I_COMMANDICON_COM_QUESTION, "Ask a question", cix, ciy);
-    cbtn->setEventID(EVENT_COMM_QUESTION);
-    comBtn->commandButtons.push_back(cbtn);
-
-    // POSTURE BUTTON
-    cix += CommandButton::GetCommonWidth() + CMDBUTTON_SPACING;
-    cbtn = new CommandButton(
-        *this, I_COMMANDICON_COM_POSTURE, "Change posture", cix, ciy);
-    cbtn->setEventID(EVENT_COMM_POSTURE);
-    comBtn->commandButtons.push_back(cbtn);
-
-    // TERMINATE BUTTON
-    cix = CMDBUTTONS_UL_X;
-    ciy += CommandButton::GetCommonHeight() + CMDBUTTON_SPACING;
-    cbtn = new CommandButton(
-        *this, I_COMMANDICON_COM_TERMINATE, "End communication", cix, ciy);
-    cbtn->setEventID(EVENT_COMM_TERMINATE);
-    comBtn->commandButtons.push_back(cbtn);
-
-    // DISTRESS BUTTON
-    cix += CommandButton::GetCommonWidth() + CMDBUTTON_SPACING;
-    cbtn = new CommandButton(
-        *this, I_COMMANDICON_COM_DISTRESS, "Send distress signal", cix, ciy);
-    cbtn->setEventID(EVENT_COMM_DISTRESS);
-    comBtn->commandButtons.push_back(cbtn);
-
-    /*
-     * MEDICAL
-     */
-    officerIconX += officerIconWidth;
-    OfficerButton *medBtn = new OfficerButton(*this,
-                                              OFFICER_MEDICAL,
-                                              I_CP_MEDICAL_MO,
-                                              I_CP_MEDICAL_SELECT,
-                                              officerIconX,
-                                              officerIconY);
-    officerButtons.push_back(medBtn);
-
-    cix = CMDBUTTONS_UL_X;
-    ciy = CMDBUTTONS_UL_Y;
-
-    // EXAMINE BUTTON
-    cbtn = new CommandButton(
-        *this, I_COMMANDICON_MED_EXAMINE, "Examine crew", cix, ciy);
-    cbtn->setEventID(EVENT_DOCTOR_EXAMINE);
-    medBtn->commandButtons.push_back(cbtn);
-
-    // TREAT BUTTON
-    cix += CommandButton::GetCommonWidth() + CMDBUTTON_SPACING;
-    cbtn = new CommandButton(
-        *this, I_COMMANDICON_MED_TREAT, "Treat crew", cix, ciy);
-    cbtn->setEventID(EVENT_DOCTOR_TREAT);
-    medBtn->commandButtons.push_back(cbtn);
-
-    // do something with the buttons
-    for (vector<OfficerButton *>::iterator i = officerButtons.begin();
-         i != officerButtons.end();
-         ++i) {
-        OfficerButton *officerButton = *i;
-
-        if (officerButton == NULL)
-            return false;
-
-        if (!officerButton->InitButton())
-            return false;
-    }
-
-    // load audio files
-    sndOfficerSelected =
-        g_game->audioSystem->Load("data/controlpanel/officer_selected.ogg");
-    if (!sndOfficerSelected) {
-        g_game->message("ControlPanel: Error loading officer_selected");
-        return false;
-    }
-
-    sndOfficerCommandSelected = g_game->audioSystem->Load(
-        "data/controlpanel/officer_command_selected.ogg");
-    if (!sndOfficerCommandSelected) {
-        g_game->message("ControlPanel: Error loading officer_command_selected");
-        return false;
-    }
-
+    m_tooltip = make_shared<Label>(
+        to_string(OFFICER_CAPTAIN),
+        850,
+        450,
+        174,
+        32,
+        true,
+        0,
+        g_game->font12,
+        WHITE);
+    add_child_module(m_tooltip);
     return true;
 }
 
-void
-ModuleControlPanel::Update() {
-    Module::Update();
+bool
+ModuleControlPanel::on_event(ALLEGRO_EVENT *event) {
+    EventType event_type = static_cast<EventType>(event->type);
 
-    /**
-     * Set gameState variable to keep track of currently selected officer
-     * this is needed by the Status Window module, among other places.
-     **/
-    if (selectedOfficer != NULL)
-        g_game->gameState->setCurrentSelectedOfficer(
-            selectedOfficer->GetOfficerType());
-}
-
-void
-ModuleControlPanel::Draw() {
-    if (g_game->gameState->getCurrentModule() == MODULE_ENCOUNTER &&
-        g_game->doShowControls() == false)
-        return;
-
-    static int lastMode = 0;
-
-    // set CP buttons when mode change takes place
-    if (g_game->gameState->player->controlPanelMode != lastMode) {
-        lastMode = g_game->gameState->player->controlPanelMode;
-    }
-
-    // render CP background with transparency
-    static int gcpx = (int)g_game->getGlobalNumber("GUI_CONTROLPANEL_POS_X");
-    static int gcpy = (int)g_game->getGlobalNumber("GUI_CONTROLPANEL_POS_Y");
-    al_set_target_bitmap(g_game->GetBackBuffer());
-
-    if (controlPanelBackgroundImg)
-        al_draw_bitmap(controlPanelBackgroundImg, gcpx, gcpy, 0);
-
-    // render command buttons for the selected officer
-    if (selectedOfficer != NULL) {
-        for (vector<CommandButton *>::iterator i =
-                 selectedOfficer->commandButtons.begin();
-             i != selectedOfficer->commandButtons.end();
-             ++i) {
-            CommandButton *commandButton = *i;
-
-            if (commandButton->GetEnabled()) {
-                if (selectedCommand == commandButton) {
-                    commandButton->RenderSelected(g_game->GetBackBuffer());
-                } else if (mouseOverCommand == commandButton) {
-                    commandButton->RenderMouseOver(g_game->GetBackBuffer());
-                } else {
-                    commandButton->RenderPlain(g_game->GetBackBuffer());
-                }
-            } else {
-                commandButton->RenderDisabled(g_game->GetBackBuffer());
+    switch (event_type) {
+    case EVENT_COMMAND_COMPLETE:
+        m_selected_command = EVENT_NONE;
+        break;
+    case EVENT_COMMAND_OFFICER_CLICK:
+        {
+            OfficerType officer = static_cast<OfficerType>(event->user.data2);
+            if (m_selected_officer != OFFICER_NONE
+                && m_selected_officer != officer) {
+                m_officer_buttons[m_selected_officer]->set_highlight(false);
+                m_command_panels[m_selected_officer]->set_active(false);
+                m_selected_command = EVENT_NONE;
             }
+            m_selected_officer = officer;
+            m_officer_buttons[m_selected_officer]->set_highlight(true);
+            m_command_panels[m_selected_officer]->set_active(true);
+            g_game->gameState->setCurrentSelectedOfficer(officer);
         }
-    }
-
-    // render officer buttons
-    for (vector<OfficerButton *>::iterator i = officerButtons.begin();
-         i != officerButtons.end();
-         ++i) {
-        OfficerButton *officerButton = *i;
-
-        if (officerButton == selectedOfficer) {
-            officerButton->RenderSelected(g_game->GetBackBuffer());
-        } else if (officerButton == mouseOverOfficer) {
-            officerButton->RenderMouseOver(g_game->GetBackBuffer());
-        } else {
-            if (officerButton->imgMouseOver)
-                al_draw_bitmap(officerButton->imgMouseOver,
-                               officerButton->posX,
-                               officerButton->posY,
-                               0);
+        break;
+    case EVENT_COMMAND_OFFICER_MOUSE_OVER:
+        {
+            OfficerType officer = static_cast<OfficerType>(event->user.data2);
+            m_tooltip->set_text(to_string(officer));
         }
+        break;
+    case EVENT_COMMAND_MOUSE_OVER:
+        {
+            int button_id = static_cast<int>(event->user.data1);
+            OfficerType officer = static_cast<OfficerType>(event->user.data2);
+            shared_ptr<CommandButton> button =
+                dynamic_pointer_cast<CommandButton>(
+                    m_command_panels[officer]->get_child_module(button_id));
+            ALLEGRO_ASSERT(button != nullptr);
+            m_tooltip->set_text(button->get_tooltip());
+        }
+    default:
+        break;
     }
+    return true;
 }
 
-void
-ModuleControlPanel::Close() {
-    for (vector<OfficerButton *>::iterator i = officerButtons.begin();
-         i != officerButtons.end();
-         ++i) {
-        if (*i != NULL) {
-            (*i)->DestroyButton();
-            delete *i;
-        }
+bool
+ModuleControlPanel::on_close() {
+    for (auto i : OfficerIterator) {
+        remove_child_module(m_officer_buttons[i]);
+        remove_child_module(m_command_panels[i]);
     }
-    officerButtons.clear();
-
-    CommandButton::DestroyCommon();
-    OfficerButton::DestroyCommon();
-
-    if (sndOfficerSelected != NULL) {
-        sndOfficerSelected = NULL;
-    }
-
-    if (sndOfficerCommandSelected != NULL) {
-        sndOfficerCommandSelected = NULL;
-    }
-
-    selectedOfficer = NULL;
-
-    // unload the data file (thus freeing all resources at once)
-    resources.unload();
+    remove_child_module(m_background);
+    remove_child_module(m_tooltip);
+    m_officer_buttons.clear();
+    m_command_panels.clear();
+    m_background = nullptr;
+    m_tooltip = nullptr;
+    m_selected_officer = OFFICER_NONE;
+    m_selected_command = EVENT_NONE;
+    return true;
 }
 
-#pragma region INPUT
+bool
+ModuleControlPanel::on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event) {
+    OfficerType selected_officer = OFFICER_NONE;
+    EventType selected_event = EVENT_NONE;
 
-void
-ModuleControlPanel::OnKeyReleased(int keyCode) {
-    Module::OnKeyReleased(keyCode);
-    switch (keyCode) {
+    switch (event->keycode) {
     case ALLEGRO_KEY_F1: // select the captain
-        g_game->gameState->setCurrentSelectedOfficer(OFFICER_CAPTAIN);
-        for (vector<OfficerButton *>::iterator i = officerButtons.begin();
-             i != officerButtons.end();
-             ++i) {
-            OfficerButton *officerButton = *i;
-            if (officerButton->GetOfficerType() == OFFICER_CAPTAIN) {
-                // change the officer
-                selectedOfficer = officerButton;
-                break;
-            }
-        }
+        selected_officer = OFFICER_CAPTAIN;
         break;
     case ALLEGRO_KEY_F2: // select the science officer
-        g_game->gameState->setCurrentSelectedOfficer(OFFICER_SCIENCE);
-        for (vector<OfficerButton *>::iterator i = officerButtons.begin();
-             i != officerButtons.end();
-             ++i) {
-            OfficerButton *officerButton = *i;
-            if (officerButton->GetOfficerType() == OFFICER_SCIENCE) {
-                // change the officer
-                selectedOfficer = officerButton;
-                break;
-            }
-        }
+        selected_officer = OFFICER_SCIENCE;
         break;
     case ALLEGRO_KEY_F3: // select the navigator
-        g_game->gameState->setCurrentSelectedOfficer(OFFICER_NAVIGATION);
-        for (vector<OfficerButton *>::iterator i = officerButtons.begin();
-             i != officerButtons.end();
-             ++i) {
-            OfficerButton *officerButton = *i;
-            if (officerButton->GetOfficerType() == OFFICER_NAVIGATION) {
-                // change the officer
-                selectedOfficer = officerButton;
-                break;
-            }
-        }
+        selected_officer = OFFICER_NAVIGATION;
         break;
     case ALLEGRO_KEY_F4: // select the tactician
-        g_game->gameState->setCurrentSelectedOfficer(OFFICER_TACTICAL);
-        for (vector<OfficerButton *>::iterator i = officerButtons.begin();
-             i != officerButtons.end();
-             ++i) {
-            OfficerButton *officerButton = *i;
-            if (officerButton->GetOfficerType() == OFFICER_TACTICAL) {
-                // change the officer
-                selectedOfficer = officerButton;
-                break;
-            }
-        }
+        selected_officer = OFFICER_TACTICAL;
         break;
     case ALLEGRO_KEY_F5: // select the engineer
-        g_game->gameState->setCurrentSelectedOfficer(OFFICER_ENGINEER);
-        for (vector<OfficerButton *>::iterator i = officerButtons.begin();
-             i != officerButtons.end();
-             ++i) {
-            OfficerButton *officerButton = *i;
-            if (officerButton->GetOfficerType() == OFFICER_ENGINEER) {
-                // change the officer
-                selectedOfficer = officerButton;
-                break;
-            }
-        }
+        selected_officer = OFFICER_ENGINEER;
         break;
     case ALLEGRO_KEY_F6: // select the comms officer
-        g_game->gameState->setCurrentSelectedOfficer(OFFICER_COMMUNICATION);
-        for (vector<OfficerButton *>::iterator i = officerButtons.begin();
-             i != officerButtons.end();
-             ++i) {
-            OfficerButton *officerButton = *i;
-            if (officerButton->GetOfficerType() == OFFICER_COMMUNICATION) {
-                // change the officer
-                selectedOfficer = officerButton;
-                break;
-            }
-        }
+        selected_officer = OFFICER_COMMUNICATION;
         break;
     case ALLEGRO_KEY_F7: // select the doctor
-        g_game->gameState->setCurrentSelectedOfficer(OFFICER_MEDICAL);
-        for (vector<OfficerButton *>::iterator i = officerButtons.begin();
-             i != officerButtons.end();
-             ++i) {
-            OfficerButton *officerButton = *i;
-            if (officerButton->GetOfficerType() == OFFICER_MEDICAL) {
-                // change the officer
-                selectedOfficer = officerButton;
-                break;
-            }
-        }
+        selected_officer = OFFICER_MEDICAL;
         break;
-
     case ALLEGRO_KEY_M: // "map" button
-        g_game->gameState->setCurrentSelectedOfficer(OFFICER_NAVIGATION);
-        for (vector<OfficerButton *>::iterator i = officerButtons.begin();
-             i != officerButtons.end();
-             ++i) {
-            OfficerButton *officerButton = *i;
-            if (officerButton->GetOfficerType() == OFFICER_NAVIGATION) {
-                // change the officer
-                selectedOfficer = officerButton;
-                break;
-            }
-        }
-        Event e(EVENT_NAVIGATOR_STARMAP);
-        g_game->modeMgr->BroadcastEvent(&e);
+        selected_officer = OFFICER_NAVIGATION;
+        selected_event = EVENT_NAVIGATOR_STARMAP;
         break;
-    }
-}
-
-void
-ModuleControlPanel::OnMouseMove(int x, int y) {
-    Module::OnMouseMove(x, y);
-
-    // look for officer button mouse over
-    mouseOverOfficer = NULL;
-    for (vector<OfficerButton *>::iterator i = officerButtons.begin();
-         (i != officerButtons.end()) && (mouseOverOfficer == NULL);
-         ++i) {
-        OfficerButton *officerButton = *i;
-
-        if (officerButton->IsInButton(x, y)) {
-            mouseOverOfficer = officerButton;
-        }
-    }
-
-    // look for command button mouse over
-    mouseOverCommand = NULL;
-    if (selectedOfficer != NULL) {
-        for (vector<CommandButton *>::iterator i =
-                 selectedOfficer->commandButtons.begin();
-             i != selectedOfficer->commandButtons.end();
-             ++i) {
-            CommandButton *commandButton = *i;
-
-            if (commandButton->IsInButton(x, y)) {
-                mouseOverCommand = commandButton;
-            }
-        }
-    }
-}
-
-void
-ModuleControlPanel::OnMouseClick(int button, int x, int y) {
-    Module::OnMouseClick(button, x, y);
-}
-
-void
-ModuleControlPanel::OnMousePressed(int button, int x, int y) {
-    Module::OnMousePressed(button, x, y);
-
-    if (button != 0)
-        return;
-
-    // select officer
-    for (vector<OfficerButton *>::iterator i = officerButtons.begin();
-         i != officerButtons.end();
-         ++i) {
-        OfficerButton *officerButton = *i;
-
-        if (officerButton->IsInButton(x, y)) {
-            // change the officer
-            selectedOfficer = officerButton;
-
-            // play sound
-            g_game->audioSystem->Play(sndOfficerSelected);
-
-            break;
-        }
-    }
-    // jjh - maybe here to force navigator when entering hyperspace
-    //  set command to pressed
-    if (selectedOfficer != NULL) {
-        for (vector<CommandButton *>::iterator i =
-                 selectedOfficer->commandButtons.begin();
-             i != selectedOfficer->commandButtons.end();
-             ++i) {
-            CommandButton *commandButton = *i;
-
-            if (commandButton->IsInButton(x, y) &&
-                commandButton->GetEnabled()) {
-                selectedCommand = commandButton;
-
-                g_game->audioSystem->Play(sndOfficerCommandSelected);
-            }
-        }
-    }
-}
-
-void
-ModuleControlPanel::OnMouseReleased(int button, int x, int y) {
-    Module::OnMouseReleased(button, x, y);
-
-    // launch event based on button ID so all modules in this mode will be
-    // notified
-    if (selectedCommand) {
-        Event e(selectedCommand->getEventID());
-        g_game->modeMgr->BroadcastEvent(&e);
-    }
-
-    selectedCommand = NULL;
-}
-
-void
-ModuleControlPanel::OnMouseWheelUp(int x, int y) {
-    Module::OnMouseWheelUp(x, y);
-}
-
-void
-ModuleControlPanel::OnMouseWheelDown(int x, int y) {
-    Module::OnMouseWheelDown(x, y);
-}
-
-#pragma endregion
-
-#pragma region COMMANDBUTTON
-//******************************************************************************
-// CommandButton
-//******************************************************************************
-
-#define CMDBUTTON_LABEL_CLR al_map_rgb(0, 0, 0)
-
-ALLEGRO_BITMAP *ModuleControlPanel::CommandButton::imgBackground = NULL;
-ALLEGRO_BITMAP *ModuleControlPanel::CommandButton::imgBackgroundDisabled = NULL;
-ALLEGRO_BITMAP *ModuleControlPanel::CommandButton::imgBackgroundMouseOver =
-    NULL;
-ALLEGRO_BITMAP *ModuleControlPanel::CommandButton::imgBackgroundSelected = NULL;
-
-ModuleControlPanel::CommandButton::CommandButton(
-    ModuleControlPanel &outer,
-    const std::string &datFileCmdIcon,
-    const std::string &cmdName,
-    int posX,
-    int posY)
-    : outer(outer) {
-    this->datFileCmdIcon = datFileCmdIcon;
-    this->cmdName = cmdName;
-    this->posX = posX;
-    this->posY = posY;
-    this->imgCmdIcon = NULL;
-    this->enabled = true;
-}
-
-ModuleControlPanel::CommandButton::~CommandButton() {}
-
-bool
-ModuleControlPanel::CommandButton::InitCommon(ModuleControlPanel &outer) {
-    imgBackground = outer.resources[I_COMMAND_BUTTON_BG];
-    imgBackgroundDisabled = outer.resources[I_COMMAND_BUTTON_BG_DISABLED];
-    imgBackgroundMouseOver = outer.resources[I_COMMAND_BUTTON_BG_MO];
-    imgBackgroundSelected = outer.resources[I_COMMAND_BUTTON_BG_SELECT];
-
-    return true;
-}
-
-int
-ModuleControlPanel::CommandButton::GetCommonWidth() {
-    return al_get_bitmap_width(imgBackground);
-}
-
-int
-ModuleControlPanel::CommandButton::GetCommonHeight() {
-    return al_get_bitmap_height(imgBackground);
-}
-
-bool
-ModuleControlPanel::CommandButton::InitButton() {
-    imgCmdIcon = outer.resources[datFileCmdIcon];
-
-    return true;
-}
-
-void
-ModuleControlPanel::CommandButton::DestroyButton() {
-
-    if (imgCmdIcon != NULL) {
-        imgCmdIcon = NULL;
-    }
-}
-
-void
-ModuleControlPanel::CommandButton::DestroyCommon() {
-    // now handled by the datafile
-
-    /*if (imgBackground != NULL)
-    {
-            al_destroy_bitmap(imgBackground);
-            imgBackground = NULL;
-    }
-
-    if (imgBackgroundDisabled != NULL)
-    {
-            al_destroy_bitmap(imgBackgroundDisabled);
-            imgBackgroundDisabled = NULL;
-    }
-
-    if (imgBackgroundMouseOver != NULL)
-    {
-            al_destroy_bitmap(imgBackgroundMouseOver);
-            imgBackgroundMouseOver = NULL;
-    }
-
-    if (imgBackgroundSelected != NULL)
-    {
-            al_destroy_bitmap(imgBackgroundSelected);
-            imgBackgroundSelected = NULL;
-    }*/
-}
-
-void
-ModuleControlPanel::CommandButton::RenderPlain(ALLEGRO_BITMAP *canvas) {
-    Render(canvas, imgBackground);
-}
-
-void
-ModuleControlPanel::CommandButton::RenderDisabled(ALLEGRO_BITMAP *canvas) {
-    Render(canvas, imgBackgroundDisabled);
-}
-
-void
-ModuleControlPanel::CommandButton::RenderMouseOver(ALLEGRO_BITMAP *canvas) {
-    Render(canvas, imgBackgroundMouseOver);
-
-    static int x = 40 + (int)g_game->getGlobalNumber("GUI_CONTROLPANEL_POS_X");
-    static int y = 115 + (int)g_game->getGlobalNumber("GUI_CONTROLPANEL_POS_Y");
-    g_game->Print18(canvas, x + 5, y, cmdName.c_str(), WHITE);
-}
-
-void
-ModuleControlPanel::CommandButton::RenderSelected(ALLEGRO_BITMAP *canvas) {
-    Render(canvas, imgBackgroundSelected, true);
-}
-
-bool
-ModuleControlPanel::CommandButton::IsInButton(int x, int y) {
-    if ((x >= posX) && (x < posX + al_get_bitmap_width(imgBackground)) &&
-        (y >= posY) && (y < posY + al_get_bitmap_height(imgBackground))) {
+    default:
         return true;
     }
+    if (m_selected_officer != OFFICER_NONE) {
+        m_officer_buttons[m_selected_officer]->set_highlight(false);
+        m_command_panels[m_selected_officer]->set_active(false);
+    }
+    m_selected_officer = selected_officer;
+    m_officer_buttons[m_selected_officer]->set_highlight(true);
+    m_command_panels[m_selected_officer]->set_active(true);
+    m_selected_command = EVENT_NONE;
 
-    return false;
-}
-
-void
-ModuleControlPanel::CommandButton::SetEnabled(bool enabled) {
-    this->enabled = enabled;
-}
-
-bool
-ModuleControlPanel::CommandButton::GetEnabled() {
-    return enabled;
-}
-
-void
-ModuleControlPanel::CommandButton::Render(ALLEGRO_BITMAP *canvas,
-                                          ALLEGRO_BITMAP *imgBackground,
-                                          bool down) {
-    al_set_target_bitmap(canvas);
-    // draw button background and command icon image
-    al_draw_bitmap(imgBackground, posX, posY, 0);
-
-    if (down)
-        al_draw_bitmap(imgCmdIcon, posX, posY, 0);
-    else
-        al_draw_bitmap_region(imgCmdIcon,
-                              0,
-                              2,
-                              al_get_bitmap_width(imgCmdIcon),
-                              al_get_bitmap_height(imgCmdIcon),
-                              posX,
-                              posY,
-                              0);
-}
-
-#pragma endregion
-
-#pragma region OFFICERBUTTON
-
-//******************************************************************************
-// OfficerButton
-//******************************************************************************
-
-#define OFFICER_MOUSEOVERTIP_SPACEFROMBTN_X 3
-#define OFFICER_MOUSEOVERTIP_SPACEFROMBTN_Y 0
-#define OFFICER_MOUSEOVERTIP_BORDER_THICKNESS 2
-#define OFFICER_MOUSEOVERTIP_BORDER_CLR al_map_rgb(0, 0, 0)
-#define OFFICER_MOUSEOVERTIP_BACKGROUND_CLR al_map_rgb(200, 200, 200)
-#define OFFICER_MOUSEOVERTIP_TEXT_CLR al_map_rgb(255, 255, 0)
-#define OFFICER_MOUSEOVERTIP_INNER_SPACING 5
-#define OFFICER_MOUSEOVERTIP_BAR_HEIGHT 10
-#define OFFICER_MOUSEOVERTIP_HEALTH_CLR al_map_rgb(255, 0, 0)
-#define OFFICER_MOUSEOVERTIP_LABEL_CLR al_map_rgb(255, 255, 255)
-#define OFFICER_MOUSEOVERTIP_TEXTOFFSET_X 6
-#define OFFICER_MOUSEOVERTIP_TEXTOFFSET_Y 6
-
-ModuleControlPanel::OfficerButton::OfficerButton(ModuleControlPanel &outer,
-                                                 OfficerType officerType,
-                                                 const string &datFileMouseOver,
-                                                 const string &datFileSelected,
-                                                 int posX,
-                                                 int posY)
-    : outer(outer) {
-    this->officerType = officerType;
-    this->datFileMouseOver = datFileMouseOver;
-    this->datFileSelected = datFileSelected;
-    this->posX = posX;
-    this->posY = posY;
-    this->imgMouseOver = NULL;
-    this->imgSelected = NULL;
-}
-
-ModuleControlPanel::OfficerButton::~OfficerButton() {}
-
-bool
-ModuleControlPanel::OfficerButton::InitCommon() {
+    if (selected_event != EVENT_NONE) {
+        ALLEGRO_EVENT e = make_event(selected_event);
+        g_game->broadcast_event(&e);
+    }
     return true;
 }
-
-bool
-ModuleControlPanel::OfficerButton::InitButton() {
-    imgMouseOver = outer.resources[datFileMouseOver];
-    imgSelected = outer.resources[datFileSelected];
-
-    for (vector<CommandButton *>::iterator i = commandButtons.begin();
-         i != commandButtons.end();
-         ++i) {
-        CommandButton *commandButton = *i;
-
-        if (commandButton == NULL)
-            return false;
-
-        if (!commandButton->InitButton())
-            return false;
-    }
-
-    return true;
-}
-
-void
-ModuleControlPanel::OfficerButton::RenderMouseOver(ALLEGRO_BITMAP *canvas) {
-    std::string name;
-    Officer *officer;
-
-    // mouse-over button image
-    al_set_target_bitmap(canvas);
-    al_draw_bitmap(imgMouseOver, posX, posY, 0);
-
-    // get the officer associated with this button
-    officer = g_game->gameState->getOfficer(this->officerType);
-    name = officer->name;
-
-    // determine location for tip window
-    static int cpx = (int)g_game->getGlobalNumber("GUI_CONTROLPANEL_POS_X");
-    static int cpy = (int)g_game->getGlobalNumber("GUI_CONTROLPANEL_POS_Y");
-    static int x = cpx + 40;
-    static int y = cpy + 115;
-
-    // background image
-    al_draw_filled_rectangle(x, y, x + 165, y + 32, al_map_rgb(57, 59, 134));
-
-    // draw tooltip of crew position/name
-    g_game->Print18(canvas,
-                    x + 5,
-                    y,
-                    officer->GetTitle().c_str(),
-                    OFFICER_MOUSEOVERTIP_TEXT_CLR);
-    g_game->Print18(
-        canvas, x + 5, y + 13, name.c_str(), OFFICER_MOUSEOVERTIP_LABEL_CLR);
-}
-
-void
-ModuleControlPanel::OfficerButton::RenderSelected(ALLEGRO_BITMAP *canvas) {
-    al_set_target_bitmap(canvas);
-    al_draw_bitmap(imgSelected, posX, posY, 0);
-}
-
-bool
-ModuleControlPanel::OfficerButton::IsInButton(int x, int y) {
-    if ((x >= posX) && (x < posX + al_get_bitmap_width(imgMouseOver)) &&
-        (y >= posY) && (y < posY + al_get_bitmap_height(imgMouseOver))) {
-        return true;
-    }
-
-    return false;
-}
-
-void
-ModuleControlPanel::OfficerButton::DestroyButton() {
-    for (vector<CommandButton *>::iterator i = commandButtons.begin();
-         i != commandButtons.end();
-         ++i) {
-        delete *i;
-    }
-    commandButtons.clear();
-}
-
-void
-ModuleControlPanel::OfficerButton::DestroyCommon() {}
-
-#pragma endregion

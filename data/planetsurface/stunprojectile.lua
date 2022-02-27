@@ -1,7 +1,7 @@
 -- stunprojectile SCRIPT FILE
 
 function stunprojectileInitialize( )
-	L_LoadImage("data/planetsurface/stun.tga")
+	L_LoadImage("data/planetsurface/stun.png")
 	L_SetDamage(2)
 	L_SetColHalfWidth(12)
 	L_SetColHalfHeight(12)

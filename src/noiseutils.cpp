@@ -56,10 +56,11 @@ BlendChannel(const uint8 channel0, const uint8 channel1, float alpha) {
 // Performs linear interpolation between two colors and stores the result
 // in out.
 inline void
-LinearInterpColor(const Color &color0,
-                  const Color &color1,
-                  float alpha,
-                  Color &out) {
+LinearInterpColor(
+    const Color &color0,
+    const Color &color1,
+    float alpha,
+    Color &out) {
     out.alpha = BlendChannel(color0.alpha, color1.alpha, alpha);
     out.blue = BlendChannel(color0.blue, color1.blue, alpha);
     out.green = BlendChannel(color0.green, color1.green, alpha);
@@ -113,8 +114,9 @@ GradientColor::GradientColor() { m_pGradientPoints = NULL; }
 GradientColor::~GradientColor() { delete[] m_pGradientPoints; }
 
 void
-GradientColor::AddGradientPoint(double gradientPos,
-                                const Color &gradientColor) {
+GradientColor::AddGradientPoint(
+    double gradientPos,
+    const Color &gradientColor) {
     // Find the insertion point for the new gradient point and insert the new
     // gradient point at that insertion point.  The gradient point array will
     // remain sorted by gradient position.
@@ -188,9 +190,10 @@ GradientColor::GetColor(double gradientPos) const {
 }
 
 void
-GradientColor::InsertAtPos(int insertionPos,
-                           double gradientPos,
-                           const Color &gradientColor) {
+GradientColor::InsertAtPos(
+    int insertionPos,
+    double gradientPos,
+    const Color &gradientColor) {
     // Make room for the new gradient point at the specified insertion position
     // within the gradient point array.  The insertion position is determined by
     // the gradient point's position; the gradient points must be sorted by
@@ -295,8 +298,8 @@ NoiseMap::InitObj() {
 
 void
 NoiseMap::SetSize(int width, int height) {
-    if (width < 0 || height < 0 || width > RASTER_MAX_WIDTH ||
-        height > RASTER_MAX_HEIGHT) {
+    if (width < 0 || height < 0 || width > RASTER_MAX_WIDTH
+        || height > RASTER_MAX_HEIGHT) {
         // Invalid width or height.
         throw noise::ExceptionInvalidParam();
     } else if (width == 0 || height == 0) {
@@ -415,8 +418,8 @@ Image::InitObj() {
 
 void
 Image::SetSize(int width, int height) {
-    if (width < 0 || height < 0 || width > RASTER_MAX_WIDTH ||
-        height > RASTER_MAX_HEIGHT) {
+    if (width < 0 || height < 0 || width > RASTER_MAX_WIDTH
+        || height > RASTER_MAX_HEIGHT) {
         // Invalid width or height.
         throw noise::ExceptionInvalidParam();
     } else if (width == 0 || height == 0) {
@@ -662,10 +665,10 @@ NoiseMapBuilderCylinder::NoiseMapBuilderCylinder()
 
 void
 NoiseMapBuilderCylinder::Build() {
-    if (m_upperAngleBound <= m_lowerAngleBound ||
-        m_upperHeightBound <= m_lowerHeightBound || m_destWidth <= 0 ||
-        m_destHeight <= 0 || m_pSourceModule == NULL ||
-        m_pDestNoiseMap == NULL) {
+    if (m_upperAngleBound <= m_lowerAngleBound
+        || m_upperHeightBound <= m_lowerHeightBound || m_destWidth <= 0
+        || m_destHeight <= 0 || m_pSourceModule == NULL
+        || m_pDestNoiseMap == NULL) {
         throw noise::ExceptionInvalidParam();
     }
 
@@ -708,9 +711,9 @@ NoiseMapBuilderPlane::NoiseMapBuilderPlane()
 
 void
 NoiseMapBuilderPlane::Build() {
-    if (m_upperXBound <= m_lowerXBound || m_upperZBound <= m_lowerZBound ||
-        m_destWidth <= 0 || m_destHeight <= 0 || m_pSourceModule == NULL ||
-        m_pDestNoiseMap == NULL) {
+    if (m_upperXBound <= m_lowerXBound || m_upperZBound <= m_lowerZBound
+        || m_destWidth <= 0 || m_destHeight <= 0 || m_pSourceModule == NULL
+        || m_pDestNoiseMap == NULL) {
         throw noise::ExceptionInvalidParam();
     }
 
@@ -767,10 +770,9 @@ NoiseMapBuilderSphere::NoiseMapBuilderSphere()
 
 void
 NoiseMapBuilderSphere::Build() {
-    if (m_eastLonBound <= m_westLonBound ||
-        m_northLatBound <= m_southLatBound || m_destWidth <= 0 ||
-        m_destHeight <= 0 || m_pSourceModule == NULL ||
-        m_pDestNoiseMap == NULL) {
+    if (m_eastLonBound <= m_westLonBound || m_northLatBound <= m_southLatBound
+        || m_destWidth <= 0 || m_destHeight <= 0 || m_pSourceModule == NULL
+        || m_pDestNoiseMap == NULL) {
         throw noise::ExceptionInvalidParam();
     }
 
@@ -817,8 +819,9 @@ RendererImage::RendererImage()
 };
 
 void
-RendererImage::AddGradientPoint(double gradientPos,
-                                const Color &gradientColor) {
+RendererImage::AddGradientPoint(
+    double gradientPos,
+    const Color &gradientColor) {
     m_gradient.AddGradientPoint(gradientPos, gradientColor);
 }
 
@@ -830,9 +833,10 @@ RendererImage::BuildGrayscaleGradient() {
 }
 
 Color
-RendererImage::CalcDestColor(const Color &sourceColor,
-                             const Color &backgroundColor,
-                             double lightValue) const {
+RendererImage::CalcDestColor(
+    const Color &sourceColor,
+    const Color &backgroundColor,
+    double lightValue) const {
     double sourceRed = (double)sourceColor.red / 255.0;
     double sourceGreen = (double)sourceColor.green / 255.0;
     double sourceBlue = (double)sourceColor.blue / 255.0;
@@ -870,16 +874,21 @@ RendererImage::CalcDestColor(const Color &sourceColor,
 
     // Rescale the color channels to the noise::uint8 (0..255) range and return
     // the new color.
-    Color newColor((noise::uint8)((noise::uint)(red * 255.0) & 0xff),
-                   (noise::uint8)((noise::uint)(green * 255.0) & 0xff),
-                   (noise::uint8)((noise::uint)(blue * 255.0) & 0xff),
-                   GetMax(sourceColor.alpha, backgroundColor.alpha));
+    Color newColor(
+        (noise::uint8)((noise::uint)(red * 255.0) & 0xff),
+        (noise::uint8)((noise::uint)(green * 255.0) & 0xff),
+        (noise::uint8)((noise::uint)(blue * 255.0) & 0xff),
+        GetMax(sourceColor.alpha, backgroundColor.alpha));
     return newColor;
 }
 
 double
 RendererImage::CalcLightIntensity(
-    double center, double left, double right, double down, double up) const {
+    double center,
+    double left,
+    double right,
+    double down,
+    double up) const {
     // Recalculate the sine and cosine of the various light values if
     // necessary so it does not have to be calculated each time this method is
     // called.
@@ -912,10 +921,10 @@ RendererImage::ClearGradient() {
 
 void
 RendererImage::Render() {
-    if (m_pSourceNoiseMap == NULL || m_pDestImage == NULL ||
-        m_pSourceNoiseMap->GetWidth() <= 0 ||
-        m_pSourceNoiseMap->GetHeight() <= 0 ||
-        m_gradient.GetGradientPointCount() < 2) {
+    if (m_pSourceNoiseMap == NULL || m_pDestImage == NULL
+        || m_pSourceNoiseMap->GetWidth() <= 0
+        || m_pSourceNoiseMap->GetHeight() <= 0
+        || m_gradient.GetGradientPointCount() < 2) {
         throw noise::ExceptionInvalidParam();
     }
 
@@ -925,8 +934,8 @@ RendererImage::Render() {
     // If a background image was provided, make sure it is the same size the
     // source noise map.
     if (m_pBackgroundImage != NULL) {
-        if (m_pBackgroundImage->GetWidth() != width ||
-            m_pBackgroundImage->GetHeight() != height) {
+        if (m_pBackgroundImage->GetWidth() != width
+            || m_pBackgroundImage->GetHeight() != height) {
             throw noise::ExceptionInvalidParam();
         }
     }
@@ -1052,10 +1061,11 @@ RendererNormalMap::RendererNormalMap()
       m_pSourceNoiseMap(NULL){};
 
 Color
-RendererNormalMap::CalcNormalColor(double nc,
-                                   double nr,
-                                   double nu,
-                                   double bumpHeight) const {
+RendererNormalMap::CalcNormalColor(
+    double nc,
+    double nr,
+    double nu,
+    double bumpHeight) const {
     // Calculate the surface normal.
     nc *= bumpHeight;
     nr *= bumpHeight;
@@ -1079,9 +1089,9 @@ RendererNormalMap::CalcNormalColor(double nc,
 
 void
 RendererNormalMap::Render() {
-    if (m_pSourceNoiseMap == NULL || m_pDestImage == NULL ||
-        m_pSourceNoiseMap->GetWidth() <= 0 ||
-        m_pSourceNoiseMap->GetHeight() <= 0) {
+    if (m_pSourceNoiseMap == NULL || m_pDestImage == NULL
+        || m_pSourceNoiseMap->GetWidth() <= 0
+        || m_pSourceNoiseMap->GetHeight() <= 0) {
         throw noise::ExceptionInvalidParam();
     }
 

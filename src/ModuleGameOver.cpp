@@ -8,31 +8,40 @@
 #include "Game.h"
 #include "ModeMgr.h"
 
-ModuleGameOver::ModuleGameOver(void) { bQuickShutdown = false; }
+ModuleGameOver::ModuleGameOver() : Module(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT) {
+    bQuickShutdown = false;
+}
 
-ModuleGameOver::~ModuleGameOver(void) {}
+ModuleGameOver::~ModuleGameOver() {}
 
-void
-ModuleGameOver::OnKeyReleased(int keyCode) {
-    if (keyCode == ALLEGRO_KEY_ESCAPE) {
+bool
+ModuleGameOver::on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event) {
+    if (event->keycode == ALLEGRO_KEY_ESCAPE) {
         al_rest(500 * 0.001);
         g_game->LoadModule(MODULE_TITLESCREEN);
-        return;
+        return false;
     }
+
+    return true;
 }
 
-void
-ModuleGameOver::Update() {
+bool
+ModuleGameOver::on_update() {
     if (bQuickShutdown) {
         g_game->shutdown();
+        return false;
     }
+
+    return true;
 }
 
-void
-ModuleGameOver::Draw() {
-    al_set_target_bitmap(g_game->GetBackBuffer());
+bool
+ModuleGameOver::on_draw(ALLEGRO_BITMAP *target) {
+    al_set_target_bitmap(target);
 
     al_clear_to_color(BLACK);
 
-    g_game->Print32(g_game->GetBackBuffer(), 400, 300, "G A M E  O V E R", RED);
+    g_game->Print32(target, 400, 300, "G A M E  O V E R", RED);
+
+    return true;
 }

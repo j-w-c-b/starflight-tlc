@@ -5,8 +5,6 @@
         Date: December, 2007
 */
 
-#pragma region HEADER
-
 #include <iomanip>
 #include <iostream>
 #include <sstream>
@@ -21,14 +19,14 @@
 #include "Game.h"
 #include "GameState.h"
 #include "MathTL.h"
+#include "MessageBoxWindow.h"
 #include "ModeMgr.h"
-#include "ModuleControlPanel.h"
 #include "ModuleEncounter.h"
 #include "PauseMenu.h"
 #include "PlayerShipSprite.h"
 #include "ResourceManager.h"
 #include "Script.h"
-#include "ScrollBox.h"
+#include "ScrolledModule.h"
 #include "Sprite.h"
 #include "TileScroller.h"
 #include "Timer.h"
@@ -37,11 +35,7 @@
 #include "encounter_resources.h"
 
 using namespace std;
-using namespace encounter_resources;
-
-const int ENCOUNTER_DIALOGUE_EVENT = 8000;
-const int ENCOUNTER_CLOSECOMM_EVENT = 8001;
-const int ENCOUNTER_ALIENATTACK_EVENT = 8002;
+using namespace encounter;
 
 #define CLR_MSG GRAY1        // color of info messages
 #define CLR_TRANS DODGERBLUE // color of transmissions to/from aliens
@@ -76,23 +70,29 @@ ALLEGRO_DEBUG_CHANNEL("ModuleEncounter")
  * otherwise delay is number of millisecond to wait between same message.
  */
 void
-ModuleEncounter::Print(string str, ALLEGRO_COLOR color, long delay) {
-    g_game->printout(text, str, color, delay);
+ModuleEncounter::Print(const string &str, ALLEGRO_COLOR color, long delay) {
+    g_game->printout(m_text, str, color, delay);
 }
 
-ModuleEncounter::ModuleEncounter(void)
-    : resources(ENCOUNTER_IMAGES), shield(NULL), spr_statusbar_shield(NULL),
-      script(NULL), text(NULL), dialogue(NULL), flag_thrusting(false),
+void
+ModuleEncounter::Print(
+    OfficerType type,
+    const string &str,
+    ALLEGRO_COLOR color,
+    long delay) {
+    auto officer = g_game->gameState->get_effective_officer(type);
+    Print(officer->get_abbreviated_title() + " " + str, color, delay);
+}
+
+ModuleEncounter::ModuleEncounter()
+    : Module(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT), dropitems({}), shield(NULL),
+      spr_statusbar_shield(NULL), script(NULL), flag_thrusting(false),
       flag_nav(false), flag_rotation(0) {}
 
-ModuleEncounter::~ModuleEncounter(void) {}
+bool
+ModuleEncounter::on_key_down(ALLEGRO_KEYBOARD_EVENT *event) {
+    int keyCode = event->keycode;
 
-#pragma endregion
-
-#pragma region INPUT
-
-void
-ModuleEncounter::OnKeyPress(int keyCode) {
     if (module_mode == 1) // if module_mode == combat
     {
         if (g_game->gameState->m_ship.getFuel() == 0) {
@@ -163,10 +163,13 @@ ModuleEncounter::OnKeyPress(int keyCode) {
         }
     }
     g_game->CrossModuleAngle = playerShip->getRotationAngle(); // JJH
+    return true;
 }
 
-void
-ModuleEncounter::OnKeyReleased(int keyCode) {
+bool
+ModuleEncounter::on_key_up(ALLEGRO_KEYBOARD_EVENT *event) {
+    int keyCode = event->keycode;
+
     // AlienRaces alien;
     bool shieldStatus, weaponStatus;
     switch (keyCode) {
@@ -219,74 +222,42 @@ ModuleEncounter::OnKeyReleased(int keyCode) {
         break;
 
 #ifdef DEBUGMODE
-    case ALIEN_ATTITUDE_PLUS: {
-        int attitude = g_game->gameState->getAlienAttitude();
-        g_game->gameState->setAlienAttitude(++attitude);
-    } break;
+    case ALIEN_ATTITUDE_PLUS:
+        {
+            int attitude = g_game->gameState->getAlienAttitude();
+            g_game->gameState->setAlienAttitude(++attitude);
+        }
+        break;
 
-    case ALIEN_ATTITUDE_MINUS: {
-        int attitude = g_game->gameState->getAlienAttitude();
-        g_game->gameState->setAlienAttitude(--attitude);
-    } break;
+    case ALIEN_ATTITUDE_MINUS:
+        {
+            int attitude = g_game->gameState->getAlienAttitude();
+            g_game->gameState->setAlienAttitude(--attitude);
+        }
+        break;
 
-    case IST_QUEST_PLUS: {
-        int questnum = g_game->gameState->getActiveQuest();
-        g_game->gameState->setActiveQuest(questnum + 1);
-    } break;
+    case IST_QUEST_PLUS:
+        {
+            int questnum = g_game->gameState->getActiveQuest();
+            g_game->gameState->setActiveQuest(questnum + 1);
+        }
+        break;
 
-    case IST_QUEST_MINUS: {
-        int questnum = g_game->gameState->getActiveQuest();
-        g_game->gameState->setActiveQuest(questnum - 1);
-    }
+    case IST_QUEST_MINUS:
+        {
+            int questnum = g_game->gameState->getActiveQuest();
+            g_game->gameState->setActiveQuest(questnum - 1);
+        }
     case ALLEGRO_KEY_F:
         g_game->toggleShowControls();
         break;
 #endif
     }
+    return true;
 }
-
-void
-ModuleEncounter::OnMouseMove(int x, int y) {
-    text->OnMouseMove(x, y);
-    dialogue->OnMouseMove(x, y);
-}
-
-void
-ModuleEncounter::OnMouseClick(int button, int x, int y) {
-    text->OnMouseClick(button, x, y);
-    dialogue->OnMouseClick(button, x, y);
-}
-
-void
-ModuleEncounter::OnMousePressed(int button, int x, int y) {
-    text->OnMousePressed(button, x, y);
-    dialogue->OnMousePressed(button, x, y);
-}
-
-void
-ModuleEncounter::OnMouseReleased(int button, int x, int y) {
-    text->OnMouseReleased(button, x, y);
-    dialogue->OnMouseReleased(button, x, y);
-}
-
-void
-ModuleEncounter::OnMouseWheelUp(int x, int y) {
-    text->OnMouseWheelUp(x, y);
-    dialogue->OnMouseWheelUp(x, y);
-}
-
-void
-ModuleEncounter::OnMouseWheelDown(int x, int y) {
-    text->OnMouseWheelDown(x, y);
-    dialogue->OnMouseWheelDown(x, y);
-}
-
-#pragma endregion
-
-#pragma region INIT_CLOSE
 
 bool
-ModuleEncounter::Init() {
+ModuleEncounter::on_init() {
     ALLEGRO_DEBUG("  Encounter Initialize\n");
 
     // 0=encounter; 1=combat
@@ -308,85 +279,74 @@ ModuleEncounter::Init() {
     firingLaser = firingMissile = false;
 
     // enable the Pause Menu
-    g_game->pauseMenu->setEnabled(true);
+    g_game->enable_pause_menu(true);
 
     // create the player ship
     playerShip = new PlayerShipSprite();
 
-    TileSet ts(resources[I_IP_TILES], TILESIZE, TILESIZE, 5, 1);
-    scroller =
-        new TileScroller(ts,
-                         TILESACROSS,
-                         TILESDOWN,
-                         SCREEN_WIDTH,
-                         SCREEN_HEIGHT,
-                         playerShip->get_screen_position() - Point2D(96, 96));
-    g_game->gameState->player->posCombat.SetPosition(
+    TileSet ts(images[I_IP_TILES], TILESIZE, TILESIZE, 5, 1);
+    m_scroller = make_shared<TileScroller>(
+        0,
+        0,
+        SCREEN_WIDTH,
+        SCREEN_HEIGHT,
+        ts,
+        TILESACROSS,
+        TILESDOWN,
+        playerShip->get_screen_position() - Point2D(96, 96));
+    g_game->gameState->player.posCombat.SetPosition(
         (TILESACROSS / 2) * TILESIZE, (TILESDOWN / 2) * TILESIZE);
 
-    // create the ScrollBar for messages
+    // create the RichTextLabel for messages
     static int gmx = (int)g_game->getGlobalNumber("GUI_MESSAGE_POS_X");
     static int gmy = (int)g_game->getGlobalNumber("GUI_MESSAGE_POS_Y");
     static int gmw = (int)g_game->getGlobalNumber("GUI_MESSAGE_WIDTH");
     static int gmh = (int)g_game->getGlobalNumber("GUI_MESSAGE_HEIGHT");
-    text = new ScrollBox::ScrollBox(g_game->font20,
-                                    ScrollBox::SB_TEXT,
-                                    gmx + 39,
-                                    gmy + 18,
-                                    gmw - 54,
-                                    gmh - 32,
-                                    EVENT_NONE);
-    text->DrawScrollBar(true);
+    m_text = make_shared<ScrolledModule<RichTextLabel>>(
+        gmx + 39,
+        gmy + 18,
+        gmw - 54,
+        gmh - 32,
+        al_get_font_line_height(g_game->font20.get()),
+        al_map_rgb(64, 64, 64),
+        al_map_rgb(32, 32, 32),
+        al_map_rgb(48, 48, 128),
+        al_map_rgb(96, 96, 128),
+        al_map_rgb(32, 32, 32),
+        true,
+        ALLEGRO_ALIGN_LEFT,
+        g_game->font20,
+        WHITE,
+        al_map_rgb(32, 32, 32));
+    add_child_module(m_text);
 
-    // create the ScrollBox for dialogue (same position as messages)
-    dialogue = new ScrollBox::ScrollBox(g_game->font20,
-                                        ScrollBox::SB_LIST,
-                                        gmx + 41,
-                                        gmy + 18,
-                                        gmw - 56,
-                                        gmh - 32,
-                                        ENCOUNTER_DIALOGUE_EVENT);
-    dialogue->DrawScrollBar(false);
+    // create the panel of buttons for dialog
+    m_dialog = make_shared<DialogButtonPanel>(
+        gmx + 41, gmy + 18, gmw - 56, gmh - 32, g_game->font20);
+    add_child_module(m_dialog);
 
     // point global scrollbox to local one in this module for access by external
     // object
-    g_game->g_scrollbox = text;
+    g_game->g_scrollbox = m_text;
 
     // initialize the encounter sub-system
     if (!Encounter_Init()) {
-        Close();
         return false;
     }
 
     // initialize the combat sub-system
     if (!Combat_Init()) {
-        Close();
         return false;
     }
 
     // clear screen
     al_clear_to_color(BLACK);
 
-    // shortcuts to crew last names to simplify code
-    // FIXME: these will get stale when someone get killed
-    com = "Com. Off. " + g_game->gameState->getCurrentCom()->getLastName() +
-          "-> ";
-    sci = "Sci. Off. " + g_game->gameState->getCurrentSci()->getLastName() +
-          "-> ";
-    nav = "Nav. Off. " + g_game->gameState->getCurrentNav()->getLastName() +
-          "-> ";
-    tac = "Tac. Off. " + g_game->gameState->getCurrentTac()->getLastName() +
-          "-> ";
-    eng = "Eng. Off. " + g_game->gameState->getCurrentEng()->getLastName() +
-          "-> ";
-    doc = "Med. Off. " + g_game->gameState->getCurrentDoc()->getLastName() +
-          "-> ";
-
     // if we start in "fullscreen" mode, all objects vertical coords must be
     // patched
     if (!g_game->doShowControls())
-        adjustVerticalCoords((SCREEN_HEIGHT - NormalScreenHeight) /
-                             2); //  (768-512)/2 == 128
+        adjustVerticalCoords(
+            (SCREEN_HEIGHT - NormalScreenHeight) / 2); //  (768-512)/2 == 128
 
     // force start in "show control" mode for the time being
     if (!g_game->doShowControls())
@@ -395,8 +355,8 @@ ModuleEncounter::Init() {
     return true;
 }
 
-void
-ModuleEncounter::Close() {
+bool
+ModuleEncounter::on_close() {
     ALLEGRO_DEBUG("*** Encounter Close\n\n");
 
     // force weapons and shield off
@@ -408,12 +368,9 @@ ModuleEncounter::Close() {
     Encounter_Close();
     Combat_Close();
 
-    resources.unload();
+    m_scroller = nullptr;
 
-    if (scroller != NULL) {
-        delete scroller;
-        scroller = NULL;
-    }
+    return true;
 }
 
 bool
@@ -421,6 +378,7 @@ ModuleEncounter::Encounter_Init() {
     ALLEGRO_DEBUG("  Encounter_Init\n");
     string scriptFile = "";
     bFlagDialogue = false;
+    m_text->set_active(true);
     commMode = COMM_NONE;
     bFlagChatting = false;
 
@@ -428,8 +386,9 @@ ModuleEncounter::Encounter_Init() {
 
     // fill the dialog "censor"
     dialogCensor.clear();
-    string firstname = g_game->gameState->officerCap->getFirstName();
-    string lastname = g_game->gameState->officerCap->getLastName();
+    auto captain = g_game->gameState->get_officer(OFFICER_CAPTAIN);
+    string firstname = captain->get_first_name();
+    string lastname = captain->get_last_name();
     dialogCensor.insert(make_pair("[CAPTAIN_FIRST]", firstname));
     dialogCensor.insert(make_pair("[CAPTAIN_LAST]", lastname));
     dialogCensor.insert(make_pair("[CAPTAIN]", firstname + " " + lastname));
@@ -536,18 +495,14 @@ ModuleEncounter::Encounter_Init() {
 
 void
 ModuleEncounter::Encounter_Close() {
-    if (text != NULL) {
-        delete text;
-        text = NULL;
-    }
-    if (dialogue != NULL) {
-        delete dialogue;
-        dialogue = NULL;
-    }
-    if (script != NULL) {
-        delete script;
-        script = NULL;
-    }
+    remove_child_module(m_text);
+    m_text = nullptr;
+
+    remove_child_module(m_dialog);
+    m_dialog = nullptr;
+
+    delete script;
+    script = NULL;
 }
 
 bool
@@ -561,22 +516,16 @@ ModuleEncounter::Combat_Init() {
     asy = (int)g_game->getGlobalNumber("AUX_SCREEN_Y");
     minimap = al_create_bitmap(asw, ash);
 
-    // load sound effects
-    snd_player_laser = g_game->audioSystem->Load("data/encounter/fire1.wav");
-    snd_laserhit = g_game->audioSystem->Load("data/encounter/hit1.wav");
-    snd_player_missile = g_game->audioSystem->Load("data/encounter/fire2.wav");
-    snd_explosion = g_game->audioSystem->Load("data/encounter/hit2.wav");
-
     // radius is center of battle arena
     int radius = TILESACROSS / 2 * TILESIZE;
 
     // create alien fleet
-    int fleetSize = g_game->gameState->player->getAlienFleetSize();
+    int fleetSize = g_game->gameState->player.getAlienFleetSize();
     if (fleetSize <= 0)
         fleetSize = 1; // this should not happen
     for (int n = 0; n < fleetSize; n++) {
         CombatObject *temp = new CombatObject();
-        temp->setImage(resources[shipName]);
+        temp->setImage(images[shipName]);
         temp->setObjectType(OBJ_ALIENSHIP);
         temp->setTotalFrames(1);
         temp->setDamage(0);
@@ -668,18 +617,19 @@ ModuleEncounter::Combat_Init() {
 
         // set object to random location in battlespace (somewhat close to
         // player)
-        temp->setPos(radius / 2 + Util::Random(0, radius),
-                     radius / 2 + Util::Random(0, radius));
+        temp->setPos(
+            radius / 2 + Util::Random(0, radius),
+            radius / 2 + Util::Random(0, radius));
         temp->setFaceAngle((float)Util::Random(1, 359));
         temp->ApplyThrust();
         AddCombatObject(temp);
     }
 
     // create big asteroids
-    int num = rand() % 10 + 5;
+    int num = sfrand() % 10 + 5;
     for (int a = 0; a < num; ++a) {
         CombatObject *temp = new CombatObject();
-        temp->setImage(resources[I_BIGASTEROID]);
+        temp->setImage(images[I_BIGASTEROID]);
         temp->setObjectType(OBJ_ASTEROID_BIG);
         temp->setTotalFrames(1);
         temp->setDamage(0);
@@ -695,7 +645,7 @@ ModuleEncounter::Combat_Init() {
 
     // load animated shield sprite
     shield = new Sprite();
-    shield->load("data/encounter/SHIELD.tga");
+    shield->setImage(images[I_SHIELD]);
     shield->setAnimColumns(7);
     shield->setTotalFrames(14);
     shield->setFrameWidth(96);
@@ -746,10 +696,10 @@ ModuleEncounter::Combat_Close() {
     if (shield)
         delete shield;
 
-    snd_player_laser.reset();
-    snd_laserhit.reset();
-    snd_player_missile.reset();
-    snd_explosion.reset();
+    samples[S_FIRE1] = nullptr;
+    samples[S_HIT1] = nullptr;
+    samples[S_FIRE2] = nullptr;
+    samples[S_HIT2] = nullptr;
 
     // fully regenerate shield
     g_game->gameState->m_ship.setShieldCapacity(
@@ -919,10 +869,6 @@ ModuleEncounter::setEngineProperties(CombatObject *ship, int engineclass) {
     }
 }
 
-#pragma endregion
-
-#pragma region COMM_ACTIONS
-
 std::string
 ModuleEncounter::commGetAction() {
     std::string action = script->getGlobalString("ACTION");
@@ -937,14 +883,22 @@ ModuleEncounter::commCheckCurrentAction() {
     std::string action = commGetAction();
 
     if (action == "terminate") {
-        text->Write(com + "Comm channel has been terminated!", CLR_ALERT);
+        Print(
+            OFFICER_COMMUNICATION,
+            "Comm channel has been terminated!",
+            CLR_ALERT);
         module_mode = 1;
         bFlagDialogue = false;
+        m_text->set_active(true);
         bFlagChatting = false;
     } else if (action == "attack") {
-        text->Write(com + "Comm channel has been terminated!", CLR_ALERT);
+        Print(
+            OFFICER_COMMUNICATION,
+            "Comm channel has been terminated!",
+            CLR_ALERT);
         module_mode = 1;
         bFlagDialogue = false;
+        m_text->set_active(true);
         bFlagChatting = false;
         bFlagDoAttack = true;
     }
@@ -961,23 +915,24 @@ ModuleEncounter::commDoAlienResponse() // jjh
     static int randomDelay = 0;
 
     // alien response is delayed 1-4 sec
-    if (randomDelay == 0)
+    if (randomDelay == 0) {
         randomDelay = Util::Random(1000, 4000);
+    }
     if (!Util::ReentrantDelay(randomDelay)) {
         // temporarily disable the control panel
         g_game->ControlPanelActivity = false;
     } else {
         // done waiting, now display alien response
         bFlagChatting = true;
-        text->Write("");
+        m_text->add_line("");
         out = script->getGlobalString("RESPONSE");
-        text->Write(com + "Response received.", CLR_MSG);
+        Print(OFFICER_COMMUNICATION, "Response received.", CLR_MSG);
 
         // replace keywords in dialog string with data values
         out = replaceKeyWords(out);
         Print(alienName + "->" + out, CLR_TRANS, 1000);
         commCheckCurrentAction();
-        text->ScrollToBottom();
+        m_text->scroll_to_bottom();
 
         // reset flags
         bFlagLastStatementSuccess = true;
@@ -1003,9 +958,12 @@ ModuleEncounter::commDoAlienAttack() {
         } else {
             // done waiting, now display alien response
             Print("", WHITE, 0);
-            Print(tac + "Captain, they're arming weapons!", CLR_ALERT, 0);
+            Print(
+                OFFICER_TACTICAL,
+                "Captain, they're arming weapons!",
+                CLR_ALERT);
             Print("", WHITE, 0);
-            text->ScrollToBottom();
+            m_text->scroll_to_bottom();
             // enable the CP
             g_game->ControlPanelActivity = true;
             // reset delay
@@ -1040,43 +998,53 @@ ModuleEncounter::commDoPosture(int index) {
     switch (index) {
     case 1:
         bFlagDialogue = false;
-        text->Write("");
+        m_text->set_active(true);
+        m_text->add_line("");
         if (g_game->gameState->playerPosture == "obsequious") {
-            text->Write(com + "Posture is still Obsequious.", CLR_MSG);
+            Print(
+                OFFICER_COMMUNICATION, "Posture is still Obsequious.", CLR_MSG);
         } else {
-            text->Write(com + "Posture set to Patheti... Er... Obsequious",
-                        CLR_MSG);
+            Print(
+                OFFICER_COMMUNICATION,
+                "Posture set to Patheti... Er... Obsequious",
+                CLR_MSG);
             g_game->gameState->playerPosture = "obsequious";
         }
         break;
     case 2:
         bFlagDialogue = false;
-        text->Write("");
+        m_text->set_active(true);
+        m_text->add_line("");
         if (g_game->gameState->playerPosture == "friendly") {
-            text->Write(com + "Posture is still Friendly.", CLR_MSG);
+            Print(OFFICER_COMMUNICATION, "Posture is still Friendly.", CLR_MSG);
         } else {
-            text->Write(com + "Posture set to Friendly", CLR_MSG);
+            Print(OFFICER_COMMUNICATION, "Posture set to Friendly", CLR_MSG);
             g_game->gameState->playerPosture = "friendly";
         }
         break;
     case 3:
         bFlagDialogue = false;
-        text->Write("");
+        m_text->set_active(true);
+        m_text->add_line("");
         if (g_game->gameState->playerPosture == "hostile") {
-            text->Write(com + "Posture is still Hostile.", CLR_MSG);
+            Print(OFFICER_COMMUNICATION, "Posture is still Hostile.", CLR_MSG);
         } else {
-            text->Write(com + "Posture set to Hostile. I hope you know what "
-                              "you're doing!",
-                        CLR_MSG);
+            Print(
+                OFFICER_COMMUNICATION,
+                "Posture set to Hostile. I hope you know what "
+                "you're doing!",
+                CLR_MSG);
             g_game->gameState->playerPosture = "hostile";
         }
         break;
     case 4:
         bFlagDialogue = false;
-        text->Write("");
-        text->Write(com + "Posture is " + g_game->gameState->playerPosture +
-                        ".",
-                    CLR_MSG);
+        m_text->set_active(true);
+        m_text->add_line("");
+        Print(
+            OFFICER_COMMUNICATION,
+            "Posture is " + g_game->gameState->playerPosture + ".",
+            CLR_MSG);
         break;
     }
 
@@ -1098,17 +1066,21 @@ ModuleEncounter::commDoGreeting() {
     if (!script->runFunction("Greeting"))
         return;
     std::string greeting = replaceKeyWords(script->getGlobalString("GREETING"));
-    text->Clear();
+    m_text->set_text(vector<RichText>({}));
     if (g_game->gameState->playerPosture != "hostile")
-        Print(com + "Hailing frequencies open. Sending greeting...",
-              CLR_MSG,
-              5000);
+        Print(
+            OFFICER_COMMUNICATION,
+            "Hailing frequencies open. Sending greeting...",
+            CLR_MSG,
+            5000);
     else
-        Print(com + "Hailing frequencies open. Sending our demands...",
-              CLR_MSG,
-              5000);
+        Print(
+            OFFICER_COMMUNICATION,
+            "Hailing frequencies open. Sending our demands...",
+            CLR_MSG,
+            5000);
     Print(greeting, CLR_TRANS, 5000);
-    text->ScrollToBottom();
+    m_text->scroll_to_bottom();
 
     bFlagDoResponse = true;
     alienHailingUs = false;
@@ -1122,6 +1094,8 @@ ModuleEncounter::commInitStatement() {
         return;
 
     bFlagDialogue = true;
+    m_dialog->set_active(true);
+    m_text->set_active(false);
     commMode = COMM_STATEMENT;
 
     // will succeed when player uses this statement
@@ -1135,29 +1109,30 @@ ModuleEncounter::commInitStatement() {
     std::string statement =
         replaceKeyWords(script->getGlobalString("STATEMENT"));
 
-    dialogue->Clear();
-    dialogue->setLines(2);
-    dialogue->Write(statement, CLR_LIST);
-    dialogue->Write("CANCEL", CLR_MSG);
-    dialogue->ScrollToTop();
+    m_dialog->clear();
+    m_dialog->add_option({statement, CLR_LIST});
+    m_dialog->add_option({"CANCEL", CLR_MSG});
 }
 
 void
 ModuleEncounter::commDoStatement(int index) {
-    std::string out;
     switch (index) {
     case 0:
         bFlagDialogue = false; // done showing statement choices
-        text->Clear();
-        text->Write(com + "Sending statement...", CLR_MSG);
-        out = com + "" + replaceKeyWords(script->getGlobalString("STATEMENT"));
-        text->Write(out, CLR_TRANS);
-        text->Write("Waiting for response", CLR_MSG);
+        m_text->set_active(true);
+        m_text->set_text(vector<RichText>());
+        Print(OFFICER_COMMUNICATION, "Sending statement...", CLR_MSG);
+        Print(
+            OFFICER_COMMUNICATION,
+            replaceKeyWords(script->getGlobalString("STATEMENT")),
+            CLR_TRANS);
+        m_text->add_line({"Waiting for response", CLR_MSG});
         bFlagDoResponse = true; // ready to handle alien response
         break;
     default: // cancel
         bFlagDialogue = false;
-        text->Write(com + "Statement cancelled");
+        m_text->set_active(true);
+        Print(OFFICER_COMMUNICATION, "Statement cancelled", CLR_MSG);
         bFlagDoResponse = false;
         break;
     }
@@ -1172,6 +1147,8 @@ ModuleEncounter::commInitQuestion() {
     std::ostringstream os;
     std::string question;
     bFlagDialogue = true;
+    m_dialog->set_active(true);
+    m_text->set_active(false);
     commMode = COMM_QUESTION;
 
     // will succeed when player uses this question
@@ -1185,27 +1162,19 @@ ModuleEncounter::commInitQuestion() {
 
     // look for a branch action
     if (script->getGlobalString("ACTION") == "branch") {
-        dialogue->Clear();
-        dialogue->setLines(7);
-
-        int choices = (int)script->getGlobalNumber("CHOICES");
-
+        m_dialog->clear();
+        int choices = static_cast<int>(script->getGlobalNumber("CHOICES"));
         for (int n = 0; n < choices; n++) {
             os.str("");
             os << "QUESTION" << n + 1 << "_TITLE";
             question = replaceKeyWords(script->getGlobalString(os.str()));
-            dialogue->Write(question, CLR_LIST);
+            m_dialog->add_option({question, CLR_LIST});
         }
 
-        for (int n = choices; n < 6; n++)
-            dialogue->Write(" ");
-
-        dialogue->Write("CANCEL", CLR_CANCEL);
-        dialogue->ScrollToTop();
+        m_dialog->add_option({"CANCEL", CLR_CANCEL}, 6);
 
     } else { // normal non-branching question
-        dialogue->Clear();
-        dialogue->setLines(7);
+        m_dialog->clear();
 
         string text = script->getGlobalString(
             "QUESTION_TITLE"); // exception occurs in this stmt
@@ -1217,19 +1186,16 @@ ModuleEncounter::commInitQuestion() {
             // perform censor string swapping:
             question = replaceKeyWords(script->getGlobalString(os.str()));
             if (text == "[REPEAT]")
-                dialogue->Write(question, CLR_TRANS);
+                m_dialog->add_option({question, CLR_TRANS});
             if (text == "[AUTO_REPEAT]") {
                 commDoQuestion(0);
                 return;
             }    // proceed w/o waiting
         } else { // print out the question title:
-            question =
-                replaceKeyWords(script->getGlobalString("QUESTION_TITLE"));
-            dialogue->Write(text, CLR_TRANS);
+            m_dialog->add_option({text, CLR_TRANS});
         }
 
-        dialogue->Write("CANCEL", CLR_CANCEL);
-        dialogue->ScrollToTop();
+        m_dialog->add_option({"CANCEL", CLR_CANCEL});
     }
 }
 
@@ -1248,6 +1214,10 @@ ModuleEncounter::commDoQuestion(int index) {
             // get next question--should now be from new branch location
             bFlagLastQuestionSuccess = true;
             commInitQuestion();
+        } else {
+            bFlagDialogue = false;
+            m_dialog->set_active(false);
+            m_text->set_active(true);
         }
     } else {
         if (module_mode == 1)
@@ -1264,13 +1234,12 @@ ModuleEncounter::commDoQuestion(int index) {
                 os.str("");
                 os << "QUESTION" << choice;
                 // perform censor string swapping:
-                out = com + "" +
-                      replaceKeyWords(script->getGlobalString(os.str()));
-            } else
-                out = com + "" +
-                      replaceKeyWords(script->getGlobalString("QUESTION"));
+                out = replaceKeyWords(script->getGlobalString(os.str()));
+            } else {
+                out = replaceKeyWords(script->getGlobalString("QUESTION"));
+            }
 
-            text->Write(out, CLR_MSG);
+            Print(OFFICER_COMMUNICATION, out, CLR_MSG);
             bFlagDoResponse = true;
             break;
 
@@ -1279,6 +1248,7 @@ ModuleEncounter::commDoQuestion(int index) {
         }
 
         bFlagDialogue = false;
+        m_text->set_active(true);
     }
 }
 
@@ -1286,32 +1256,25 @@ void
 ModuleEncounter::commInitPosture() {
 
     bFlagDialogue = true;
+    m_dialog->set_active(true);
+    m_text->set_active(false);
     commMode = COMM_POSTURE;
-    dialogue->setLines(5);
-    dialogue->Clear();
-    dialogue->Write("Choose new posture:", CLR_MSG);
-    dialogue->Write("  OBSEQUIOUS", CLR_LIST);
-    dialogue->Write("  FRIENDLY", CLR_LIST);
-    dialogue->Write("  HOSTILE", CLR_LIST);
-    dialogue->Write("  CANCEL", CLR_CANCEL);
-    dialogue->ScrollToTop();
+    m_dialog->clear();
+    m_dialog->add_option({"Choose new posture:", CLR_MSG});
+    m_dialog->add_option({"  OBSEQUIOUS", CLR_LIST});
+    m_dialog->add_option({"  FRIENDLY", CLR_LIST});
+    m_dialog->add_option({"  HOSTILE", CLR_LIST});
+    m_dialog->add_option({"  CANCEL", CLR_CANCEL});
 }
 
-#pragma endregion
-
-#pragma region ENCOUNTER_CORE
-
-void
-ModuleEncounter::OnEvent(Event *event) {
+bool
+ModuleEncounter::on_event(ALLEGRO_EVENT *event) {
     std::string escape;
     bool shieldStatus, weaponStatus;
     Ship ship;
     int laser, missile;
 
-    Officer *currentCom = g_game->gameState->getCurrentCom();
-    com = currentCom->getLastName() + "-> ";
-
-    switch (event->getEventType()) {
+    switch (event->type) {
     case EVENT_SCIENCE_SCAN:
         scanStatus = 1;
         scanTimer.reset();
@@ -1329,43 +1292,64 @@ ModuleEncounter::OnEvent(Event *event) {
         laser = ship.getLaserClass();
         missile = ship.getMissileLauncherClass();
         if (laser == 0 && missile == 0) {
-            if (g_game->gameState->getWeaponStatus() ==
-                false) { // trying to arm inexistent weapons
-
-                Print(tac + "Sir, we have no weapons.", ORANGE, 5000);
-                // do random response
-                if (Util::Random(1, 5) == 1) {
-                    Print(nav + "Remember, you spent those credits at the "
-                                "Cantina instead?",
-                          GREEN,
-                          5000);
-                    // do random reaction
+            if (!g_game->gameState->getWeaponStatus()) {
+                // trying to arm nonexistent weapons
+                Print(
+                    OFFICER_TACTICAL, "Sir, we have no weapons.", ORANGE, 5000);
+                if (g_game->gameState->has_officer(OFFICER_NAVIGATION)) {
+                    // do random response
                     if (Util::Random(1, 5) == 1) {
-                        Print(sci + "Watch the attitude, " + nav + "!",
-                              YELLOW,
-                              5000);
+                        Print(
+                            OFFICER_NAVIGATION,
+                            "Remember, you spent those credits at the "
+                            "Cantina instead?",
+                            GREEN,
+                            5000);
+                        // do random reaction
+                        if (Util::Random(1, 5) == 1) {
+                            Print(
+                                OFFICER_SCIENCE,
+                                "Watch the attitude, "
+                                    + g_game->gameState
+                                          ->get_effective_officer(
+                                              OFFICER_NAVIGATION)
+                                          ->get_last_name()
+                                    + "!",
+                                YELLOW,
+                                5000);
+                        }
                     }
                 }
-            }
-
-            else // weapons were destroyed during combat; force them down
+            } else {
+                // weapons were destroyed during combat; force them down
                 g_game->gameState->setWeaponStatus(false);
+            }
         } else {
             // toggle weapon status
             weaponStatus = !g_game->gameState->getWeaponStatus();
             g_game->gameState->setWeaponStatus(weaponStatus);
             if (weaponStatus) {
                 if (laser > 0)
-                    Print(tac + "Laser capacitors charging", ORANGE, 2000);
+                    Print(
+                        OFFICER_TACTICAL,
+                        "Laser capacitors charging",
+                        ORANGE,
+                        2000);
                 if (missile > 0)
-                    Print(tac + "Missile launcher primed and ready",
-                          ORANGE,
-                          2000);
+                    Print(
+                        OFFICER_TACTICAL,
+                        "Missile launcher primed and ready",
+                        ORANGE,
+                        2000);
             } else {
                 if (laser > 0)
-                    Print(tac + "Lasers disarmed", ORANGE, 2000);
+                    Print(OFFICER_TACTICAL, "Lasers disarmed", ORANGE, 2000);
                 if (missile > 0)
-                    Print(tac + "Missile launcher disarmed", ORANGE, 2000);
+                    Print(
+                        OFFICER_TACTICAL,
+                        "Missile launcher disarmed",
+                        ORANGE,
+                        2000);
             }
         }
         break;
@@ -1373,7 +1357,8 @@ ModuleEncounter::OnEvent(Event *event) {
         ship = g_game->gameState->getShip();
         if (ship.getShieldClass() == 0) {
             if (g_game->gameState->getShieldStatus() == false)
-                Print(tac + "Sir, we have no shields.", ORANGE, 2000);
+                Print(
+                    OFFICER_TACTICAL, "Sir, we have no shields.", ORANGE, 2000);
 
             else // shield destroyed during combat; force them down
                 g_game->gameState->setShieldStatus(false);
@@ -1382,9 +1367,9 @@ ModuleEncounter::OnEvent(Event *event) {
             shieldStatus = g_game->gameState->getShieldStatus();
             g_game->gameState->setShieldStatus(!shieldStatus);
             if (shieldStatus)
-                Print(tac + "Dropping shields.", ORANGE, 2000);
+                Print(OFFICER_TACTICAL, "Dropping shields.", ORANGE, 2000);
             else
-                Print(tac + "Aye, sir; shields up.", ORANGE, 2000);
+                Print(OFFICER_TACTICAL, "Aye, sir; shields up.", ORANGE, 2000);
         }
         break;
     case EVENT_SHOW_CONTROLS:
@@ -1401,7 +1386,7 @@ ModuleEncounter::OnEvent(Event *event) {
         g_game->gameState->AutoLoad();
         break;
     case EVENT_QUIT_GAME: // quit game
-        g_game->setVibration(0);
+        g_game->set_vibration(0);
         escape = g_game->getGlobalString("ESCAPEMODULE");
         g_game->LoadModule(escape);
         break;
@@ -1413,33 +1398,42 @@ ModuleEncounter::OnEvent(Event *event) {
 
     case EVENT_COMM_HAIL:
         if (getShipCount() == 0) {
-            Print(com + "There are no alien ships to hail", YELLOW, 2000);
+            Print(
+                OFFICER_COMMUNICATION,
+                "There are no alien ships to hail",
+                YELLOW,
+                2000);
             module_mode = 1;
         } else {
             if (alienHailingUs && !flag_greeting) {
-                Print(com + "Responding...", CLR_MSG, 5000);
+                Print(OFFICER_COMMUNICATION, "Responding...", CLR_MSG, 5000);
                 module_mode = 0;
                 commDoGreeting();
             } else if (!flag_greeting) {
-                Print(com + "Hailing...", CLR_MSG, 2000);
+                Print(OFFICER_COMMUNICATION, "Hailing...", CLR_MSG, 2000);
                 module_mode = 0;
                 commDoGreeting();
             } else
-                (module_mode == 0)
-                    ? Print(com + "Sir, communication channel is open already.",
-                            CLR_MSG,
-                            5000)
-                    : Print(com + "Sir, they are ignoring our hail.",
-                            CLR_MSG,
-                            5000);
+                (module_mode == 0) ? Print(
+                    OFFICER_COMMUNICATION,
+                    "Sir, communication channel is open already.",
+                    CLR_MSG,
+                    5000)
+                                   : Print(
+                                       OFFICER_COMMUNICATION,
+                                       "Sir, they are ignoring our hail.",
+                                       CLR_MSG,
+                                       5000);
         }
         break;
 
     case EVENT_COMM_DISTRESS:
-        Print(com + "Interstellar communications are currently being jammed by "
-                    "nearby alien hyperspace sources.",
-              YELLOW,
-              5000);
+        Print(
+            OFFICER_COMMUNICATION,
+            "Interstellar communications are currently being jammed by "
+            "nearby alien hyperspace sources.",
+            YELLOW,
+            5000);
         break;
 
     case EVENT_COMM_STATEMENT:
@@ -1453,93 +1447,114 @@ ModuleEncounter::OnEvent(Event *event) {
         break;
     case EVENT_COMM_TERMINATE:
         if (module_mode == 0) {
-            text->Write(com + "Terminating...", CLR_MSG);
+            Print(OFFICER_COMMUNICATION, "Terminating...", CLR_MSG);
             module_mode = 1;
             bFlagDialogue = false;
+            m_text->set_active(true);
             bFlagChatting = false;
         }
         break;
 
-    case ENCOUNTER_DIALOGUE_EVENT: {
-        int index = dialogue->GetSelectedIndex();
-        switch (commMode) {
-        case COMM_STATEMENT:
-            commDoStatement(index);
-            break;
-        case COMM_QUESTION:
-            commDoQuestion(index);
-            break;
-        case COMM_POSTURE:
-            commDoPosture(index);
-            break;
+    case EVENT_ENCOUNTER_DIALOGUE:
+        {
+            int index = m_dialog->get_selection();
+            switch (commMode) {
+            case COMM_STATEMENT:
+                commDoStatement(index);
+                break;
+            case COMM_QUESTION:
+                commDoQuestion(index);
+                break;
+            case COMM_POSTURE:
+                commDoPosture(index);
+                break;
 
-        default:
-            ALLEGRO_ASSERT(0);
-        }
-        break;
-    }
-
-    case ENCOUNTER_CLOSECOMM_EVENT: {
-        if (module_mode == 0) {
-            text->Write(com + "Comm channel has been terminated!", CLR_ALERT);
-            module_mode = 1;
-            bFlagDialogue = false;
-            bFlagChatting = false;
-        }
-        break;
-    }
-
-    case ENCOUNTER_ALIENATTACK_EVENT: {
-        if (module_mode == 0) {
-            text->Write(com + "Comm channel has been terminated!", CLR_ALERT);
-            module_mode = 1;
-            bFlagDialogue = false;
-            bFlagChatting = false;
+            default:
+                ALLEGRO_ASSERT(0);
+            }
+            break;
         }
 
-        bFlagDoAttack = true;
+    case EVENT_ENCOUNTER_CLOSECOMM:
+        {
+            if (module_mode == 0) {
+                Print(
+                    OFFICER_COMMUNICATION,
+                    "Comm channel has been terminated!",
+                    CLR_ALERT);
+                module_mode = 1;
+                bFlagDialogue = false;
+                m_text->set_active(true);
+                bFlagChatting = false;
+            }
+            break;
+        }
 
-        break;
+    case EVENT_ENCOUNTER_ALIENATTACK:
+        {
+            if (module_mode == 0) {
+                Print(
+                    OFFICER_COMMUNICATION,
+                    "Comm channel has been terminated!",
+                    CLR_ALERT);
+                module_mode = 1;
+                bFlagDialogue = false;
+                m_text->set_active(true);
+                bFlagChatting = false;
+            }
+
+            bFlagDoAttack = true;
+
+            break;
+        }
     }
-    }
+    return true;
 }
 
-void
-ModuleEncounter::Update() {
+bool
+ModuleEncounter::on_update() {
     static Timer countdown;
     static Timer update;
     ostringstream os;
 
     // update scrolling and draw tiles on the scroll buffer
     playerGlobal.x =
-        g_game->gameState->player->posCombat.x + playerShip->getVelocityX();
+        g_game->gameState->player.posCombat.x + playerShip->getVelocityX();
     playerGlobal.y =
-        g_game->gameState->player->posCombat.y + playerShip->getVelocityY();
-    g_game->gameState->player->posCombat.x = playerGlobal.x;
-    g_game->gameState->player->posCombat.y = playerGlobal.y;
+        g_game->gameState->player.posCombat.y + playerShip->getVelocityY();
+    g_game->gameState->player.posCombat.x = playerGlobal.x;
+    g_game->gameState->player.posCombat.y = playerGlobal.y;
 
     // does player want to bug out?
     if (flag_DoHyperspace) {
         if (g_game->gameState->getShieldStatus()) {
-            Print(nav + "We can't enter hyperspace with our shields activated.",
-                  ORANGE,
-                  5000);
+            Print(
+                OFFICER_NAVIGATION,
+                "We can't enter hyperspace with our shields activated.",
+                ORANGE,
+                5000);
             flag_DoHyperspace = false;
         } else if (g_game->gameState->getWeaponStatus()) {
-            Print(nav + "We can't enter hyperspace with our weapons armed.",
-                  ORANGE,
-                  5000);
+            Print(
+                OFFICER_NAVIGATION,
+                "We can't enter hyperspace with our weapons armed.",
+                ORANGE,
+                5000);
             flag_DoHyperspace = false;
         }
 
         if (playerAttacked) {
-            Print(nav + "Sir, the hyperspace field has failed!", RED, 5000);
+            Print(
+                OFFICER_NAVIGATION,
+                "Sir, the hyperspace field has failed!",
+                RED,
+                5000);
             flag_DoHyperspace = false;
         }
     }
     // CAN the player bug out?
     if (flag_DoHyperspace) {
-        Print(nav + "Engaging hyperspace engine...", ORANGE, -1);
+        Print(OFFICER_NAVIGATION, "Engaging hyperspace engine...", ORANGE, -1);
         // SW force player to stop
         playerShip->applybraking();
         // wait for countdown
@@ -1552,14 +1567,15 @@ ModuleEncounter::Update() {
                 // g_game->LoadModule(MODULE_HYPERSPACE);
                 string prev = g_game->modeMgr->GetPrevModuleName();
                 g_game->LoadModule(prev);
-                return;
+                return false;
             }
         }
     }
 
     // keep player on the combat area
-    Point2D s((playerGlobal.x - SCREEN_WIDTH / 2) / TILESIZE,
-              (playerGlobal.y - effectiveScreenHeight() / 2) / TILESIZE);
+    Point2D s(
+        (playerGlobal.x - SCREEN_WIDTH / 2) / TILESIZE,
+        (playerGlobal.y - effectiveScreenHeight() / 2) / TILESIZE);
     if (s.x <= 0) {
         s.x = 0;
         playerShip->applybraking();
@@ -1575,19 +1591,19 @@ ModuleEncounter::Update() {
         playerShip->applybraking();
     }
 
-    scroller->set_scroll_position(s);
+    m_scroller->set_scroll_position(s);
 
     // calculate player's screen position
     playerScreen.x =
         playerGlobal.x / (TILESIZE * TILESACROSS) + SCREEN_WIDTH / 2 - 32;
-    playerScreen.y = playerGlobal.y / (TILESIZE * TILESDOWN) +
-                     effectiveScreenHeight() / 2 - 32;
+    playerScreen.y = playerGlobal.y / (TILESIZE * TILESDOWN)
+                     + effectiveScreenHeight() / 2 - 32;
 
     // if this is a friendly alien, they will initiate conversation
-    if (g_game->gameState->getAlienAttitude() > 60 && !bFlagChatting &&
-        !alienHailingUs && !flag_greeting && !playerAttacked) {
+    if (g_game->gameState->getAlienAttitude() > 60 && !bFlagChatting
+        && !alienHailingUs && !flag_greeting && !playerAttacked) {
         alienHailingUs = true;
-        Print(com + "Sir, we're being hailed", STEEL, 8000);
+        Print(OFFICER_NAVIGATION, "Sir, we're being hailed", STEEL, 8000);
     }
 
     // update dialog and combat sections
@@ -1600,28 +1616,24 @@ ModuleEncounter::Update() {
     if (update.stopwatch(1000)) {
     }
 
-    // refresh text list
-    text->ScrollToBottom();
+    return true;
 }
 
-void
-ModuleEncounter::Draw() {
-    Module::Draw();
-
+bool
+ModuleEncounter::on_draw(ALLEGRO_BITMAP *target) {
     // draw space background
-    scroller->draw_scroll_window(
-        g_game->GetBackBuffer(), 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    m_scroller->draw(target);
 
     // draw player ship
-    playerShip->draw(g_game->GetBackBuffer());
+    playerShip->draw(target);
 
     // let encounter/combat draw their stuff
-    (module_mode == 0) ? Encounter_Draw() : Combat_Draw();
+    (module_mode == 0) ? Encounter_Draw(target) : Combat_Draw(target);
 
     // draw minimap
-    DrawMinimap();
+    DrawMinimap(target);
 
-    al_set_target_bitmap(g_game->GetBackBuffer());
+    al_set_target_bitmap(target);
     if (g_game->doShowControls()) {
         // draw message window gui
         static int gmx = (int)g_game->getGlobalNumber("GUI_MESSAGE_POS_X");
@@ -1629,136 +1641,29 @@ ModuleEncounter::Draw() {
         static int gmw = (int)g_game->getGlobalNumber("GUI_MESSAGE_WIDTH");
         static int gmh = (int)g_game->getGlobalNumber("GUI_MESSAGE_HEIGHT");
         al_draw_bitmap_region(
-            resources[I_GUI_MESSAGEWINDOW], 0, 0, gmw, gmh, gmx, gmy, 0);
+            images[I_GUI_MESSAGEWINDOW].get(), 0, 0, gmw, gmh, gmx, gmy, 0);
 
         // draw message and list boxes
-        (bFlagDialogue) ? dialogue->Draw(g_game->GetBackBuffer())
-                        : text->Draw(g_game->GetBackBuffer());
+        if (bFlagDialogue) {
+            m_text->set_active(false);
+            m_dialog->set_active(true);
+        } else {
+            m_text->set_active(true);
+            m_dialog->set_active(false);
+        }
 
         // draw socket gui
         static int gsx = (int)g_game->getGlobalNumber("GUI_SOCKET_POS_X");
         static int gsy = (int)g_game->getGlobalNumber("GUI_SOCKET_POS_Y");
-        al_draw_bitmap(resources[I_GUI_SOCKET], gsx, gsy, 0);
+        al_draw_bitmap(images[I_GUI_SOCKET].get(), gsx, gsy, 0);
 
         // draw the aux gui
         static int gax = (int)g_game->getGlobalNumber("GUI_AUX_POS_X");
         static int gay = (int)g_game->getGlobalNumber("GUI_AUX_POS_Y");
-        al_draw_bitmap(resources[I_GUI_AUX], gax, gay, 0);
+        al_draw_bitmap(images[I_GUI_AUX].get(), gax, gay, 0);
     }
 
-    if (g_game->getGlobalBoolean("DEBUG_OUTPUT") == true) {
-        // DEBUG CODE
-        int y = 90;
-        g_game->PrintDefault(g_game->GetBackBuffer(),
-                             890,
-                             y,
-                             "# of actions: " +
-                                 Util::ToString(number_of_actions));
-        y += 10;
-        g_game->PrintDefault(
-            g_game->GetBackBuffer(), 890, y, "Alien: " + alienName);
-        y += 10;
-        g_game->PrintDefault(g_game->GetBackBuffer(),
-                             890,
-                             y,
-                             "Mode: " + Util::ToString(module_mode));
-        y += 10;
-        g_game->PrintDefault(g_game->GetBackBuffer(),
-                             890,
-                             y,
-                             "Chatting? " + Util::ToString(bFlagChatting));
-        y += 10;
-        g_game->PrintDefault(g_game->GetBackBuffer(),
-                             890,
-                             y,
-                             "Dialogue? " + Util::ToString(bFlagDialogue));
-        y += 10;
-        g_game->PrintDefault(g_game->GetBackBuffer(),
-                             890,
-                             y,
-                             "Response? " + Util::ToString(bFlagDoResponse));
-        y += 10;
-        g_game->PrintDefault(g_game->GetBackBuffer(),
-                             890,
-                             y,
-                             "Attack? " + Util::ToString(bFlagDoAttack));
-        int attitude = g_game->gameState->getAlienAttitude();
-        y += 10;
-        g_game->PrintDefault(
-            g_game->GetBackBuffer(),
-            890,
-            y,
-            "Attitude " +
-                Util::ToString(
-                    attitude)); // jjh - debugging Coalition encounter lua file
-        Ship ship = g_game->gameState->getShip();
-        y += 10;
-        g_game->PrintDefault(g_game->GetBackBuffer(), 890, y, "Ship: ");
-        y += 10;
-        g_game->PrintDefault(g_game->GetBackBuffer(),
-                             890,
-                             y,
-                             " Armor : " +
-                                 Util::ToString(ship.getArmorIntegrity()));
-        y += 10;
-        g_game->PrintDefault(g_game->GetBackBuffer(),
-                             890,
-                             y,
-                             " Hull  : " +
-                                 Util::ToString(ship.getHullIntegrity()));
-        y += 10;
-        g_game->PrintDefault(g_game->GetBackBuffer(),
-                             890,
-                             y,
-                             " Engine: " +
-                                 Util::ToString(ship.getEngineIntegrity()));
-        y += 10;
-        g_game->PrintDefault(
-            g_game->GetBackBuffer(),
-            890,
-            y,
-            " Miss. : " + Util::ToString(ship.getMissileLauncherIntegrity()));
-        y += 10;
-        g_game->PrintDefault(g_game->GetBackBuffer(),
-                             890,
-                             y,
-                             " Laser : " +
-                                 Util::ToString(ship.getLaserIntegrity()));
-        y += 20;
-        g_game->PrintDefault(g_game->GetBackBuffer(), 890, y, " Shields: ");
-        y += 10;
-        g_game->PrintDefault(g_game->GetBackBuffer(),
-                             890,
-                             y,
-                             "  Int. : " +
-                                 Util::ToString(ship.getShieldIntegrity()));
-        y += 10;
-        g_game->PrintDefault(g_game->GetBackBuffer(),
-                             890,
-                             y,
-                             "  Cap. : " +
-                                 Util::ToString(ship.getShieldCapacity()));
-        y += 20;
-        g_game->PrintDefault(
-            g_game->GetBackBuffer(),
-            890,
-            y,
-            "Weapon Status: " +
-                Util::ToString(g_game->gameState->getWeaponStatus()));
-        y += 10;
-        g_game->PrintDefault(
-            g_game->GetBackBuffer(),
-            890,
-            y,
-            "Shield Status: " +
-                Util::ToString(g_game->gameState->getShieldStatus()));
-        y += 10;
-        g_game->PrintDefault(
-            g_game->GetBackBuffer(),
-            890,
-            y,
-            "Angle: " + Util::ToString(g_game->CrossModuleAngle)); // JJH
-    }
+    return true;
 }
 
 void
@@ -1781,25 +1686,26 @@ ModuleEncounter::Encounter_Update() {
  * Draw the gui viewer window with alien portrait
  */
 void
-ModuleEncounter::Encounter_Draw() {
-    al_set_target_bitmap(g_game->GetBackBuffer());
+ModuleEncounter::Encounter_Draw(ALLEGRO_BITMAP *target) {
+    al_set_target_bitmap(target);
 
     // even when module_mode = 0, bFlagChatting determines whether communication
     // is taking place
     if (bFlagChatting) {
         static int gvx = (int)g_game->getGlobalNumber("GUI_VIEWER_POS_X");
         static int gvy = (int)g_game->getGlobalNumber("GUI_VIEWER_POS_Y");
-        al_draw_bitmap(resources[I_GUI_VIEWER], gvx, gvy, 0);
-        al_draw_bitmap(resources[portraitName], gvx + 108, gvy + 34, 0);
+        al_draw_bitmap(images[I_GUI_VIEWER].get(), gvx, gvy, 0);
+        al_draw_bitmap(images[portraitName].get(), gvx + 108, gvy + 34, 0);
 
         // draw gui schematic window with ship schematic
         static int gvrx =
             (int)g_game->getGlobalNumber("GUI_RIGHT_VIEWER_POS_X");
         static int gvry =
             (int)g_game->getGlobalNumber("GUI_RIGHT_VIEWER_POS_Y");
-        al_draw_bitmap(resources[I_GUI_VIEWER_RIGHT], gvrx, gvry, 0);
-        al_draw_bitmap(resources[schematicName], gvrx + 34, gvry + 34, 0);
+        al_draw_bitmap(images[I_GUI_VIEWER_RIGHT].get(), gvrx, gvry, 0);
+        al_draw_bitmap(images[schematicName].get(), gvrx + 34, gvry + 34, 0);
     }
+    // m_dialog->draw(target);
 }
 
 string
@@ -1822,9 +1728,6 @@ ModuleEncounter::replaceKeyWords(string input) {
 
     return input;
 }
-#pragma endregion
-
-#pragma region COLLISIONS
 
 void
 ModuleEncounter::ImpactPlayer(CombatObject *player, CombatObject *other) {
@@ -1833,24 +1736,24 @@ ModuleEncounter::ImpactPlayer(CombatObject *player, CombatObject *other) {
 
     // first, move the objects off each other
     while (player->CheckCollision(other)) {
-        x1 = g_game->gameState->player->posCombat.x + 32;
-        y1 = g_game->gameState->player->posCombat.y + 32;
+        x1 = g_game->gameState->player.posCombat.x + 32;
+        y1 = g_game->gameState->player.posCombat.y + 32;
         x2 = other->getX() + other->getFrameWidth() / 2;
         y2 = other->getY() + other->getFrameHeight() / 2;
 
         if (x1 < x2) {
-            g_game->gameState->player->posCombat.x -= bump;
+            g_game->gameState->player.posCombat.x -= bump;
             other->setX(other->getX() + bump);
         } else {
-            g_game->gameState->player->posCombat.x += bump;
+            g_game->gameState->player.posCombat.x += bump;
             other->setX(other->getX() - bump);
         }
 
         if (y1 < y2) {
-            g_game->gameState->player->posCombat.y -= bump;
+            g_game->gameState->player.posCombat.y -= bump;
             other->setY(other->getY() + bump);
         } else {
-            g_game->gameState->player->posCombat.y += bump;
+            g_game->gameState->player.posCombat.y += bump;
             other->setY(other->getY() - bump);
         }
     }
@@ -1916,17 +1819,18 @@ ModuleEncounter::pickupRandomDropItem() {
 
         // if the artifact is already in hold
         if (numInHold > 0) {
-            Print(sci + "This stuff is useless!", RED, 1000);
+            Print(OFFICER_SCIENCE, "This stuff is useless!", RED, 1000);
             return;
         }
 
         // else we pick exactly one of that artifact
         g_game->gameState->m_items.AddItems(itemid, 1);
-        Print(sci + "We found the " + item->name + "!", RED, 1000);
+        Print(OFFICER_SCIENCE, "We found the " + item->name + "!", RED, 1000);
 
         // broadcast inventory change
-        Event e(CARGO_EVENT_UPDATE);
-        g_game->modeMgr->BroadcastEvent(&e);
+        ALLEGRO_EVENT e = {
+            .type = static_cast<unsigned int>(EVENT_CARGO_UPDATE)};
+        g_game->broadcast_event(&e);
 
         return;
     }
@@ -1935,9 +1839,11 @@ ModuleEncounter::pickupRandomDropItem() {
     int freeSpace = g_game->gameState->m_ship.getAvailableSpace();
 
     if (freeSpace <= 0) {
-        Print(eng + "Sir, we don't have any space left in the cargo hold!",
-              RED,
-              1000);
+        Print(
+            OFFICER_ENGINEER,
+            "Sir, we don't have any space left in the cargo hold!",
+            RED,
+            1000);
         return;
     }
 
@@ -1947,15 +1853,15 @@ ModuleEncounter::pickupRandomDropItem() {
     g_game->gameState->m_items.AddItems(itemid, numitems);
 
     // notify player
-    os << sci << "We picked up ";
+    os << "We picked up ";
     (numitems > 1) ? os << numitems << " cubic meters of " << item->name << "."
                    : os << "one cubic meter of " << item->name << ".";
 
-    Print(os.str(), YELLOW, 1000);
+    Print(OFFICER_SCIENCE, os.str(), YELLOW, 1000);
 
     // broadcast inventory change
-    Event e(CARGO_EVENT_UPDATE);
-    g_game->modeMgr->BroadcastEvent(&e);
+    ALLEGRO_EVENT e = {.type = static_cast<unsigned int>(EVENT_CARGO_UPDATE)};
+    g_game->broadcast_event(&e);
 }
 
 void
@@ -1976,9 +1882,11 @@ ModuleEncounter::pickupAsteroidMineral() {
 
     int freeSpace = g_game->gameState->m_ship.getAvailableSpace();
     if (freeSpace <= 0) {
-        Print(eng + "Sir, we don't have any space left in the cargo hold!",
-              RED,
-              1000);
+        Print(
+            OFFICER_ENGINEER,
+            "Sir, we don't have any space left in the cargo hold!",
+            RED,
+            1000);
         return;
     }
 
@@ -1988,15 +1896,15 @@ ModuleEncounter::pickupAsteroidMineral() {
     g_game->gameState->m_items.AddItems(itemid, numitems);
 
     // notify player
-    os << sci << "We picked up ";
+    os << "We picked up ";
     (numitems > 1) ? os << numitems << " cubic meters of " << item->name << "."
                    : os << "one cubic meter of " << item->name << ".";
 
-    Print(os.str(), YELLOW, 1000);
+    Print(OFFICER_SCIENCE, os.str(), YELLOW, 1000);
 
     // broadcast inventory change
-    Event e(CARGO_EVENT_UPDATE);
-    g_game->modeMgr->BroadcastEvent(&e);
+    ALLEGRO_EVENT e = {.type = static_cast<unsigned int>(EVENT_CARGO_UPDATE)};
+    g_game->broadcast_event(&e);
 }
 
 void
@@ -2043,12 +1951,12 @@ ModuleEncounter::applyDamageToShip(int damage, bool hullonly) {
         ship.damageRandomSystemOrCrew(100, damage, damage);
         // ship destroyed?
         if (hull <= 0.0f)
-            g_game->gameState->player->setAlive(false);
+            g_game->gameState->player.setAlive(false);
     }
 
     // if both weapon systems were destroyed, force them down
-    if (ship.getLaserIntegrity() <= 1 &&
-        ship.getMissileLauncherIntegrity() <= 1)
+    if (ship.getLaserIntegrity() <= 1
+        && ship.getMissileLauncherIntegrity() <= 1)
         g_game->gameState->setWeaponStatus(false);
 
     // if shields were damaged, force them down
@@ -2078,10 +1986,10 @@ ModuleEncounter::combatTestPlayerCollision(CombatObject *other) {
     if (player->CheckCollision(other)) {
         switch (other->getObjectType()) {
         case OBJ_ENEMYFIRE:
-            Print(tac + "We're under attack!", RED, -1);
+            Print(OFFICER_TACTICAL, "We're under attack!", RED, -1);
             player->ApplyImpact(other);
             ImpactPlayer(player, other);
-            g_game->audioSystem->Play(snd_laserhit);
+            g_game->audioSystem->Play(samples[S_HIT1]);
             other->setAlive(false);
             applyDamageToShip(other->getDamage());
             combatDoSmlExplosion(player, other);
@@ -2089,7 +1997,7 @@ ModuleEncounter::combatTestPlayerCollision(CombatObject *other) {
             break;
 
         case OBJ_ALIENSHIP:
-            Print(nav + "Collision alert!", YELLOW, 5000);
+            Print(OFFICER_NAVIGATION, "Collision alert!", YELLOW, 5000);
             applyDamageToShip(1, true);
             player->ApplyImpact(other);
             ImpactPlayer(player, other);
@@ -2097,7 +2005,7 @@ ModuleEncounter::combatTestPlayerCollision(CombatObject *other) {
             break;
 
         case OBJ_ASTEROID_BIG:
-            Print(nav + "Major collision alert!", YELLOW, 5000);
+            Print(OFFICER_NAVIGATION, "Major collision alert!", YELLOW, 5000);
             applyDamageToShip(2, true);
             player->ApplyImpact(other);
             ImpactPlayer(player, other);
@@ -2105,7 +2013,7 @@ ModuleEncounter::combatTestPlayerCollision(CombatObject *other) {
             break;
 
         case OBJ_ASTEROID_MED:
-            Print(nav + "Collision alert!", YELLOW, 5000);
+            Print(OFFICER_NAVIGATION, "Collision alert!", YELLOW, 5000);
             applyDamageToShip(1, true);
             player->ApplyImpact(other);
             ImpactPlayer(player, other);
@@ -2113,7 +2021,7 @@ ModuleEncounter::combatTestPlayerCollision(CombatObject *other) {
             break;
 
         case OBJ_POWERUP_HEALTH: // fix hull
-            Print(eng + "We got a Hull Powerup!", GREEN, 1000);
+            Print(OFFICER_ENGINEER, "We got a Hull Powerup!", GREEN, 1000);
             other->setAlive(false);
             ship = g_game->gameState->getShip();
             ship.augHullIntegrity(20);
@@ -2121,11 +2029,11 @@ ModuleEncounter::combatTestPlayerCollision(CombatObject *other) {
             break;
 
         case OBJ_POWERUP_SHIELD: // fix shield
-            Print(tac + "We got a Shield Powerup!", GREEN, 1000);
+            Print(OFFICER_TACTICAL, "We got a Shield Powerup!", GREEN, 1000);
             other->setAlive(false);
             ship = g_game->gameState->getShip();
-            shield = ship.getShieldCapacity() +
-                     20 * g_game->gameState->getShip().getShieldClass();
+            shield = ship.getShieldCapacity()
+                     + 20 * g_game->gameState->getShip().getShieldClass();
             if (shield > ship.getMaxShieldCapacity())
                 shield = ship.getMaxShieldCapacity();
             ship.setShieldCapacity(shield);
@@ -2133,24 +2041,25 @@ ModuleEncounter::combatTestPlayerCollision(CombatObject *other) {
             break;
 
         case OBJ_POWERUP_ARMOR: // fix armor
-            Print(eng + "We got an Armor Powerup!", GREEN, 1000);
+            Print(OFFICER_ENGINEER, "We got an Armor Powerup!", GREEN, 1000);
             other->setAlive(false);
             ship = g_game->gameState->getShip();
-            armor = ship.getArmorIntegrity() +
-                    20 * g_game->gameState->getShip().getArmorClass();
+            armor = ship.getArmorIntegrity()
+                    + 20 * g_game->gameState->getShip().getArmorClass();
             if (armor > ship.getMaxArmorIntegrity())
                 armor = ship.getMaxArmorIntegrity();
             ship.setArmorIntegrity(armor);
             g_game->gameState->setShip(ship);
             break;
 
-        case OBJ_POWERUP_MINERAL_FROM_SHIP: // pickup mineral or artifact from
-                                            // ship
+        case OBJ_POWERUP_MINERAL_FROM_SHIP: // pickup mineral or artifact
+                                            // from ship
             other->setAlive(false);
             pickupRandomDropItem();
             break;
 
-        case OBJ_POWERUP_MINERAL_FROM_ASTEROID: // pickup mineral from asteroid
+        case OBJ_POWERUP_MINERAL_FROM_ASTEROID: // pickup mineral from
+                                                // asteroid
             other->setAlive(false);
             pickupAsteroidMineral();
             break;
@@ -2172,26 +2081,26 @@ ModuleEncounter::damageAlienAttitude() {
     if (attitude < 30) {
         bFlagDoAttack = true;
         os.str("");
-        os << com << "The " << alienName << " now despise us.";
-        Print(os.str(), STEEL, -1);
+        os << "The " << alienName << " now despise us.";
+        Print(OFFICER_COMMUNICATION, os.str(), STEEL, -1);
     } else if (attitude < 50) {
         bFlagDoAttack = true;
         os.str("");
-        os << com << "The " << alienName << " now hate us.";
-        Print(os.str(), STEEL, -1);
+        os << "The " << alienName << " now hate us.";
+        Print(OFFICER_COMMUNICATION, os.str(), STEEL, -1);
     } else if (attitude < 60) {
         bFlagDoAttack = true;
         os.str("");
-        os << com << "The " << alienName << " now distrust us.";
-        Print(os.str(), STEEL, -1);
+        os << "The " << alienName << " now distrust us.";
+        Print(OFFICER_COMMUNICATION, os.str(), STEEL, -1);
     } else if (attitude < 80) {
         os.str("");
-        os << com << "What are you doing!? The " << alienName << " trust us!";
-        Print(os.str(), STEEL, 5000);
+        os << "What are you doing!? The " << alienName << " trust us!";
+        Print(OFFICER_COMMUNICATION, os.str(), STEEL, 5000);
     } else {
         os.str("");
-        os << com << "Are you crazy!? The " << alienName << " are friendly!";
-        Print(os.str(), STEEL, 5000);
+        os << "Are you crazy!? The " << alienName << " are friendly!";
+        Print(OFFICER_COMMUNICATION, os.str(), STEEL, 5000);
     }
 }
 
@@ -2216,67 +2125,74 @@ ModuleEncounter::combatDoCollision(CombatObject *first, CombatObject *second) {
     case OBJ_PLAYERLASER:
     case OBJ_PLAYERMISSILE:
         switch (second->getObjectType()) {
-        case OBJ_ALIENSHIP: {
-            // player's projectile hits alien ship
-            double d = Math::Distance(playerShip->getX(),
-                                      playerShip->getY(),
-                                      second->getX(),
-                                      second->getY());
-            if (d < 500)
-                g_game->audioSystem->Play(snd_laserhit);
+        case OBJ_ALIENSHIP:
+            {
+                // player's projectile hits alien ship
+                double d = Math::Distance(
+                    playerShip->getX(),
+                    playerShip->getY(),
+                    second->getX(),
+                    second->getY());
+                if (d < 500)
+                    g_game->audioSystem->Play(samples[S_HIT1]);
 
-            combatDoSmlExplosion(first, second);
-            first->setAlive(false);
+                combatDoSmlExplosion(first, second);
+                first->setAlive(false);
 
-            s = second->getShieldStrength();
-            a = second->getArmorStrength();
-            h = second->getHealth();
-            (first->getObjectType() == OBJ_PLAYERLASER)
-                ? damage_modifier = second->getLaserModifier() / 100.0
-                : damage_modifier = second->getMissileModifier() / 100.0;
-            d = (int)(first->getDamage() * damage_modifier);
+                s = second->getShieldStrength();
+                a = second->getArmorStrength();
+                h = second->getHealth();
+                (first->getObjectType() == OBJ_PLAYERLASER)
+                    ? damage_modifier = second->getLaserModifier() / 100.0
+                    : damage_modifier = second->getMissileModifier() / 100.0;
+                d = (int)(first->getDamage() * damage_modifier);
 
-            // hit their shield
-            if (d > 0 && s > 0) {
-                second->setShieldStrength(s - d);
-                d = 0 - (s - d);
-            }
-            // hit their armor
-            if (d > 0 && a > 0) {
-                second->setArmorStrength(a - d);
-                d = 0 - (a - d);
-            }
-            // hit their hull
-            if (d > 0)
-                second->setHealth(h - d);
+                // hit their shield
+                if (d > 0 && s > 0) {
+                    second->setShieldStrength(s - d);
+                    d = 0 - (s - d);
+                }
+                // hit their armor
+                if (d > 0 && a > 0) {
+                    second->setArmorStrength(a - d);
+                    d = 0 - (a - d);
+                }
+                // hit their hull
+                if (d > 0)
+                    second->setHealth(h - d);
 
-            if (second->getHealth() < 0) {
-                //*** enemy ship destroyed--
+                if (second->getHealth() < 0) {
+                    //*** enemy ship destroyed--
 
-                second->setAlive(false);
-                combatDoBigExplosion(second);
-                combatDoPowerup(second);
+                    second->setAlive(false);
+                    combatDoBigExplosion(second);
+                    combatDoPowerup(second);
 
-                // adjust attitude
+                    // adjust attitude
+                    damageAlienAttitude();
+
+                    // award a skill point to the tactical officer
+                    if (g_game->gameState->SkillUp(SKILL_TACTICAL)) {
+                        auto tac = g_game->gameState->get_effective_officer(
+                            OFFICER_TACTICAL);
+                        Print(
+                            tac->get_last_name()
+                                + "-> I think I'm getting better at "
+                                  "this.",
+                            PURPLE,
+                            5000);
+                    }
+                }
+
+                // if alien doesn't realize it yet, tell them we're
+                // hostile
                 damageAlienAttitude();
-
-                // award a skill point to the tactical officer
-                Officer *currentTac = g_game->gameState->getCurrentTac();
-                if (currentTac->SkillUp(SKILL_TACTICAL))
-                    Print(currentTac->getLastName() +
-                              "-> I think I'm getting better at this.",
-                          PURPLE,
-                          5000);
             }
 
-            // if alien doesn't realize it yet, tell them we're hostile
-            damageAlienAttitude();
-        }
-
-        break;
+            break;
 
         case OBJ_ASTEROID_BIG:
-            g_game->audioSystem->Play(snd_laserhit);
+            g_game->audioSystem->Play(samples[S_HIT1]);
             combatDoSmlExplosion(first, second);
             first->setAlive(false);
             h = second->getHealth();
@@ -2289,7 +2205,7 @@ ModuleEncounter::combatDoCollision(CombatObject *first, CombatObject *second) {
             }
             break;
         case OBJ_ASTEROID_MED:
-            g_game->audioSystem->Play(snd_laserhit);
+            g_game->audioSystem->Play(samples[S_HIT1]);
             combatDoSmlExplosion(first, second);
             first->setAlive(false);
             h = second->getHealth();
@@ -2308,7 +2224,7 @@ ModuleEncounter::combatDoCollision(CombatObject *first, CombatObject *second) {
     case OBJ_ENEMYFIRE:
         switch (second->getObjectType()) {
         case OBJ_ASTEROID_BIG:
-            g_game->audioSystem->Play(snd_laserhit);
+            g_game->audioSystem->Play(samples[S_HIT1]);
             combatDoSmlExplosion(first, second);
             first->setAlive(false);
             h = second->getHealth();
@@ -2321,7 +2237,7 @@ ModuleEncounter::combatDoCollision(CombatObject *first, CombatObject *second) {
             }
             break;
         case OBJ_ASTEROID_MED:
-            g_game->audioSystem->Play(snd_laserhit);
+            g_game->audioSystem->Play(samples[S_HIT1]);
             combatDoSmlExplosion(first, second);
             first->setAlive(false);
             h = second->getHealth();
@@ -2336,10 +2252,6 @@ ModuleEncounter::combatDoCollision(CombatObject *first, CombatObject *second) {
         break;
     }
 }
-
-#pragma endregion
-
-#pragma region COMBAT_CORE
 
 void
 ModuleEncounter::DoAlienShipCombat(CombatObject *ship) {
@@ -2370,7 +2282,7 @@ ModuleEncounter::DoAlienShipCombat(CombatObject *ship) {
     }
 
     // get current alien race attitude toward player
-    AlienRaces region = g_game->gameState->player->getGalacticRegion();
+    AlienRaces region = g_game->gameState->player.getGalacticRegion();
     int attitude = g_game->gameState->alienAttitudes[region];
 
     // if alien is really angry or player starts attacking...
@@ -2418,9 +2330,8 @@ ModuleEncounter::DoAlienShipCombat(CombatObject *ship) {
                                                 ship->ApplyThrust();
                                         }
                                         //flee to the left
-                                        else if (targetAngle > behindAngle) {
-                                                ship->TurnLeft();
-                                                ship->ApplyThrust();
+                                        else if (targetAngle > behindAngle)
+           { ship->TurnLeft(); ship->ApplyThrust();
                                         }
                                 }
                                 else {
@@ -2438,8 +2349,8 @@ ModuleEncounter::DoAlienShipCombat(CombatObject *ship) {
             ship->TurnLeft();
         }
         // need to turn right
-        else if (targetAngle >
-                 Math::wrapAngleDegs(ship->getFaceAngle() + 1.0)) {
+        else if (
+            targetAngle > Math::wrapAngleDegs(ship->getFaceAngle() + 1.0)) {
             ship->TurnRight();
         }
         // we're pointed at player, fire!
@@ -2511,12 +2422,18 @@ ModuleEncounter::GetFirstAlienShip() {
 void
 ModuleEncounter::Combat_Update() {
     // player ship destroyed?
-    if (!g_game->gameState->player->getAlive()) {
+    if (!g_game->gameState->player.getAlive()) {
         if (deathState == 0) {
             deathState++;
-            text->Write("YOUR SHIP HAS BEEN DESTROYED!!", RED);
-            g_game->ShowMessageBoxWindow(
-                "", "YOUR SHIP HAS BEEN DESTROYED!!", 400, 200, RED);
+            m_text->add_text({"YOUR SHIP HAS BEEN DESTROYED!!", RED});
+            set_modal_child(make_shared<MessageBoxWindow>(
+                "",
+                "YOUR SHIP HAS BEEN DESTROYED!!",
+                SCREEN_WIDTH / 2,
+                SCREEN_HEIGHT / 2,
+                400,
+                200,
+                RED));
         } else {
             // show pause menu since player has died
             g_game->TogglePauseMenu();
@@ -2616,12 +2533,16 @@ ModuleEncounter::Combat_Update() {
 
     // enemy ships destroyed?
     if (shipcount == 0) {
-        string tac = g_game->gameState->getCurrentTac()->getLastName() + "-> ";
-        string nav = g_game->gameState->getCurrentNav()->getLastName() + "-> ";
-        Print(tac + "All enemy ships have been destroyed!", STEEL, 10000);
-        Print(nav + "Captain, we can return to hyperspace when you''re ready.",
-              GREEN,
-              10000);
+        Print(
+            OFFICER_TACTICAL,
+            "All enemy ships have been destroyed!",
+            STEEL,
+            10000);
+        Print(
+            OFFICER_NAVIGATION,
+            "Captain, we can return to hyperspace when you're ready.",
+            GREEN,
+            10000);
     } else {
         // check for sensor scan/analysis
         if (scanStatus == 1) // scan
@@ -2629,20 +2550,21 @@ ModuleEncounter::Combat_Update() {
             // find first alien ship in use
             CombatObject *alien = GetFirstAlienShip();
             if (alien != NULL) {
-                g_game->printout(
-                    text, sci + "Scanning alien ship...", STEEL, 10000);
+                Print(OFFICER_SCIENCE, "Scanning alien ship...", STEEL, 10000);
                 if (scanTimer.stopwatch(4000)) {
-                    g_game->printout(text,
-                                     sci + "Scan complete, ready for analysis.",
-                                     STEEL,
-                                     10000);
+                    Print(
+                        OFFICER_SCIENCE,
+                        "Scan complete, ready for analysis.",
+                        STEEL,
+                        10000);
                     scanStatus = 2;
                 }
             } else {
-                g_game->printout(text,
-                                 sci + "There are no alien ships to scan.",
-                                 YELLOW,
-                                 10000);
+                Print(
+                    OFFICER_SCIENCE,
+                    "There are no alien ships to scan.",
+                    YELLOW,
+                    10000);
                 scanStatus = 0;
             }
         } else if (scanStatus == 3) // analysis
@@ -2737,11 +2659,11 @@ ModuleEncounter::Combat_Update() {
 
                 int alienPow = engine + armor + shield + laser + missile;
                 int playerPow =
-                    g_game->gameState->m_ship.getEngineClass() +
-                    g_game->gameState->m_ship.getArmorClass() +
-                    g_game->gameState->m_ship.getShieldClass() +
-                    g_game->gameState->m_ship.getLaserClass() +
-                    g_game->gameState->m_ship.getMissileLauncherClass();
+                    g_game->gameState->m_ship.getEngineClass()
+                    + g_game->gameState->m_ship.getArmorClass()
+                    + g_game->gameState->m_ship.getShieldClass()
+                    + g_game->gameState->m_ship.getLaserClass()
+                    + g_game->gameState->m_ship.getMissileLauncherClass();
                 if (alienPow > playerPow * 2)
                     analysis += "They greatly outclass us.";
                 else if (alienPow > playerPow)
@@ -2753,18 +2675,20 @@ ModuleEncounter::Combat_Update() {
                 else if (alienPow < playerPow)
                     analysis += "We moderately outclass them.";
 
-                g_game->printout(text,
-                                 sci + "Here is my analysis of the alien ship:",
-                                 STEEL,
-                                 10000);
-                g_game->printout(text, analysis, WHITE, 10000);
+                Print(
+                    OFFICER_SCIENCE,
+                    "Here is my analysis of the alien ship:",
+                    STEEL,
+                    10000);
+                g_game->printout(m_text, analysis, WHITE, 10000);
 
             } else {
-                g_game->printout(text,
-                                 sci + "Sorry, Captain, I don't understand the "
-                                       "sensor results.",
-                                 STEEL,
-                                 10000);
+                Print(
+                    OFFICER_SCIENCE,
+                    "Sorry, Captain, I don't understand the "
+                    "sensor results.",
+                    STEEL,
+                    10000);
             }
         }
     }
@@ -2791,7 +2715,7 @@ ModuleEncounter::Combat_Update() {
 
 // Combat_Draw functions as a timed update and draw routine
 void
-ModuleEncounter::Combat_Draw() {
+ModuleEncounter::Combat_Draw(ALLEGRO_BITMAP *target) {
     double tx, ty;
     double rx, ry;
     float angle;
@@ -2807,14 +2731,13 @@ ModuleEncounter::Combat_Draw() {
             ty = combatObjects[i]->getY();
 
             // calculate position relative to player
-            rx = tx - g_game->gameState->player->posCombat.x;
-            ry = ty - g_game->gameState->player->posCombat.y;
+            rx = tx - g_game->gameState->player.posCombat.x;
+            ry = ty - g_game->gameState->player.posCombat.y;
 
             // is this sprite in range of the screen?
-            if (rx > 0 - combatObjects[i]->getFrameWidth() &&
-                rx < SCREEN_WIDTH &&
-                ry > 0 - combatObjects[i]->getFrameHeight() &&
-                ry < effectiveScreenHeight()) {
+            if (rx > 0 - combatObjects[i]->getFrameWidth() && rx < SCREEN_WIDTH
+                && ry > 0 - combatObjects[i]->getFrameHeight()
+                && ry < effectiveScreenHeight()) {
                 // set relative location to simplify collision code
                 combatObjects[i]->setPos(rx, ry);
 
@@ -2831,8 +2754,7 @@ ModuleEncounter::Combat_Draw() {
                 case OBJ_PLAYERMISSILE:
                 case OBJ_ENEMYFIRE:
                     angle = combatObjects[i]->getFaceAngle();
-                    combatObjects[i]->drawframe_rotate(g_game->GetBackBuffer(),
-                                                       (int)angle);
+                    combatObjects[i]->drawframe_rotate(target, (int)angle);
                     break;
 
                 // draw objects that do not require rotation
@@ -2841,16 +2763,16 @@ ModuleEncounter::Combat_Draw() {
                 case OBJ_POWERUP_ARMOR:
                 case OBJ_POWERUP_MINERAL_FROM_SHIP:
                 case OBJ_POWERUP_MINERAL_FROM_ASTEROID:
-                    combatObjects[i]->drawframe(g_game->GetBackBuffer());
+                    combatObjects[i]->drawframe(target);
                     break;
 
                 // special case explosion only animates once
                 case OBJ_EXPLOSION:
-                    combatObjects[i]->drawframe(g_game->GetBackBuffer());
+                    combatObjects[i]->drawframe(target);
 
                     // delete explosion when it reaches last frame
-                    if (combatObjects[i]->getCurrFrame() ==
-                        combatObjects[i]->getTotalFrames() - 1)
+                    if (combatObjects[i]->getCurrFrame()
+                        == combatObjects[i]->getTotalFrames() - 1)
                         combatObjects[i]->setAlive(false);
                     break;
                 }
@@ -2866,10 +2788,10 @@ ModuleEncounter::Combat_Draw() {
     if (g_game->gameState->getShieldStatus()) {
         if (g_game->gameState->getShip().getShieldCapacity() > 0.0) {
             shield->animate();
-            shield->drawframe(g_game->GetBackBuffer());
+            shield->drawframe(target);
         } else {
             g_game->gameState->setShieldStatus(false);
-            Print(tac + "Sir! Shields are depleted!", RED, 6000);
+            Print(OFFICER_TACTICAL, "Sir! Shields are depleted!", RED, 6000);
         }
     }
 }
@@ -2892,7 +2814,7 @@ ModuleEncounter::adjustVerticalCoords(int delta) {
 }
 
 void
-ModuleEncounter::DrawMinimap() {
+ModuleEncounter::DrawMinimap(ALLEGRO_BITMAP *target) {
     al_set_target_bitmap(minimap);
     al_clear_to_color(BLACK);
 
@@ -2928,14 +2850,13 @@ ModuleEncounter::DrawMinimap() {
 
     // show player on minimap
     int px =
-        (int)((g_game->gameState->player->posCombat.x + SCREEN_WIDTH / 2) / 78);
-    int py = (int)((g_game->gameState->player->posCombat.y +
-                    effectiveScreenHeight() / 2) /
-                   76);
+        (int)((g_game->gameState->player.posCombat.x + SCREEN_WIDTH / 2) / 78);
+    int py =
+        (int)((g_game->gameState->player.posCombat.y + effectiveScreenHeight() / 2) / 76);
     al_draw_circle(px, py, 2, GREEN, 1);
 
     // draw minimap
-    al_set_target_bitmap(g_game->GetBackBuffer());
+    al_set_target_bitmap(target);
     al_draw_bitmap(minimap, asx, asy, 0);
 }
 
@@ -2957,9 +2878,6 @@ ModuleEncounter::RemoveCombatObject(CombatObject *CObject) {
     }
 }
 
-#pragma endregion
-
-#pragma region FIRING
 void
 ModuleEncounter::enemyFireLaser(CombatObject *ship) {
     static Timer timer;
@@ -3033,13 +2951,13 @@ ModuleEncounter::fireLaser() {
     int fireRate = g_game->gameState->getShip().getLaserFiringRate();
 
     if (laserClass == 0 || laserDamage == 0) {
-        Print(tac + "We do not have a laser", YELLOW, -1);
+        Print(OFFICER_TACTICAL, "We do not have a laser", YELLOW, -1);
         return;
     }
 
     // are weapons armed?
     if (!g_game->gameState->getWeaponStatus()) {
-        Print(tac + "The weapons are not armed yet!", YELLOW, 5000);
+        Print(OFFICER_TACTICAL, "The weapons are not armed yet!", YELLOW, 5000);
         return;
     }
 
@@ -3053,9 +2971,9 @@ ModuleEncounter::fireLaser() {
     CombatObject *laser = new CombatObject();
     laser->setObjectType(OBJ_PLAYERLASER);
 
-    double x = g_game->gameState->player->posCombat.x + SCREEN_WIDTH / 2 - 8;
-    double y = g_game->gameState->player->posCombat.y +
-               effectiveScreenHeight() / 2 - 8;
+    double x = g_game->gameState->player.posCombat.x + SCREEN_WIDTH / 2 - 8;
+    double y =
+        g_game->gameState->player.posCombat.y + effectiveScreenHeight() / 2 - 8;
     float velx = playerShip->getVelocityX();
     float vely = playerShip->getVelocityY();
     int angle = (int)playerShip->getRotationAngle();
@@ -3074,13 +2992,13 @@ ModuleEncounter::fireMissile() {
                        .getMissileLauncherFiringRate(); // used to be 1000
 
     if (missileClass == 0 || missileDamage == 0) {
-        Print(tac + "We have no missile launcher", YELLOW, -1);
+        Print(OFFICER_TACTICAL, "We have no missile launcher", YELLOW, -1);
         return;
     }
 
     // are weapons armed?
     if (!g_game->gameState->getWeaponStatus()) {
-        Print(tac + "The weapons are not armed!", YELLOW, 5000);
+        Print(OFFICER_TACTICAL, "The weapons are not armed!", YELLOW, 5000);
         return;
     }
 
@@ -3095,9 +3013,9 @@ ModuleEncounter::fireMissile() {
     missile->setObjectType(OBJ_PLAYERMISSILE);
 
     double x =
-        (int)g_game->gameState->player->posCombat.x + SCREEN_WIDTH / 2 - 8;
-    double y = (int)g_game->gameState->player->posCombat.y +
-               effectiveScreenHeight() / 2 - 8;
+        (int)g_game->gameState->player.posCombat.x + SCREEN_WIDTH / 2 - 8;
+    double y = (int)g_game->gameState->player.posCombat.y
+               + effectiveScreenHeight() / 2 - 8;
     float velx = playerShip->getVelocityX();
     float vely = playerShip->getVelocityY();
     int angle = (int)playerShip->getRotationAngle();
@@ -3105,17 +3023,18 @@ ModuleEncounter::fireMissile() {
 }
 
 void
-ModuleEncounter::createLaser(CombatObject *laser,
-                             double x,
-                             double y,
-                             float velx,
-                             float vely,
-                             int angle,
-                             int laserDamage) {
+ModuleEncounter::createLaser(
+    CombatObject *laser,
+    double x,
+    double y,
+    float velx,
+    float vely,
+    int angle,
+    int laserDamage) {
     double duration = g_game->getGlobalNumber("LASER_DURATION");
     double speed = g_game->getGlobalNumber("LASER_SPEED");
 
-    laser->setImage(resources[I_LASER_BEAM]);
+    laser->setImage(images[I_LASER_BEAM]);
     laser->setTotalFrames(1); // was 4--too fast for animation
     laser->setAnimColumns(1); // was 4
     laser->setFrameWidth(16);
@@ -3128,14 +3047,16 @@ ModuleEncounter::createLaser(CombatObject *laser,
 
     // set projectile's direction and velocity
     laser->setFaceAngle(angle);
-    laser->setVelX(velx +
-                   Sprite::calcAngleMoveX(Math::wrapAngleDegs(angle - 90)) *
-                       speed); // alien laser used to have * 20.0, player laser
-                               // used to not have +velx
-    laser->setVelY(vely +
-                   Sprite::calcAngleMoveY(Math::wrapAngleDegs(angle - 90)) *
-                       speed); // alien laser used to have * 20.0, player laser
-                               // used to not have +vely
+    laser->setVelX(
+        velx
+        + Sprite::calcAngleMoveX(Math::wrapAngleDegs(angle - 90))
+              * speed); // alien laser used to have * 20.0, player laser
+                        // used to not have +velx
+    laser->setVelY(
+        vely
+        + Sprite::calcAngleMoveY(Math::wrapAngleDegs(angle - 90))
+              * speed); // alien laser used to have * 20.0, player laser
+                        // used to not have +vely
 
     // set projectile's starting position
     laser->setPos(x, y);
@@ -3143,21 +3064,22 @@ ModuleEncounter::createLaser(CombatObject *laser,
     AddCombatObject(laser);
 
     // missile sound effect
-    g_game->audioSystem->Play(snd_player_laser);
+    g_game->audioSystem->Play(samples[S_FIRE1]);
 }
 
 void
-ModuleEncounter::createMissile(CombatObject *missile,
-                               double x,
-                               double y,
-                               float velx,
-                               float vely,
-                               int angle,
-                               int missileDamage) {
+ModuleEncounter::createMissile(
+    CombatObject *missile,
+    double x,
+    double y,
+    float velx,
+    float vely,
+    int angle,
+    int missileDamage) {
     double duration = g_game->getGlobalNumber("MISSILE_DURATION");
     double speed = g_game->getGlobalNumber("MISSILE_SPEED");
 
-    missile->setImage(resources[I_RED_BOLT]);
+    missile->setImage(images[I_RED_BOLT]);
     missile->setTotalFrames(30);
     missile->setAnimColumns(10);
     missile->setFrameWidth(16);
@@ -3170,12 +3092,14 @@ ModuleEncounter::createMissile(CombatObject *missile,
 
     // set projectile's direction and velocity
     missile->setFaceAngle(angle);
-    missile->setVelX(velx +
-                     Sprite::calcAngleMoveX(Math::wrapAngleDegs(angle - 90)) *
-                         speed); // was *20.0 for alien missiles
-    missile->setVelY(vely +
-                     Sprite::calcAngleMoveY(Math::wrapAngleDegs(angle - 90)) *
-                         speed); // was *20.0 for alien missiles
+    missile->setVelX(
+        velx
+        + Sprite::calcAngleMoveX(Math::wrapAngleDegs(angle - 90))
+              * speed); // was *20.0 for alien missiles
+    missile->setVelY(
+        vely
+        + Sprite::calcAngleMoveY(Math::wrapAngleDegs(angle - 90))
+              * speed); // was *20.0 for alien missiles
 
     // set projectile's starting position
     missile->setPos(x, y);
@@ -3183,20 +3107,17 @@ ModuleEncounter::createMissile(CombatObject *missile,
     AddCombatObject(missile);
 
     // missile sound effect
-    g_game->audioSystem->Play(snd_player_missile);
+    g_game->audioSystem->Play(samples[S_FIRE2]);
 }
-#pragma endregion
-
-#pragma region EXPLOSIONS_POWERUPS
 
 void
 ModuleEncounter::combatDoBigExplosion(CombatObject *victim) {
     // play explosion sound
-    g_game->audioSystem->Play(snd_explosion);
+    g_game->audioSystem->Play(samples[S_HIT2]);
 
     // create explosion sprite
     CombatObject *exp = new CombatObject();
-    exp->setImage(resources[I_EXPLOSION_30_128]);
+    exp->setImage(images[I_EXPLOSION_30_128]);
     exp->setAlpha(true);
     exp->setObjectType(OBJ_EXPLOSION);
     exp->setTotalFrames(30);
@@ -3227,11 +3148,11 @@ ModuleEncounter::combatDoBigExplosion(CombatObject *victim) {
 void
 ModuleEncounter::combatDoMedExplosion(CombatObject *victim) {
     // play explosion sound
-    g_game->audioSystem->Play(snd_explosion);
+    g_game->audioSystem->Play(samples[S_HIT2]);
 
     // create explosion sprite
     CombatObject *exp = new CombatObject();
-    exp->setImage(resources[I_EXPLOSION_30_64]);
+    exp->setImage(images[I_EXPLOSION_30_64]);
     exp->setAlpha(true);
     exp->setObjectType(OBJ_EXPLOSION);
     exp->setTotalFrames(30);
@@ -3260,14 +3181,15 @@ ModuleEncounter::combatDoMedExplosion(CombatObject *victim) {
 }
 
 void
-ModuleEncounter::combatDoSmlExplosion(CombatObject *victim,
-                                      CombatObject *source) {
+ModuleEncounter::combatDoSmlExplosion(
+    CombatObject *victim,
+    CombatObject *source) {
     // play explosion sound
-    g_game->audioSystem->Play(snd_laserhit);
+    g_game->audioSystem->Play(samples[S_HIT1]);
 
     // create explosion sprite
     CombatObject *exp = new CombatObject();
-    exp->setImage(resources[I_EXPLOSION_30_48]);
+    exp->setImage(images[I_EXPLOSION_30_48]);
     exp->setAlpha(true);
     exp->setObjectType(OBJ_EXPLOSION);
     exp->setTotalFrames(30);
@@ -3301,11 +3223,11 @@ ModuleEncounter::combatDoBreakAsteroid(CombatObject *victim) {
 
     for (int n = 0; n < r; n++) {
         // play explosion sound
-        g_game->audioSystem->Play(snd_laserhit);
+        g_game->audioSystem->Play(samples[S_HIT1]);
 
         // create explosion sprite
         CombatObject *exp = new CombatObject();
-        exp->setImage(resources[I_SMLASTEROID]);
+        exp->setImage(images[I_SMLASTEROID]);
         exp->setObjectType(21); // sub-asteroids
         exp->setAnimColumns(8);
         exp->setTotalFrames(64);
@@ -3340,7 +3262,7 @@ ModuleEncounter::combatDoPowerup(CombatObject *victim) {
     int r = Util::Random(1, 7);
     switch (r) {
     case 1: // health
-        pow->setImage(resources[I_POWERUP_HEALTH]);
+        pow->setImage(images[I_POWERUP_HEALTH]);
         pow->setObjectType(OBJ_POWERUP_HEALTH);
         pow->setAlpha(true);
         pow->setTotalFrames(9);
@@ -3349,7 +3271,7 @@ ModuleEncounter::combatDoPowerup(CombatObject *victim) {
         pow->setFrameHeight(32);
         break;
     case 2: // shield
-        pow->setImage(resources[I_POWERUP_SHIELD]);
+        pow->setImage(images[I_POWERUP_SHIELD]);
         pow->setObjectType(OBJ_POWERUP_SHIELD);
         pow->setAlpha(true);
         pow->setTotalFrames(9);
@@ -3358,7 +3280,7 @@ ModuleEncounter::combatDoPowerup(CombatObject *victim) {
         pow->setFrameHeight(32);
         break;
     case 3: // armor
-        pow->setImage(resources[I_POWERUP_ARMOR]);
+        pow->setImage(images[I_POWERUP_ARMOR]);
         pow->setObjectType(OBJ_POWERUP_ARMOR);
         pow->setAlpha(true);
         pow->setTotalFrames(9);
@@ -3370,7 +3292,7 @@ ModuleEncounter::combatDoPowerup(CombatObject *victim) {
     case 5:
     case 6:
     case 7:
-        pow->setImage(resources[I_POWERUP_MINERAL]);
+        pow->setImage(images[I_POWERUP_MINERAL]);
         (victim->getObjectType() == OBJ_ALIENSHIP)
             ? pow->setObjectType(OBJ_POWERUP_MINERAL_FROM_SHIP)
             : pow->setObjectType(OBJ_POWERUP_MINERAL_FROM_ASTEROID);
@@ -3401,8 +3323,6 @@ ModuleEncounter::combatDoPowerup(CombatObject *victim) {
     AddCombatObject(pow);
 }
 
-#pragma endregion
-
 void
 ModuleEncounter::sendGlobalsToScript() {
     script->setGlobalNumber("number_of_actions", number_of_actions);
@@ -3411,35 +3331,36 @@ ModuleEncounter::sendGlobalsToScript() {
     script->setGlobalString("POSTURE", g_game->gameState->playerPosture);
     script->setGlobalNumber("player_money", g_game->gameState->getCredits());
     script->setGlobalNumber("plot_stage", g_game->gameState->getPlotStage());
-    script->setGlobalNumber("active_quest",
-                            g_game->gameState->getActiveQuest());
-    script->setGlobalString("player_profession",
-                            g_game->gameState->getProfessionString());
-    script->setGlobalNumber("ship_engine_class",
-                            g_game->gameState->getShip().getEngineClass());
-    script->setGlobalNumber("ship_shield_class",
-                            g_game->gameState->getShip().getShieldClass());
-    script->setGlobalNumber("ship_armor_class",
-                            g_game->gameState->getShip().getArmorClass());
-    script->setGlobalNumber("ship_laser_class",
-                            g_game->gameState->getShip().getLaserClass());
+    script->setGlobalNumber(
+        "active_quest", g_game->gameState->getActiveQuest());
+    script->setGlobalString(
+        "player_profession", g_game->gameState->getProfessionString());
+    script->setGlobalNumber(
+        "ship_engine_class", g_game->gameState->getShip().getEngineClass());
+    script->setGlobalNumber(
+        "ship_shield_class", g_game->gameState->getShip().getShieldClass());
+    script->setGlobalNumber(
+        "ship_armor_class", g_game->gameState->getShip().getArmorClass());
+    script->setGlobalNumber(
+        "ship_laser_class", g_game->gameState->getShip().getLaserClass());
     script->setGlobalNumber(
         "ship_missile_class",
         g_game->gameState->getShip().getMissileLauncherClass());
-    script->setGlobalNumber("max_engine_class",
-                            g_game->gameState->getShip().getMaxEngineClass());
-    script->setGlobalNumber("max_shield_class",
-                            g_game->gameState->getShip().getMaxShieldClass());
-    script->setGlobalNumber("max_armor_class",
-                            g_game->gameState->getShip().getMaxArmorClass());
-    script->setGlobalNumber("max_laser_class",
-                            g_game->gameState->getShip().getMaxLaserClass());
+    script->setGlobalNumber(
+        "max_engine_class", g_game->gameState->getShip().getMaxEngineClass());
+    script->setGlobalNumber(
+        "max_shield_class", g_game->gameState->getShip().getMaxShieldClass());
+    script->setGlobalNumber(
+        "max_armor_class", g_game->gameState->getShip().getMaxArmorClass());
+    script->setGlobalNumber(
+        "max_laser_class", g_game->gameState->getShip().getMaxLaserClass());
     script->setGlobalNumber(
         "max_missile_class",
         g_game->gameState->getShip().getMaxMissileLauncherClass());
     script->setGlobalNumber(
         "comm_skill",
-        g_game->gameState->getCurrentCom()->attributes.communication);
+        g_game->gameState->get_effective_officer(OFFICER_COMMUNICATION)
+            ->get_skill(SKILL_COMMUNICATION));
 
     // set artifact numbers, other ship items (endurium, etc.)
     for (int n = 0; n < g_game->dataMgr->GetNumItems(); n++) {
@@ -3479,13 +3400,19 @@ ModuleEncounter::readGlobalsFromScript() {
     g_game->gameState->setActiveQuest(script->getGlobalNumber("active_quest"));
 
     // see if script has increased communication skill
-    Officer *currentCom = g_game->gameState->getCurrentCom();
-    int current_skill = currentCom->attributes.communication;
+    auto *currentCom =
+        g_game->gameState->get_effective_officer(OFFICER_COMMUNICATION);
+    int current_skill = currentCom->get_skill(SKILL_COMMUNICATION);
     int new_skill = script->getGlobalNumber("comm_skill");
 
     if (new_skill > current_skill)
-        if (currentCom->SkillUp(SKILL_COMMUNICATION, new_skill - current_skill))
-            Print(com + "I think i am getting better at this", PURPLE, 5000);
+        if (g_game->gameState->SkillUp(
+                SKILL_COMMUNICATION, new_skill - current_skill))
+            Print(
+                OFFICER_COMMUNICATION,
+                "I think i am getting better at this",
+                PURPLE,
+                5000);
 
     // see if script has upgraded any ship systems
     Ship ship = g_game->gameState->getShip();
@@ -3493,9 +3420,10 @@ ModuleEncounter::readGlobalsFromScript() {
     int engine = script->getGlobalNumber("ship_engine_class");
     if (engine > ship.getEngineClass()) {
         if (engine <= ship.getMaxEngineClass()) {
-            Print("Engines upgraded to class " + Util::ToString(engine) + "!",
-                  YELLOW,
-                  1000);
+            Print(
+                "Engines upgraded to class " + Util::ToString(engine) + "!",
+                YELLOW,
+                1000);
             ship.setEngineClass(engine);
         } else
             Print("Engines already at maximum level!", RED, 1000);
@@ -3504,9 +3432,10 @@ ModuleEncounter::readGlobalsFromScript() {
     int shield = script->getGlobalNumber("ship_shield_class");
     if (shield > ship.getShieldClass()) {
         if (shield <= ship.getMaxShieldClass()) {
-            Print("Shields upgraded to class " + Util::ToString(shield) + "!",
-                  YELLOW,
-                  1000);
+            Print(
+                "Shields upgraded to class " + Util::ToString(shield) + "!",
+                YELLOW,
+                1000);
             ship.setShieldClass(shield);
         } else
             Print("Shields already at maximum level!", RED, 1000);
@@ -3515,9 +3444,10 @@ ModuleEncounter::readGlobalsFromScript() {
     int armor = script->getGlobalNumber("ship_armor_class");
     if (armor > ship.getArmorClass()) {
         if (armor <= ship.getMaxArmorClass()) {
-            Print("Armor upgraded to class " + Util::ToString(armor) + "!",
-                  YELLOW,
-                  1000);
+            Print(
+                "Armor upgraded to class " + Util::ToString(armor) + "!",
+                YELLOW,
+                1000);
             ship.setArmorClass(armor);
         } else
             Print("Armor already at maximum level!", RED, 1000);
@@ -3525,30 +3455,34 @@ ModuleEncounter::readGlobalsFromScript() {
 
     int laser = script->getGlobalNumber("ship_laser_class");
     if (laser > ship.getLaserClass()) {
-        Print("Lasers upgraded to class " + Util::ToString(laser) + "!",
-              YELLOW,
-              1000);
+        Print(
+            "Lasers upgraded to class " + Util::ToString(laser) + "!",
+            YELLOW,
+            1000);
         ship.setLaserClass(laser);
     }
     if (laser < ship.getLaserClass()) {
-        Print("Lasers downgraded to class " + Util::ToString(laser) + "!",
-              YELLOW,
-              1000);
+        Print(
+            "Lasers downgraded to class " + Util::ToString(laser) + "!",
+            YELLOW,
+            1000);
         ship.setLaserClass(laser);
     }
     int missile = script->getGlobalNumber("ship_missile_class");
     if (missile > ship.getMissileLauncherClass()) {
-        Print("Missile launcher upgraded to class " + Util::ToString(missile) +
-                  "!",
-              YELLOW,
-              1000);
+        Print(
+            "Missile launcher upgraded to class " + Util::ToString(missile)
+                + "!",
+            YELLOW,
+            1000);
         ship.setMissileLauncherClass(missile);
     }
     if (missile < ship.getMissileLauncherClass()) {
-        Print("Missile launcher downgraded to class " +
-                  Util::ToString(missile) + "!",
-              YELLOW,
-              1000);
+        Print(
+            "Missile launcher downgraded to class " + Util::ToString(missile)
+                + "!",
+            YELLOW,
+            1000);
         ship.setMissileLauncherClass(missile);
     }
     g_game->gameState->setShip(ship);
@@ -3582,24 +3516,28 @@ ModuleEncounter::readGlobalsFromScript() {
         // artifact
         if (pItem->IsArtifact()) {
             if (newcount > numInHold) {
-                Print("We received the " + pItem->name + " from the " +
-                          alienName + ".",
-                      PURPLE,
-                      1000); // artifacts to/from aliens jjh
-                g_game->gameState->m_items.SetItemCount(pItem->id,
-                                                        1); // get exactly one
+                Print(
+                    "We received the " + pItem->name + " from the " + alienName
+                        + ".",
+                    PURPLE,
+                    1000); // artifacts to/from aliens jjh
+                g_game->gameState->m_items.SetItemCount(
+                    pItem->id,
+                    1); // get exactly one
             } else {
-                Print("We gave the " + pItem->name + " to the " + alienName +
-                          ".",
-                      PURPLE,
-                      1000);
-                g_game->gameState->m_items.RemoveItems(pItem->id,
-                                                       numInHold); // give all
+                Print(
+                    "We gave the " + pItem->name + " to the " + alienName + ".",
+                    PURPLE,
+                    1000);
+                g_game->gameState->m_items.RemoveItems(
+                    pItem->id,
+                    numInHold); // give all
             }
 
             // broacast inventory change
-            Event e(CARGO_EVENT_UPDATE);
-            g_game->modeMgr->BroadcastEvent(&e);
+            ALLEGRO_EVENT e = {
+                .type = static_cast<unsigned int>(EVENT_CARGO_UPDATE)};
+            g_game->broadcast_event(&e);
 
             // nothing more to do for this artifact; next!
             continue;
@@ -3614,9 +3552,10 @@ ModuleEncounter::readGlobalsFromScript() {
         if (received) {
 
             if (freeSpace <= 0) {
-                Print("We don't have any space left in the cargo hold!",
-                      RED,
-                      1000);
+                Print(
+                    "We don't have any space left in the cargo hold!",
+                    RED,
+                    1000);
                 return;
             }
 
@@ -3652,8 +3591,9 @@ ModuleEncounter::readGlobalsFromScript() {
                  : g_game->gameState->m_items.RemoveItems(pItem->id, delta);
 
         // broadcast inventory change
-        Event e(CARGO_EVENT_UPDATE);
-        g_game->modeMgr->BroadcastEvent(&e);
+        ALLEGRO_EVENT e = {
+            .type = static_cast<unsigned int>(EVENT_CARGO_UPDATE)};
+        g_game->broadcast_event(&e);
     }
 }
 
@@ -3667,8 +3607,9 @@ ModuleEncounter::readGlobalsFromScript() {
 // usage: L_Terminate()
 int
 L_Terminate(lua_State * /*luaVM*/) {
-    Event e(ENCOUNTER_CLOSECOMM_EVENT);
-    g_game->modeMgr->BroadcastEvent(&e);
+    ALLEGRO_EVENT e = {
+        .type = static_cast<unsigned int>(EVENT_ENCOUNTER_CLOSECOMM)};
+    g_game->broadcast_event(&e);
 
     return 0;
 }
@@ -3677,8 +3618,9 @@ L_Terminate(lua_State * /*luaVM*/) {
 // usage: L_Attack()
 int
 L_Attack(lua_State * /*luaVM*/) {
-    Event e(ENCOUNTER_ALIENATTACK_EVENT);
-    g_game->modeMgr->BroadcastEvent(&e);
+    ALLEGRO_EVENT e = {
+        .type = static_cast<unsigned int>(EVENT_ENCOUNTER_ALIENATTACK)};
+    g_game->broadcast_event(&e);
 
     return 0;
 }

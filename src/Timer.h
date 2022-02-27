@@ -1,28 +1,22 @@
+#ifndef STLC_TIMER_H
+#define STLC_TIMER_H 1
 
-#ifndef _TIMER_H
-#define _TIMER_H 1
-
-#if defined(__linux__) || defined(__APPLE__)
-#include <sys/time.h>
-#endif
+#include <allegro5/allegro.h>
 
 class Timer {
-  private:
-    long timer_start;
-    long stopwatch_start;
-#if defined(__linux__) || defined(__APPLE__)
-    timeval initial;
-#endif
-
   public:
-    Timer(void);
-    ~Timer(void);
+    Timer();
     long getTimer();
-
-    long getStartTimeMillis();
+    double getStartTimeMillis();
 
     void reset();
-    bool stopwatch(long ms);
+    bool stopwatch(double ms);
+
+  private:
+    double timer_start;
+    double stopwatch_start;
+    double initial;
 };
 
-#endif
+#endif // STLC_TIMER_H
+// vi: ft=cpp

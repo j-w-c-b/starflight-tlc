@@ -2,103 +2,50 @@
 #define MODULECAPTAINCREATION_H
 #pragma once
 
-#include "AudioSystem.h"
-#include "GameState.h"
-#include "Module.h"
-#include "ResourceManager.h"
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_font.h>
-
-class Button;
-class Label;
+#
+#include "AudioSystem.h"
+#include "Button.h"
+#include "GameState.h"
+#include "Label.h"
+#include "Module.h"
+#include "ModuleCaptainDetails.h"
+#include "ModuleProfessionChoice.h"
 
 class ModuleCaptainCreation : public Module {
   public:
-    ModuleCaptainCreation(void);
-    virtual ~ModuleCaptainCreation(void);
-    virtual bool Init() override;
-    virtual void Update() override;
-    virtual void Draw() override;
-    virtual void OnKeyPress(int keyCode) override;
-    virtual void OnKeyPressed(int keyCode) override;
-    virtual void OnKeyReleased(int keyCode) override;
-    virtual void OnMouseMove(int x, int y) override;
-    virtual void OnMouseClick(int button, int x, int y) override;
-    virtual void OnMousePressed(int button, int x, int y) override;
-    virtual void OnMouseReleased(int button, int x, int y) override;
-    virtual void OnMouseWheelUp(int x, int y) override;
-    virtual void OnMouseWheelDown(int x, int y) override;
-    virtual void OnEvent(Event *event) override;
-    virtual void Close() override;
+    ModuleCaptainCreation();
+    virtual ~ModuleCaptainCreation();
+    virtual bool on_init() override;
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
+    virtual bool on_key_pressed(ALLEGRO_KEYBOARD_EVENT *event) override;
+    virtual bool on_event(ALLEGRO_EVENT *event) override;
 
   private:
     void chooseFreelance();
     void chooseMilitary();
     void chooseScience();
 
-    typedef enum
+    enum WizPage
     {
         WP_NONE = 0,
         WP_PROFESSION_CHOICE = 1,
         WP_DETAILS = 2
-    } WizPage;
+    };
 
     WizPage m_wizPage;
 
-    ALLEGRO_BITMAP *m_professionChoiceBackground;
+    std::shared_ptr<ModuleProfessionChoice> m_profession_choice;
+    std::shared_ptr<ModuleCaptainDetails> m_captain_details;
 
-    ALLEGRO_BITMAP *m_scientificBtn;
-    ALLEGRO_BITMAP *m_scientificBtnMouseOver;
-    ALLEGRO_BITMAP *m_freelanceBtn;
-    ALLEGRO_BITMAP *m_freelanceBtnMouseOver;
-    ALLEGRO_BITMAP *m_militaryBtn;
-    ALLEGRO_BITMAP *m_militaryBtnMouseOver;
+    std::shared_ptr<Button> m_back_button;
 
-    Label *m_profInfoScientific;
-    Label *m_profInfoFreelance;
-    Label *m_profInfoMilitary;
-
-    Label *m_profInfoBox;
-
-    ALLEGRO_BITMAP *m_detailsBackground;
-
-    ALLEGRO_BITMAP *m_plusBtn;
-    ALLEGRO_BITMAP *m_plusBtnMouseOver;
-
-    ALLEGRO_BITMAP *m_resetBtn;
-    ALLEGRO_BITMAP *m_resetBtnMouseOver;
-
-    Button *m_finishBtn;
-
-    ALLEGRO_BITMAP *m_cursor[2];
-    int m_cursorIdx;
-    int m_cursorIdxDelay;
-
-    ALLEGRO_BITMAP *m_backBtn;
-    ALLEGRO_BITMAP *m_backBtnMouseOver;
-
-    ALLEGRO_BITMAP *m_mouseOverImg;
-    int m_mouseOverImgX;
-    int m_mouseOverImgY;
-
-    std::shared_ptr<Sample> m_sndBtnClick;
-    std::shared_ptr<Sample> m_sndClick;
-    std::shared_ptr<Sample> m_sndErr;
-
-    // in progress captain vars; once finished with creation, these
-    // get stored to the game state
-    ProfessionType m_profession;
-    std::string m_name;
-    Attributes m_attributes;
-
+    using Attributes = std::map<Skill, int>;
     // intermediate captain vars used while creating the captain
     Attributes m_attributesMax;
     Attributes m_attributesInitial;
-    int m_availPts;
-    int m_availProfPts;
-
-    Button *m_minusBtns[8];
-    ResourceManager<ALLEGRO_BITMAP> m_resources;
 };
 
 #endif
+// vi: ft=cpp

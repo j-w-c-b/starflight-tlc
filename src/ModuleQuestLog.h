@@ -8,31 +8,28 @@
 #ifndef MODULEQUESTLOG_H
 #define MODULEQUESTLOG_H
 
-#include "GameState.h"
+#include <memory>
+
+#include <allegro5/allegro.h>
+
+#include "Bitmap.h"
 #include "Label.h"
 #include "Module.h"
-#include "ResourceManager.h"
-#include <allegro5/allegro.h>
+#include "SlidingModule.h"
 
 class ModuleQuestLog : public Module {
   public:
     ModuleQuestLog();
-    virtual ~ModuleQuestLog();
-    virtual bool Init() override;
-    virtual void Update() override;
-    virtual void Draw() override;
-    virtual void OnEvent(Event *event) override;
-    virtual void Close() override;
+    virtual bool on_event(ALLEGRO_EVENT *event) override;
+    virtual bool on_update() override;
 
   private:
-    bool log_active;
-    int viewer_offset_x, viewer_offset_y;
+    std::shared_ptr<SlidingModule<Bitmap>> m_viewer;
 
-    ALLEGRO_BITMAP *window;
-
-    Label *questName;
-    Label *questDesc;
-    ResourceManager<ALLEGRO_BITMAP> resources;
+    std::shared_ptr<Label> m_quest_name;
+    std::shared_ptr<Label> m_quest_desc;
+    std::shared_ptr<Label> m_quest_status;
+    bool m_is_active;
 };
 
 #endif

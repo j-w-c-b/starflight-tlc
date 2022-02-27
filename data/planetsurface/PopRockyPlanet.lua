@@ -31,35 +31,35 @@ HasLife = goodTemp and goodGrav
 lifeForms = {}
 
 -- 66 - Hill Rat		
-lifeForm = { 66, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_2Leg_Small.tga", 0, 1, 0, 11, 11, 0, "", "" }
+lifeForm = { 66, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_2Leg_Small.png", 0, 1, 0, 11, 11, 0, "", "" }
 lifeForms[0] = lifeForm
 
 -- 73 - Hot Fungus
-lifeForm = { 73, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Spider_Giant.tga", 0, 1, 0, 19, 19, 0, "", "" }
+lifeForm = { 73, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Spider_Giant.png", 0, 1, 0, 19, 19, 0, "", "" }
 lifeForms[1] = lifeForm
 
 -- 74 - Psychic Blaster			
-lifeForm = { 74, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Swift_Galists.tga", 0, 1, 0, 11, 11, 0, "", "" }
+lifeForm = { 74, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Swift_Galists.png", 0, 1, 0, 11, 11, 0, "", "" }
 lifeForms[2] = lifeForm
 
 -- 76 - Parachute Spider			
-lifeForm = { 76, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Starfish_Large.tga", 0, 1, 0, 15, 15, 0, "", "" }
+lifeForm = { 76, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Starfish_Large.png", 0, 1, 0, 15, 15, 0, "", "" }
 lifeForms[3] = lifeForm
 
 -- 81 - Breathing Cactus		
-lifeForm = { 81, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Plant_Small.tga", 0, 1, 0, 15, 15, 0, "", "" }
+lifeForm = { 81, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/P_Plant_Small.png", 0, 1, 0, 15, 15, 0, "", "" }
 lifeForms[4] = lifeForm
 
 -- 94 - Electric Balloon
-lifeForm = { 94, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Bat_Large.tga", 0, 1, 0, 9, 9, 0, "", "" }
+lifeForm = { 94, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Bat_Large.png", 0, 1, 0, 9, 9, 0, "", "" }
 lifeForms[5] = lifeForm 
 
 -- 105 - Sandpit Stalker
-lifeForm = { 105, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Snake_Large.tga", 0, 1, 0, 9, 9, 0, "", "" }
+lifeForm = { 105, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/C_Snake_Large.png", 0, 1, 0, 9, 9, 0, "", "" }
 lifeForms[6] = lifeForm 
 
 -- 112 - Humming Rock
-lifeForm = { 112, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/endurium_sprite.tga", 0, 1, 0, 15, 15, 0, "", "" }
+lifeForm = { 112, "data/planetsurface/basicLifeForm.lua", "basicLifeForm", "data/planetsurface/endurium_sprite.png", 0, 1, 0, 15, 15, 0, "", "" }
 lifeForms[7] = lifeForm 
 
 if HasLife then

@@ -8,35 +8,31 @@
 #ifndef ENCOUNTER_H
 #define ENCOUNTER_H
 
-#include "AudioSystem.h"
+#include <array>
+#include <map>
+#include <string>
+
+#include <allegro5/allegro.h>
+#include <allegro5/allegro_font.h>
+
 #include "CombatObject.h"
+#include "DialogButtonPanel.h"
+#include "Game.h"
+#include "GameState.h"
 #include "Module.h"
 #include "PlayerShipSprite.h"
-#include "ResourceManager.h"
 #include "Script.h"
-#include "ScrollBox.h"
+#include "ScrolledModule.h"
 #include "Sprite.h"
 #include "TileScroller.h"
 #include "Util.h"
 #include "lua.hpp"
-#include <allegro5/allegro.h>
-#include <allegro5/allegro_font.h>
-#include <cmath>
-#include <map>
-#include <sstream>
-#include <string>
-#include <typeinfo>
-
-class CombatObject;
-enum AlienRaces;
 
 const int NormalScreenHeight = 512;
 const int FullScreenHeight = SCREEN_HEIGHT;
 
 class ModuleEncounter : public Module {
   private:
-    ResourceManager<ALLEGRO_BITMAP> resources;
-
     enum PostureStates
     {
         POSTURE_NONE = 0,
@@ -56,7 +52,7 @@ class ModuleEncounter : public Module {
         int rate;
         int quantity;
     };
-    DropType dropitems[10];
+    std::array<DropType, 10> dropitems;
 
     CommModes commMode;
     PostureStates commPosture;
@@ -79,15 +75,11 @@ class ModuleEncounter : public Module {
 
     Sprite *spr_statusbar_shield;
 
-    std::shared_ptr<Sample> snd_player_laser;
-    std::shared_ptr<Sample> snd_player_missile;
-    std::shared_ptr<Sample> snd_explosion;
-    std::shared_ptr<Sample> snd_laserhit;
-
     Script *script;
 
-    ScrollBox::ScrollBox *text;
-    ScrollBox::ScrollBox *dialogue;
+    std::shared_ptr<ScrolledModule<RichTextLabel>> m_text;
+    std::shared_ptr<DialogButtonPanel> m_dialog;
+
     bool bFlagDialogue; // used to draw either message output or scrollbox input
 
     bool bFlagLastStatementSuccess; // continue showing current statement until
@@ -98,7 +90,7 @@ class ModuleEncounter : public Module {
     bool bFlagDoAttack;             // handle attack action
     bool bFlagChatting; // tracks whether player is chatting with alien or not
 
-    void DrawMinimap();
+    void DrawMinimap(ALLEGRO_BITMAP *target);
     std::string replaceKeyWords(std::string input);
     void applyDamageToShip(int damage, bool hullonly = false);
 
@@ -111,8 +103,8 @@ class ModuleEncounter : public Module {
     void Combat_Close();
     void Encounter_Update();
     void Combat_Update();
-    void Encounter_Draw();
-    void Combat_Draw();
+    void Encounter_Draw(ALLEGRO_BITMAP *target);
+    void Combat_Draw(ALLEGRO_BITMAP *target);
     void combatDoCollision(CombatObject *first, CombatObject *second);
     void combatDoBigExplosion(CombatObject *victim);
     void combatDoMedExplosion(CombatObject *victim);
@@ -129,28 +121,22 @@ class ModuleEncounter : public Module {
     void enemyFireMissile(CombatObject *ship);
     CombatObject *GetFirstAlienShip();
 
-    void createLaser(CombatObject *laser,
-                     double x,
-                     double y,
-                     float velx,
-                     float vely,
-                     int angle,
-                     int laserDamage);
-    void createMissile(CombatObject *missile,
-                       double x,
-                       double y,
-                       float velx,
-                       float vely,
-                       int angle,
-                       int missileDamage);
-
-    // shortcuts to crew last names to simplify code
-    std::string com;
-    std::string sci;
-    std::string nav;
-    std::string tac;
-    std::string eng;
-    std::string doc;
+    void createLaser(
+        CombatObject *laser,
+        double x,
+        double y,
+        float velx,
+        float vely,
+        int angle,
+        int laserDamage);
+    void createMissile(
+        CombatObject *missile,
+        double x,
+        double y,
+        float velx,
+        float vely,
+        int angle,
+        int missileDamage);
 
     bool flag_DoHyperspace;
     int hyperspaceCountdown;
@@ -170,23 +156,21 @@ class ModuleEncounter : public Module {
     int flag_rotation;
 
   public:
-    ModuleEncounter(void);
-    ~ModuleEncounter(void);
-    bool Init() override;
-    void Update() override;
-    void Draw() override;
-    void Print(std::string text, int color, long delay);
-    void Print(std::string text, ALLEGRO_COLOR color, long delay);
-    void OnKeyPress(int keyCode) override;
-    void OnKeyReleased(int keyCode) override;
-    void OnMouseMove(int x, int y) override;
-    void OnMouseClick(int button, int x, int y) override;
-    void OnMousePressed(int button, int x, int y) override;
-    void OnMouseReleased(int button, int x, int y) override;
-    void OnMouseWheelUp(int x, int y) override;
-    void OnMouseWheelDown(int x, int y) override;
-    void OnEvent(Event *event) override;
-    void Close() override;
+    ModuleEncounter();
+    virtual bool on_init() override;
+    virtual bool on_update() override;
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
+    void Print(const std::string &text, int color, long delay);
+    void Print(const std::string &text, ALLEGRO_COLOR color, long delay);
+    void Print(
+        OfficerType type,
+        const std::string &text,
+        ALLEGRO_COLOR color,
+        long delay = 0);
+    virtual bool on_key_down(ALLEGRO_KEYBOARD_EVENT *event) override;
+    virtual bool on_key_up(ALLEGRO_KEYBOARD_EVENT *event) override;
+    virtual bool on_event(ALLEGRO_EVENT *) override;
+    virtual bool on_close() override;
     void commInitStatement();
     void commInitQuestion();
     void commInitPosture();
@@ -208,8 +192,7 @@ class ModuleEncounter : public Module {
     void sendGlobalsToScript();
     void readGlobalsFromScript();
 
-    int
-    effectiveScreenHeight() {
+    int effectiveScreenHeight() {
         return g_game->doShowControls() ? NormalScreenHeight : FullScreenHeight;
     }
 
@@ -222,7 +205,7 @@ class ModuleEncounter : public Module {
 
     std::vector<CombatObject *> combatObjects;
     std::vector<CombatObject *>::iterator objectIt;
-    TileScroller *scroller;
+    std::shared_ptr<TileScroller> m_scroller;
 
     ALLEGRO_BITMAP *minimap;
 
@@ -239,8 +222,11 @@ class ModuleEncounter : public Module {
  *******************************************************/
 
 // NOTE: L_Debug is defined in ModulePlanetSurface.cpp
-int L_Debug(lua_State *luaVM);     // usage: L_Debug("this is a debug message")
-int L_Terminate(lua_State *luaVM); // usage: L_Terminate()
-int L_Attack(lua_State *luaVM);    // usage: L_Attack()
+int
+L_Debug(lua_State *luaVM); // usage: L_Debug("this is a debug message")
+int
+L_Terminate(lua_State *luaVM); // usage: L_Terminate()
+int
+L_Attack(lua_State *luaVM); // usage: L_Attack()
 
 #endif

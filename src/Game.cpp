@@ -9,8 +9,10 @@
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_native_dialog.h>
+#include <allegro5/allegro_physfs.h>
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_ttf.h>
+#include <physfs.h>
 
 #include <algorithm>
 #include <cstdio>
@@ -57,6 +59,34 @@
 #include "ModuleTopGUI.h"
 #include "ModuleTradeDepot.h"
 
+#include "auxiliary_resources.h"
+#include "bank_resources.h"
+#include "cantina_resources.h"
+#include "captaincreation_resources.h"
+#include "captainslounge_resources.h"
+#include "cargohold_resources.h"
+#include "controlpanel_resources.h"
+#include "credits_resources.h"
+#include "crewhire_resources.h"
+#include "encounter_resources.h"
+#include "engineer_resources.h"
+#include "gui_resources.h"
+#include "medical_resources.h"
+#include "messagegui_resources.h"
+#include "pausemenu_resources.h"
+#include "planetorbit_resources.h"
+#include "planetsurface_resources.h"
+#include "questviewer_resources.h"
+#include "settings_resources.h"
+#include "shipconfig_resources.h"
+#include "spacetravel_resources.h"
+#include "starmap_resources.h"
+#include "starport_resources.h"
+#include "startup_resources.h"
+#include "titlescreen_resources.h"
+#include "topgui_resources.h"
+#include "tradedepot_resources.h"
+
 using namespace std;
 
 // define global objects for project-wide visibility, not dependent on Game
@@ -88,24 +118,22 @@ Game::Game() {
     frameRate = 0;
     vibration = 0;
     globals = NULL;
-    messageBox = NULL;
     gameState = NULL;
     modeMgr = NULL;
     questMgr = NULL;
     audioSystem = NULL;
     dataMgr = NULL;
-    pauseMenu = NULL;
     cursor = NULL;
 
-    font10 = NULL;
-    font12 = NULL;
-    font18 = NULL;
-    font20 = NULL;
-    font22 = NULL;
-    font24 = NULL;
-    font32 = NULL;
-    font48 = NULL;
-    font60 = NULL;
+    font10 = nullptr;
+    font12 = nullptr;
+    font18 = nullptr;
+    font20 = nullptr;
+    font22 = nullptr;
+    font24 = nullptr;
+    font32 = nullptr;
+    font48 = nullptr;
+    font60 = nullptr;
 
     MsgColors[MSG_INFO] = GREEN;
     MsgColors[MSG_ALERT] = RED;
@@ -127,20 +155,16 @@ Game::~Game() {
     // destroy the video modes list
     videomodes.clear();
 
-    // kill the pause menu
-    if (pauseMenu != NULL)
-        delete pauseMenu;
-
     // destroy fonts
-    al_destroy_font(font10);
-    al_destroy_font(font12);
-    al_destroy_font(font18);
-    al_destroy_font(font20);
-    al_destroy_font(font22);
-    al_destroy_font(font24);
-    al_destroy_font(font32);
-    al_destroy_font(font48);
-    al_destroy_font(font60);
+    font10 = nullptr;
+    font12 = nullptr;
+    font18 = nullptr;
+    font20 = nullptr;
+    font22 = nullptr;
+    font24 = nullptr;
+    font32 = nullptr;
+    font48 = nullptr;
+    font60 = nullptr;
 }
 
 #pragma region UTILITY_FUNCS
@@ -148,6 +172,177 @@ Game::~Game() {
 void
 Game::message(const std::string &msg) {
     cout << msg << endl;
+}
+
+bool
+Game::add_resources() {
+    int rc;
+    rc = PHYSFS_mount(auxiliary::DAT.c_str(), NULL, 1);
+    if (rc == 0) {
+        return false;
+    }
+    rc = PHYSFS_mount(bank::DAT.c_str(), NULL, 1);
+    if (rc == 0) {
+        return false;
+    }
+    rc = PHYSFS_mount(cantina::DAT.c_str(), NULL, 1);
+    if (rc == 0) {
+        return false;
+    }
+    rc = PHYSFS_mount(captaincreation::DAT.c_str(), NULL, 1);
+    if (rc == 0) {
+        return false;
+    }
+    rc = PHYSFS_mount(captainslounge::DAT.c_str(), NULL, 1);
+    if (rc == 0) {
+        return false;
+    }
+    rc = PHYSFS_mount(cargohold::DAT.c_str(), NULL, 1);
+    if (rc == 0) {
+        return false;
+    }
+    rc = PHYSFS_mount(controlpanel::DAT.c_str(), NULL, 1);
+    if (rc == 0) {
+        return false;
+    }
+    rc = PHYSFS_mount(credits::DAT.c_str(), NULL, 1);
+    if (rc == 0) {
+        return false;
+    }
+    rc = PHYSFS_mount(crewhire::DAT.c_str(), NULL, 1);
+    if (rc == 0) {
+        return false;
+    }
+    rc = PHYSFS_mount(encounter::DAT.c_str(), NULL, 1);
+    if (rc == 0) {
+        return false;
+    }
+    rc = PHYSFS_mount(engineer::DAT.c_str(), NULL, 1);
+    if (rc == 0) {
+        return false;
+    }
+    rc = PHYSFS_mount(gui::DAT.c_str(), NULL, 1);
+    if (rc == 0) {
+        return false;
+    }
+    rc = PHYSFS_mount(medical::DAT.c_str(), NULL, 1);
+    if (rc == 0) {
+        return false;
+    }
+    rc = PHYSFS_mount(messagegui::DAT.c_str(), NULL, 1);
+    if (rc == 0) {
+        return false;
+    }
+    rc = PHYSFS_mount(pausemenu::DAT.c_str(), NULL, 1);
+    if (rc == 0) {
+        return false;
+    }
+    rc = PHYSFS_mount(planetorbit::DAT.c_str(), NULL, 1);
+    if (rc == 0) {
+        return false;
+    }
+    rc = PHYSFS_mount(planetsurface::DAT.c_str(), NULL, 1);
+    if (rc == 0) {
+        return false;
+    }
+    rc = PHYSFS_mount(questviewer::DAT.c_str(), NULL, 1);
+    if (rc == 0) {
+        return false;
+    }
+    rc = PHYSFS_mount(settings::DAT.c_str(), NULL, 1);
+    if (rc == 0) {
+        return false;
+    }
+    rc = PHYSFS_mount(shipconfig::DAT.c_str(), NULL, 1);
+    if (rc == 0) {
+        return false;
+    }
+    rc = PHYSFS_mount(spacetravel::DAT.c_str(), NULL, 1);
+    if (rc == 0) {
+        return false;
+    }
+    rc = PHYSFS_mount(starmap::DAT.c_str(), NULL, 1);
+    if (rc == 0) {
+        return false;
+    }
+    rc = PHYSFS_mount(starport::DAT.c_str(), NULL, 1);
+    if (rc == 0) {
+        return false;
+    }
+    rc = PHYSFS_mount(startup::DAT.c_str(), NULL, 1);
+    if (rc == 0) {
+        return false;
+    }
+    rc = PHYSFS_mount(titlescreen::DAT.c_str(), NULL, 1);
+    if (rc == 0) {
+        return false;
+    }
+    rc = PHYSFS_mount(topgui::DAT.c_str(), NULL, 1);
+    if (rc == 0) {
+        return false;
+    }
+    rc = PHYSFS_mount(tradedepot::DAT.c_str(), NULL, 1);
+    if (rc == 0) {
+        return false;
+    }
+
+    images.add(auxiliary::IMAGES);
+    images.add(bank::IMAGES);
+    images.add(cantina::IMAGES);
+    images.add(captaincreation::IMAGES);
+    images.add(captainslounge::IMAGES);
+    images.add(cargohold::IMAGES);
+    images.add(controlpanel::IMAGES);
+    images.add(credits::IMAGES);
+    images.add(crewhire::IMAGES);
+    images.add(encounter::IMAGES);
+    images.add(engineer::IMAGES);
+    images.add(gui::IMAGES);
+    images.add(medical::IMAGES);
+    images.add(messagegui::IMAGES);
+    images.add(pausemenu::IMAGES);
+    images.add(planetorbit::IMAGES);
+    images.add(planetsurface::IMAGES);
+    images.add(questviewer::IMAGES);
+    images.add(settings::IMAGES);
+    images.add(shipconfig::IMAGES);
+    images.add(spacetravel::IMAGES);
+    images.add(starmap::IMAGES);
+    images.add(starport::IMAGES);
+    images.add(startup::IMAGES);
+    images.add(titlescreen::IMAGES);
+    images.add(topgui::IMAGES);
+    images.add(tradedepot::IMAGES);
+
+    samples.add(auxiliary::SAMPLES);
+    samples.add(bank::SAMPLES);
+    samples.add(cantina::SAMPLES);
+    samples.add(captaincreation::SAMPLES);
+    samples.add(captainslounge::SAMPLES);
+    samples.add(cargohold::SAMPLES);
+    samples.add(controlpanel::SAMPLES);
+    samples.add(credits::SAMPLES);
+    samples.add(crewhire::SAMPLES);
+    samples.add(encounter::SAMPLES);
+    samples.add(engineer::SAMPLES);
+    samples.add(gui::SAMPLES);
+    samples.add(medical::SAMPLES);
+    samples.add(messagegui::SAMPLES);
+    samples.add(pausemenu::SAMPLES);
+    samples.add(planetorbit::SAMPLES);
+    samples.add(planetsurface::SAMPLES);
+    samples.add(questviewer::SAMPLES);
+    samples.add(settings::SAMPLES);
+    samples.add(shipconfig::SAMPLES);
+    samples.add(spacetravel::SAMPLES);
+    samples.add(starmap::SAMPLES);
+    samples.add(starport::SAMPLES);
+    samples.add(startup::SAMPLES);
+    samples.add(titlescreen::SAMPLES);
+    samples.add(topgui::SAMPLES);
+    samples.add(tradedepot::SAMPLES);
+
+    return true;
 }
 
 void
@@ -166,40 +361,6 @@ Game::shutdown() {
 }
 
 void
-Game::ShowMessageBoxWindow(const std::string &initHeading,
-                           const std::string &initText,
-                           int initWidth,
-                           int initHeight,
-                           ALLEGRO_COLOR initTextColor,
-                           int initX,
-                           int initY,
-                           bool initCentered,
-                           bool /*pauseGame*/) {
-    m_pause = true;
-
-    // if we have a msg box window, delete it
-    KillMessageBoxWindow();
-
-    messageBox = new MessageBoxWindow(initHeading,
-                                      initText,
-                                      initX,
-                                      initY,
-                                      initWidth,
-                                      initHeight,
-                                      initTextColor,
-                                      initCentered);
-}
-
-void
-Game::KillMessageBoxWindow() {
-    if (messageBox != NULL) {
-        m_pause = false;
-        delete messageBox;
-        messageBox = NULL;
-    }
-}
-
-void
 Game::SetTimePaused(bool val) {
     if (timePause == val)
         return; // do not do anything for redundant call.
@@ -211,22 +372,7 @@ Game::SetTimePaused(bool val) {
 
 void
 Game::TogglePauseMenu() {
-    static bool origTimePause;
-    if (!pauseMenu->isEnabled())
-        return;
-
-    if (pauseMenu->isShowing()) {
-        SetTimePaused(origTimePause);
-        // hide pausemenu
-        m_pause = false;
-        pauseMenu->setShowing(false);
-    } else {
-        origTimePause = getTimePaused();
-        SetTimePaused(true);
-        // show pausemenu
-        m_pause = true;
-        pauseMenu->setShowing(true);
-    }
+    modeMgr->toggle_pause_menu();
 }
 
 #pragma endregion
@@ -255,6 +401,10 @@ Game::setGlobalNumber(const std::string &name, double value) {
 bool
 Game::getGlobalBoolean(const std::string &name) {
     return globals->getGlobalBoolean(name);
+}
+void
+Game::setGlobalBoolean(const std::string &name, bool value) {
+    globals->setGlobalBoolean(name, value);
 }
 
 // this bogus callback is used for script verification
@@ -396,18 +546,19 @@ ValidateScripts(const string &p_title) {
     };
 
     const int ENCNUM = 12;
-    string encounterScripts[ENCNUM] = {"data/globals.lua",
-                                       "data/quests.lua",
-                                       "data/encounter/encounter_common.lua",
-                                       "data/encounter/encounter_pirate.lua",
-                                       "data/encounter/encounter_spemin.lua",
-                                       "data/encounter/encounter_tafel.lua",
-                                       "data/encounter/encounter_thrynn.lua",
-                                       "data/encounter/encounter_nyssian.lua",
-                                       "data/encounter/encounter_minex.lua",
-                                       "data/encounter/encounter_elowan.lua",
-                                       "data/encounter/encounter_coalition.lua",
-                                       "data/encounter/encounter_barzhon.lua"};
+    string encounterScripts[ENCNUM] = {
+        "data/globals.lua",
+        "data/quests.lua",
+        "data/encounter/encounter_common.lua",
+        "data/encounter/encounter_pirate.lua",
+        "data/encounter/encounter_spemin.lua",
+        "data/encounter/encounter_tafel.lua",
+        "data/encounter/encounter_thrynn.lua",
+        "data/encounter/encounter_nyssian.lua",
+        "data/encounter/encounter_minex.lua",
+        "data/encounter/encounter_elowan.lua",
+        "data/encounter/encounter_coalition.lua",
+        "data/encounter/encounter_barzhon.lua"};
 
     string error, filename, linenum, message;
     int pos, n;
@@ -428,16 +579,17 @@ ValidateScripts(const string &p_title) {
             pos = (int)error.find(":");
             linenum = error.substr(0, pos);
             message = error.substr(pos + 1);
-            error = "Filename: " + Util::resource_path(encounterScripts[n]) +
-                    "\n\nLine #: " + linenum + "\n\nError: " + filename + "\n" +
-                    message;
+            error = "Filename: " + Util::resource_path(encounterScripts[n])
+                    + "\n\nLine #: " + linenum + "\n\nError: " + filename + "\n"
+                    + message;
             ALLEGRO_DEBUG("%s\n", error.c_str());
-            al_show_native_message_box(nullptr,
-                                       p_title.c_str(),
-                                       "Script Error",
-                                       error.c_str(),
-                                       nullptr,
-                                       ALLEGRO_MESSAGEBOX_ERROR);
+            al_show_native_message_box(
+                nullptr,
+                p_title.c_str(),
+                "Script Error",
+                error.c_str(),
+                nullptr,
+                ALLEGRO_MESSAGEBOX_ERROR);
             return false;
         }
     }
@@ -466,15 +618,16 @@ ValidateScripts(const string &p_title) {
             pos = (int)error.find(":");
             linenum = error.substr(0, pos);
             message = error.substr(pos + 1);
-            error = "Filename: " + planetScripts[n] + "\n\nLine #: " + linenum +
-                    "\n\nError: " + filename + "\n" + message;
+            error = "Filename: " + planetScripts[n] + "\n\nLine #: " + linenum
+                    + "\n\nError: " + filename + "\n" + message;
             ALLEGRO_DEBUG("%s\n", error.c_str());
-            al_show_native_message_box(nullptr,
-                                       p_title.c_str(),
-                                       "Script Error",
-                                       error.c_str(),
-                                       nullptr,
-                                       ALLEGRO_MESSAGEBOX_ERROR);
+            al_show_native_message_box(
+                nullptr,
+                p_title.c_str(),
+                "Script Error",
+                error.c_str(),
+                nullptr,
+                ALLEGRO_MESSAGEBOX_ERROR);
             return false;
         }
     }
@@ -501,41 +654,48 @@ ValidatePortraits() {
         std::string filepath;
 
         switch (item->itemType) {
-        case IT_INVALID: {
-            // this one is not supposed to ever happen
-            ALLEGRO_DEBUG("[ERROR]: item #%d is of invalid type\n", item->id);
-            ALLEGRO_ASSERT(0);
-        }
-        case IT_ARTIFACT: {
-            doCheck = true;
-            filepath = Util::resource_path("data/tradedepot/" + item->portrait);
-            break;
-        }
-        case IT_RUIN: {
-            doCheck = true;
-            filepath =
-                Util::resource_path("data/planetsurface/" + item->portrait);
-            break;
-        }
+        case IT_INVALID:
+            {
+                // this one is not supposed to ever happen
+                ALLEGRO_DEBUG(
+                    "[ERROR]: item #%d is of invalid type\n", item->id);
+                ALLEGRO_ASSERT(0);
+            }
+        case IT_ARTIFACT:
+            {
+                doCheck = true;
+                filepath = "data/tradedepot/" + item->portrait;
+                break;
+            }
+        case IT_RUIN:
+            {
+                doCheck = true;
+                filepath = "data/planetsurface/" + item->portrait;
+                break;
+            }
         case IT_MINERAL:
             // minerals do not have portraits
             doCheck = false;
             break;
-        case IT_LIFEFORM: {
-            doCheck = false;
-            break;
-        }
-        case IT_TRADEITEM: {
-            doCheck = true;
-            filepath = Util::resource_path("data/tradedepot/" + item->portrait);
-            break;
-        }
-        default: {
-            // not supposed to happen either
-            ALLEGRO_DEBUG("[ERROR]: item #%d is of unknown type\n", item->id);
-            ALLEGRO_ASSERT(0);
-            break;
-        }
+        case IT_LIFEFORM:
+            {
+                doCheck = false;
+                break;
+            }
+        case IT_TRADEITEM:
+            {
+                doCheck = true;
+                filepath = "data/tradedepot/" + item->portrait;
+                break;
+            }
+        default:
+            {
+                // not supposed to happen either
+                ALLEGRO_DEBUG(
+                    "[ERROR]: item #%d is of unknown type\n", item->id);
+                ALLEGRO_ASSERT(0);
+                break;
+            }
         }
 
         if (doCheck) {
@@ -564,12 +724,6 @@ Game::Run() {
         return;
     }
 
-    // validate scripts
-    ALLEGRO_DEBUG("Validating Lua scripts...\n");
-    if (!ValidateScripts(p_title)) {
-        return;
-    }
-
     // initialize scripting and load globals.lua
     ALLEGRO_DEBUG("Loading startup script...\n");
     globals = new Script();
@@ -578,6 +732,12 @@ Game::Run() {
     ALLEGRO_DEBUG("Initializing game...\n");
     if (!InitGame()) {
         fatalerror("Error during game initialization\n");
+        return;
+    }
+
+    // validate scripts
+    ALLEGRO_DEBUG("Validating Lua scripts...\n");
+    if (!ValidateScripts(p_title)) {
         return;
     }
 
@@ -639,11 +799,13 @@ Game::Stop() {
 }
 
 /*
- * Initizlie Allegro graphics callable from settings screen to reset mode as
+ * Initialize Allegro graphics callable from settings screen to reset mode as
  * needed.
  */
 bool
 Game::Initialize_Graphics() {
+    int requested_width, requested_height;
+
     // since this func can be called repeatedly, let's skip redundancies
     if (desktop_width == 0) {
         ALLEGRO_MONITOR_INFO info;
@@ -659,58 +821,61 @@ Game::Initialize_Graphics() {
     } else
         ALLEGRO_DEBUG("Attempting to reset graphics mode...\n");
 
+    bool fullscreen = g_game->getGlobalBoolean("FULLSCREEN");
+
     // try to get user-selected resolution chosen in the settings screen
     string resolution = g_game->getGlobalString("RESOLUTION");
-    if (resolution == "") {
-        actual_width = desktop_width;
-        actual_height = desktop_height;
-        g_game->setGlobalString("RESOLUTION",
-                                Util::ToString(actual_width) + "x" +
-                                    Util::ToString(actual_height));
+    if (resolution == "" || fullscreen) {
+        requested_width = desktop_width;
+        requested_height = desktop_height;
+        g_game->setGlobalString(
+            "RESOLUTION",
+            Util::ToString(actual_width) + "x" + Util::ToString(actual_height));
     } else {
         std::size_t div = resolution.find_first_of("xX,");
         if (div != string::npos) {
             string ws = resolution.substr(0, div);
             string hs = resolution.substr(div + 1);
-            actual_width = Util::StringToInt(ws);
-            actual_height = Util::StringToInt(hs);
-            if (actual_width < 1024)
-                actual_width = 1024;
-            if (actual_height < 768)
-                actual_height = 768;
+            requested_width = Util::StringToInt(ws);
+            requested_height = Util::StringToInt(hs);
+            if (requested_width < 1024)
+                requested_width = 1024;
+            if (requested_height < 768)
+                requested_height = 768;
         } else {
-            actual_width = desktop_width;
-            actual_height = desktop_height;
+            requested_width = desktop_width;
+            requested_height = desktop_height;
         }
     }
-    ALLEGRO_DEBUG("Settings resolution: %d,%d\n", actual_width, actual_height);
+    ALLEGRO_DEBUG(
+        "Settings resolution: %d,%d\n", requested_width, requested_height);
 
     // try to get user-selected fullscreen toggle from settings screen
-    bool fullscreen = g_game->getGlobalBoolean("FULLSCREEN");
-    int flags = fullscreen ? (ALLEGRO_FULLSCREEN)
+    int flags = fullscreen ? (ALLEGRO_FULLSCREEN_WINDOW)
                            : (ALLEGRO_WINDOWED | ALLEGRO_RESIZABLE);
-    al_set_new_display_refresh_rate(60);
 
+    if (m_display) {
+        al_destroy_display(m_display);
+        m_display = nullptr;
+    }
+    al_set_new_display_flags(flags);
+    m_display = al_create_display(requested_width, requested_height);
     if (!m_display) {
-        al_set_new_display_flags(flags);
-        m_display = al_create_display(actual_width, actual_height);
-        if (!m_display) {
-            ALLEGRO_DEBUG(
-                "Video mode failed (%s), attempting default mode...\n",
-                resolution.c_str());
-            actual_width = SCREEN_WIDTH;
-            actual_height = SCREEN_HEIGHT;
+        ALLEGRO_DEBUG(
+            "Video mode failed (%s), attempting default mode...\n",
+            resolution.c_str());
+        requested_width = SCREEN_WIDTH;
+        requested_height = SCREEN_HEIGHT;
 
-            if ((m_display = al_create_display(actual_width, actual_height)) ==
-                nullptr) {
-                ALLEGRO_DEBUG("Fatal Error: Unable to set graphics mode\n");
-                return false;
-            }
+        if ((m_display = al_create_display(requested_width, requested_height))
+            == nullptr) {
+            ALLEGRO_DEBUG("Fatal Error: Unable to set graphics mode\n");
+            return false;
         }
     }
-    ResizeDisplay(actual_width, actual_height);
+    m_video_mode = {.width = requested_width, .height = requested_height};
 
-    ALLEGRO_DEBUG("Refresh rate: %d\n", al_get_display_refresh_rate(m_display));
+    ResizeDisplay(requested_width, requested_height);
 
     /*
      * Retrieve complete list of resolutions supported by the display driver and
@@ -728,8 +893,8 @@ Game::Initialize_Graphics() {
                 VideoMode vmode;
                 vmode.width = mode.width;
                 vmode.height = mode.height;
-                if (vmode.width >= SCREEN_WIDTH &&
-                    vmode.height >= SCREEN_HEIGHT) {
+                if (vmode.width >= SCREEN_WIDTH
+                    && vmode.height >= SCREEN_HEIGHT) {
                     videomodes.push_back(vmode);
                 }
             }
@@ -737,11 +902,6 @@ Game::Initialize_Graphics() {
         videomodes.sort([](const VideoMode &first, const VideoMode &second) {
             return (first.width < second.width && first.height < second.height);
         });
-
-        ALLEGRO_DEBUG("Detected video modes:\n");
-        for (auto mode = videomodes.begin(); mode != videomodes.end(); ++mode) {
-            ALLEGRO_DEBUG("%d,%d\n", mode->width, mode->height);
-        }
     }
 
     return true;
@@ -770,12 +930,6 @@ Game::ResizeDisplay(int x, int y) {
         m_backbuffer_y_offset = int((y - SCREEN_HEIGHT * scalex) / 2.0);
     }
 
-    if (x != actual_width || y != actual_height) {
-        al_resize_display(m_display, x, y);
-        actual_width = x;
-        actual_height = y;
-    }
-
     ALLEGRO_DEBUG(
         "Creating back buffer (%d,%d)...\n", SCREEN_WIDTH, SCREEN_HEIGHT);
     if (!m_backbuffer) {
@@ -792,11 +946,25 @@ void
 Game::LoadModule(const string &mod) {
     ALLEGRO_EVENT event;
     event.user.type = EVENT_CHANGE_MODULE;
-    event.user.data1 = reinterpret_cast<intptr_t>(new string(mod));
+    event.user.data2 = reinterpret_cast<intptr_t>(new string(mod));
     al_emit_user_event(&m_user_event_source, &event, [](ALLEGRO_USER_EVENT *e) {
-        string *s = reinterpret_cast<string *>(e->data1);
+        string *s = reinterpret_cast<string *>(e->data2);
         delete s;
     });
+}
+
+void
+Game::broadcast_event(ALLEGRO_EVENT *event) {
+    if (event->type == EVENT_NONE) {
+        return;
+    }
+
+    al_emit_user_event(&m_user_event_source, event, nullptr);
+}
+
+void
+Game::enable_pause_menu(bool enable) {
+    modeMgr->enable_pause_menu(enable);
 }
 
 /*
@@ -830,6 +998,28 @@ Game::InitGame() {
     if (!Initialize_Graphics()) {
         g_game->fatalerror("Error initializing graphics\n");
         return false;
+    }
+    ALLEGRO_DEBUG("Enabling physfs");
+    if (!PHYSFS_init("StarflightTLC")) {
+        g_game->fatalerror("Error initializing physfs\n");
+        return false;
+    }
+    ALLEGRO_DEBUG("Mounting data");
+    {
+        ALLEGRO_PATH *data_dir = al_get_standard_path(ALLEGRO_RESOURCES_PATH);
+        PHYSFS_mount(al_path_cstr(data_dir, ALLEGRO_NATIVE_PATH_SEP), NULL, 1);
+
+        al_append_path_component(data_dir, "data");
+        al_destroy_path(data_dir);
+
+        ALLEGRO_PATH *user_data_path =
+            al_get_standard_path(ALLEGRO_USER_DATA_PATH);
+        PHYSFS_mount(
+            al_path_cstr(user_data_path, ALLEGRO_NATIVE_PATH_SEP), NULL, 1);
+        PHYSFS_setWriteDir(
+            al_path_cstr(user_data_path, ALLEGRO_NATIVE_PATH_SEP));
+        al_destroy_path(user_data_path);
+        al_set_physfs_file_interface();
     }
     if (!al_init_image_addon()) {
         g_game->fatalerror("Error initializing image_addon\n");
@@ -876,25 +1066,34 @@ Game::InitGame() {
     al_init_user_event_source(&m_user_event_source);
     al_register_event_source(m_event_queue, &m_user_event_source);
 
+    // mount the resource dat files and add mappings to images and samples
+    add_resources();
+
     // load up default fonts
-    string fontfile = Util::resource_path("data/gui/Xolonium-Regular.ttf");
+    string fontfile = "data/gui/Xolonium-Regular.ttf";
     ALLEGRO_DEBUG("Creating default fonts...\n");
-    font10 = al_load_font(fontfile.c_str(), 10, 0);
-    if (font10 == NULL) {
+    font10 = shared_ptr<ALLEGRO_FONT>(
+        al_load_font(fontfile.c_str(), 10, 0), al_destroy_font);
+    if (!font10) {
         g_game->message("Error locating font file\n");
         return false;
     }
-    font12 = al_load_font(fontfile.c_str(), 12, 0);
-    font18 = al_load_font(fontfile.c_str(), 18, 0);
-    font20 = al_load_font(fontfile.c_str(), 20, 0);
-    font22 = al_load_font(fontfile.c_str(), 22, 0);
-    font24 = al_load_font(fontfile.c_str(), 24, 0);
-    font32 = al_load_font(fontfile.c_str(), 32, 0);
-    font48 = al_load_font(fontfile.c_str(), 48, 0);
-    font60 = al_load_font(fontfile.c_str(), 60, 0);
-
-    // create the PauseMenu
-    pauseMenu = new PauseMenu();
+    font12 = shared_ptr<ALLEGRO_FONT>(
+        al_load_font(fontfile.c_str(), 12, 0), al_destroy_font);
+    font18 = shared_ptr<ALLEGRO_FONT>(
+        al_load_font(fontfile.c_str(), 18, 0), al_destroy_font);
+    font20 = shared_ptr<ALLEGRO_FONT>(
+        al_load_font(fontfile.c_str(), 20, 0), al_destroy_font);
+    font22 = shared_ptr<ALLEGRO_FONT>(
+        al_load_font(fontfile.c_str(), 22, 0), al_destroy_font);
+    font24 = shared_ptr<ALLEGRO_FONT>(
+        al_load_font(fontfile.c_str(), 24, 0), al_destroy_font);
+    font32 = shared_ptr<ALLEGRO_FONT>(
+        al_load_font(fontfile.c_str(), 32, 0), al_destroy_font);
+    font48 = shared_ptr<ALLEGRO_FONT>(
+        al_load_font(fontfile.c_str(), 48, 0), al_destroy_font);
+    font60 = shared_ptr<ALLEGRO_FONT>(
+        al_load_font(fontfile.c_str(), 60, 0), al_destroy_font);
 
     // hide the default mouse cursor
     al_hide_mouse_cursor(m_display);
@@ -963,9 +1162,12 @@ void
 Game::UpdateAlienRaceAttitudes() {
     // update alien attitudes (200,000 is 3 1/3 minute, changing from attitude 1
     // to 10 will require 30 minutes)
+    if (m_pause) {
+        return;
+    }
     int mins = 1;
-    if (globalTimer.getTimer() >
-        g_game->gameState->alienAttitudeUpdate + 200000 * mins) {
+    if (globalTimer.getTimer()
+        > g_game->gameState->alienAttitudeUpdate + 200000 * mins) {
         g_game->gameState->alienAttitudeUpdate = globalTimer.getTimer();
 
         // update alien attitudes, all but for NONE(0) and PIRATE(1)
@@ -978,13 +1180,6 @@ Game::UpdateAlienRaceAttitudes() {
     }
 }
 
-/*
-WARNING!! The core loop used to have separate update/render timing but Allegro
-was consuming 100% of a CPU core no matter what we did with the timing code so
-the only option is to use a SINGLE update timed at 60 fps. Don't change it!
-
-OpenGL has been REMOVED from the project.
-*/
 void
 Game::RunGame() {
     static int v;
@@ -995,7 +1190,7 @@ Game::RunGame() {
     bool change_module = false;
     string new_module;
     ALLEGRO_EVENT event;
-    bool hide_cursor = true;
+    bool hide_cursor = false;
     bool show_cursor = false;
 
     do {
@@ -1013,18 +1208,22 @@ Game::RunGame() {
             return;
         case ALLEGRO_EVENT_TIMER:
             need_redraw = true;
+            if (!m_pause) {
+                modeMgr->update();
+                UpdateAlienRaceAttitudes();
+            }
             break;
         case ALLEGRO_EVENT_KEY_DOWN:
-            OnKeyPress(event.keyboard.keycode);
+            modeMgr->key_down(&event.keyboard);
             break;
         case ALLEGRO_EVENT_KEY_CHAR:
-            OnKeyPressed(event.keyboard.keycode);
+            modeMgr->key_pressed(&event.keyboard);
             break;
         case ALLEGRO_EVENT_KEY_UP:
-            OnKeyReleased(event.keyboard.keycode);
+            modeMgr->key_up(&event.keyboard);
             break;
         case ALLEGRO_EVENT_MOUSE_AXES:
-            OnMouseMove(event.mouse.x, event.mouse.y);
+            modeMgr->mouse_move(&event.mouse);
             break;
         case ALLEGRO_EVENT_MOUSE_ENTER_DISPLAY:
         case ALLEGRO_EVENT_DISPLAY_SWITCH_IN:
@@ -1037,33 +1236,24 @@ Game::RunGame() {
             show_cursor = true;
             break;
         case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
-            m_last_button_downs[event.mouse.button - 1] =
-                make_pair(event.mouse.x, event.mouse.y);
-            OnMousePressed(
-                event.mouse.button - 1, event.mouse.x, event.mouse.y);
+            modeMgr->mouse_button_down(&event.mouse);
             break;
         case ALLEGRO_EVENT_MOUSE_BUTTON_UP:
-            OnMouseReleased(
-                event.mouse.button - 1, event.mouse.x, event.mouse.y);
-            {
-                pair<int, int> &last_down =
-                    m_last_button_downs[event.mouse.button - 1];
-                int last_x = last_down.first;
-                int last_y = last_down.second;
-                if (last_x == event.mouse.x && last_y == event.mouse.y) {
-                    OnMouseClick(
-                        event.mouse.button - 1, event.mouse.x, event.mouse.y);
-                }
-                last_down.first = -1;
-                last_down.second = -1;
-            }
+            modeMgr->mouse_button_up(&event.mouse);
             break;
         case EVENT_CHANGE_MODULE:
             need_redraw = true;
             change_module = true;
-            new_module = *reinterpret_cast<string *>(event.user.data1);
+            new_module = *reinterpret_cast<string *>(event.user.data2);
             al_flush_event_queue(m_event_queue);
             break;
+        default:
+            if (ALLEGRO_EVENT_TYPE_IS_USER(event.type)) {
+                modeMgr->event(&event);
+            } else {
+                cout << "Unexpected event source " << event.type << endl;
+            }
+            al_unref_user_event(&event.user);
         }
     } while (!(need_redraw && al_is_event_queue_empty(m_event_queue)));
 
@@ -1088,49 +1278,20 @@ Game::RunGame() {
     if (!timePause) { // Update the current stardate:
         // base game time is needed to properly restore the date from a savegame
         // file
-        double newTime = gameState->getBaseGameTimeSecs() +
-                         (double)globalTimer.getStartTimeMillis() / 1000.0;
+        double newTime = gameState->getBaseGameTimeSecs()
+                         + (double)globalTimer.getStartTimeMillis() / 1000.0;
         gameState->setGameTimeSecs(newTime);
         gameState->stardate.Update(newTime, timeRateDivisor);
     }
 
     if (!m_pause) {
-        // call update on all modules
-        modeMgr->Update();
-
         // global abort flag to end game
         if (!m_keepRunning)
             return;
-
-        // tell active module to draw
-        modeMgr->Draw();
-
-        // perform generic updates to time-sensitive game data
-        UpdateAlienRaceAttitudes();
-
-    } // mpause
-
-    // handle the pause menu
-    if (pauseMenu->isShowing()) {
-        // tell active module to draw
-        modeMgr->Draw();
-
-        // draw the pause popup
-        pauseMenu->Draw();
     }
 
-    // handle the messagebox
-    if (messageBox != NULL) {
-        if (messageBox->IsVisible()) {
-            // tell active module to draw
-            modeMgr->Draw();
-
-            // draw messagebox
-            messageBox->Draw();
-        } else {
-            KillMessageBoxWindow();
-        }
-    }
+    // tell active module to draw
+    modeMgr->draw(m_backbuffer);
 
     // draw mouse everywhere but during startup
     if (g_game->gameState->getCurrentModule() != "STARTUP") {
@@ -1143,7 +1304,7 @@ Game::RunGame() {
         } else {
             // load the custom mouse cursor
             cursor = new Sprite();
-            if (!cursor->load("data/gui/cursor.tga")) {
+            if (!cursor->load("data/gui/cursor.png")) {
                 g_game->message("Error loading mouse cursor");
                 g_game->shutdown();
                 return;
@@ -1160,21 +1321,22 @@ Game::RunGame() {
         // x == 0 doesn't quite work on the Trade Depot Screen - made it a 3 -
         // jjh
         y += 10;
-        g_game->PrintDefault(m_backbuffer,
-                             x,
-                             y,
-                             "Screen: " + Util::ToString((int)scale_width) +
-                                 "," + Util::ToString((int)scale_height) +
-                                 " (" + Util::ToString(screen_scaling) + "x)",
-                             GRAY);
+        g_game->PrintDefault(
+            m_backbuffer,
+            x,
+            y,
+            "Screen: " + Util::ToString((int)scale_width) + ","
+                + Util::ToString((int)scale_height) + " ("
+                + Util::ToString(screen_scaling) + "x)",
+            GRAY);
         y += 10;
         g_game->PrintDefault(
             m_backbuffer,
             x,
             y,
-            "Quest: " + Util::ToString(g_game->gameState->getActiveQuest()) +
-                " (" + Util::ToString(g_game->gameState->getQuestCompleted()) +
-                ")",
+            "Quest: " + Util::ToString(g_game->gameState->getActiveQuest())
+                + " (" + Util::ToString(g_game->gameState->getQuestCompleted())
+                + ")",
             GREEN);
         y += 10;
         g_game->PrintDefault(
@@ -1191,12 +1353,12 @@ Game::RunGame() {
             "Date: " + Util::ToString(gameState->stardate.GetFullDateString()),
             GRAY);
         y += 10;
-        g_game->PrintDefault(m_backbuffer,
-                             x,
-                             y,
-                             "Prof: " +
-                                 g_game->gameState->getProfessionString(),
-                             GRAY);
+        g_game->PrintDefault(
+            m_backbuffer,
+            x,
+            y,
+            "Prof: " + g_game->gameState->getProfessionString(),
+            GRAY);
         y += 10;
         g_game->PrintDefault(
             m_backbuffer,
@@ -1216,40 +1378,33 @@ Game::RunGame() {
             m_backbuffer,
             x,
             y,
-            "Cargo: " +
-                Util::ToString(g_game->gameState->m_ship.getOccupiedSpace()) +
-                "/" + Util::ToString(g_game->gameState->m_ship.getTotalSpace()),
+            "Cargo: "
+                + Util::ToString(g_game->gameState->m_ship.getOccupiedSpace())
+                + "/"
+                + Util::ToString(g_game->gameState->m_ship.getTotalSpace()),
             GRAY);
         y += 10;
         g_game->PrintDefault(
             m_backbuffer,
             x,
             y,
-            "HyperPos: " +
-                Util::ToString(
-                    g_game->gameState->getHyperspaceCoordinates().x) +
-                "," +
-                Util::ToString(g_game->gameState->getHyperspaceCoordinates().y),
+            "HyperPos: "
+                + Util::ToString(
+                    g_game->gameState->getHyperspaceCoordinates().x)
+                + ","
+                + Util::ToString(
+                    g_game->gameState->getHyperspaceCoordinates().y),
             GRAY);
         y += 10;
         g_game->PrintDefault(
             m_backbuffer,
             x,
             y,
-            "SystemPos: " +
-                Util::ToString(g_game->gameState->getSystemCoordinates().x) +
-                "," +
-                Util::ToString(g_game->gameState->getSystemCoordinates().y),
+            "SystemPos: "
+                + Util::ToString(g_game->gameState->getSystemCoordinates().x)
+                + ","
+                + Util::ToString(g_game->gameState->getSystemCoordinates().y),
             GRAY);
-        // Print out the aliens' attitude toward us:
-        /*   PrintDefault(m_backbuffer,0,y,"Attitudes");
-           for (int n=1; n<NUM_ALIEN_RACES; n++)
-           {
-                   y+=10;
-                   PrintDefault(m_backbuffer,0,y,
-           gameState->player->getAlienRaceName(n) + " : "
-                           + Util::ToString( gameState->alienAttitudes[n] ));
-           }*/
     }
 
     // vibrate the screen if needed (occurs near a star or flux)
@@ -1266,16 +1421,17 @@ Game::RunGame() {
         al_clear_to_color(BLACK);
     }
 
-    al_draw_scaled_bitmap(m_backbuffer,
-                          0,
-                          0,
-                          SCREEN_WIDTH,
-                          SCREEN_HEIGHT,
-                          m_backbuffer_x_offset + v,
-                          m_backbuffer_y_offset,
-                          SCREEN_WIDTH * m_backbuffer_scale - v,
-                          SCREEN_HEIGHT * m_backbuffer_scale - v,
-                          0);
+    al_draw_scaled_bitmap(
+        m_backbuffer,
+        0,
+        0,
+        SCREEN_WIDTH,
+        SCREEN_HEIGHT,
+        m_backbuffer_x_offset + v,
+        m_backbuffer_y_offset,
+        SCREEN_WIDTH * m_backbuffer_scale - v,
+        SCREEN_HEIGHT * m_backbuffer_scale - v,
+        0);
 
     al_flip_display();
 }
@@ -1283,120 +1439,12 @@ Game::RunGame() {
 #pragma region "UI events"
 
 void
-Game::OnKeyPress(int keyCode) {
-    // send keypress event to messagebox
-    if (messageBox != NULL) {
-        // this stops buttons from under the messagebox from being clicked
-        if (messageBox->OnKeyPress(keyCode))
-            return;
-    }
-
-    if (!m_pause) {
-        modeMgr->OnKeyPress(keyCode);
-    }
-}
-
-void
-Game::OnKeyPressed(int keyCode) {
-    if (!m_pause) {
-        modeMgr->OnKeyPressed(keyCode);
-    }
-}
-
-void
-Game::OnKeyReleased(int keyCode) {
-    if (keyCode == ALLEGRO_KEY_ESCAPE)
-        TogglePauseMenu();
-
-    if (!m_pause) {
-        modeMgr->OnKeyReleased(keyCode);
-    }
-}
-
-void
 Game::toggleShowControls() {
     showControls = !showControls;
-    Event e(showControls ? EVENT_SHOW_CONTROLS : EVENT_HIDE_CONTROLS);
-    modeMgr->BroadcastEvent(&e);
-}
-
-void
-Game::OnMouseMove(int x, int y) {
-    // send mouse event to pause menu
-    if (pauseMenu->isShowing()) {
-        if (pauseMenu->OnMouseMove(x, y))
-            return;
-    }
-
-    // send mouse event to messagebox
-    if (messageBox != NULL) {
-        // this stops buttons from under the messagebox from being clicked
-        if (messageBox->OnMouseMove(x, y))
-            return;
-    }
-
-    if (!m_pause) {
-        modeMgr->OnMouseMove(x, y);
-    }
-}
-
-void
-Game::OnMouseClick(int button, int x, int y) {
-    // send mouse event to messagebox
-    if (messageBox != NULL) {
-        // this stops buttons from under the messagebox from being clicked
-        if (messageBox->OnMouseClick(button, x, y))
-            return;
-    }
-    if (!m_pause) {
-        modeMgr->OnMouseClick(button, x, y);
-    }
-}
-
-void
-Game::OnMousePressed(int button, int x, int y) {
-    // send mouse event to messagebox
-    if (messageBox != NULL) {
-        // this stops buttons from under the messagebox from being clicked
-        if (messageBox->OnMousePressed(button, x, y))
-            return;
-    }
-    if (!m_pause) {
-        modeMgr->OnMousePressed(button, x, y);
-    }
-}
-
-void
-Game::OnMouseReleased(int button, int x, int y) {
-    // send mouse event to pause menu
-    if (pauseMenu->isShowing()) {
-        if (pauseMenu->OnMouseReleased(button, x, y))
-            return;
-    }
-
-    // send mouse event to messagebox
-    if (messageBox != NULL) {
-        // this stops buttons from under the messagebox from being clicked
-        if (messageBox->OnMouseReleased(button, x, y))
-            return;
-    }
-    if (!m_pause) {
-        modeMgr->OnMouseReleased(button, x, y);
-    }
-}
-
-void
-Game::OnMouseWheelUp(int x, int y) {
-    if (!m_pause) {
-        modeMgr->OnMouseWheelUp(x, y);
-    }
-}
-
-void
-Game::OnMouseWheelDown(int x, int y) {
-    if (!m_pause) {
-        modeMgr->OnMouseWheelDown(x, y);
-    }
+    ALLEGRO_EVENT e = {
+        .type = static_cast<unsigned int>(
+            showControls ? EVENT_SHOW_CONTROLS : EVENT_HIDE_CONTROLS)};
+    broadcast_event(&e);
 }
 
 #pragma endregion
@@ -1406,154 +1454,139 @@ Game::InitializeModules() {
     bool result = true;
 
     // STARTUP MODE
-    Module *mode_startup = new Module;
-    Module *startup = new ModuleStartup;
-    mode_startup->AddChildModule(startup);
     modeMgr->AddMode(
-        MODULE_STARTUP, mode_startup, "data/startup/Starflight.ogg");
+        MODULE_STARTUP,
+        make_shared<ModuleStartup>(),
+        "data/startup/Starflight.ogg");
 
     // TITLE SCREEN GAME MODE
-    Module *mode_titleScreen = new Module;
-    Module *titleScreen = new ModuleTitleScreen;
-    mode_titleScreen->AddChildModule(titleScreen);
     modeMgr->AddMode(
-        MODULE_TITLESCREEN, mode_titleScreen, "data/startup/Starflight.ogg");
+        MODULE_TITLESCREEN,
+        make_shared<ModuleTitleScreen>(),
+        "data/startup/Starflight.ogg");
 
     // CREDITS GAME MODE
-    Module *mode_Credits = new Module;
-    Module *credits = new ModuleCredits;
-    mode_Credits->AddChildModule(credits);
-    modeMgr->AddMode(MODULE_CREDITS, mode_Credits, "data/credits/credits.ogg");
+    modeMgr->AddMode(
+        MODULE_CREDITS,
+        make_shared<ModuleCredits>(),
+        "data/credits/credits.ogg");
 
     // STARPORT MODE
-    Module *mode_starport = new Module;
-    Module *starport = new ModuleStarport;
-    mode_starport->AddChildModule(starport);
     modeMgr->AddMode(
-        MODULE_STARPORT, mode_starport, "data/starport/starport.ogg");
+        MODULE_STARPORT,
+        make_shared<ModuleStarport>(),
+        "data/starport/starport.ogg");
 
     // CAPTAIN CREATION MODE
-    Module *mode_captainCreation = new Module;
-    Module *captainCreation = new ModuleCaptainCreation;
-    mode_captainCreation->AddChildModule(captainCreation);
-    modeMgr->AddMode(MODULE_CAPTAINCREATION,
-                     mode_captainCreation,
-                     "data/startup/Starflight.ogg");
+    modeMgr->AddMode(
+        MODULE_CAPTAINCREATION,
+        make_shared<ModuleCaptainCreation>(),
+        "data/startup/Starflight.ogg");
 
     // CAPTAIN'S LOUNGE MODE
-    Module *mode_captainsLounge = new Module;
-    Module *captainsLounge = new ModuleCaptainsLounge;
-    mode_captainsLounge->AddChildModule(captainsLounge);
-    modeMgr->AddMode(MODULE_CAPTAINSLOUNGE,
-                     mode_captainsLounge,
-                     "data/starport/starport.ogg");
+    modeMgr->AddMode(
+        MODULE_CAPTAINSLOUNGE,
+        make_shared<ModuleCaptainsLounge>(),
+        "data/starport/starport.ogg");
 
     // SHIPCONFIG GAME MODE
-    Module *mode_Shipconfig = new Module;
-    Module *shipconfig = new ModuleShipConfig;
-    mode_Shipconfig->AddChildModule(shipconfig);
     modeMgr->AddMode(
-        MODULE_SHIPCONFIG, mode_Shipconfig, "data/starport/starport.ogg");
+        MODULE_SHIPCONFIG,
+        make_shared<ModuleShipConfig>(),
+        "data/starport/starport.ogg");
+
+    // Cargo Hold (shared with all ship-based modes)
+    auto cargo_hold = make_shared<ModuleCargoWindow>();
 
     // INTERSTELLAR (HYPERSPACE) TRAVEL GAME MODE
-    Module *mode_hyperspace = new Module();
-    mode_hyperspace->AddChildModule(new ModuleInterstellarTravel);
-    mode_hyperspace->AddChildModule(new ModuleAuxiliaryDisplay);
-    mode_hyperspace->AddChildModule(new ModuleControlPanel);
-    mode_hyperspace->AddChildModule(new ModuleStarmap);
-    mode_hyperspace->AddChildModule(new ModuleTopGUI);
-    mode_hyperspace->AddChildModule(new ModuleQuestLog);
-    mode_hyperspace->AddChildModule(new ModuleMedical);
-    mode_hyperspace->AddChildModule(new ModuleEngineer);
-    mode_hyperspace->AddChildModule(new ModuleCargoWindow);
-    mode_hyperspace->AddChildModule(new ModuleMessageGUI);
+    auto mode_hyperspace = make_shared<ModuleInterstellarTravel>();
+    mode_hyperspace->add_child_module(make_shared<ModuleAuxiliaryDisplay>());
+    mode_hyperspace->add_child_module(make_shared<ModuleControlPanel>());
+    mode_hyperspace->add_child_module(make_shared<ModuleStarmap>());
+    mode_hyperspace->add_child_module(make_shared<ModuleTopGUI>());
+    mode_hyperspace->add_child_module(make_shared<ModuleQuestLog>());
+    mode_hyperspace->add_child_module(make_shared<ModuleMedical>());
+    mode_hyperspace->add_child_module(make_shared<ModuleEngineer>());
+    mode_hyperspace->add_child_module(cargo_hold);
+    mode_hyperspace->add_child_module(make_shared<ModuleMessageGUI>());
     modeMgr->AddMode(
         MODULE_HYPERSPACE, mode_hyperspace, "data/spacetravel/spacetravel.ogg");
 
     // INTERPLANETARY TRAVEL GAME MODE
-    Module *mode_interplanetaryTravel = new Module();
-    mode_interplanetaryTravel->AddChildModule(new ModuleInterPlanetaryTravel);
-    mode_interplanetaryTravel->AddChildModule(new ModuleAuxiliaryDisplay);
-    mode_interplanetaryTravel->AddChildModule(new ModuleControlPanel);
-    mode_interplanetaryTravel->AddChildModule(new ModuleStarmap);
-    mode_interplanetaryTravel->AddChildModule(new ModuleTopGUI);
-    mode_interplanetaryTravel->AddChildModule(new ModuleQuestLog);
-    mode_interplanetaryTravel->AddChildModule(new ModuleMedical);
-    mode_interplanetaryTravel->AddChildModule(new ModuleEngineer);
-    mode_interplanetaryTravel->AddChildModule(new ModuleCargoWindow);
-    mode_interplanetaryTravel->AddChildModule(new ModuleMessageGUI);
-    modeMgr->AddMode(MODULE_INTERPLANETARY,
-                     mode_interplanetaryTravel,
-                     "data/spacetravel/spacetravel.ogg");
+    auto mode_interplanetaryTravel = make_shared<ModuleInterPlanetaryTravel>();
+    mode_interplanetaryTravel->add_child_module(
+        make_shared<ModuleAuxiliaryDisplay>());
+    mode_interplanetaryTravel->add_child_module(
+        make_shared<ModuleControlPanel>());
+    mode_interplanetaryTravel->add_child_module(make_shared<ModuleStarmap>());
+    mode_interplanetaryTravel->add_child_module(make_shared<ModuleTopGUI>());
+    mode_interplanetaryTravel->add_child_module(make_shared<ModuleQuestLog>());
+    mode_interplanetaryTravel->add_child_module(make_shared<ModuleMedical>());
+    mode_interplanetaryTravel->add_child_module(make_shared<ModuleEngineer>());
+    mode_interplanetaryTravel->add_child_module(cargo_hold);
+    mode_interplanetaryTravel->add_child_module(
+        make_shared<ModuleMessageGUI>());
+    modeMgr->AddMode(
+        MODULE_INTERPLANETARY,
+        mode_interplanetaryTravel,
+        "data/spacetravel/spacetravel.ogg");
 
     // PLANET ORBIT GAME MODE
-    // due to OpenGL rendering, 2D overlays will not work here
-    Module *mode_orbit = new Module();
-    mode_orbit->AddChildModule(new ModulePlanetOrbit);
-    mode_orbit->AddChildModule(new ModuleAuxiliaryDisplay);
-    mode_orbit->AddChildModule(new ModuleControlPanel);
-    mode_orbit->AddChildModule(new ModuleMessageGUI);
+    auto mode_orbit = make_shared<ModulePlanetOrbit>();
+    mode_orbit->add_child_module(make_shared<ModuleAuxiliaryDisplay>());
+    mode_orbit->add_child_module(make_shared<ModuleControlPanel>());
+    mode_orbit->add_child_module(make_shared<ModuleMessageGUI>());
     modeMgr->AddMode(
         MODULE_ORBIT, mode_orbit, "data/spacetravel/spacetravel.ogg");
 
     // PLANET SURFACE MODE
-    Module *mode_planet = new Module();
-    mode_planet->AddChildModule(new ModulePlanetSurface);
-    mode_planet->AddChildModule(new ModuleCargoWindow);
+    auto mode_planet = make_shared<ModulePlanetSurface>();
+    mode_planet->add_child_module(cargo_hold);
     modeMgr->AddMode(
         MODULE_SURFACE, mode_planet, "data/planetsurface/planetsurface.ogg");
 
     // CREW ASSIGNMENT GAME MODE
-    Module *mode_crew = new Module;
-    Module *crewAssignment = new ModuleCrewHire();
-    mode_crew->AddChildModule(crewAssignment);
-    modeMgr->AddMode(MODULE_CREWBUY, mode_crew, "data/starport/starport.ogg");
+    modeMgr->AddMode(
+        MODULE_CREWBUY,
+        make_shared<ModuleCrewHire>(),
+        "data/starport/starport.ogg");
 
     // BANK MODULE
-    Module *mode_bank = new Module;
-    Module *bank = new ModuleBank();
-    mode_bank->AddChildModule(bank);
-    modeMgr->AddMode(MODULE_BANK, mode_bank, "data/starport/starport.ogg");
+    modeMgr->AddMode(
+        MODULE_BANK, make_shared<ModuleBank>(), "data/starport/starport.ogg");
 
     // TRADE DEPOT MODULE
-    Module *mode_tradedepot = new Module;
-    Module *tradedepot = new ModuleTradeDepot;
-    mode_tradedepot->AddChildModule(tradedepot);
     g_game->modeMgr->AddMode(
-        MODULE_TRADEDEPOT, mode_tradedepot, "data/starport/starport.ogg");
+        MODULE_TRADEDEPOT,
+        make_shared<ModuleTradeDepot>(),
+        "data/starport/starport.ogg");
 
     // GAME OVER MODULE
-    Module *mode_gameover = new Module;
-    Module *gameOver = new ModuleGameOver;
-    mode_gameover->AddChildModule(gameOver);
-    g_game->modeMgr->AddMode(MODULE_GAMEOVER, mode_gameover, "");
+    g_game->modeMgr->AddMode(
+        MODULE_GAMEOVER, make_shared<ModuleGameOver>(), "");
 
     // CANTINA MODULE
-    Module *mode_cantina = new Module;
-    Module *cantina = new ModuleCantina;
-    mode_cantina->AddChildModule(cantina);
+    auto cantina = make_shared<ModuleCantina>();
     g_game->modeMgr->AddMode(
-        MODULE_CANTINA, mode_cantina, "data/starport/starport.ogg");
+        MODULE_CANTINA, cantina, "data/starport/starport.ogg");
     g_game->modeMgr->AddMode(
-        MODULE_RESEARCHLAB, mode_cantina, "data/starport/starport.ogg");
+        MODULE_RESEARCHLAB, cantina, "data/starport/starport.ogg");
     g_game->modeMgr->AddMode(
-        MODULE_MILITARYOPS, mode_cantina, "data/starport/starport.ogg");
+        MODULE_MILITARYOPS, cantina, "data/starport/starport.ogg");
 
     // ALIEN ENCOUNTER MODULE
-    Module *mode_encounter = new Module;
-    mode_encounter->AddChildModule(new ModuleEncounter);
-    mode_encounter->AddChildModule(new ModuleTopGUI);
-    mode_encounter->AddChildModule(new ModuleControlPanel);
-    mode_encounter->AddChildModule(new ModuleCargoWindow);
+    auto mode_encounter = make_shared<ModuleEncounter>();
+    mode_encounter->add_child_module(make_shared<ModuleTopGUI>());
+    mode_encounter->add_child_module(make_shared<ModuleControlPanel>());
+    mode_encounter->add_child_module(cargo_hold);
     g_game->modeMgr->AddMode(
         MODULE_ENCOUNTER, mode_encounter, "data/encounter/combat.ogg");
 
     // SETTINGS GAME MODE
-    Module *mode_Settings = new Module;
-    Module *settings = new ModuleSettings;
-    mode_Settings->AddChildModule(settings);
     modeMgr->AddMode(
-        MODULE_SETTINGS, mode_Settings, "data/startup/Starflight.ogg");
+        MODULE_SETTINGS,
+        make_shared<ModuleSettings>(),
+        "data/startup/Starflight.ogg");
 
     return result;
 }
@@ -1561,83 +1594,91 @@ Game::InitializeModules() {
 #pragma region "Text output"
 
 void
-Game::PrintDefault(ALLEGRO_BITMAP *dest,
-                   int x,
-                   int y,
-                   const std::string &text,
-                   ALLEGRO_COLOR color) {
+Game::PrintDefault(
+    ALLEGRO_BITMAP *dest,
+    int x,
+    int y,
+    const std::string &text,
+    ALLEGRO_COLOR color) {
     al_set_target_bitmap(dest);
-    al_draw_text(font12, color, x, y, 0, text.c_str());
+    al_draw_text(font12.get(), color, x, y, 0, text.c_str());
 }
 
 void
-Game::Print(ALLEGRO_BITMAP *dest,
-            ALLEGRO_FONT *_font,
-            int x,
-            int y,
-            const std::string &text,
-            ALLEGRO_COLOR color,
-            bool shadow) {
+Game::Print(
+    ALLEGRO_BITMAP *dest,
+    shared_ptr<ALLEGRO_FONT> _font,
+    int x,
+    int y,
+    const std::string &text,
+    ALLEGRO_COLOR color,
+    bool shadow) {
     al_set_target_bitmap(dest);
     if (shadow) {
-        al_draw_text(_font, BLACK, x + 2, y + 2, 0, text.c_str());
+        al_draw_text(_font.get(), BLACK, x + 2, y + 2, 0, text.c_str());
     }
-    al_draw_text(_font, color, x, y, 0, text.c_str());
+    al_draw_text(_font.get(), color, x, y, 0, text.c_str());
 }
 
 void
-Game::Print12(ALLEGRO_BITMAP *dest,
-              int x,
-              int y,
-              const std::string &text,
-              ALLEGRO_COLOR color,
-              bool shadow) {
+Game::Print12(
+    ALLEGRO_BITMAP *dest,
+    int x,
+    int y,
+    const std::string &text,
+    ALLEGRO_COLOR color,
+    bool shadow) {
     Print(dest, font12, x, y, text, color, shadow);
 }
 
 void
-Game::Print18(ALLEGRO_BITMAP *dest,
-              int x,
-              int y,
-              const std::string &text,
-              ALLEGRO_COLOR color,
-              bool shadow) {
+Game::Print18(
+    ALLEGRO_BITMAP *dest,
+    int x,
+    int y,
+    const std::string &text,
+    ALLEGRO_COLOR color,
+    bool shadow) {
     Print(dest, font18, x, y, text, color, shadow);
 }
 void
-Game::Print20(ALLEGRO_BITMAP *dest,
-              int x,
-              int y,
-              const std::string &text,
-              ALLEGRO_COLOR color,
-              bool shadow) {
+Game::Print20(
+    ALLEGRO_BITMAP *dest,
+    int x,
+    int y,
+    const std::string &text,
+    ALLEGRO_COLOR color,
+    bool shadow) {
     Print(dest, font20, x, y, text, color, shadow);
 }
 void
-Game::Print22(ALLEGRO_BITMAP *dest,
-              int x,
-              int y,
-              const std::string &text,
-              ALLEGRO_COLOR color,
-              bool shadow) {
+Game::Print22(
+    ALLEGRO_BITMAP *dest,
+    int x,
+    int y,
+    const std::string &text,
+    ALLEGRO_COLOR color,
+    bool shadow) {
     Print(dest, font22, x, y, text, color, shadow);
 }
 void
-Game::Print24(ALLEGRO_BITMAP *dest,
-              int x,
-              int y,
-              const std::string &text,
-              ALLEGRO_COLOR color,
-              bool shadow) {
+Game::Print24(
+    ALLEGRO_BITMAP *dest,
+    int x,
+    int y,
+    const std::string &text,
+    ALLEGRO_COLOR color,
+    bool shadow) {
     Print(dest, font24, x, y, text, color, shadow);
 }
 void
-Game::Print32(ALLEGRO_BITMAP *dest,
-              int x,
-              int y,
-              const std::string &text,
-              ALLEGRO_COLOR color,
-              bool shadow) {
+Game::Print32(
+    ALLEGRO_BITMAP *dest,
+    int x,
+    int y,
+    const std::string &text,
+    ALLEGRO_COLOR color,
+    bool shadow) {
     Print(dest, font32, x, y, text, color, shadow);
 }
 
@@ -1649,10 +1690,11 @@ want messages printing repeatedly. Delay of -1 causes message to print only once
 (until ScrollBox is cleared). Default delay of 0 forces printout.
  **/
 void
-Game::printout(ScrollBox::ScrollBox *scroll,
-               const string &str,
-               ALLEGRO_COLOR color,
-               long delay) {
+Game::printout(
+    shared_ptr<ScrolledModule<RichTextLabel>> scroll,
+    const string &str,
+    ALLEGRO_COLOR color,
+    long delay) {
     bool found = false;
 
     TimedText message = {str, color, globalTimer.getTimer() + delay};
@@ -1661,7 +1703,9 @@ Game::printout(ScrollBox::ScrollBox *scroll,
     // ms delay
     if (delay == 0) {
         // just print it without remembering the message
-        scroll->Write(message.text, message.color);
+        scroll->add_line({message.text, message.color});
+        scroll->scroll_to_bottom();
+        found = true;
     } else {
         // scan timestamps of printed messages to see if ready to print again
         for (vector<TimedText>::iterator mess = messages.begin();
@@ -1679,7 +1723,8 @@ Game::printout(ScrollBox::ScrollBox *scroll,
                 // ready to print again?
                 else if (globalTimer.getTimer() > mess->delay) {
                     // print text
-                    scroll->Write(message.text, message.color);
+                    scroll->add_line({message.text, message.color});
+                    scroll->scroll_to_bottom();
                     // reset delay timer
                     mess->delay = globalTimer.getTimer() + delay;
                 }
@@ -1693,7 +1738,20 @@ Game::printout(ScrollBox::ScrollBox *scroll,
         if (delay == -1)
             message.delay = -1;
         messages.push_back(message);
-        scroll->Write(message.text, message.color);
+        scroll->add_line({message.text, message.color});
+        scroll->scroll_to_bottom();
     }
+}
+
+void
+Game::printout(
+    OfficerType type,
+    shared_ptr<ScrolledModule<RichTextLabel>> scroll,
+    const string &str,
+    ALLEGRO_COLOR color,
+    long delay) {
+    auto officer = gameState->get_effective_officer(type);
+
+    printout(scroll, officer->get_last_name() + ": " + str, color, delay);
 }
 #pragma endregion

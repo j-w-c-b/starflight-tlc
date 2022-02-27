@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AUDIOSYSTEM_H
+#define AUDIOSYSTEM_H
 
 #include <allegro5/allegro_audio.h>
 
@@ -25,37 +26,31 @@ class Sample {
 };
 
 class AudioSystem {
-  private:
-    ALLEGRO_VOICE *voice;
-    ALLEGRO_MIXER *mixer;
-
-    std::map<std::string, std::shared_ptr<Sample>> samples;
-    bool bPlay;
-
   public:
     AudioSystem();
     ~AudioSystem();
 
     bool Init();
 
-    bool Load(const std::string &filename,
-              const std::string &name,
-              float volume = 1.0f);
-    std::shared_ptr<Sample> Load(const std::string &filename,
-                                 float volume = 1.0f);
-    bool LoadMusic(const std::string &filename,
-                   const std::string &name,
-                   float volume = 0.4f);
-    std::shared_ptr<Sample> LoadMusic(const std::string &filename,
-                                      float volume = 0.4f);
-    bool Play(const std::string &name, bool doLoop = false);
+    std::shared_ptr<Sample>
+    Load(const std::string &filename, float volume = 1.0f);
+    std::shared_ptr<Sample>
+    LoadMusic(const std::string &filename, float volume = 0.4f);
     bool Play(std::shared_ptr<Sample> sample, bool doLoop = false);
-    bool PlayMusic(const std::string &name, bool doLoop = true);
-    bool PlayMusic(std::shared_ptr<Sample> sample, bool doLoop = true);
-
-    void Stop(const std::string &name);
     void Stop(std::shared_ptr<Sample> sample);
-    bool IsPlaying(const std::string &name);
+
+    bool PlayMusic(std::shared_ptr<Sample> sample, bool doLoop = true);
+    void StopMusic();
+    void StartMusic();
+
     bool IsPlaying(std::shared_ptr<Sample> sample);
-    bool SampleExists(const std::string &name);
+
+  private:
+    ALLEGRO_VOICE *voice;
+    ALLEGRO_MIXER *mixer;
+
+    bool bPlay;
+    std::shared_ptr<Sample> m_music;
 };
+#endif // AUDIOSYSTEM_H
+// vi: ft=cpp

@@ -8,33 +8,37 @@
 #ifndef _PLANETORBIT_H
 #define _PLANETORBIT_H
 
+#include <allegro5/allegro.h>
+
 #include "AudioSystem.h"
 #include "DataMgr.h"
 #include "Module.h"
-#include "ResourceManager.h"
-#include "ScrollBox.h"
+#include "RichTextLabel.h"
+#include "ScrolledModule.h"
 #include "TexturedSphere.h"
-#include <allegro5/allegro.h>
 
 const int HOMEWORLD_ID = 8;
 
 class ModulePlanetOrbit : public Module {
-  private:
-    ~ModulePlanetOrbit(void);
+  public:
+    ModulePlanetOrbit();
+    ~ModulePlanetOrbit();
 
+    virtual bool on_init() override;
+    virtual bool on_update() override;
+    virtual bool on_draw(ALLEGRO_BITMAP *target) override;
+    virtual bool on_event(ALLEGRO_EVENT *event) override;
+    virtual bool on_close() override;
+
+    void doorbit();
+    void dosurface();
+    void scanplanet();
+    void analyzeplanet();
+
+  private:
     bool CreatePlanetTexture();
 
-    std::shared_ptr<Sample> audio_scan;
-
-    // shortcuts to crew last names to simplify code
-    std::string com;
-    std::string sci;
-    std::string nav;
-    std::string tac;
-    std::string eng;
-    std::string doc;
-
-    ScrollBox::ScrollBox *text;
+    std::shared_ptr<ScrolledModule<RichTextLabel>> m_text;
 
     int gui_viewer_x;
     int gui_viewer_y;
@@ -52,31 +56,11 @@ class ModulePlanetOrbit : public Module {
     int planetAnalysis;
 
     PlanetType planetType;
-    Planet *planet;
+    const Planet *planet;
 
-    ALLEGRO_BITMAP *lightmap_overlay;
+    std::shared_ptr<ALLEGRO_BITMAP> lightmap_overlay;
 
     TexturedSphere *texsphere;
-    ResourceManager<ALLEGRO_BITMAP> m_resources;
-
-  public:
-    ModulePlanetOrbit(void);
-    virtual bool Init() override;
-    virtual void Update() override;
-    virtual void Draw() override;
-    virtual void OnMouseMove(int x, int y) override;
-    virtual void OnMouseClick(int button, int x, int y) override;
-    virtual void OnMousePressed(int button, int x, int y) override;
-    virtual void OnMouseReleased(int button, int x, int y) override;
-    virtual void OnMouseWheelUp(int x, int y) override;
-    virtual void OnMouseWheelDown(int x, int y) override;
-    virtual void OnEvent(Event *event) override;
-    virtual void Close() override;
-
-    void doorbit();
-    void dosurface();
-    void scanplanet();
-    void analyzeplanet();
 };
 
 #endif

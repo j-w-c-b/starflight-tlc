@@ -8,75 +8,66 @@
 #ifndef MODULECREWHIRE_H
 #define MODULECREWHIRE_H
 
-#include "Button.h"
-#include "GameState.h"
-#include "Module.h"
-#include "ResourceManager.h"
-#include "ScrollBox.h"
-#include "tinyxml/tinyxml.h"
+#include <memory>
+#include <optional>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include <allegro5/allegro.h>
 
-class Label;
+#include "Button.h"
+#include "GameState.h"
+#include "Label.h"
+#include "Module.h"
+#include "OfficerInfo.h"
+#include "PersonnelSlotButton.h"
+#include "UnemployedPanel.h"
+#include "UnemployedSlotButton.h"
 
 class ModuleCrewHire : public Module {
   public:
     ModuleCrewHire();
-    virtual ~ModuleCrewHire();
-    virtual bool Init() override;
-    virtual void Update() override;
-    virtual void Draw() override;
-    virtual void OnMouseMove(int x, int y) override;
-    virtual void OnMouseClick(int button, int x, int y) override;
-    virtual void OnMousePressed(int button, int x, int y) override;
-    virtual void OnMouseReleased(int button, int x, int y) override;
-    virtual void OnMouseWheelUp(int x, int y) override;
-    virtual void OnMouseWheelDown(int x, int y) override;
-    virtual void OnEvent(Event *event) override;
-    virtual void Close() override;
-
-    Officer *FindOfficerType(OfficerType type);
+    virtual ~ModuleCrewHire(){};
+    virtual bool on_init() override;
+    virtual bool on_event(ALLEGRO_EVENT *event) override;
+    virtual bool on_close() override;
 
   private:
-    void RefreshUnassignedCrewBox();
-    void RefreshUnemployeedCrewBox();
-    void DrawOfficerInfo(Officer *officer);
+    enum slot_type
+    {
+        CREW,
+        UNASSIGNED
+    };
+    struct selected_slot {
+        slot_type slot_type;
+        int slot;
+    };
+    static std::string c_directions;
+    static std::string c_hire_more_directions;
+    static std::string c_title;
+    static std::string c_statistics_title;
 
-    int currentScreen;
-    int selectedPosition;
-    int selectedPositionLastRun;
-    int selectedEntryLastRun;
-    int FALSEHover;
-    int lastEmployeeSpawn;
-    int currentVisit;
+    std::optional<selected_slot> m_selected_slot;
 
-    Label *title;
-    Label *slogan;
-    Label *directions;
-    Label *hiremoreDirections;
-    Label *stats;
+    std::shared_ptr<Label> m_title;
+    std::shared_ptr<Label> m_slogan;
+    std::shared_ptr<Label> m_directions;
 
-    Button *m_exitBtn;
-    Button *m_hireBtn;
-    Button *m_hiremoreBtn;
-    Button *m_fireBtn;
-    Button *m_unassignBtn;
-    Button *m_backBtn;
+    std::shared_ptr<TextButton> m_exit_button;
 
-    Button *m_PositionBtns[8];
-    ALLEGRO_BITMAP *posNormImages[8];
-    ALLEGRO_BITMAP *posOverImages[8];
-    ALLEGRO_BITMAP *posDisImages[8];
+    std::shared_ptr<Module> m_personnel_panel;
+    std::shared_ptr<TextButton> m_personnel_fire;
+    std::shared_ptr<TextButton> m_personnel_unassign;
+    std::map<int, std::shared_ptr<PersonnelSlotButton>>
+        m_personnel_slot_buttons;
+    std::shared_ptr<OfficerInfo> m_officer_info;
 
-    std::vector<Officer *> tOfficers;
+    std::shared_ptr<Module> m_personnel_unassigned_panel;
+    std::map<int, std::shared_ptr<UnemployedSlotButton>>
+        m_personnel_unassigned_slot_buttons;
 
-    Officer *selectedOfficer;
-
-    ScrollBox::ScrollBox *unassignedCrew;
-    ScrollBox::ScrollBox *unemployeed;
-    ScrollBox::ScrollBox *unemployeedType;
-
-    ScrollBox::ColoredString coloredString;
-    ResourceManager<ALLEGRO_BITMAP> resources;
+    std::shared_ptr<UnemployedPanel> m_unemployed_panel;
 };
 
 #endif

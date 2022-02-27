@@ -6,7 +6,7 @@ static int random_seed;
  */
 extern
 int
-rand()
+sfrand()
 {
      random_seed = random_seed * 214013 + 2531011;
      return (random_seed >> 16) & 0x7fff;
@@ -14,7 +14,7 @@ rand()
 
 extern
 void
-srand(unsigned int seed)
+sfsrand(unsigned int seed)
 {
     random_seed = seed;
 }

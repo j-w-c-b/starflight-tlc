@@ -33,11 +33,12 @@ class TexturedSphere {
     TexturedSphere(int tex_size);
     ~TexturedSphere(void);
     bool SetTexture(ALLEGRO_BITMAP *texture);
-    void Draw(ALLEGRO_BITMAP *dest,
-              int phi,
-              int theta,
-              int psi,
-              int radius,
-              int center_x,
-              int center_y);
+    void Draw(
+        ALLEGRO_BITMAP *dest,
+        int phi,
+        int theta,
+        int psi,
+        int radius,
+        int center_x,
+        int center_y);
 };

@@ -10,23 +10,21 @@
 
 #ifndef DATAMGR_H
 #define DATAMGR_H
-//#pragma once
 
-#include "Flux.h"
-#include "Script.h"
-#include <allegro5/allegro_font.h>
 #include <list>
 #include <map>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
+
+#include "Flux.h"
+#include "Script.h"
 
 #define MAX_FLUX 32
 
 class Officer;
-class DataMgr;
 struct Point;
-class Archive;
 
 // type used for object IDs
 typedef int ID;
@@ -68,20 +66,14 @@ class Item {
 
     void Reset();
 
-    bool
-    IsArtifact() {
-        return itemType == IT_ARTIFACT;
-    };
-    bool
-    IsMineral() {
-        return itemType == IT_MINERAL;
-    };
+    bool IsArtifact() { return itemType == IT_ARTIFACT; };
+    bool IsMineral() { return itemType == IT_MINERAL; };
 
     ID id;                // the ID of this item
     ItemType itemType;    // the type of item
     std::string name;     // the name
     double value;         // value
-    double size;          // size (m^3)
+    double size;          // size (m³)
     double speed;         // speed
     double danger;        // danger
     double damage;        // damage
@@ -100,7 +92,10 @@ class Item {
 
     // helper methods for working with the enumerated types
     static ItemType ItemTypeFromString(const std::string &s);
+    static std::string ItemTypeToString(ItemType type);
+
     static ItemAge ItemAgeFromString(const std::string &s);
+    static std::string ItemAgeToString(ItemAge age);
 };
 
 // used to represent a collection of items; the collection is comprised of
@@ -113,9 +108,9 @@ class Items {
     Items(const Items &rhs);
     virtual ~Items();
     Items &operator=(const Items &rhs);
+    static constexpr std::string_view class_name = "Items";
 
     void Reset();
-    bool Serialize(Archive &ar);
 
     /**
      * initializes this object to contain a random collection of items.
@@ -163,13 +158,26 @@ class Items {
      */
     void Get_Item_By_ID(int id, Item &item, int &num_in_stack);
 
+    int get_count(ID id) const;
+
+    std::vector<std::pair<ID, int>>::const_iterator begin() const {
+        return stacks.cbegin();
+    }
+    std::vector<std::pair<ID, int>>::const_iterator end() const {
+        return stacks.cend();
+    }
+
+    friend InputArchive &operator>>(InputArchive &archive, Items &items);
+    friend OutputArchive &
+    operator<<(OutputArchive &archive, const Items &items);
+
   private:
     std::vector<std::pair<ID, int>>
         stacks; // holds the stacks (each stack is a set of one item type)
 };
 
-// spectral classes
-// these numbers match the ordering of the images in is_tiles.bmp and are not
+//! Spectral Classes
+// These numbers match the ordering of the images in is_tiles.bmp and are not
 // in astronomical order
 typedef enum
 {
@@ -212,22 +220,23 @@ class Star {
     Kelvins temperature;
 
     // mass
-    unsigned long mass;
+    double mass;
 
     // radius
-    unsigned long radius;
+    double radius;
 
     // luminosity
-    unsigned long luminosity;
+    double luminosity;
 
     // used to access the planets in this star; this class owns the
     // memory and so it is not necessary to delete the returned pointer
-    int GetNumPlanets();
-    Planet *GetPlanet(int idx);   // by index [0...N)
-    Planet *GetPlanetByID(ID id); // by ID
+    int GetNumPlanets() const;
+    const Planet *GetPlanet(int idx) const;   // by index [0...N)
+    const Planet *GetPlanetByID(ID id) const; // by ID
 
     // helper methods for working with the enumerated types
     static SpectralClass SpectralClassFromString(const std::string &s);
+    static std::string SpectralClassToString(SpectralClass spectral_class);
 
   private:
     std::vector<Planet *> planets;
@@ -367,6 +376,7 @@ class Planet {
     static std::string PlanetAtmosphereToString(PlanetAtmosphere atmosphere);
 
     static PlanetWeather PlanetWeatherFromString(const std::string &weather);
+    static std::string PlanetWeatherToString(PlanetWeather weather);
 };
 
 class DataMgr {
@@ -394,16 +404,18 @@ class DataMgr {
     Star *GetStarByID(ID id);                            // by ID
     Star *GetStarByLocation(CoordValue x, CoordValue y); // by location
 
-    int GetNumFlux();
-    const Flux *GetFlux(int idx);
     const Flux *GetFluxByLocation(CoordValue x, CoordValue y);
+    std::vector<Flux *>::const_iterator flux_begin() const {
+        return flux.begin();
+    }
+    std::vector<Flux *>::const_iterator flux_end() const { return flux.end(); }
 
     // this version does not require a star parent class
     std::vector<Planet *> allPlanets;
     std::map<ID, Planet *> allPlanetsByID;
     Planet *GetPlanetByID(ID id);
 
-    std::string GetRandMixedName();
+    std::pair<std::string, std::string> GetRandMixedName();
 
   private:
     bool m_initialized;
@@ -416,7 +428,7 @@ class DataMgr {
     std::vector<Star *> stars;
     std::map<ID, Star *> starsByID;
     std::map<std::pair<CoordValue, CoordValue>, Star *> starsByLocation;
-    std::vector<std::pair<std::string *, std::string *> *> humanNames;
+    std::vector<std::pair<std::string, std::string>> humanNames;
     std::vector<Flux *> flux;
     std::map<std::pair<CoordValue, CoordValue>, Flux *> fluxByLocation;
 };

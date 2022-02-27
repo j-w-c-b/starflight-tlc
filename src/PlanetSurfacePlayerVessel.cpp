@@ -1,8 +1,9 @@
 
 #include "PlanetSurfacePlayerVessel.h"
 
-PlanetSurfacePlayerVessel::PlanetSurfacePlayerVessel(lua_State *LuaVM,
-                                                     std::string ScriptName)
+PlanetSurfacePlayerVessel::PlanetSurfacePlayerVessel(
+    lua_State *LuaVM,
+    std::string ScriptName)
     : PlanetSurfaceObject(LuaVM, ScriptName), forwardThrust(0),
       reverseThrust(0), turnRight(0), turnLeft(0) {}
 

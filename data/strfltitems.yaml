@@ -1,0 +1,5525 @@
+---
+#  STARFLIGHT - THE LOST COLONY
+# Item database: Lifeforms, Minerals, Trade Items, Artifacts, Ruins
+# Artifact notes: 	Map Center = 0,0
+# Y = longitude; -Y = West; +Y = East
+# X = latitude; -X = North; +X = South
+# What ever you do, don't change any IDs!!!! They're referenced all over the
+# place by ID.
+# If you need to add a new item, regardless of type, it must be added to the
+# bottom, and kept in sequential order!
+items:
+  # ARTIFACTS: IDs 1-29 DO NOT CHANGE IDs!
+  - item:
+    ID: 1
+    Type: Artifact
+    Name: Tafel Cargo
+    Value: 0
+    Size: 12.7
+    Portrait: T_Seeds.png
+    planetid: 78
+    # Samildanach, Elcmar 190,98 (28S X 60E)
+    y: 60
+    x: 28
+  - item:
+    ID: 2
+    Type: Artifact
+    Name: Hypercube
+    Value: 0
+    Size: 0.1
+    Portrait: Hypercube.png
+    planetid: 26
+    # Ciuin in the Faidh system - Training Mission
+    y: 31
+    x: -96
+  - item:
+    ID: 3
+    Type: Artifact
+    Name: Shimmering Pyramid
+    Value: 0
+    Size: 3.1
+    Portrait: T_NavComputer.png
+    planetid: 197
+    # Fir Bolg I 17,93 (54N X 143W)
+    y: -143
+    x: -54
+  - item:
+    ID: 4
+    Type: Artifact
+    Name: Ancient Database Plates
+    Value: 0
+    Size: 0.7
+    Portrait: T_Books.png
+    planetid: 391
+    #  Lir IV 175, 181 (37N X 8W)
+    y: -8
+    x: -37
+  - item:
+    ID: 5
+    Type: Artifact
+    Name: Crystal Sphere
+    Value: 0
+    Size: 0.4
+    Portrait: Crystal_Sphere.png
+    planetid: 486
+    # Mathgen IV 212,3 (15N X 6E)
+    y: 6
+    x: -15
+  - item:
+    ID: 7
+    Type: Artifact
+    Name: Tafel Data System
+    Value: 0
+    Size: 6.1
+    Portrait: T_Computers.png
+  - item:
+    ID: 8
+    Type: Artifact
+    Name: Pirate Cargo
+    Value: 2500
+    Size: 0.6
+    Portrait: T_Booze.png
+  - item:
+    ID: 9
+    Type: Artifact
+    Name: Pirate Small Arms
+    Value: 1400
+    Size: 1
+    Portrait: T_Weapons_Laser.png
+  - item:
+    ID: 10
+    Type: Artifact
+    Name: Elowan Shield Capacitor
+    Value: 5800
+    Size: 14.5
+    Portrait: T_Prisoners.png
+  - item:
+    ID: 11
+    Type: Artifact
+    Name: Elowan Mobius
+    Value: 1900
+    Size: 1
+    Portrait: T_FarmTools.png
+  - item:
+    ID: 12
+    Type: Artifact
+    Name: Spemin Nutritional Chemicals
+    Value: 200
+    Size: 4.5
+    Portrait: T_Liquid.png
+  - item:
+    ID: 13
+    Type: Artifact
+    Name: Spiral Lens
+    Value: 0
+    Size: 0.1
+    Portrait: T_EscapePod.png
+    planetid: 240
+    # Eocho, Etarlam 172,118 - 47S X 95W--:
+    y: -95
+    x: 47
+  - item:
+    ID: 14
+    Type: Artifact
+    Name: Thrynn Battle Machine
+    Value: 9500
+    Size: 1.3
+    Portrait: T_Robots.png
+  - item:
+    ID: 15
+    Type: Artifact
+    Name: Bar-Zhon Data Cube
+    Value: 0
+    Size: 0.1
+    Portrait: T_AlienArtifact.png
+    planetid: 439
+    # Tuatha, Nemed 125,96  40N X 63E
+    y: 63
+    x: -40
+  - item:
+    ID: 16
+    Type: Artifact
+    Name: Whining Orb
+    Value: 0
+    Size: 0.2
+    Constant: WHININGORB
+    Portrait: T_Reactor.png
+    planetid: 70
+    # Alastir, Tat 132,125
+    y: 0
+    x: -155
+  - item:
+    ID: 17
+    Type: Artifact
+    Name: Erratic Energy Devices
+    Value: 0
+    Size: 1.0
+    Portrait: T_Wizards.png
+    #  Inchegeela II 59,210
+    planetid: 479
+    y: -133
+    x: -135
+  - item:
+    ID: 18
+    Type: Artifact
+    Name: Artistic Containers
+    Value: 0
+    Size: 3.3
+    Portrait: T_Pottery.png
+    planetid: 25
+    y: -124
+    x: 49
+  - item:
+    ID: 19
+    Type: Artifact
+    Name: Nyssian Baubles
+    Value: 1950
+    Size: 0.6
+    Portrait: T_Gems.png
+  - item:
+    ID: 20
+    Type: Artifact
+    Name: Coalition Afterburner
+    Value: 12000
+    Size: 2.7
+    Portrait: T_Ship.png
+  - item:
+    ID: 21
+    Type: Artifact
+    Name: Minex Golden Device
+    Value: 9500
+    Size: 0.1
+    Portrait: Golden_Device.png
+  - item:
+    ID: 22
+    Type: Artifact
+    Name: Minex Electronics
+    Value: 18000
+    Size: 0.1
+    Portrait: T_Electronics.png
+  - item:
+    ID: 23
+    Type: Artifact
+    Name: Minex Silver Gadget
+    Value: 6600
+    Size: 0.5
+    Portrait: T_Drill_Good.png
+  - item:
+    ID: 24
+    Type: Artifact
+    Name: Artistic Baubles
+    Value: 700
+    Size: 1.1
+    Portrait: T_Art.png
+    planetid: 224
+    # Arturwen, Anu 65,110
+    y: -69
+    x: -88
+  - item:
+    ID: 25
+    Type: Artifact
+    Name: Ticking Cylinder
+    Value: 0
+    Size: 0.1
+    Portrait: T_Plates.png
+    planetid: 405
+    # Fiacha III 219,179
+    y: -63
+    x: -147
+  - item:
+    ID: 26
+    Type: Artifact
+    Name: Amazing Artifact
+    Value: 5000
+    Size: 1.0
+    Portrait: T_Furs.png
+  - item:
+    ID: 27
+    Type: Artifact
+    Name: Shattered Drone
+    Value: 0
+    Size: 0.8
+    Portrait: T_IPBM.png
+    planetid: 120
+    # Aircthech II 100,8
+    y: -25
+    x: 37
+  - item:
+    ID: 28
+    Type: Artifact
+    Name: Strange manuscripts
+    Value: 1000
+    Size: 0.2
+    Portrait: T_Fliers.png
+  - item:
+    ID: 29
+    Type: Artifact
+    Name: Strange Acoustic Devices
+    Value: 6500
+    Size: 7.1
+    Portrait: T_Instruments.png
+  # NOTE: ADDITIONAL ARTIFACTS AND RUINS ADDED AT BOTTOM, we didn't anticipate
+  # having more than 30
+  # MINERALS: IDs 30-54 plus ID 6 ! DO NOT CHANGE IDs
+  - item:
+    ID: 6
+    Type: Mineral
+    Name: Plutonium
+    Value: 900
+  - item:
+    ID: 30
+    Type: Mineral
+    Name: Lead
+    Value: 40
+  - item:
+    ID: 31
+    Type: Mineral
+    Name: Iron
+    Value: 60
+  - item:
+    ID: 32
+    Type: Mineral
+    Name: Cobalt
+    Value: 80
+    ShipRepairMetal: true
+  - item:
+    ID: 33
+    Type: Mineral
+    Name: Nickel
+    Value: 100
+  - item:
+    ID: 34
+    Type: Mineral
+    Name: Copper
+    Value: 120
+  - item:
+    ID: 35
+    Type: Mineral
+    Name: Zinc
+    Value: 140
+  - item:
+    ID: 36
+    Type: Mineral
+    Name: Molybdenum
+    Value: 160
+    ShipRepairMetal: true
+  - item:
+    ID: 37
+    Type: Mineral
+    Name: Tin
+    Value: 180
+  - item:
+    ID: 38
+    Type: Mineral
+    Name: Magnesium
+    Value: 200
+  - item:
+    ID: 39
+    Type: Mineral
+    Name: Aluminum
+    Value: 220
+    ShipRepairMetal: true
+  - item:
+    ID: 40
+    Type: Mineral
+    Name: Titanium
+    Value: 240
+    ShipRepairMetal: true
+  - item:
+    ID: 41
+    Type: Mineral
+    Name: Potassium
+    Value: 260
+  - item:
+    ID: 42
+    Type: Mineral
+    Name: Antimony
+    Value: 280
+  - item:
+    ID: 43
+    Type: Mineral
+    Name: Sulfur
+    Value: 240
+  - item:
+    ID: 44
+    Type: Mineral
+    Name: Silica
+    Value: 320
+    ShipRepairMetal: true
+  - item:
+    ID: 45
+    Type: Mineral
+    Name: Bismuth
+    Value: 340
+  - item:
+    ID: 46
+    Type: Mineral
+    Name: Silver
+    Value: 360
+  - item:
+    ID: 47
+    Type: Mineral
+    Name: Gold
+    Value: 380
+  - item:
+    ID: 48
+    Type: Mineral
+    Name: Platinum
+    Value: 400
+  - item:
+    ID: 49
+    Type: Mineral
+    Name: Thorium
+    Value: 420
+  - item:
+    ID: 50
+    Type: Mineral
+    Name: Iridium
+    Value: 440
+  - item:
+    ID: 51
+    Type: Mineral
+    Name: Radium
+    Value: 460
+  - item:
+    ID: 52
+    Type: Mineral
+    Name: Uranium
+    Value: 480
+  - item:
+    ID: 53
+    Type: Mineral
+    Name: Quorsitanium
+    Value: 750
+  - item:
+    ID: 54
+    Type: Mineral
+    Name: Endurium
+    Value: 800
+  # LIFEFORMS: IDs 55-113  ! DO NOT CHANGE OR INSERT IDs
+  - item:
+    ID: 55
+    Type: Life Form
+    Name: Pop Berry Plant
+    Value: 400
+    Size: 1
+    Speed: 0
+    Danger: 0
+    Damage: 0
+    Description: "A small delicate, rust colored plant with a few large
+      hexagonally shaped leaves. Growing from the base of this plant are
+      several large clusters of small pink berries with black spots. When this
+      plant is disturbed, it releases a chemical into the berries causing them
+      to explode like loud firecrackers, thus frightening off any predators."
+  - item:
+    ID: 56
+    Type: Life Form
+    Name: Goransil
+    Value: 550
+    Size: 1
+    Speed: 1
+    Danger: 1
+    Damage: 20
+    Description: ""
+  - item:
+    ID: 57
+    Type: Life Form
+    Name: Plant Bird
+    Value: 710
+    Size: 1
+    Speed: 2
+    Danger: 0
+    Damage: 0
+    Description: "Approximately the size of a small bird, this is a legless
+      plant creature with green leafy wings. The creature's body has no
+      discernable head, but is dotted with tiny, inefficient eyes. Under each
+      wing is an organ resembling a small flower whose apparent function is to
+      detect sound. As this creature flies it makes a soft purring sound."
+  - item:
+    ID: 58
+    Type: Life Form
+    Name: Rocket Melons
+    Value: 300
+    Size: 3
+    Speed: 0
+    Danger: 0
+    Damage: 0
+    Description: "A mass of tangled green vines with numerous upright red and
+      yellow striped melons. At the base of each oblong melon are several rigid
+      leaf structures, like rocket fins, that hold it upright. As the melons
+      grow, great pressure builds up inside them until, finally, the weakest
+      part of the melons, the plugs on the underside, pop out. The melons then
+      rocket into the air in some direction, where they fall and break,
+      spreading their seeds."
+  - item:
+    ID: 59
+    Type: Life Form
+    Name: Vertruks
+    Value: 400
+    Size: 3
+    Speed: 1
+    Danger: 4
+    Damage: 40
+    Description: ""
+    Portrait: T_Plain_Vertruk.png
+  - item:
+    ID: 60
+    Type: Life Form
+    Name: Whistling Isis
+    Value: 550
+    Size: 1
+    Speed: 0
+    Danger: 0
+    Damage: 0
+    Description: ""
+  - item:
+    ID: 61
+    Type: Life Form
+    Name: Red Puff-Wart
+    Value: 620
+    Size: 1
+    Speed: 1
+    Danger: 3
+    Damage: 30
+    Description: "A small lifeform that resembles a lump of bubbling,
+      bright-red wax. The top of the creature is roughly dome-shaped, while the
+      underside is flat and surrounded by small pink tentacles, two of which
+      are barbed and much longer than the others. Periodically, the creature
+      puffs out and then emits a long, high-pitched whistle."
+  - item:
+    ID: 62
+    Type: Life Form
+    Name: Sticky Fruit
+    Value: 700
+    Size: 2
+    Speed: 0
+    Danger: 0
+    Damage: 0
+    Description: "A medium sized bush of gnarled, fibrous branches. The
+      branches are deep blue at the base, going to light violet at the tips,
+      and hanging from them are many large, globular fruits. The spherical
+      fruits are a translucent white and HAVE an extremely sticky surface. They
+      also give off a strong scent similar to cinnamon. When approached, the
+      entire bush shakes violently."
+  - item:
+    ID: 63
+    Type: Life Form
+    Name: Hive Plant
+    Value: 500
+    Size: 3
+    Speed: 0
+    Danger: 0
+    Damage: 0
+    Description: "A medium sized plant with a ring of long symmetrical stems
+      growing up from the base. On the end of each alternating stem is a large
+      yellow flower, and on each other stem is a heart shaped leaf. In the
+      center is a thick stalk growing straight up, on top of which is a large
+      thistle covered pod. This pod is hollow with many holes, and in it live
+      thousands of tiny, symbiotic flying creatures which pollinate the plant's
+      flowers."
+  - item:
+    ID: 64
+    Type: Life Form
+    Name: Scaly Blue Hopper
+    Value: 625
+    Size: 1
+    Speed: 2
+    Danger: 0
+    Damage: 0
+    Description: "A creature that resembles a very small, featherless ostrich.
+      It has a large, clawed feet, a small round body covered with blue scales,
+      a telescoping neck, and a wide head with a huge curved beak and throat
+      sack. When in groups of any size these creatures have the curious
+      behavior of hopping in long single file lines."
+  - item:
+    ID: 65
+    Type: Life Form
+    Name: Woolen Qians
+    Value: 475
+    Size: 2
+    Speed: 3
+    Danger: 0
+    Damage: 0
+    Description: ""
+  - item:
+    ID: 66
+    Type: Life Form
+    Name: Hill Rat
+    Value: 250
+    Size: 1
+    Speed: 2
+    Danger: 0
+    Damage: 0
+    Description: "A small, spherical bodied creature with four legs and long,
+      red, luxuriant fur. Sticking out of the fur at one end of the creature is
+      a long, rigid rat like tail. At the other end is a pointed snout with
+      long downward curving whiskers. The creature's primary habitat is along
+      hillsides, as is evidenced that its two left legs are shorter than its
+      two right legs. On flat ground it seems to tilt and has a tendency to go
+      in circles."
+  - item:
+    ID: 67
+    Type: Life Form
+    Name: Pulsating Gummy
+    Value: 780
+    Size: 2
+    Speed: 0
+    Danger: 0
+    Damage: 0
+    Description: "A small, gummy looking creature suspended by a webwork of
+      threads inside multiple interwoven amorphous structure of bone
+      approximately the size of a beach ball. The creature seems to pulsate
+      slowly. With each pulse it glows brighter and emits a low-pitched buzzing
+      sound."
+  - item:
+    ID: 68
+    Type: Life Form
+    Name: Spinning Crab
+    Value: 560
+    Size: 1
+    Speed: 3
+    Danger: 5
+    Damage: 50
+    Description: "A small multi-legged creature that resembles a disk-shaped
+      crab. The hard shell covering its body has a dark carapace and a light
+      plastron, and it is thick in the middle, thinning to a razor sharp edge.
+      Along the edges are curved serrations, like a circular saw. This
+      carnivore attacks its prey by launching itself with its powerful legs.
+      Once in the air it gives its body a ferocious spin by expelling gas with
+      great force from holes in its shell."
+  - item:
+    ID: 69
+    Type: Life Form
+    Name: Black Acid Squirter
+    Value: 335
+    Size: 2
+    Speed: 1
+    Danger: 7
+    Damage: 70
+    Description: "A multihued, fuzzy, radial creature about the size of a
+      rabbit. At the center of the creature are several blue white globular
+      clusters of light and heat sensors. Surrounding each cluster is a ring of
+      small holes through which the creature shoots a powerful acid substance.
+      The creature's rasp like eating apparatus is on its sticky underside."
+  - item:
+    ID: 70
+    Type: Life Form
+    Name: Humanoid Hopper
+    Value: 105
+    Size: 3
+    Speed: 2
+    Danger: 0
+    Damage: 0
+    Description: "A tall, stocky, two legged creature vaguely humanoid in
+      shape. Its two slender legs bend in the reverse direction of a human's,
+      and support a small body with a bulbous, upturned, insect like abdomen.
+      It has long, human looking arms, and a noseless, humanoid face dominated
+      by a single, large eye. Its body is covered with a fine downy fur, dark
+      blue grey in color. The creature seems to be a herbivore, and it is
+      obviously capable of hopping at great speeds on its long legs."
+  - item:
+    ID: 71
+    Type: Life Form
+    Name: Verant Rose
+    Value: 875
+    Size: 1
+    Speed: 0
+    Danger: 0
+    Damage: 0
+    Description: ""
+  - item:
+    ID: 72
+    Type: Life Form
+    Name: Vacuum Slug
+    Value: 1230
+    Size: 2
+    Speed: 2
+    Danger: 0
+    Damage: 0
+    Description: "A long tube of shiny green gelatinous material. Projecting
+      out along the body of this lifeform are thousands of small waving
+      feelers. At each end of the creature is a writhing hose. As it moves the
+      front hose sucks up dirt and small lifeforms while the rear hose shoots
+      out the debris. The lifeform leaves a trail of slime as it moves, and
+      gives off a pungent odor of rotten meat."
+  - item:
+    ID: 73
+    Type: Life Form
+    Name: Hot Fungus
+    Value: 1300
+    Size: 1
+    Speed: 1
+    Danger: 10
+    Damage: 100
+    Description: "A small, rounded, fungoid lifeform with a slimy red exterior.
+      The surface of the fungus is cracked, and issuing from the cracks is
+      steam and a deep red glow. The lifeform also gives off a tremendous
+      amount of heat. Whenever a creature approaches too closely, the fungus
+      sprays a shower of molten rock in that direction."
+  - item:
+    ID: 74
+    Type: Life Form
+    Name: Psychic Blaster
+    Value: 1430
+    Size: 2
+    Speed: 3
+    Danger: 10
+    Damage: 100
+    Description: "A small creature with four beady eyes, a long conical snout,
+      and a stocky rat-like tail. The creature's green, furry, armless body
+      tapers down to two spindly legs with large splayed feet. In spite of its
+      appearance, this creature is capable of emitting a blast of psychic
+      energy that can stun and even kill creatures many times its size."
+  - item:
+    ID: 75
+    Type: Life Form
+    Name: Oily Spore Bush
+    Value: 100
+    Size: 3
+    Speed: 1
+    Danger: 1
+    Damage: 10
+    Description: "A tangled bush like lifeform that appears to have some kind
+      of webbing, similar to a spider's webbing, all over and through it. The
+      bush's branches are twisted and oily, and inside it can be seen pods with
+      small grey flowers. When this bush is approached it gives off a dense
+      cloud of tiny, stinging self propelled spores which swarm onto the
+      approaching creature."
+  - item:
+    ID: 76
+    Type: Life Form
+    Name: Parachute Spider
+    Value: 285
+    Size: 3
+    Speed: 3
+    Danger: 5
+    Damage: 50
+    Description: "A small bodied, spiny creature suspended upon many long
+      spider legs.  Between each pair of legs are tough transparent membranes
+      that form a large dome when the legs are spread. At the feet are hooks
+      that the creature can use to link the feet together. It feeds by leaping
+      high into the air and then descending slowly and silently onto its
+      victims, which it encases in its membrane until they suffocate."
+  - item:
+    ID: 77
+    Type: Life Form
+    Name: Wandering Chandelier
+    Value: 425
+    Size: 10
+    Speed: 2
+    Danger: 0
+    Damage: 0
+    Description: "A squat tree with thick branches. The trunk extends up about
+      two meters and then spreads out to form an extremely wide, low canopy.
+      From this canopy hang thousands of long teardrop shaped leaves that seem
+      to be made of glass or crystal. The tree has several thick, tentacle-like
+      roots that it uses to move itself about in search of mineral deposits. As
+      it moves its leaves make a loud tinkling sound."
+  - item:
+    ID: 78
+    Type: Life Form
+    Name: Wheel Snake
+    Value: 600
+    Size: 2
+    Speed: 3
+    Danger: 3
+    Damage: 30
+    Description: "A long, flat, snake like creature. This creature has the
+      curious habit of suspending parts of its body above the ground and
+      creating an exaggerated vertical wave motion propelling itself quickly by
+      powerful muscular contractions. It is capable of delivering a powerful
+      electrical charge."
+  - item:
+    ID: 79
+    Type: Life Form
+    Name: Glowing Spinner
+    Value: 550
+    Size: 4
+    Speed: 2
+    Danger: 0
+    Damage: 0
+    Description: "A human sized creature resembling a huge, three legged
+      starfish with all of its legs pointing downwards. Ringing the rounded top
+      of the creature is a circle of flexible eyestalks. This creature is
+      bioluminescent and glows a soft bluish-white. When it moves it spins like
+      a top, on its three legs. Nightly these creatures can be seen to
+      congregate and perform complex dances, weaving and spinning around each
+      other."
+  - item:
+    ID: 80
+    Type: Life Form
+    Name: Fei Raptor
+    Value: 1500
+    Size: 4
+    Speed: 5
+    Danger: 9
+    Damage: 90
+    Description: ""
+  - item:
+    ID: 81
+    Type: Life Form
+    Name: Breathing Cactus
+    Value: 450
+    Size: 3
+    Speed: 1
+    Danger: 7
+    Damage: 70
+    Description: "A spine covered cactus like plant with black, fleshy branches
+      and triangular leaves. Covering the surface of this plant are many small
+      pores which rhythmically take in and expel air with a hissing sound. Each
+      time the plant breathes in, it visibly expands. Radiating out from the
+      base of this plant are long, moving tentacle like branches, each of which
+      has a rosette of long poison tipped needles at the end."
+  - item:
+    ID: 82
+    Type: Life Form
+    Name: Green Balloon
+    Value: 175
+    Size: 6
+    Speed: 2
+    Danger: 0
+    Damage: 0
+    Description: "A tremendous conical plant that appears to be filled with
+      gas, like a balloon. The plant's surface is smooth and rubbery and seems
+      to be covered with a film that causes the dark shades of greens in it to
+      swirl and shimmer. Pushed along by wind, the huge conical plant is often
+      lifted by a strong gust. Each time it hits the ground it makes a loud
+      sound like a large bass drum."
+  - item:
+    ID: 83
+    Type: Life Form
+    Name: Poison Glider
+    Value: 345
+    Size: 2
+    Speed: 3
+    Danger: 9
+    Damage: 90
+    Description: "A cat sized, insect like carnivore. This creature's body is
+      covered with a shiny black exoskeleton with a grayish camouflaging
+      pattern. It has two powerful rear legs for jumping, and extendable
+      membranous flaps which allow it to glide long distances. Its front claws
+      are hooked for grasping and it has a small swivel head with four large
+      compound eye. It also has a retractable, needle like mouthpiece capable
+      of injecting a potent poison."
+  - item:
+    ID: 84
+    Type: Life Form
+    Name: Crystal Sponge Plant
+    Value: 225
+    Size: 5
+    Speed: 0
+    Danger: 0
+    Damage: 0
+    Description: "A many faceted crystalline creature with various crystalline
+      protrusions extending upward at all angles from a spongy base. The
+      bright, multi colored light refracted by the crystals make the creature
+      difficult to look at. Buried within the crystals can be seen small
+      structures which photosynthesize the focused light."
+  - item:
+    ID: 85
+    Type: Life Form
+    Name: Nid Berry Bush
+    Value: 150
+    Size: 1
+    Speed: 0
+    Danger: 0
+    Damage: 0
+    Description: "A small strange plant with numerous leaves. Every leaf on
+      this plant is a different size, shape, and color from every other leaf.
+      Some are small and dark, others are big and shiny, some are serrated,
+      some are rounded, and so on. It's as if each one is from a completely
+      different plant. The various branches of the plant seem to be covered
+      with all different kinds of bark. At the top of this plant extends a
+      branch with three juicy, purple berries on it."
+  - item:
+    ID: 86
+    Type: Life Form
+    Name: Golden Whisper
+    Value: 400
+    Size: 1
+    Speed: 0
+    Danger: 0
+    Damage: 0
+    Description: ""
+  - item:
+    ID: 87
+    Type: Life Form
+    Name: Expanding Hippo
+    Value: 300
+    Size: 7
+    Speed: 2
+    Danger: 7
+    Damage: 70
+    Description: "A rotund, bulbous bodied creature on three spindly legs. This
+      creature seems to be a cross between a fat hippopotamus and a spiny
+      blowfish. The creature's thick hide is covered with sharp quills, and
+      when threatened, it can quickly blow itself up to a tremendous size. When
+      it does this it also emits an ear splitting whine which generally
+      frightens off most predators."
+  - item:
+    ID: 88
+    Type: Life Form
+    Name: Beryl Fox
+    Value: 350
+    Size: 2
+    Speed: 4
+    Danger: 3
+    Damage: 30
+    Description: ""
+  - item:
+    ID: 89
+    Type: Life Form
+    Name: Single Leaf
+    Value: 575
+    Size: 11
+    Speed: 0
+    Danger: 0
+    Damage: 0
+    Description: "An extremely tall, straight, slender tree with one single
+      gargantuan leaf at its top. The bark of the tree is a dark red, and
+      ringed with serrated ridges from bottom to top. Early in the day the
+      giant leaf is red in color, and as the position of the sun changes, the
+      leaf's color cycles up through the spectrum to violet, and then down
+      again: the position of the leaf changes so that it is always facing the
+      sun."
+  - item:
+    ID: 90
+    Type: Life Form
+    Name: Yellow Hugger
+    Value: 360
+    Size: 4
+    Speed: 3
+    Danger: 6
+    Damage: 60
+    Description: "A low, wide, powerful looking biped. The creature is covered
+      with matted yellow fur and has two muscular arms and a large spherical
+      head. Along the inside lengths of each of its arms are holes out of which
+      the creature can effect long stiletto spikes. It does this when tightly
+      squeezing its prey in its four gorilla arms. In the center of the mouth
+      of the creature are eight small red eyes and a circular gaping mouth with
+      inward facing teeth."
+  - item:
+    ID: 91
+    Type: Life Form
+    Name: Hereis Fern
+    Value: 380
+    Size: 6
+    Speed: 0
+    Danger: 0
+    Damage: 0
+    Description: ""
+  - item:
+    ID: 92
+    Type: Life Form
+    Name: Fur Tree
+    Value: 500
+    Size: 10
+    Speed: 0
+    Danger: 0
+    Damage: 0
+    Description: "A very tall, tree like lifeform. It has a tall straight trunk
+      that is covered with thick, soft greenish fur. Hanging from some of the
+      branches are long fur covered cylindrical fruits. The leaves of the tree
+      are huge black and saucer shaped. They are all upturned in order to catch
+      the rain water which runs down the stem at the center of each leaf."
+  - item:
+    ID: 93
+    Type: Life Form
+    Name: Milmataur
+    Value: 300
+    Size: 10
+    Speed: 1
+    Danger: 10
+    Damage: 100
+    Description: ""
+  - item:
+    ID: 94
+    Type: Life Form
+    Name: Electric Balloon
+    Value: 940
+    Size: 5
+    Speed: 2
+    Danger: 9
+    Damage: 90
+    Description: "A Translucent, jellyfish like creature with a large,
+      spherical, floating body, and two violet, long, dangling tentacles. The
+      creature's body is so transparent that against the sky it is very
+      difficult to see. As it floats along it makes a sound like crackling
+      electricity, and occasional discharges of lightning can be seen coming
+      from its writhing tentacles when it nears the ground."
+  - item:
+    ID: 95
+    Type: Life Form
+    Name: Running Fungus
+    Value: 295
+    Size: 5
+    Speed: 2
+    Danger: 0
+    Damage: 0
+    Description: "An irregularly shaped, spongy, fungoid lifeform with numerous
+      branching leg appendages. It has a yellowish, wart covered surface. The
+      Creature seems to stand very still, then scurry in some direction. It
+      moves with surprising speed, then stops suddenly. When they are in the
+      same area it can be seen that they are synchronized in their starting and
+      stopping."
+  - item:
+    ID: 96
+    Type: Life Form
+    Name: Grey Anemone
+    Value: 370
+    Size: 6
+    Speed: 3
+    Danger: 2
+    Damage: 20
+    Description: "A tiny anemone like creature with six small, hooked legs. It
+      has a tough, cracked, leathery surface, and the whole creature is a dull
+      grey in color. This creature generally hangs from trees and drops on its
+      prey, but it can also run fast for a short distance. Each of the
+      creature's tentacles is a symbiotic lifeform, capable of delivering a
+      powerful sting, but incapable of moving under its own power."
+  - item:
+    ID: 97
+    Type: Life Form
+    Name: Breykil
+    Value: 450
+    Size: 4
+    Speed: 1
+    Danger: 5
+    Damage: 50
+    Description: ""
+  - item:
+    ID: 98
+    Type: Life Form
+    Name: Green Blob
+    Value: 200
+    Size: 8
+    Speed: 0
+    Danger: 0
+    Damage: 0
+    Description: "A large, amorphous creature that appears to be made of
+      translucent green gelatin. The glistening gelatin is shot through with
+      bluish veins, and visible inside it are luminescent yellow organs that
+      move slowly around.  The entire creature quivers continually, and every
+      so often its body spasms as it emits gas with a loud, familiar sound."
+  - item:
+    ID: 99
+    Type: Life Form
+    Name: Funnel Tree
+    Value: 300
+    Size: 16
+    Speed: 0
+    Danger: 0
+    Damage: 0
+    Description: "A large tree with twin trunks twisting around each other in a
+      spiral. The trunks of the tree are soft, pink, and fleshy, and covered
+      with small thorns. The upper part of the tree is composed of many tiny
+      green leaves that spread out in a funnel shape. The tree makes a deep
+      thrumming sound.  In the middle of a forest the thrumming can be so loud
+      as to block out all other sounds."
+  - item:
+    ID: 100
+    Type: Life Form
+    Name: Jerkyl Fern
+    Value: 350
+    Size: 1
+    Speed: 0
+    Danger: 0
+    Damage: 0
+    Description: ""
+  - item:
+    ID: 101
+    Type: Life Form
+    Name: Bestruggle
+    Value: 450
+    Size: 4
+    Speed: 3
+    Danger: 6
+    Damage: 60
+    Description: ""
+  - item:
+    ID: 102
+    Type: Life Form
+    Name: Marwick Sprinter
+    Value: 495
+    Size: 5
+    Speed: 5
+    Danger: 4
+    Damage: 40
+    Description: ""
+  - item:
+    ID: 103
+    Type: Life Form
+    Name: Purple Screecher
+    Value: 775
+    Size: 4
+    Speed: 4
+    Danger: 7
+    Damage: 70
+    Description: "A long, slender, four legged creature that resembles a large,
+      hairless, tail less bird. The skin of the creature is a deep purple in
+      color and extremely smooth. It has curved tusks, and two sets of eyes,
+      the second of which are extremely large and are only opened at night.
+      These creatures are extremely agile and generally hunt in pairs. When
+      agitated or excited they will often emit a piercing screech."
+  - item:
+    ID: 104
+    Type: Life Form
+    Name: Peacock Tree
+    Value: 850
+    Size: 13
+    Speed: 1
+    Danger: 2
+    Damage: 20
+    Description: "A fairly large tree with a straight but flexible trunk.
+      Projecting off the trunk at an upward angle, from the base to the top,
+      are large feathers that bear an unlikely resemblance to dark green
+      peacock feathers. Even when there is no wind, the trunk of this tree
+      sways in a hypnotic fashion. At the base of this tree can be seen smaller
+      creatures which have been grabbed by the strong prehensile roots of the
+      tree and squeezed to death."
+  - item:
+    ID: 105
+    Type: Life Form
+    Name: Sandpit Stalker
+    Value: 1025
+    Size: 4
+    Speed: 1
+    Danger: 4
+    Damage: 40
+    Description: "A lifeform resembling a plant with a single tall, thick stem.
+      It stands in a circle of finely grained sand. The stalk of the stem sways
+      gently back and forth, and is covered with large, beautiful, red and
+      white flowers. The lifeform exudes a strong, sweet odor that seems to
+      attract other creatures. When it is approached, the stem immediately
+      wraps itself around the creature and pulls it under the sand where the
+      bulk of this creature actually resides."
+  - item:
+    ID: 106
+    Type: Life Form
+    Name: Eight-Legged Rhino
+    Value: 1165
+    Size: 7
+    Speed: 3
+    Danger: 6
+    Damage: 60
+    Description: "A large armor plated creature vaguely resembling an eight
+      legged rhinoceros. The creature is however, longer and lower to the
+      ground than a rhino, and along its back are two parallel ridges of bone
+      spikes. The creature has no visible eyes, and on its snout is a thick,
+      spiral horn.  Before charging something this creature rears on its hind
+      legs and sways from side to side. This behavior seems to help it zero in
+      on its target."
+  - item:
+    ID: 107
+    Type: Life Form
+    Name: Radit Slug
+    Value: 1170
+    Size: 11
+    Speed: 2
+    Danger: 6
+    Damage: 60
+    Description: ""
+  - item:
+    ID: 108
+    Type: Life Form
+    Name: Stinging Cone
+    Value: 1525
+    Size: 10
+    Speed: 1
+    Danger: 1
+    Damage: 10
+    Description: "A massive greenish blue, conically shaped creature. It has a
+      cracked, mucousy surface and a long, whip like projection at its top.
+      Around the base are several long, vertical slits that are filled with
+      sharp, tooth like serrations. This creature exudes a strong odor which
+      has narcotic properties and seems to have the effect of luring other
+      creatures within range of its stinging whip."
+  - item:
+    ID: 109
+    Type: Life Form
+    Name: Brass Harpooner
+    Value: 1800
+    Size: 8
+    Speed: 3
+    Danger: 4
+    Damage: 40
+    Description: "A large, rounded creature completely covered by metallic,
+      brass colored, overlapping plates of armor. It seems to propel itself by
+      means of thousands of small tentacles on its underside. Protruding from
+      the front end of the creature is a single, barbed spike which the
+      creature is capable of shooting from its body. Upon harpooning its
+      victim, these can then be pulled in by the sinewy chords that attach
+      them."
+  - item:
+    ID: 110
+    Type: Life Form
+    Name: Midloth Fruit-tree
+    Value: 1975
+    Size: 12
+    Speed: 0
+    Danger: 0
+    Damage: 0
+    Description: ""
+  - item:
+    ID: 111
+    Type: Life Form
+    Name: Brescin Fireling
+    Value: 2500
+    Size: 6
+    Speed: 5
+    Danger: 6
+    Damage: 60
+    Description: ""
+  - item:
+    ID: 112
+    Type: Life Form
+    Name: Humming Rock
+    Value: 1000
+    Size: 3
+    Speed: 0
+    Danger: 0
+    Damage: 0
+    Description: "A creature resembling a large, solid looking rock. It is
+      coarse and grey like granite, veined with brown and silvery lines. This
+      lifeform exhibits no behaviors, with the one exception that it hums
+      continuously.  Periodically, and for no apparent reason, this humming
+      seems to grow louder and more energetic. The rhythm and melody of the
+      humming seem strikingly familiar to an off key rendition of an ancient
+      song known as the Gilligan's Island theme."
+  - item:
+    ID: 113
+    Type: Life Form
+    Name: Dark Lightning
+    Value: 2000
+    Size: 6
+    Speed: 3
+    Danger: 9
+    Damage: 400
+    Description: "This appears to be a large cube of blazing energy hovering
+      several feet off the ground. Approximately three times the size of the
+      terrain vehicle, it moves rapidly with no visible means of propulsion.
+      Within the shifting core is seen charged electric energy that appears as
+      writhing, dark, inverse lightning. The object or lifeform projects a
+      crackling, throbbing, subsonic force that is deeply disturbing and at
+      close range, utterly unbearable."
+  # TRADE ITEMS: 114-177  DO NOT CHANGE IDs!
+  - item:
+    ID: 114
+    Type: Trade Item
+    Name: Native Meats
+    Value: 120
+    Age: Stone
+    Portrait: T_Livestock.png
+  - item:
+    ID: 115
+    Type: Trade Item
+    Name: Native Vegetables
+    Value: 120
+    Age: Stone
+    Portrait: T_FruitsandVeg.png
+  - item:
+    ID: 116
+    Type: Trade Item
+    Name: Seeds and Spores
+    Value: 185
+    Age: Stone
+    Portrait: T_Seeds.png
+  - item:
+    ID: 117
+    Type: Trade Item
+    Name: Stone Age Tools and Weapons
+    Value: 215
+    Age: Stone
+    Portrait: T_FarmTools.png
+  - item:
+    ID: 118
+    Type: Trade Item
+    Name: Stone Age Musical Instruments
+    Value: 260
+    Age: Stone
+    Portrait: T_Instruments.png
+  - item:
+    ID: 119
+    Type: Trade Item
+    Name: Stone Age Art Objects
+    Value: 290
+    Age: Stone
+    Portrait: T_Art.png
+  - item:
+    ID: 120
+    Type: Trade Item
+    Name: Narcotics
+    Value: 310
+    Age: Stone
+    Portrait: T_Medicine.png
+  - item:
+    ID: 121
+    Type: Trade Item
+    Name: Gemstones amd Geoforms
+    Value: 530
+    Age: Stone
+    Portrait: T_Gems.png
+  - item:
+    ID: 122
+    Type: Trade Item
+    Name: Poisonous Fauna
+    Value: 590
+    Age: Stone
+    Portrait: T_Skins.png
+  - item:
+    ID: 123
+    Type: Trade Item
+    Name: Furs and Skins
+    Value: 630
+    Age: Stone
+    Portrait: T_Furs.png
+  - item:
+    ID: 124
+    Type: Trade Item
+    Name: Cloths
+    Value: 310
+    Age: Metal
+    Portrait: T_Furs.png
+  - item:
+    ID: 125
+    Type: Trade Item
+    Name: Tapestries
+    Value: 360
+    Age: Metal
+    Portrait: T_Art.png
+  - item:
+    ID: 126
+    Type: Trade Item
+    Name: Religious Icons
+    Value: 400
+    Age: Metal
+    Portrait: T_Art.png
+  - item:
+    ID: 127
+    Type: Trade Item
+    Name: Metal Age Weapons and Armor
+    Value: 430
+    Age: Metal
+    Portrait: T_Weapons_Metal.png
+  - item:
+    ID: 128
+    Type: Trade Item
+    Name: Metal Age Tools
+    Value: 445
+    Age: Metal
+    Portrait: T_FarmTools.png
+  - item:
+    ID: 129
+    Type: Trade Item
+    Name: Metal Age Medicines
+    Value: 510
+    Age: Metal
+    Portrait: T_Medicine.png
+  - item:
+    ID: 130
+    Type: Trade Item
+    Name: Native Science Texts
+    Value: 530
+    Age: Metal
+    Portrait: T_Books.png
+  - item:
+    ID: 131
+    Type: Trade Item
+    Name: Native Literature
+    Value: 630
+    Age: Metal
+    Portrait: T_Books.png
+  - item:
+    ID: 132
+    Type: Trade Item
+    Name: Assorted Gemstones
+    Value: 800
+    Age: Metal
+    Portrait: T_Gems.png
+  - item:
+    ID: 133
+    Type: Trade Item
+    Name: Synthetic Foods and Chemicals
+    Value: 500
+    Age: Industrial
+    Portrait: T_FruitsandVeg.png
+  - item:
+    ID: 134
+    Type: Trade Item
+    Name: Synthetic Materials
+    Value: 550
+    Age: Industrial
+    Portrait: T_Seeds.png
+  - item:
+    ID: 135
+    Type: Trade Item
+    Name: I.A. Civilian Electronics
+    Value: 580
+    Age: Industrial
+    Portrait: T_Electronics.png
+  - item:
+    ID: 136
+    Type: Trade Item
+    Name: Hypnotic Instruments
+    Value: 750
+    Age: Industrial
+    Portrait: T_Instruments.png
+  - item:
+    ID: 137
+    Type: Trade Item
+    Name: I.A. Military Electronics
+    Value: 800
+    Age: Industrial
+    Portrait: T_Electronics.png
+  - item:
+    ID: 138
+    Type: Trade Item
+    Name: Genetically Enhanced Cattle
+    Value: 920
+    Age: Industrial
+    Portrait: T_Livestock.png
+  - item:
+    ID: 139
+    Type: Trade Item
+    Name: I.A. Medicines
+    Value: 970
+    Age: Industrial
+    Portrait: T_Medicine.png
+  - item:
+    ID: 140
+    Type: Trade Item
+    Name: Basic Computing Essentials
+    Value: 1200
+    Age: Industrial
+    Portrait: T_Electronics.png
+  - item:
+    ID: 141
+    Type: Trade Item
+    Name: Hardy Ameobas
+    Value: 1350
+    Age: Industrial
+    Portrait: T_Prisoners.png
+  - item:
+    ID: 142
+    Type: Trade Item
+    Name: Glush Cola
+    Value: 75
+    Age: Spacefaring
+    Portrait: T_Booze.png
+  - item:
+    ID: 143
+    Type: Trade Item
+    Name: Data Hold
+    Value: 100
+    Age: Spacefaring
+    Portrait: T_Computers.png
+  - item:
+    ID: 144
+    Type: Trade Item
+    Name: Lovely Glortblorps
+    Value: 150
+    Age: Spacefaring
+    Portrait: T_FruitsandVeg.png
+  - item:
+    ID: 145
+    Type: Trade Item
+    Name: Data Shell
+    Value: 190
+    Age: Spacefaring
+    Portrait: T_Reactor.png
+  - item:
+    ID: 146
+    Type: Trade Item
+    Name: Data Crystals
+    Value: 225
+    Age: Spacefaring
+    Portrait: T_Computers.png
+  - item:
+    ID: 147
+    Type: Trade Item
+    Name: Net Probes
+    Value: 225
+    Age: Spacefaring
+    BlackMarket: true
+    Portrait: T_Reactor.png
+  - item:
+    ID: 148
+    Type: Trade Item
+    Name: Basic Robots and Automatons
+    Value: 260
+    Age: Spacefaring
+    Portrait: T_Robots.png
+  - item:
+    ID: 149
+    Type: Trade Item
+    Name: Escape Pod
+    Value: 350
+    Age: Spacefaring
+    Portrait: T_EscapePod.png
+  - item:
+    ID: 150
+    Type: Trade Item
+    Name: Decoder
+    Value: 445
+    Age: Spacefaring
+    BlackMarket: true
+    Portrait: T_Electronics.png
+  - item:
+    ID: 151
+    Type: Trade Item
+    Name: Adv. Robots and Automatons
+    Value: 540
+    Age: Spacefaring
+    Portrait: T_Robots.png
+  - item:
+    ID: 152
+    Type: Trade Item
+    Name: Holovids
+    Value: 610
+    Age: Spacefaring
+    Portrait: T_NavComputer.png
+  - item:
+    ID: 153
+    Type: Trade Item
+    Name: Universal Power Adapter
+    Value: 725
+    Age: Spacefaring
+    Portrait: T_Reactor.png
+  - item:
+    ID: 154
+    Type: Trade Item
+    Name: Heavy Molecules
+    Value: 780
+    Age: Spacefaring
+    Portrait: T_Liquid.png
+  - item:
+    ID: 155
+    Type: Trade Item
+    Name: Dreamgrids
+    Value: 800
+    Age: Spacefaring
+    Portrait: T_Prisoners.png
+  - item:
+    ID: 156
+    Type: Trade Item
+    Name: C.E. Robots and Automatons
+    Value: 850
+    Age: Spacefaring
+    Portrait: T_Robots.png
+  - item:
+    ID: 157
+    Type: Trade Item
+    Name: Break-it-down Enzymes
+    Value: 875
+    Age: Spacefaring
+    Portrait: T_Pottery.png
+  - item:
+    ID: 158
+    Type: Trade Item
+    Name: Spacefaring Age Medicines
+    Value: 900
+    Age: Spacefaring
+    Portrait: T_Medicine.png
+  - item:
+    ID: 159
+    Type: Trade Item
+    Name: Screech Harps
+    Value: 1000
+    Age: Spacefaring
+    Portrait: T_Instruments.png
+  - item:
+    ID: 160
+    Type: Trade Item
+    Name: Genetic Materials
+    Value: 1075
+    Age: Spacefaring
+    Portrait: T_Medicine.png
+  - item:
+    ID: 161
+    Type: Trade Item
+    Name: Cargo Life-ship
+    Value: 1120
+    Age: Spacefaring
+    Portrait: T_EscapePod.png
+  - item:
+    ID: 162
+    Type: Trade Item
+    Name: Fusion Splicer
+    Value: 1190
+    Age: Spacefaring
+    BlackMarket: true
+    Portrait: T_Weapons_Laser.png
+  - item:
+    ID: 163
+    Type: Trade Item
+    Name: Terrestrial Flightcraft
+    Value: 1200
+    Age: Spacefaring
+    Portrait: T_Ship.png
+  - item:
+    ID: 164
+    Type: Trade Item
+    Name: Luxury Liquid-speeder
+    Value: 1250
+    Age: Spacefaring
+    Portrait: T_Ship.png
+  - item:
+    ID: 165
+    Type: Trade Item
+    Name: Terraform Mold
+    Value: 1300
+    Age: Spacefaring
+    Portrait: T_Liquid.png
+  - item:
+    ID: 166
+    Type: Trade Item
+    Name: Phase Inductors
+    Value: 1325
+    Age: Spacefaring
+    Portrait: T_Weapons_Laser.png
+  - item:
+    ID: 167
+    Type: Trade Item
+    Name: Firegem
+    Value: 1400
+    Age: Spacefaring
+    BlackMarket: true
+    Portrait: T_Gems.png
+  - item:
+    ID: 168
+    Type: Trade Item
+    Name: Gravitational Compensator
+    Value: 1400
+    Age: Spacefaring
+    Portrait: T_Computers.png
+  - item:
+    ID: 169
+    Type: Trade Item
+    Name: Godmasks
+    Value: 1410
+    Age: Spacefaring
+    Portrait: T_Drill_Good.png
+  - item:
+    ID: 170
+    Type: Trade Item
+    Name: Cutting Edge Military Elec.
+    Value: 1550
+    Age: Spacefaring
+    Portrait: T_Electronics.png
+  - item:
+    ID: 171
+    Type: Trade Item
+    Name: Cutting Edge Scanners
+    Value: 1700
+    Age: Spacefaring
+    Portrait: T_NavComputer.png
+  - item:
+    ID: 172
+    Type: Trade Item
+    Name: Mindforge
+    Value: 2000
+    Age: Spacefaring
+    BlackMarket: true
+    Portrait: T_Drill_Good.png
+  - item:
+    ID: 173
+    Type: Trade Item
+    Name: Jeweled Xsiao Xingtay
+    Value: 2200
+    Age: Spacefaring
+    Portrait: T_Gems.png
+  - item:
+    ID: 174
+    Type: Trade Item
+    Name: Harmony Stone
+    Value: 2400
+    Age: Spacefaring
+    Portrait: T_Gems.png
+  - item:
+    ID: 175
+    Type: Trade Item
+    Name: Fusion Reactors
+    Value: 2700
+    Age: Spacefaring
+    Portrait: T_Reactor.png
+  - item:
+    ID: 176
+    Type: Trade Item
+    Name: Bio-Organs
+    Value: 3000
+    Age: Spacefaring
+    Portrait: T_Prisoners.png
+  - item:
+    ID: 177
+    Type: Trade Item
+    Name: Fusion Elements
+    Value: 3200
+    Age: Spacefaring
+    Portrait: T_Reactor.png
+  # RUINS: IDs 178-?
+  - item:
+    ID: 178
+    Type: Ruin
+    Name: Ancient Monolith
+    Description: "A huge ceramic monolith is firmly planted in the bedrock at
+      this location.  The crystalline material is impossible to date.  On the
+      northern facing side, etchings can be seen that appears to be a map of
+      sorts.  Based on the layout of the continents, you recognize the frozen
+      planet Ildathach.  Based on ground markings on the surrounding terrain,
+      it appears that a number of vehicles have visited this site recently."
+    Portrait: B_Tomb.png
+    planetid: 2
+    # Islay - 35S X 15W
+    y: -15
+    x: 35
+  # INSERT NEW ITEMS HERE STARTING AT LAST ID, REGARDLESS OF TYPE;
+  # NOTE: IDS DO NOT NEED TO BE SEQUENTIAL, ONLY UNIQUE.
+  - item:
+    ID: 179
+    Type: Ruin
+    Name: Research Outpost
+    Description: "This abandoned research station shows recent signs of
+      construction.  Scientific equipment has been smashed and chewed?
+      Projectile-based weapon damage etches the walls and the ceiling.  The
+      central computer is intact but all data has been wiped cleaned of data."
+    Portrait: B_Research.png
+    planetid: 78
+    # Samildanach, Elcmar 190,98 (28S X 60E)
+    y: 61
+    x: 28
+  - item:
+    ID: 180
+    Type: Ruin
+    Name: Outpost
+    Description: "This apparatus appears to be a robotically built transmitter
+      capable of broadcasting a signal into space.  The power source is long
+      dead."
+    Portrait: B_ListeningPost.png
+    planetid: 25
+    #  Ildathach -  Hypercube
+    y: 18
+    x: 11
+  - item:
+    ID: 181
+    Type: Ruin
+    Name: Excavation
+    Description: "This area of ground appears to be artificially disturbed in
+      some way."
+    Portrait: B_Mine.png
+    planetid: 197
+    # Fir Bolg I 17,93  -  Shimmering Holograms
+    y: -142
+    x: -53
+  - item:
+    ID: 182
+    Type: Ruin
+    Name: Ancient Ruin
+    Description: "This ancient symmetrical structure defies categorization.
+      Deep in a cave formation under the city itself a block formation made
+      entirely of etched endurium has been found. Xenoarchaeologists have
+      theorized that this device may be some data storage unit or ancient
+      database organized by thick stacks of bound plates."
+    Portrait: B_Tomb.png
+    planetid: 391
+    #  Lir IV 175, 181 (37N X 8W) Ancient Database Plates
+    y: -9
+    x: -36
+  - item:
+    ID: 183
+    Type: Ruin
+    Name: Ancient Ruin
+    Description: "This ancient symmetrical structure defies categorization.
+      This ancient structure is several times more massive than similar
+      structures."
+    Portrait: B_Tomb.png
+    planetid: 486
+    # Mathgen IV 212,3  -  Crystal Sphere
+    y: 15
+    x: 4
+  - item:
+    ID: 184
+    Type: Ruin
+    Name: Myrrdan Archaeological Dig  # 163
+    Description: "Myrrdan scientists and engineers greet you on your arrival
+      and direct your attention to the data core stored in the facility next to
+      this dig."
+    Portrait: B_Mine.png
+    planetid: 439
+    # Tuatha, Nemed 125,96  -  Tafel Data System
+    y: 62
+    x: -41
+  - item:
+    ID: 185
+    Type: Ruin
+    Name: Abandoned Facility
+    Description: "This long abandoned facility appears to be previously
+      stripped of anything of value. Primitive and heavy machinery of
+      indeterminate value and purpose lies in crumbling buildings. Radiometric
+      decay indicates a passage of 48 years since anything was active at this
+      site."
+    Portrait: B_Factory.png
+    planetid: 240
+    # Eocho, Etarlam 172,118 -  Spiral Lens
+    y: -94
+    x: 46
+  - item:
+    ID: 186
+    Type: Ruin
+    Name: Primitive Structures
+    Description: "This pirate repair facility is primitive and appears
+      abandoned. Extremely basic facilities are in bad repair and full of the
+      debris and trash."
+    Constant: WHININGORB
+    Portrait: B_ShantyTown.png
+    planetid: 70
+    # Alastir, Tat 132,125
+    y: -1
+    x: -154
+  - item:
+    ID: 187
+    Type: Ruin
+    Name: Enigmatic Town
+    Description: "This uncanny facility is extremely alien and appears
+      unnatural. Buildings are manufactured with only the most primitive
+      materials and their architecture lacks any sort of symmetry or
+      consistency.  There are no signs of habitation or life, yet not a single
+      trace of dust or corrosion.  The buildings absorb and dampen all forms of
+      electromagnetic radiation making dating impossible."
+    Portrait: B_ShantyTown.png
+    planetid: 479
+    # Inchegeela II 59,210  -  Erratic Energy Devices
+    y: -132
+    x: -136
+  - item:
+    ID: 188
+    Type: Ruin
+    Name: Myrrdan Archaeological Dig  # 42
+    Description: "Myrrdan scientists and engineers greet you on your arrival
+      and direct your attention to the storage area adjacent to the facility."
+    Portrait: B_Pottery.png
+    planetid: 25
+    # ** unable to study this ruin for some reason **  Ildathach  -  Artistic
+    # Containers
+    y: -123
+    x: 48
+  - item:
+    ID: 189
+    Type: Ruin
+    Name: Sealed Outpost
+    Description: "This highly advanced outpost appears to have been destroyed
+      by orbital weapons during an early stage of its construction.  Melted
+      images of bear like creatures in military formations cover several
+      surviving surfaces."
+    Portrait: B_Research.png
+    planetid: 224
+    #  Arturwen, Anu 65,110  -  Artistic Baubles
+    y: -68
+    x: -88
+  - item:
+    ID: 190
+    Type: Ruin
+    Name: Industrial City
+    Description: Ruins of a plastics and ceramics age civilization.
+    Portrait: B_Metropolis.png
+    planetid: 405
+    #   Fiacha III 219,179 -  Ticking Cylinder
+    y: -62
+    x: -146
+  - item:
+    ID: 191
+    Type: Ruin
+    Name: Thrynn Propulsion System
+    Description: "Remains of an automated propulsion system of Thrynn origin.
+      Only minor damage apparent and the guidance system apparently performed a
+      flawless landing, since there are no signs of impact.  Power to both the
+      primary and backup tachyon communication systems have failed."
+    Portrait: B_WeaponsPlacement.png
+    planetid: 120
+    # Aircthech II 100,8  -  Shattered Drone
+    y: -26
+    x: 38
+  - item:
+    ID: 192
+    Type: Ruin
+    Name: Crumbling Structure
+    Description: "Remains of a once ornate religious shrine lost to the ages.
+      Simple columns of white stone in a rectangular arrangement adorned with
+      ornate carvings once supported some sort of roofing system which has long
+      since vanished.  Evidence of a low-grade explosion and fire marks the
+      structure."
+    Portrait: B_Tomb.png
+    planetid: 26
+    # Ciuin in the Faidh system - Training Mission
+    y: 92
+    x: 21
+  - item:
+    ID: 194
+    Type: Ruin
+    Name: Primitive Structures
+    Description: "These primitive ruins show signs of extreme age and terrible
+      disrepair."
+    Portrait: B_ShantyTown.png
+    planetid: 26
+    # Ciuin in the Faidh system - Training Mission
+    y: 32
+    x: -95
+  - item:
+    ID: 195
+    Type: Artifact
+    Name: Nid Berry Statue
+    Value: 0
+    Size: 0.1
+    Portrait: T_FarmTools.png
+    planetid: 454
+    # Aran 130S X 60E - Training Mission
+    y: 60
+    x: 125
+  - item:
+    ID: 196
+    Type: Ruin
+    Name: Myrrdan Marker
+    Description: "This marker bears the following riddle: Go west young man"
+    Portrait: B_Tomb.png
+    planetid: 30
+    # Findtigernd in the Nemed system - 43s X 48E
+    y: 48
+    x: 43
+  - item:
+    ID: 211
+    Type: Ruin
+    Name: Myrrdan Marker
+    Description: "This marker bears the following riddle: Twins of acid provide
+      two spheres, the cooler one we wish to see.  The coldest extremes create
+      two lines which intersect at 60 only once."
+    Portrait: B_Tomb.png
+    planetid: 30
+    # Findtigernd in the Nemed system - 43s X 105W
+    y: -105
+    x: 43
+  - item:
+    ID: 197
+    Type: Artifact
+    Name: Rod Device
+    Value: 0
+    Size: 0.1
+    Portrait: T_Weapons_Laser.png
+    planetid: 453
+    # Oilell - 94N X 25E
+    y: 25
+    x: -94
+  - item:
+    ID: 198
+    Type: Ruin
+    Name: Crumbling Facility
+    Description: "... We move to place on other side of gas giants at 115N X
+      46E. ...  Harrison promise us scanner tech.  He  smart, but we watch him
+      ... He show us evidence at 55S X 35W on the planet of fire.  He should
+      discover its exact location soon ... must remember to add 20 to
+      numbers..."
+    Portrait: B_ShantyTown.png
+    planetid: 450
+    # Lough Leane 2389 - 118N X 112W
+    y: -112
+    x: -118
+  - item:
+    ID: 199
+    Type: Ruin
+    Name: crumbling facility
+    Description: This facility has been heavily damaged by orbital weapons fire.
+    Portrait: B_ShantyTown.png
+    planetid: 453
+    # Oilell - 95N X 26E
+    y: 26
+    x: -95
+  - item:
+    ID: 200
+    Type: Ruin
+    Name: Merced's Perry
+    Description: "This mining facility already has had their fission reactor
+      replaced with a Mark five Fusion Dynamo several months ago."
+    Portrait: B_Mine.png
+    planetid: 467
+    # Dermod/Iarbonel system (125, 99) - 38N X 154W
+    y: -154
+    x: -38
+  - item:
+    ID: 201
+    Type: Ruin
+    Name: Red Firestone
+    Description: "This mining facility retrieves and processes a number of low
+      grade ores for ship construction.  The fission plant is located directly
+      outside the compound."
+    Portrait: B_Mine.png
+    planetid: 467
+    # Dermod/Iarbonel system (125, 99) - 62N X 42E
+    y: 42
+    x: -62
+  - item:
+    ID: 202
+    Type: Artifact
+    Name: Fusion Reactor
+    Value: 0
+    Size: 16.7
+    Portrait: T_EscapePod.png
+    planetid: 467
+    # Dermod/Iarbonel system (125, 99) - 61N X 43E
+    y: 43
+    x: -61
+  - item:
+    ID: 203
+    Type: Artifact
+    Name: Scanner Components
+    Value: 0
+    Size: 16.7
+    Portrait: T_Electronics.png
+    planetid: 23
+    # Bran/Breothach system (127, 102) - 26S X 76E
+    y: 76
+    x: 26
+  - item:
+    ID: 204
+    Type: Ruin
+    Name: Communications Tower
+    Description: "Log: Noah 2 and 3 have done quite well for themselves.  I
+      think that will see how Noah 6 is faring next.  I can always go
+      hyper-relative again if their civilization takes an extra hundred or even
+      a thousand years to develop.  My only regret is failing to track down
+      that Myrrdan sensor probe.  Historical records revealed that standard
+      procedure in Empire times was to land a stable 4th dimensional object
+      close to the equator and prime meridian.  Perturbations within the
+      contained artifact were relayed back to the ship over a few hours time.
+      Shame I didn't discover that months ago.  Not worth the risk to venture
+      that close to Myrrdan territory now.  -H"
+    Portrait: B_ListeningPost.png
+    planetid: 23
+    # Bran/Breothach system (127, 102) - 25S X 75E
+    y: 75
+    x: 25
+  - item:
+    ID: 205
+    Type: Ruin
+    Name: Nav Marker
+    Description: "A primitive form of navigational marker.  An ideogram depicts
+      a forest with several pathways stretching out off the end of the image in
+      straight perpendicular lines.  Infinite vectors extend to the north,
+      east, and south in this image from the center but the pathway to the west
+      is blocked."
+    Portrait: B_ListeningPost.png
+    planetid: 23
+    # Bran/Breothach system (127, 102)
+    y: 0
+    x: 0
+  - item:
+    ID: 206
+    Type: Ruin
+    Name: Nav Marker
+    Description: "A primitive form of navigational marker.  An ideogram depicts
+      a forest with several pathways stretching out off the end of the image in
+      straight perpendicular lines.  Infinite vectors extend to the east and
+      south in this image from the center but the pathways to the north and
+      west are blocked."
+    Portrait: B_ListeningPost.png
+    planetid: 23
+    # Bran/Breothach system (127, 102)
+    y: 1
+    x: -39
+  - item:
+    ID: 207
+    Type: Ruin
+    Name: Nav Marker
+    Description: "A primitive form of navigational marker.  An ideogram depicts
+      a forest with several pathways stretching out off the end of the image in
+      straight perpendicular lines.  Infinite vectors extend to the east and
+      West in this image from the center but the pathways to the north and
+      south are blocked."
+    Portrait: B_ListeningPost.png
+    planetid: 23
+    # Bran/Breothach system (127, 102)
+    y: 89
+    x: -39
+  - item:
+    ID: 208
+    Type: Ruin
+    Name: Nav Marker
+    Description: "A primitive form of navigational marker.  An ideogram depicts
+      a forest with several pathways stretching out off the end of the image in
+      straight perpendicular lines.  Infinite vectors extend to the north, West
+      and south in this image from the center but the pathway to the east is
+      blocked."
+    Portrait: B_ListeningPost.png
+    planetid: 23
+    # Bran/Breothach system (127, 102)
+    y: 145
+    x: -39
+  - item:
+    ID: 209
+    Type: Ruin
+    Name: Nav Marker
+    Description: "A primitive form of navigational marker.  An ideogram depicts
+      a forest with several pathways stretching out off the end of the image in
+      straight perpendicular lines.  An infinite vector extends to the south in
+      this image from the center but the pathways to the north, east, and west
+      are blocked."
+    Portrait: B_ListeningPost.png
+    planetid: 23
+    # Bran/Breothach system (127, 102)
+    y: 145
+    x: -128
+  - item:
+    ID: 210
+    Type: Ruin
+    Name: Nav Marker
+    Description: "A primitive form of navigational marker.  An ideogram depicts
+      a forest with several pathways stretching out off the end of the image in
+      straight perpendicular lines.  Infinite vectors extend to the north,
+      east, and south in this image from the center but the pathway to the west
+      is blocked."
+    Portrait: B_ListeningPost.png
+    planetid: 23
+    # Bran/Breothach system (127, 102)
+    y: 0
+    x: 44
+  - item:
+    ID: 212
+    Type: Ruin
+    Name: Nav Marker
+    Description: "A primitive form of navigational marker.  An ideogram depicts
+      a forest with several pathways stretching out off the end of the image in
+      straight perpendicular lines.  Infinite vectors extend to the east and
+      West in this image from the center but the pathways to the north and
+      south are blocked."
+    Portrait: B_ListeningPost.png
+    planetid: 23
+    # Bran/Breothach system (127, 102)
+    y: 13
+    x: 45
+  - item:
+    ID: 213
+    Type: Ruin
+    Name: Nav Marker
+    Description: "A primitive form of navigational marker.  An ideogram depicts
+      a forest with several pathways stretching out off the end of the image in
+      straight perpendicular lines.  Infinite vectors extend to the north,
+      West, and south in this image from the center but the pathway to the east
+      is blocked."
+    Portrait: B_ListeningPost.png
+    planetid: 23
+    # Bran/Breothach system (127, 102)
+    y: 73
+    x: 46
+  - item:
+    ID: 214
+    Type: Ruin
+    Name: Nav Marker
+    Description: "A primitive form of navigational marker.  An ideogram depicts
+      a forest with several pathways stretching out off the end of the image in
+      straight perpendicular lines.  Infinite vectors extend to the north and
+      East in this image from the center but the pathways to the West and south
+      are blocked."
+    Portrait: B_ListeningPost.png
+    planetid: 23
+    # Bran/Breothach system (127, 102)
+    y: 0
+    x: 69
+  - item:
+    ID: 215
+    Type: Ruin
+    Name: Nav Marker
+    Description: "A primitive form of navigational marker.  An ideogram depicts
+      a forest with several pathways stretching out off the end of the image in
+      straight perpendicular lines.  Infinite vectors extend to the east and
+      West in this image from the center but the pathways to the north and
+      south are blocked."
+    Portrait: B_ListeningPost.png
+    planetid: 23
+    # Bran/Breothach system (127, 102)
+    y: 11
+    x: 69
+  - item:
+    ID: 216
+    Type: Ruin
+    Name: Nav Marker
+    Description: "A primitive form of navigational marker.  An ideogram depicts
+      a forest with several pathways stretching out off the end of the image in
+      straight perpendicular lines.  Infinite vectors extend to the north, east
+      and West in this image from the center but the pathway to the south is
+      blocked."
+    Portrait: B_ListeningPost.png
+    planetid: 23
+    # Bran/Breothach system (127, 102)
+    y: 77
+    x: 69
+  - item:
+    ID: 217
+    Type: Ruin
+    Name: Nav Marker
+    Description: "A primitive form of navigational marker.  An ideogram depicts
+      a forest with several pathways stretching out off the end of the image in
+      straight perpendicular lines.  Infinite vectors extend to the north and
+      West in this image from the center but the pathways to the east and south
+      are blocked."
+    Portrait: B_ListeningPost.png
+    planetid: 23
+    # Bran/Breothach system (127, 102)
+    y: 142
+    x: 69
+  - item:
+    ID: 218
+    Type: Artifact
+    Name: Sonic Disruptor
+    Value: 0
+    Size: 0.1
+    Portrait: T_Weapons_Laser.png
+  - item:
+    ID: 219
+    Type: Artifact
+    Name: Reaper
+    Value: 0
+    Size: 0.4
+    Portrait: T_Weapons_Laser.png
+  - item:
+    ID: 220
+    Type: Artifact
+    Name: Miniature Funnel Bushes
+    Value: 0
+    Size: 2.4
+    Portrait: T_Drill_Good.png
+    planetid: 144
+    #  Cáilte I 6N X 55E
+    y: 55
+    x: -6
+  - item:
+    ID: 221
+    Type: Ruin
+    Name: Ruin
+    Description: "Science report: Captain, this is an enclosed structure,
+      isometric dating over 10,000 years of age. Nothing of value or interest
+      remains of the civilization which constructed this structure, yet the
+      trapped atmosphere within still bears traces of a directional tachyon
+      signature.  Triangulating from several points of trapped atmosphere on
+      this planet surface shows that the tachyons surge is moving towards a
+      point on the northern end of the equatorial island almost extremely
+      enclosed in lava.  The strength of the signature is identical to a
+      Myrrdan-class vessel. No outward traveling particles matching the drive
+      signature of any vessel have been detected so precise identification is
+      impossible."
+    Portrait: B_Tomb.png
+    planetid: 144
+    #  Cáilte I 73S X 21W
+    y: -21
+    x: 73
+  - item:
+    ID: 222
+    Type: Ruin
+    Name: Abandoned Base
+    Description: "Within this abandoned research outpost many broken and
+      discarded curio artifacts have been found. The base itself is of human
+      origin and several items of furniture bears the signature of Diligent's
+      fabricators. The base appears to have been recently scrapped and all
+      useful equipment and items have been removed with one exception, a large
+      cylindrical dish holding three delicate Tillandsia."
+    Portrait: B_Research.png
+    planetid: 144
+    #  Cáilte I 4N X 56E
+    y: 56
+    x: -4
+  - item:
+    ID: 223
+    Type: Artifact
+    Name: Intrepid Sensor Data
+    Value: 0
+    Size: 0.1
+    Portrait: T_Computers.png
+    #  Used in quest #37
+  - item:
+    ID: 224
+    Type: Artifact
+    Name: Bar-zhon genetic material
+    Value: 0
+    Size: 10.0
+    Portrait: T_Prisoners.png
+    #  Used in quest #38
+  - item:
+    ID: 225
+    Type: Artifact
+    Name: Bx genetic material
+    Value: 0
+    Size: 10.0
+    Portrait: T_Prisoners.png
+    #  Used in quest #38
+  - item:
+    ID: 226
+    Type: Artifact
+    Name: Sabion genetic material
+    Value: 0
+    Size: 10.0
+    Portrait: T_Prisoners.png
+    #  Used in quest #38
+  - item:
+    ID: 227
+    Type: Artifact
+    Name: Transmodra genetic material
+    Value: 0
+    Size: 10.0
+    Portrait: T_Prisoners.png
+    #  Used in quest #38
+  - item:
+    ID: 228
+    Type: Artifact
+    Name: Elowan genetic material
+    Value: 0
+    Size: 10.0
+    Portrait: T_Prisoners.png
+    #  Used in quest #38
+  - item:
+    ID: 229
+    Type: Artifact
+    Name: Minex genetic material
+    Value: 0
+    Size: 10.0
+    Portrait: T_Prisoners.png
+    #  Used in quest #38
+  - item:
+    ID: 230
+    Type: Artifact
+    Name: Nyssian genetic material
+    Value: 0
+    Size: 10.0
+    Portrait: T_Prisoners.png
+    #  Used in quest #38
+  - item:
+    ID: 231
+    Type: Artifact
+    Name: Pirate genetic material
+    Value: 0
+    Size: 10.0
+    Portrait: T_Prisoners.png
+    #  Used in quest #38
+  - item:
+    ID: 232
+    Type: Artifact
+    Name: Spemin genetic material
+    Value: 0
+    Size: 10.0
+    Portrait: T_Prisoners.png
+    #  Used in quest #38
+  - item:
+    ID: 233
+    Type: Artifact
+    Name: Tafel genetic material
+    Value: 0
+    Size: 10.0
+    Portrait: T_Prisoners.png
+    #  Used in quest #38
+  - item:
+    ID: 234
+    Type: Artifact
+    Name: Thrynn genetic material
+    #  Used in quest #38
+    Value: 0
+    Size: 10.0
+    Portrait: T_Prisoners.png
+  - item:
+    ID: 235
+    Type: Artifact
+    Name: Elowan Viral Research Data
+    Value: 0
+    Size: 10.0
+    Portrait: T_Plates.png
+  - item:
+    ID: 236
+    Type: Artifact
+    Name: Coalition Computer
+    Value: 0
+    Size: 15.8
+    Portrait: T_Computers.png
+  - item:
+    ID: 237
+    Type: Artifact
+    Name: Diplomatic Pouch
+    Value: 0
+    Size: 0.1
+    Portrait: T_NavComputer.png
+  - item:
+    ID: 238
+    Type: Artifact
+    Name: Bar-zhon Officers
+    Value: 0
+    Size: 0.1
+    Portrait: T_Prisoners.png
+    planetid: 470
+    #  (109S X 23E) on the planet Deoch III (224, 121)
+    y: 23
+    x: 109
+  - item:
+    ID: 239
+    Type: Artifact
+    Name: Bar-zhon Fusion Reactor
+    Value: 0
+    Size: 12.7
+    Portrait: T_EscapePod.png
+    planetid: 35
+    #  (128S X 8E) on the planet Iuchar II (215, 44)
+    y: 8
+    x: 128
+  - item:
+    ID: 240
+    Type: Ruin
+    Name: Talong
+    Description: "This large Bar-zhon city appears to be quite isolated from
+      the rest of civilization on the planet."
+    Portrait: B_Metropolis.png
+    planetid: 35
+    #  (128S X 8E) on the planet Iuchar II (215, 44)
+    y: 7
+    x: 129
+  - item:
+    ID: 241
+    Type: Artifact
+    Name: Bar-zhon Observer-Recorder
+    Value: 0
+    Size: 0.1
+    Portrait: T_EscapePod.png
+  - item:
+    ID: 242
+    Type: Artifact
+    Name: Bar-zhon Signaling Device
+    Value: 0
+    Size: 0.1
+    Portrait: Golden_Device.png
+  - item:
+    ID: 243
+    Type: Ruin
+    Name: Nysing
+    Description: "You are guided to the center of the city and brought into a
+      governmental conference room. The Bar-zhon accept and dismiss Myrrdan's
+      conditions on shared Fleet command but call your attention to their
+      modifications of the treaty. They demand a fully cooperative alliance:
+      Myrrdan must also come to their aid with military, humanitarian, and
+      technological assistance and the Bar-zhon in return promise the same. On
+      behalf of Myrrdan, you accept the treaty as written. A contingent of
+      Bar-zhon officers in cryo-stasis await transport on board your vessel to
+      Myrrdan."
+    Portrait: B_Metropolis.png
+    planetid: 470
+    #  114S X 23E on Deoch III (224,121)
+    y: 24
+    x: 110
+  - item:
+    ID: 244
+    Type: Ruin
+    Name: Crash Site
+    Description: "... written on the base of an enormous ornamental statue:
+      \"Welcome fellow believer in simultaneous serendipitous stupefaction!
+      The Thdok-Bryg-Ahhh in its most auspicious manner has decreed our
+      extended stay upon this inhospitable planetoid to test our faith.  Future
+      generations will marvel at the fortuitous providence that guides us to
+      divide our efforts for reconstruction between two sites, 11S X 87W and
+      94S X 131E  For the next 2 cycles, we must unerringly follow the
+      sacrosanct celestial ceremony such that the various portents and
+      divinations for full elaboration of our purpose here may be revealed in
+      the fullness of time.  Yes. Well. Hmmm. Just so. Just so.\""
+    Portrait: B_ListeningPost.png
+    planetid: 443
+    #  Findtha (73N X 40E) in the Enna system (105, 112).
+    y: 40
+    x: -71
+  - item:
+    ID: 245
+    Type: Artifact
+    Name: Useless Curio
+    Value: 0
+    Size: 24.7
+    Portrait: T_EscapePod.png
+    planetid: 443
+    #  Findtha (73N X 40E) in the Enna system (105, 112).
+    y: 41
+    x: -72
+  - item:
+    ID: 246
+    Type: Ruin
+    Name: Crumbling Ruin
+    Description: "Within an abandoned and poorly built complex: \"In a moment
+      of divine inspiration we now see that it is inauspicious and in many
+      respects unfavorable for us to attempt to maintain our presence at this
+      location. We will, post haste, join with our esteemed acolytes and
+      honored sycophants at 94S X 131E for the privilege of flawlessly
+      performing the ceremonies of Thdok-Bryg-Ahhh.\""
+    Portrait: B_Mine.png
+    planetid: 443
+    #  Findtha (11S X 87W) in the Enna system (105, 112).
+    y: -87
+    x: 11
+  - item:
+    ID: 247
+    Type: Artifact
+    Name: Exotic Data Cube
+    Value: 0
+    Size: 1.7
+    Portrait: T_AlienArtifact.png
+    planetid: 443
+    #  Findtha (11S X 87W) in the Enna system (105, 112).
+    y: -86
+    x: 12
+  - item:
+    ID: 248
+    Type: Ruin
+    Name: crumbling ruin
+    Description: "Within a decrepit and crumbling building:  \"Thdok-Bryg-Ahhh
+      is the essence of truth and therefore contains the answers to all
+      questions.  Unfortunately only with the fullness of time has it been
+      revealed that the vast ambient discordance of the universe is focused
+      upon this location with excessive strength, necessiting our immediate
+      relocation to join with our noble companions at 11S X 87W  Well. Hmmm.
+      Yes.\""
+    Portrait: B_ShantyTown.png
+    planetid: 443
+    #  Findtha (94S X 131E) in the Enna system (105, 112).
+    y: 130
+    x: 91
+  - item:
+    ID: 249
+    Type: Artifact
+    Name: Organic Database
+    Value: 0
+    Size: 2.3
+    Portrait: T_Skins.png
+    planetid: 443
+    #  Findtha (94S X 131E) in the Enna system (105, 112).
+    y: 129
+    x: 92
+  - item:
+    ID: 250
+    Type: Artifact
+    Name: Decoded Organic Database
+    Value: 0
+    Size: 2.3
+    Portrait: T_Furs.png
+  - item:
+    ID: 251
+    Type: Artifact
+    Name: Decoded Exotic Data Cube
+    Value: 0
+    Size: 1.7
+    Portrait: T_AlienArtifact.png
+  - item:
+    ID: 252
+    Type: Ruin
+    Name: Melted ruin
+    Description: "The base is a mass of molten metal frozen in place and
+      solidified into a warped, multicolored amorphous form. In a nearby field
+      the wreckage of a basic spaceport is visible. Scraps of metal, ceramics,
+      and other fist size and smaller scraps litter the countryside. The
+      identifiable scraps match the stolen interceptor fighters. Occasional
+      alien ship fragments have similarities to Tafel design aesthetics."
+    Portrait: B_Factory.png
+    planetid: 98
+    #  Oende V (152S X 3) in the Oende system 134, 30
+    y: 3
+    x: 152
+  - item:
+    ID: 253
+    Type: Artifact
+    Name: Laytonite Base wreckage fragment
+    Value: 0
+    Size: 8.7
+    Portrait: T_IPBM.png
+    planetid: 98
+    #  Oende V (152S X 3) in the Oende system 134, 30
+    y: 4
+    x: 151
+  - item:
+    ID: 254
+    Type: Artifact
+    Name: Bar-zhon Pirate sensor data
+    Value: 0
+    Size: 0
+    Portrait: T_Computers.png
+  - item:
+    ID: 255
+    Type: Artifact
+    Name: Red Herring
+    Value: 0
+    Size: 50.1
+    Portrait: T_NavComputer.png
+    planetid: 164
+    #  Wledig 2026 (120S X 14E) in the Fodla system (109, 55).
+    y: 15
+    x: 119
+  - item:
+    ID: 256
+    Type: Ruin
+    Name: Circular Dome
+    Description: "This hastily constructed structure shows no sign of it's
+      purpose.  Directly outside sits a large red amorphous device of unknown
+      origin and purpose."
+    Portrait: B_Research.png
+    planetid: 164
+    #  Wledig 2026 (120S X 14E) in the Fodla system (109, 55).
+    y: 14
+    x: 120
+  - item:
+    ID: 257
+    Type: Ruin
+    Name: Simplistic factory
+    Description: "This fabrication factory is still basically intact. A few
+      essential and valuable pieces of equipment are missing, but its purpose
+      appears to be the manufacture of ablative spaceship armor. Much care
+      seems to have been put into exactly imitating the manufacture of Myrrdan
+      style hull plating."
+    Portrait: B_Factory.png
+    planetid: 123
+    #  Bor Tuatheh 2019 (32N X 57E) in the Aircthech system (100, 8)
+    y: 57
+    x: -32
+  - item:
+    ID: 258
+    Type: Ruin
+    Name: Coalition Landing Zone
+    Description: "This flattened and cleared ground appears to have been
+      sheared off by careful and measured weapons fire. Various depressions in
+      the ground bear the shape of Coalition vessels."
+    Portrait: B_Mine.png
+    planetid: 123
+    #  Bor Tuatheh 2019 (32N X 57E) in the Aircthech system (100, 8)
+    y: 58
+    x: -32
+  - item:
+    ID: 259
+    Type: Ruin
+    Name: Thrynn Landing Zone
+    Description: "This flattened and cleared ground appears to have been
+      sheared off by careful and measured weapons fire. Various depressions in
+      the ground bear the shape of Thrynn vessels."
+    Portrait: B_Mine.png
+    planetid: 123
+    #  Bor Tuatheh 2019 (32N X 57E) in the Aircthech system (100, 8)
+    y: 56
+    x: -32
+  - item:
+    ID: 260
+    Type: Artifact
+    Name: Holographic Panoramic viewpoint
+    Value: 0
+    Size: 0
+    Portrait: T_NavComputer.png
+    planetid: 123
+    #  Bor Tuatheh 2019 (32N X 57E) in the Aircthech system (100, 8)
+    y: 57
+    x: -33
+  - item:
+    ID: 261
+    Type: Artifact
+    Name: Genetic Transporter Specifications
+    Value: 0
+    Size: 0
+    Portrait: T_Fliers.png
+  - item:
+    ID: 262
+    #  Note: operational code
+    Type: Artifact
+    Name: Transporter Operating Code
+    Value: 0
+    Size: 0
+    Portrait: T_Computers.png
+  - item:
+    ID: 263
+    #  Note: broken code
+    Type: Artifact
+    Name: Transporter Operating Code
+    Value: 0
+    Size: 0
+    Portrait: T_Computers.png
+  - item:
+    ID: 264
+    Type: Artifact
+    Name: Decontamination Transporter Data Cube
+    Value: 0
+    Size: 0
+    Portrait: T_AlienArtifact.png
+  - item:
+    ID: 265
+    Type: Artifact
+    Name: Medical Treatment
+    Value: 0
+    Size: 0
+    Portrait: T_Prisoners.png
+    planetid: 465
+    #  Lusmore I 563< (99N X 115E) (227, 73)
+    y: 115
+    x: -99
+  - item:
+    ID: 266
+    Type: Artifact
+    Name: Elowan Medical Treatment Analysis
+    Value: 0
+    Size: 0
+    Portrait: T_AlienArtifact.png
+  - item:
+    ID: 267
+    Type: Artifact
+    Name: Na'tash generator
+    Value: 0
+    Size: 0
+    Portrait: T_Electronics.png
+  - item:
+    ID: 268
+    Type: Artifact
+    Name: The Krang
+    Value: 0
+    Size: 0
+    Portrait: Golden_Device.png
+  - item:
+    ID: 269
+    Type: Ruin
+    Name: Shipwreak Fragments
+    Description: "This is Captain Smernoff of the Bar-zhon cruiser Edsezen. I
+      have my doubts about chasing down every fanatical leader to investigate
+      cure claims. If this is another pitiful Coalition ambush I may apply for
+      something more challenging such as deep frontier duty. Over. //"
+    Portrait: B_Tomb.png
+    planetid: 465
+    #  Lusmore I 563< (99N X 115E) (227, 73)
+    y: 116
+    x: -98
+  - item:
+    ID: 270
+    Type: Ruin
+    Name: Shipwreak Fragments
+    Description: "I meet the charismatic fellow in charge of the motley group.
+      My science officer is very impressed with both the professionalism put
+      into development of this unorthodox treatment and the level of detail of
+      clinical testing already done. They may be on to something.  Several of
+      my crew have already volunteered to be guinea pigs and stand the death
+      watch.  Over //"
+    Portrait: B_Tomb.png
+    planetid: 465
+    #  Lusmore I 563< (99N X 115E) (227, 73)
+    y: 117
+    x: -98
+  - item:
+    ID: 271
+    Type: Ruin
+    Name: Shipwreak Fragments
+    Description: "Wonderful success!  Trialisen, Behennan, and Falla all kept
+      consciousness during a 3 day period when the rest of the crew fell
+      completely unconscious. The psychiatric profiles of the volunteers are
+      all nominal.  Next trial will be 10 crewmembers. Over // ...Innoculating
+      entire crew...  Dispatching 2 of our hyperspace drones to homeworld with
+      the good news.  Over //"
+    Portrait: B_Tomb.png
+    planetid: 465
+    #  Lusmore I 563< (99N X 115E) (227, 73)
+    y: 118
+    x: -98
+  - item:
+    ID: 272
+    Type: Ruin
+    Name: Shipwreak Fragments
+    Description: "...Half of the crew are acting possessed and are muttering
+      what can only be gibberish or a completely alien language. Unresponsive
+      to orders or questions... // ... I made the mistake of restraining a few
+      of the possessed crewmembers. Instantaneously all of the remaining crew
+      became violent and started slaughtering the rest of us... //"
+    Portrait: B_Tomb.png
+    planetid: 465
+    #  Lusmore I 563< (99N X 115E) (227, 73)
+    y: 119
+    x: -98
+  - item:
+    ID: 273
+    Type: Ruin
+    Name: Shipwreak Fragments
+    Description: "Sabot recalled and destroyed the drones. Engineering has
+      sabotaged most critical systems. We are drifting. Our last attempt to
+      retake essential ship systems failed miserably. The possessed seemed to
+      act with an enhanced reaction time and supernatural intelligence.
+      Self-destruct countermanded almost instantly and now we have no control
+      of ship computers..."
+    Portrait: B_Tomb.png
+    planetid: 465
+    #  Lusmore I 563< (99N X 115E) (227, 73)
+    y: 120
+    x: -98
+  - item:
+    ID: 274
+    Type: Ruin
+    Name: Shipwreak Fragments
+    Description: "They are repairing... We now must be the saboteurs.  Manual
+      control of our impulse engines may allow us a limited form of revenge...
+      // ...  Final entry.  If we all go mad at once, at least we all return at
+      once.  The theory of telepathy no longer seems so far-fetched.  Over."
+    Portrait: B_Tomb.png
+    planetid: 465
+    #  Lusmore I 563< (99N X 115E) (227, 73)
+    y: 121
+    x: -98
+  # -item:
+  #  ID: 275
+  #  Type: Ruin
+  #  Name: Shipwreak Fragments
+  #  Description: Assorted debris.  No further recordings found.
+  #  Portrait: B_Tomb.png
+  #  planetid: 465
+  #  y: 122
+  #  x: -98
+  - item:
+    ID: 275
+    Type: Artifact
+    Name: Minex Power Core
+    Value: 0
+    Size: 0
+    Portrait: T_Robots.png
+  - item:
+    ID: 276
+    Type: Artifact
+    Name: Bar-zhon Data Chips
+    Value: 0
+    Size: 0
+    Portrait: T_Plates.png
+  - item:
+    ID: 277
+    Type: Artifact
+    Name: Minex Targeting System (broken)
+    Value: 0
+    Size: 0
+    Portrait: T_Computers.png
+  - item:
+    ID: 278
+    Type: Artifact
+    Name: Minex Beam Mount (broken)
+    Value: 0
+    Size: 0
+    Portrait: T_IPBM.png
+  - item:
+    ID: 279
+    Type: Artifact
+    Name: Minex Missile Turret (broken)
+    Value: 0
+    Size: 0
+    Portrait: T_IPBM.png
+  - item:
+    ID: 280
+    Type: Artifact
+    Name: Elowan Flight Recording
+    Value: 0
+    Size: 0
+    Portrait: T_EscapePod.png
+  - item:
+    ID: 281
+    Type: Artifact
+    Name: Thrynn Flight Recording
+    Value: 0
+    Size: 0
+    Portrait: T_EscapePod.png
+  - item:
+    ID: 282
+    Type: Artifact
+    Name: Myrrdan Escape Pod
+    Value: 0
+    Size: 0
+    Portrait: T_EscapePod.png
+    planetid: 445
+    #  Culum Cuale 35S X 56W in the Tabarn system (102, 105)
+    y: -56
+    x: 34
+  - item:
+    ID: 283
+    Type: Artifact
+    Name: Myrrdan Escape Pod (debris)
+    Value: 0
+    Size: 0
+    Portrait: T_EscapePod.png
+    planetid: 445
+    #  Culum Cuale 64N X 150W in the Tabarn system (102, 105)
+    y: -40
+    x: -63
+  - item:
+    ID: 284
+    Type: Ruin
+    Name: Shipwreaked Transport
+    Description: "Several dozen construction personnel eagerly board your ship
+      for evacuation. They report that a malfunction with the power system
+      threatened life support and made interplanetary travel impossible. Using
+      every bit of emergency power, the crew successfully diverted to this lava
+      planet and prevented burn up in the atmosphere, however the transport
+      will never move again. Two escape pods attempted to make it to the other
+      lava planet with a breathable atmosphere. They planned to set a beacon
+      somewhere near the north or south pole of the planet that would direct
+      any rescuers to their location."
+    Portrait: B_Research.png
+    planetid: 444
+    # En mac Ethamain (44N X 130W) in the Tabarn system (102, 105)
+    y: -130
+    x: -44
+  - item:
+    ID: 285
+    Type: Ruin
+    Name: Automated Beacon
+    Description: "Beacon: ...we will try to land both pods within a narrow
+      protected canyon in the northern hemisphere to await rescue. Atmosphere
+      verified as breathable, but supplies are low..."
+    Portrait: B_ListeningPost.png
+    planetid: 445
+    #  Culum Cuale 130S X 0 in the Tabarn system (102, 105)
+    y: 0
+    x: 126
+  - item:
+    ID: 286
+    Type: Ruin
+    Name: Makeshift Settlement
+    Description: "Several dozen personnel eagerly board your ship. They report
+      that the pod was damaged during landing resulting in serious injuries but
+      no fatalities. During the descent communications were lost and the beta
+      pod veered off sharply to the southwest."
+    Portrait: B_ShantyTown.png
+    planetid: 445
+    #  Culum Cuale 64N X 95W in the Tabarn system (102, 105)
+    y: -39
+    x: -64
+  - item:
+    ID: 287
+    Type: Ruin
+    Name: Navigation Marker
+    Description: "Marker: ... lost communications ... unstable terrain...
+      targeting a landing zone to make camp a short distance just east of here
+      on an island observed from orbit..."
+    Portrait: B_ListeningPost.png
+    planetid: 445
+    #  Culum Cuale 40S X 95W in the Tabarn system (102, 105)
+    y: -95
+    x: 40
+  # ..............................................................
+  # - item: <ID>288  jjh don't need 2 of these --&gt;
+  # ..............................................................
+  - item:
+    ID: 289
+    Type: Ruin
+    Name: Makeshift Settlement
+    Description: "The remaining personnel are elated to see you. Supplies were
+      running low but no issues were reported. Several crew members note that
+      the escape pod is perfectly intact and is worth salvaging."
+    Portrait: B_ShantyTown.png
+    planetid: 445
+    #  Culum Cuale 35S X 72W in the Tabarn system (102, 105)
+    y: -55
+    x: 33
+  - item:
+    ID: 290
+    Type: Ruin
+    Name: Twisted Ship Wreckage (Elowan)
+    Description: ""
+    Portrait: B_WeaponsPlacement.png
+    planetid: 234
+    #  Glaistig (22N X 104W) in the Net system (55, 114)
+    y: -114
+    x: -22
+  - item:
+    ID: 291
+    Type: Ruin
+    Name: Twisted Ship Wreckage (Elowan)
+    Description: ""
+    Portrait: B_WeaponsPlacement.png
+    planetid: 234
+    #  Glaistig (22N X 104W) in the Net system (55, 114)
+    y: -115
+    x: -24
+  - item:
+    ID: 292
+    Type: Ruin
+    Name: Twisted Ship Wreckage (Elowan)
+    Description: ""
+    Portrait: B_WeaponsPlacement.png
+    planetid: 234
+    #  Glaistig (22N X 104W) in the Net system (55, 114)
+    y: -115
+    x: -19
+  - item:
+    ID: 293
+    Type: Ruin
+    Name: Twisted Ship Wreckage (Elowan)
+    Description: ""
+    Portrait: B_WeaponsPlacement.png
+    planetid: 234
+    #  Glaistig (22N X 104W) in the Net system (55, 114)
+    y: -98
+    x: -20
+  - item:
+    ID: 294
+    Type: Ruin
+    Name: Broken Shipwreck (Minex)
+    Description: ""
+    Portrait: B_WeaponsPlacement.png
+    planetid: 234
+    #  Glaistig (22N X 104W) in the Net system (55, 114)
+    y: -106
+    x: -21
+  - item:
+    ID: 295
+    Type: Ruin
+    Name: Scattered Debris (unidentifiable)
+    Description: ""
+    Portrait: B_ShantyTown.png
+    planetid: 234
+    #  Glaistig (22N X 104W) in the Net system (55, 114)
+    y: -105
+    x: -32
+  - item:
+    ID: 296
+    Type: Artifact
+    Name: Melted Composite
+    Value: 0
+    Size: 0
+    Portrait: Golden_Device.png
+    planetid: 234
+    #  Glaistig (22N X 104W) in the Net system (55, 114)
+    y: -104
+    x: -30
+  - item:
+    ID: 297
+    Type: Artifact
+    Name: Melted Composite
+    Value: 0
+    Size: 0
+    Portrait: Golden_Device.png
+    planetid: 234
+    #  Glaistig (22N X 104W) in the Net system (55, 114)
+    y: -107
+    x: -28
+  - item:
+    ID: 298
+    Type: Artifact
+    Name: Melted Composite
+    Value: 0
+    Size: 0
+    Portrait: Golden_Device.png
+    planetid: 234
+    #  Glaistig (22N X 104W) in the Net system (55, 114)
+    y: -100
+    x: -23
+  - item:
+    ID: 299
+    Type: Artifact
+    Name: Melted Composite
+    Value: 0
+    Size: 0
+    Portrait: Golden_Device.png
+    planetid: 234
+    #  Glaistig (22N X 104W) in the Net system (55, 114)
+    y: -91
+    x: -27
+  - item:
+    ID: 300
+    Type: Artifact
+    Name: Melted Composite
+    Value: 0
+    Size: 0
+    Portrait: Golden_Device.png
+    planetid: 234
+    #  Glaistig (22N X 104W) in the Net system (55, 114)
+    y: -102
+    x: -18
+  - item:
+    ID: 301
+    Type: Ruin
+    Name: Fragmented Ship Debris (Minex)
+    Description: ""
+    Portrait: B_WeaponsPlacement.png
+    planetid: 208
+    #  Magmor 1  (31S X 88E) (18,117)
+    y: 88
+    x: 31
+  - item:
+    ID: 302
+    Type: Ruin
+    Name: Fragmented Ship Debris (Minex)
+    Description: ""
+    Portrait: B_WeaponsPlacement.png
+    planetid: 208
+    #  Magmor 1  (31S X 88E) (18,117)
+    y: 89
+    x: 27
+  - item:
+    ID: 303
+    Type: Ruin
+    Name: Scattered Debris (unidentifiable)
+    Description: ""
+    Portrait: B_ShantyTown.png
+    planetid: 208
+    #  Magmor 1  (31S X 88E) (18,117)
+    y: 93
+    x: 29
+  - item:
+    ID: 304
+    Type: Ruin
+    Name: Scattered Debris (unidentifiable)
+    Description: ""
+    Portrait: B_ShantyTown.png
+    planetid: 208
+    #  Magmor 1  (31S X 88E) (18,117)
+    y: 95
+    x: 26
+  - item:
+    ID: 305
+    Type: Ruin
+    Name: Scattered Debris (unidentifiable)
+    Description: ""
+    Portrait: B_ShantyTown.png
+    planetid: 208
+    #  Magmor 1  (31S X 88E) (18,117)
+    y: 87
+    x: 22
+  - item:
+    ID: 306
+    Type: Ruin
+    Name: Scattered Debris (unidentifiable)
+    Description: ""
+    Portrait: B_ShantyTown.png
+    planetid: 208
+    #  Magmor 1  (31S X 88E) (18,117)
+    y: 85
+    x: 20
+  - item:
+    ID: 307
+    Type: Ruin
+    Name: Melted Debris (Thrynn)
+    Description: ""
+    Portrait: B_WeaponsPlacement.png
+    planetid: 208
+    #  Magmor 1  (31S X 88E) (18,117)
+    y: 94
+    x: 32
+  - item:
+    ID: 308
+    Type: Artifact
+    Name: Geometric Crystals
+    Value: 0
+    Size: 0
+    Portrait: Crystal_Sphere.png
+    planetid: 208
+    #  Magmor 1  (31S X 88E) (18,117)
+    y: 91
+    x: 34
+  - item:
+    ID: 309
+    Type: Ruin
+    Name: Buried and twisted vessels (Minex)
+    Description: ""
+    Portrait: B_WeaponsPlacement.png
+    planetid: 225
+    #  Inghean (118S X 72E) in the Anu system (65, 110)
+    y: 72
+    x: 118
+  - item:
+    ID: 310
+    Type: Ruin
+    Name: Buried and twisted vessels (Minex)
+    Description: ""
+    Portrait: B_WeaponsPlacement.png
+    planetid: 225
+    #  Inghean (118S X 72E) in the Anu system (65, 110)
+    y: 71
+    x: 123
+  - item:
+    ID: 311
+    Type: Ruin
+    Name: Buried and twisted vessels (Minex)
+    Description: ""
+    Portrait: B_WeaponsPlacement.png
+    planetid: 225
+    #  Inghean (118S X 72E) in the Anu system (65, 110)
+    y: 74
+    x: 117
+  - item:
+    ID: 312
+    Type: Artifact
+    Name: Engine Components
+    Value: 0
+    Size: 0
+    Portrait: T_Reactor.png
+    planetid: 225
+    #  Inghean (118S X 72E) in the Anu system (65, 110)
+    y: 75
+    x: 118
+  - item:
+    ID: 313
+    Type: Artifact
+    Name: Gravity Field Generator
+    Value: 0
+    Size: 0
+    Portrait: T_Robots.png
+    planetid: 225
+    #  Inghean (118S X 72E) in the Anu system (65, 110)
+    y: 70
+    x: 122
+  - item:
+    ID: 314
+    Type: Ruin
+    Name: Scattered Debris (Thrynn)
+    Description: ""
+    Portrait: B_ShantyTown.png
+    planetid: 223
+    #  Kygwyn (85S X 139E) in the Anu system (65, 110)
+    y: 139
+    x: 85
+  - item:
+    ID: 315
+    Type: Ruin
+    Name: Scattered Debris (Thrynn)
+    Description: ""
+    Portrait: B_ShantyTown.png
+    planetid: 223
+    #  Kygwyn (85S X 139E) in the Anu system (65, 110)
+    y: 139
+    x: 87
+  - item:
+    ID: 316
+    Type: Ruin
+    Name: Scattered Debris (Thrynn)
+    Description: ""
+    Portrait: B_ShantyTown.png
+    planetid: 223
+    #  Kygwyn (85S X 139E) in the Anu system (65, 110)
+    y: 133
+    x: 81
+  - item:
+    ID: 317
+    Type: Ruin
+    Name: Scattered Debris (Thrynn)
+    Description: ""
+    Portrait: B_ShantyTown.png
+    planetid: 223
+    #  Kygwyn (85S X 139E) in the Anu system (65, 110)
+    y: 142
+    x: 77
+  - item:
+    ID: 318
+    Type: Ruin
+    Name: Scattered Debris (Thrynn)
+    Description: ""
+    Portrait: B_ShantyTown.png
+    planetid: 223
+    #  Kygwyn (85S X 139E) in the Anu system (65, 110)
+    y: 139
+    x: 79
+  - item:
+    ID: 319
+    Type: Ruin
+    Name: Scattered Debris (Thrynn)
+    Description: ""
+    Portrait: B_ShantyTown.png
+    planetid: 223
+    #  Kygwyn (85S X 139E) in the Anu system (65, 110)
+    y: 140
+    x: 92
+  - item:
+    ID: 320
+    Type: Ruin
+    Name: Scattered Debris (Thrynn)
+    Description: ""
+    Portrait: B_ShantyTown.png
+    planetid: 223
+    #  Kygwyn (85S X 139E) in the Anu system (65, 110)
+    y: 126
+    x: 85
+  - item:
+    ID: 321
+    Type: Ruin
+    Name: Melted Debris (Elowan)
+    Description: ""
+    Portrait: B_WeaponsPlacement.png
+    planetid: 223
+    #  Kygwyn (85S X 139E) in the Anu system (65, 110)
+    y: 133
+    x: 86
+  - item:
+    ID: 322
+    Type: Ruin
+    Name: Twisted Debris (Elowan)
+    Description: ""
+    Portrait: B_WeaponsPlacement.png
+    planetid: 223
+    #  Kygwyn (85S X 139E) in the Anu system (65, 110)
+    y: 134
+    x: 84
+  - item:
+    ID: 323
+    Type: Ruin
+    Name: Broken Wreck (Minex)
+    Description: ""
+    Portrait: B_WeaponsPlacement.png
+    planetid: 223
+    #  Kygwyn (85S X 139E) in the Anu system (65, 110)
+    y: 144
+    x: 89
+  - item:
+    ID: 324
+    Type: Artifact
+    Name: Organic Growth
+    Value: 0
+    Size: 0
+    Portrait: T_Skins.png
+    planetid: 223
+    #  Kygwyn (85S X 139E) in the Anu system (65, 110)
+    y: 145
+    x: 90
+  - item:
+    ID: 325
+    Type: Ruin
+    Name: Twisted Debris (Minex)
+    Description: ""
+    Portrait: B_WeaponsPlacement.png
+    planetid: 477
+    #  Conn (33N X 145W) in the Lairgnen system (70, 142)
+    y: -145
+    x: -33
+  - item:
+    ID: 326
+    Type: Ruin
+    Name: Shattered Debris (Minex)
+    Description: ""
+    Portrait: B_ShantyTown.png
+    planetid: 477
+    #  Conn (33N X 145W) in the Lairgnen system (70, 142)
+    y: -144
+    x: -31
+  - item:
+    ID: 327
+    Type: Artifact
+    Name: Cone device
+    Value: 0
+    Size: 0
+    Portrait: T_Drill_Good.png
+    planetid: 477
+    #  Conn (33N X 145W) in the Lairgnen system (70, 142)
+    y: -143
+    x: -30
+  - item:
+    ID: 328
+    Type: Ruin
+    Name: Shattered Debris (unidentifiable)
+    Description: ""
+    Portrait: B_ShantyTown.png
+    planetid: 464
+    #  Jurlagh Duane III (18N X 12W) (16, 70)
+    y: -12
+    x: -18
+  - item:
+    ID: 329
+    Type: Artifact
+    Name: Radioactive Exotic Elements
+    Value: 0
+    Size: 0
+    Portrait: T_Ship.png
+    planetid: 464
+    #  Jurlagh Duane III (18N X 12W) (16, 70)
+    y: -10
+    x: -16
+  - item:
+    ID: 330
+    Type: Artifact
+    Name: Radioactive Exotic Elements
+    Value: 0
+    Size: 0
+    Portrait: T_Ship.png
+    planetid: 464
+    #  Jurlagh Duane III (18N X 12W) (16, 70)
+    y: -14
+    x: -20
+  - item:
+    ID: 331
+    Type: Artifact
+    Name: Radioactive Exotic Elements
+    Value: 0
+    Size: 0
+    Portrait: T_Ship.png
+    planetid: 464
+    #  Jurlagh Duane III (18N X 12W) (16, 70)
+    y: -10
+    x: -18
+  - item:
+    ID: 332
+    Type: Artifact
+    Name: Radioactive Exotic Elements
+    Value: 0
+    Size: 0
+    Portrait: T_Ship.png
+    planetid: 464
+    #  Jurlagh Duane III (18N X 12W) (16, 70)
+    y: -8
+    x: -20
+  - item:
+    ID: 333
+    Type: Artifact
+    Name: Radioactive Exotic Elements
+    Value: 0
+    Size: 0
+    Portrait: T_Ship.png
+    planetid: 464
+    #  Jurlagh Duane III (18N X 12W) (16, 70)
+    y: -10
+    x: -20
+  - item:
+    ID: 334
+    Type: Artifact
+    Name: Radioactive Exotic Elements
+    Value: 0
+    Size: 0
+    Portrait: T_Ship.png
+    planetid: 464
+    #  Jurlagh Duane III (18N X 12W) (16, 70)
+    y: -8
+    x: -16
+  - item:
+    ID: 335
+    Type: Artifact
+    Name: Bar-zhon fleet proposal
+    Value: 0
+    Size: 0
+    Portrait: T_NavComputer.png
+  - item:
+    ID: 336
+    Type: Artifact
+    Name: Elowan response
+    Value: 0
+    Size: 0
+    Portrait: T_NavComputer.png
+  - item:
+    ID: 337
+    Type: Artifact
+    Name: Thrynn response
+    Value: 0
+    Size: 0
+    Portrait: T_NavComputer.png
+  - item:
+    ID: 338
+    Type: Artifact
+    Name: Spemin response
+    Value: 0
+    Size: 0
+    Portrait: T_NavComputer.png
+  - item:
+    ID: 339
+    Type: Artifact
+    Name: Nissan response
+    Value: 0
+    Size: 0
+    Portrait: T_NavComputer.png
+  - item:
+    ID: 340
+    Type: Artifact
+    Name: Coalition response
+    Value: 0
+    Size: 0
+    Portrait: T_NavComputer.png
+  - item:
+    ID: 341
+    Type: Artifact
+    Name: Bar-zhon Sensor data
+    Value: 0
+    Size: 0
+    Portrait: T_NavComputer.png
+  - item:
+    ID: 342
+    Type: Ruin
+    Name: Dilapidated Pirate Base
+    Description: "...I we camp now all beyond hu-myn patrols. The spirits now
+      control more of the clans than talking us do. The spirits they smart.
+      They make ships fast and sting more strong, but they hunt us talking
+      clans. We let spirits and hu-myns sting each other. Stupid for us to be
+      stung by hu-myn and spirits. We fight spirits and throw them out first.
+      Problem be more clans join spirits all days long and fewer leave spirits
+      and join us..."
+    Portrait: B_ShantyTown.png
+    planetid: 167
+    #  Bicreo (59N X 14E) of the Macha system (85, 92)
+    y: 14
+    x: -59
+  - item:
+    ID: 343
+    Type: Ruin
+    Name: Dilapidated Pirate Base
+    Description: "...Spirits always come and go before but now they stay.
+      Ogdon say clans with spirits fly to Tafel rat space and be all friendly
+      with Tafel and spirits of many many many ships spirit control all races.
+      Ogdon say Minex break up the party.  Spirits hate Minex.  All others but
+      no Minex ships run by spirits.  No hu-myn ships also either run by
+      spirits.  Maybe they both smart?"
+    Portrait: B_ShantyTown.png
+    planetid: 448
+    #  Aflafar (97S X 80E) of the Cyffoden system (116, 142)
+    y: 80
+    x: 97
+  - item:
+    ID: 344
+    Type: Ruin
+    Name: Dilapidated Pirate Base
+    Description: "...Byvi catch a people of the clan with a spirit in that
+      stays and not goes. We trap him and chant the song magic of the clan to
+      make the spirit go away. We poke him with the sting stick.  We learn to
+      be smart like Minex.  Spirit strong and not leave yesterday today many
+      repeats.  We try many chants.  If you want to try a chant or stick go to
+      the tail of the fish on the cold planet which eats away at things of the
+      dimly burning star."
+    Portrait: B_ShantyTown.png
+    planetid: 33
+    #  Oenias (3N X 10W) of the Orda system (148, 135)
+    y: -10
+    x: -3
+  - item:
+    ID: 345
+    Type: Ruin
+    Name: Dilapidated Pirate Base
+    Description: "Report: This dilapidated pirate base is abandoned with the
+      exception of a sole emaciated and unresponsive pirate held in a welded
+      steel cage structure. The catatonic pirate has torn clothing and minor
+      burns over his body but otherwise appears healthy."
+    Portrait: B_ShantyTown.png
+    planetid: 72
+    #  Tethra (64S X 47W) of the Tat system (132, 125)
+    y: -47
+    x: 60
+  - item:
+    ID: 346
+    Type: Artifact
+    Name: Unresponsive Pirate
+    Value: 0
+    Size: 0
+    Portrait: T_EscapePod.png
+    planetid: 72
+    #  Tethra (64S X 47W) of the Tat system (132, 125)
+    y: -46
+    x: 59
+  - item:
+    ID: 347
+    Type: Artifact
+    Name: Glittering Utensil
+    Value: 0
+    Size: 0
+    Portrait: T_Weapons_Laser.png
+    planetid: 352
+    #  (50N X 19W) Bx home world (Anextiomarus/Boann - 115,184))
+    y: -18
+    x: -51
+  - item:
+    ID: 348
+    Type: Artifact
+    Name: Opaque Sphere
+    Value: 0
+    Size: 0
+    Portrait: Crystal_Sphere.png
+    planetid: 301
+    #  (3S X 142W) Transmodra home world (Dian Cecht 4 - 35,139)
+    y: -143
+    x: 2
+  - item:
+    ID: 349
+    Type: Artifact
+    Name: Blue Obelisk
+    Value: 0
+    Size: 0
+    Portrait: T_Wizards.png
+    planetid: 301
+    #  (72N X 76W) Transmodra home world (Dian Cecht 4 - 35,139)
+    y: -75
+    x: -73
+  - item:
+    ID: 350
+    Type: Artifact
+    Name: Transparent Cubes
+    Value: 0
+    Size: 0
+    Portrait: T_Liquid.png
+    planetid: 301
+    #  (157N X 153E) Transmodra home world (Dian Cecht 4 - 35,139)
+    y: 150
+    x: -152
+  - item:
+    ID: 351
+    Type: Artifact
+    Name: Crystal Bar
+    Value: 0
+    Size: 0
+    Portrait: T_Instruments.png
+    planetid: 141
+    #  (79S X 139E) Sabion home world (Gorias 3 - 5,16)
+    y: 140
+    x: 80
+  - item:
+    ID: 352
+    Type: Artifact
+    Name: Armored Organic Monstrosity
+    Value: 0
+    Size: 0
+    Portrait: T_Furs.png
+    planetid: 141
+    #  (79S X 139E) Sabion home world (Gorias 3 - 5,16)
+    y: 138
+    x: 78
+  - item:
+    ID: 353
+    Type: Ruin
+    Name: Crumbling Ruin
+    Description: "Newsreel: The Bar-zhon infringe on our territory with
+      impunity, raid our transports and steal our resources. Their sense of
+      superiority is badly misplaced.  They choose to ignore the process of
+      diplomacy at their own peril...  Database References: 3S X 142W, 72N X
+      76W, 157N X 153E"
+    Portrait: B_Factory.png
+    planetid: 301
+    #  (15N X 52E) Transmodra home world (Dian Cecht 4 - 35,139)
+    y: 52
+    x: -15
+  - item:
+    ID: 354
+    Type: Ruin
+    Name: Crumbling Ruin
+    Description: "Memo: Bunker analysts show that the Bar-zhon have only a very
+      fragile industrial base and can not sustain military losses.  What we
+      need is a short victorious war to turn public opinion back to our side.
+      Contingency planning is shipping 300 tons of bio weapons to be deployed to
+      our sleeper cells...  Database References:  'Alpha Site 15N X 52E' 'Beta
+      Site 129N X 85E'"
+    Portrait: B_Factory.png
+    planetid: 301
+    #  (3S X 142W) Transmodra home world (Dian Cecht 4 - 35,139)
+    y: -142
+    x: 3
+  - item:
+    ID: 355
+    Type: Ruin
+    Name: Crumbling Ruin
+    Description: "Memo: Robotic drones should easily negate the Bar-zhon's edge
+      in metabolism and reaction time.   Our sheer numbers should easily negate
+      the Bar-zhon technical superiority...  Database References: 157N X 153E,
+      Sabion Stockpiles: 79S X 139E"
+    Portrait: B_Factory.png
+    planetid: 301
+    #  (72N X 76W) Transmodra home world (Dian Cecht 4 - 35,139)
+    y: -76
+    x: -72
+  - item:
+    ID: 356
+    Type: Ruin
+    Name: Crumbling Ruin
+    Description: "Newspaper:  Continued bombing is effectively clearing out the
+      surviving resistance cells. Surface temperatures are now 249 C and
+      rising. Only being this far underground has kept us alive this long. The
+      Bar-zhon are still ignoring transmissions calling for a cease-fire.  Bx
+      evacuation bunkers: 50N X 19W, 43S X 113W, 129N X 85E"
+    Portrait: B_Factory.png
+    planetid: 301
+    #  (157N X 153E) Transmodra home world (Dian Cecht 4 - 35,139)
+    y: 151
+    x: -153
+  - item:
+    ID: 357
+    Type: Ruin
+    Name: Crumbling Ruin
+    Description: "Newspaper: The Champion Brawlers defeated the Devastators
+      today four to one. The emperor personally congratulated the team and gave
+      them this year's title...  Note: The highly degraded database refers to
+      many different geographic locations.  We will try to translate
+      significant references into Myrrdan coordinates.  Database References:
+      43S X 113W, 129N X 85E"
+    Portrait: B_Factory.png
+    planetid: 352
+    #  (74S X 28E) Bx home world (Anextiomarus/Boann - 115,184))
+    y: 28
+    x: 74
+  - item:
+    ID: 358
+    Type: Ruin
+    Name: Crumbling Ruin
+    Description: "Sign: Interceptor force needs you!  Smash some Bar-zhon
+      skull!  Breaching pod recruits make a difference!  Down with the elitist
+      oppressors. Never forget and never tolerate!  Transmodra Trainees: 3S X
+      142W"
+    Portrait: B_Factory.png
+    planetid: 352
+    #  (50N X 19W) Bx home world (Anextiomarus/Boann - 115,184))
+    y: -19
+    x: -50
+  - item:
+    ID: 359
+    Type: Ruin
+    Name: Crumbling Ruin
+    Description: "Transmodra shield repulsors trapped and destroyed another
+      Bar-zhon taskforce attempting to land, but the blockade is still
+      effectively maintaining our isolation. Attrition and lack of
+      irreplaceable parts have put out of commission another three wave-force
+      defensive turrets today...  Database References: 74S X 28E, 129N X 85E"
+    Portrait: B_Factory.png
+    planetid: 352
+    #  (43S X 113W) Bx home world (Anextiomarus/Boann - 115,184))
+    y: -113
+    x: 43
+  - item:
+    ID: 360
+    Type: Ruin
+    Name: Crumbling Ruin
+    Description: "Sign:  'Don't let the weaklings win!  Do your part!'
+      Recruitment Centers: 50N X 19W, 43S X 113W"
+    Portrait: B_Factory.png
+    planetid: 352
+    #  (129N X 85E) Bx home world (Anextiomarus/Boann - 115,184))
+    y: 85
+    x: -123
+  - item:
+    ID: 361
+    Type: Ruin
+    Name: Crumbling Ruin
+    Description: "Data Fragment:  ...Minex have all the best exotic advanced
+      devices.  Minex watch group Delta-63 observed..."
+    Portrait: B_Factory.png
+    planetid: 141
+    #  (79S X 139E) Sabion home world (Gorias 3 - 5,16)
+    y: 139
+    x: 79
+  - item:
+    ID: 362
+    Type: Artifact
+    Name: Bar-zhon Analyzed Organic Monstrosity
+    Value: 0
+    Size: 0
+    Portrait: T_Furs.png
+  - item:
+    ID: 363
+    Type: Artifact
+    Name: Shimmering Ball
+    Value: 0
+    Size: 0
+    Portrait: Crystal_Sphere.png
+  - item:
+    ID: 364
+    Type: Artifact
+    Name: Alliance Draft Paperwork
+    Value: 0
+    Size: 0
+    Portrait: T_Fliers.png
+    planetid: 261
+    #  (32S X 67E) Bar-zhon world (Midir VI - 201, 105)
+    y: 67
+    x: 32
+  - item:
+    ID: 365
+    Type: Ruin
+    Name: Capital City
+    Description: "You enter a grand hall and are asked to stand quietly.  Two
+      opposite groups of Bar-zhon enter wearing decorative robes and glittering
+      chains of metal. Individuals from the lefthand group stand and make
+      accusations: barbarians, pirates, coalition sympathizers, reckless
+      opportunists.  After an hour the group on the right stands up and
+      starts recounting your accomplishments: Culling Coalition and pirate
+      expansion, Minex intelligence gathering, diplomatic mediation.  The
+      opposing group sits back down and the supporting group on your right
+      directs you to leave the hall and travel to the domed building directly
+      north."
+    Portrait: B_Metropolis.png
+    planetid: 261
+    #  (36S X 68E) Bar-zhon world (Midir VI - 201, 105)
+    y: 68
+    x: 36
+  - item:
+    ID: 366
+    Type: Ruin
+    Name: Domed Structure
+    Description: "Six elderly Bar-zhon stand impassively at a huge conference
+      table as you and your crew approach.  After you approach, a seventh
+      ancient looking Bar-zhon in a simple brown robe enters and calls to you.
+      \"Myrrdan has been granted entrance into the Esteemed Bar-zhon alliance.
+      Do you accept?\" After answering in the affirmative, a stack of papers is
+      placed upon the table and all of the Bar-zhon quietly file out."
+    Portrait: B_Research.png
+    planetid: 261
+    #  (33S X 68E) Bar-zhon world (Midir VI - 201, 105)
+    y: 68
+    x: 33
+  - item:
+    ID: 367
+    Type: Ruin
+    Name: Monument
+    Description: "New Stone Monument: \"On the 48th of 27945 all inhabitants of
+      this colony were cruelly slaughtered when infected ones overwhelmed the
+      valiant and selfless Bar-zhon military.  Let all observe a day of silence
+      for perpetuity.\""
+    Portrait: B_Tomb.png
+    planetid: 101
+    # Quest 60: Ceridwen (0 X 2)  in the Ailil system (188, 88)
+    y: 2
+    x: 0
+  - item:
+    ID: 368
+    Type: Ruin
+    Name: Fissif
+    Description: "Log: Traffic control has picked up an unscheduled convoy on
+      LR. Vectoring gives us almost two days to prepare a welcome and stockpile
+      trade goods...  The only purpose of these invaders is our extermination.
+      They act as if they are remote controlled, no creative thinking.  If only
+      they did not possess all of the heavy weaponry and exhibit such
+      incredible reaction speed reflexes we might have had a chance..."
+    Portrait: B_Metropolis.png
+    planetid: 101
+    # Quest 60: Ceridwen (2N X 47W) in the Ailil system (188, 88)
+    y: -47
+    x: -2
+  - item:
+    ID: 369
+    Type: Ruin
+    Name: Large City
+    Description: "Sign: Commemoration monument 0 X 2"
+    Portrait: B_Tomb.png
+    planetid: 101
+    # Quest 60: Ceridwen (2N X 47W) in the Ailil system (188, 88)
+    y: -46
+    x: -3
+  - item:
+    ID: 370
+    Type: Ruin
+    Name: Data Archive
+    Description: "\"When viewed from the air, Ancient sites are roughtly
+      equidistant from each other, but no symmetry can be perceived in their
+      placement. Ruins are scattered evenly at every altitude as if planetary
+      weather and temperature was irrelevant.\" - The Society of Ancient
+      Studies"
+    Portrait: B_Tomb.png
+    planetid: 301
+    # 74N X 41E on Dian Cecht 4 - 35,139
+    y: 41
+    x: -74
+  - item:
+    ID: 371
+    Type: Ruin
+    Name: Data Archive
+    Description: "\"Majority of all settlements are found at class M stars. No
+      tectonically unstable planets were ever inhabited.  Long lifespan and
+      extreme individualism assumed.\" - The Society of Ancient Studies"
+    Portrait: B_Tomb.png
+    planetid: 301
+    # 29S X 7E on Dian Cecht 4 - 35,139
+    y: 7
+    x: 29
+  - item:
+    ID: 372
+    Type: Ruin
+    Name: Data Archive
+    Description: "\"Ancient settlements show absolute individuality.  Very
+      similar materials used in each structure to create breathtaking rich
+      tapestries of crystal unique in style and architecture from one dome to
+      the next.\" - The Society of Ancient Studies"
+    Portrait: B_Tomb.png
+    planetid: 141
+    # 47N X 74W Sabion home world (Gorias 3 - 5,16)
+    y: -74
+    x: -47
+  - item:
+    ID: 373
+    Type: Ruin
+    Name: Data Archive
+    Description: "\"No defensive systems or offensive weaponry has ever been
+      found or recorded.  No atavistic traces of any warlike tendencies in any
+      definable form.\" - The Society of Ancient Studies"
+    Portrait: B_Tomb.png
+    planetid: 141
+    # 83S X 18W Sabion home world (Gorias 3 - 5,16)
+    y: -18
+    x: 83
+  - item:
+    ID: 374
+    Type: Ruin
+    Name: Data Archive
+    Description: "\"Recordkeeping must be beyond comprehension or
+      telepathically based because of a complete lack of any trace of
+      communication or writing or data storage systems. Who knows what a
+      telepathic data storage device might even look like?\" - The Society of
+      Ancient Studies  (Xenologist note: The Bar-zhon or Coalition may have
+      additional information about the Society.  Recommend we contact them.)"
+    Portrait: B_Tomb.png
+    planetid: 141
+    # 30N X 38E Sabion home world (Gorias 3 - 5,16)
+    y: 38
+    x: -30
+  - item:
+    ID: 375
+    Type: Artifact
+    Name: Society of Ancient Studies Seal
+    Value: 0
+    Size: 0
+    Portrait: T_Weapons_Metal.png
+  - item:
+    ID: 376
+    Type: Artifact
+    Name: Minex Data Cube
+    Value: 0
+    Size: 0
+    Portrait: T_AlienArtifact.png
+  - item:
+    ID: 377
+    Type: Artifact
+    Name: Minex Data Cube with responses
+    Value: 0
+    Size: 0
+    Portrait: T_AlienArtifact.png
+  - item:
+    ID: 378
+    Type: Ruin
+    Name: Crumbling Ruin
+    Description: "...Psychic division report: Latest adaptation of scrambler
+      disruptor still only operates within a 100m range. All attempts to boost
+      effectiveness against Bar-zhon battle cruisers have proven ineffective
+      due to extreme range dissipation problems. Suggest another expedition to
+      [World of Monsters] (indecipherable) on the rocky second planet at 28S X
+      60E. Nyssian mystics confirm (indecipherable). Contact with the
+      Transmodra is the next suggested action..."
+    Portrait: B_Factory.png
+    planetid: 352
+    #  (58N X 96E) Bx home world (Anextiomarus/Boann - 115,184)
+    y: 96
+    x: -58
+  - item:
+    ID: 379
+    Type: Ruin
+    Name: Crumbling Ruin
+    Description: "Sir. After carefully examining these ruins, our staff
+      archaeologist has concluded that nothing can be readily recovered from
+      this site.  All we have found are unusually shaped rock crystals and
+      melted forms of buildings. It appears that fusion bombs dropped on this
+      location have destroyed anything of value.  A single carved rock face has
+      the planetary coordinates 54N X 143W in the Sabion language.  It is
+      signed by (untranslatable) Sabion Homeworld Polar Research Group #217."
+    Portrait: B_Tomb.png
+    planetid: 411
+    #  Dagda III (228, 192) at 67S X 131E
+    y: 131
+    x: 67
+  - item:
+    ID: 380
+    Type: Ruin
+    Name: Microfilm
+    Description: "\"...All mysteries of the Minex may soon be deciphered on
+      their earlier forgotten home world of Fir Bolg I (17,93).  Most evidence
+      has disintegrated from extreme age, but we believe they were at war with
+      another race in the Dagda system.  Our current hostilities with the
+      Bar-zhon preclude investigation but the Transmodra and Bx still plan to
+      mount an expedition shortly...\""
+    Portrait: B_Tomb.png
+    planetid: 141
+    # 158N X 0 Sabion home world (Gorias 3 - 5,16)
+    y: 0
+    x: -158
+  - item:
+    ID: 381
+    Type: Artifact
+    Name: Thorium shipping invoice
+    Value: 0
+    Size: 0.1
+    Portrait: T_Fliers.png
+    planetid: 439
+    # Tuatha, Nemed 125,96  38N X 63E
+    y: 63
+    x: -38
+  - item:
+    ID: 382
+    Type: Ruin
+    Name: Broken Probe Fragment
+    Description: "\"...Alonso Borno, Bar-zhon Ministry of Internal Security,
+      personal log.  I have traced the scoundrel Xenon to his latest rendezvous
+      with some local pirates but only found some small junk fragments and
+      trash.  Erm...  Computer, erase previous sentence. I have fearlessly
+      chased the scoundrel Xenon to his latest rendezvous but he barely was
+      able to evade capture and escape by sacrificing a few local pirates as a
+      misdirection.  The Ministry of Security is badly in need of additional
+      pursuit craft effective...\""
+    Portrait: B_ShantyTown.png
+    planetid: 70
+    # Alastir, Tat 132,125
+    y: 0
+    x: -151
+  - item:
+    ID: 383
+    Type: Ruin
+    Name: Broken Probe Fragment
+    Description: "\"...Xenon left a credit balance of 0 in the accounts he
+      created under several pseudo-names. Maybe this is a subtle hint to his
+      cohorts. Maybe it is not a zero but an Oh!  He is traveling to one of the
+      four class O stars! We will set a trap for him and his band! Requesting
+      immediate reinforcements at Kercso (192, 152), Enna (105, 112), Othearipi
+      (54, 20) and Forgoll (67, 11)  Highest priority on my personal esteemed
+      authority.  Borno over and out.  Computer, end recording. These homing
+      flight recorders still make the strangest thunk when I launch them from a
+      the planetary surface of a planet. I wonder if I will hear that noise
+      again...\""
+    Portrait: B_ShantyTown.png
+    planetid: 70
+    # Alastir, Tat 132,125
+    y: 1
+    x: -151
+  - item:
+    ID: 384
+    Type: Ruin
+    Name: Camouflaged Data Reccorder
+    Description: "\"...New Orders from X.  Meet on that exotic acidic planet
+      that the Elowan told us about downspin of Myrrdan in the cluster of class
+      F and G stars ... Geographic poles are the only reliable landmarks....\""
+    Portrait: B_ShantyTown.png
+    planetid: 224
+    # Arturwen, Anu 65,110 86N X 70W
+    y: -70
+    x: -86
+  - item:
+    ID: 385
+    Type: Ruin
+    Name: Camouflaged Data Reccorder
+    Description: "\"...New Orders from X.  Meet on that exotic acidic planet
+      that the Elowan told us about downspin of Myrrdan in the cluster of class
+      F and G stars ... Geographic poles are the only reliable landmarks....\""
+    Portrait: B_ShantyTown.png
+    planetid: 224
+    # Arturwen, Anu 65,110 86N X 70W
+    y: -70
+    x: -86
+  - item:
+    ID: 386
+    Type: Ruin
+    Name: Camouflaged Data Reccorder
+    Description: "\"...The Thrynn have always proven to be reliable fences.
+      Anything technological and unique they will pay quite well for and ask no
+      questions.  Of course many others will pay very well for their battle
+      suits...\""
+    Portrait: B_ShantyTown.png
+    planetid: 350
+    # South Pole of Fogwyrd (#350) in the Delbaeth system(107,183)
+    y: 2
+    x: 152
+  - item:
+    ID: 387
+    Type: Ruin
+    Name: Camouflaged Data Reccorder
+    Description: "\"Note to self.  Everything the Spemin possess is worthless.
+      Alpha sector, gamma sector, doesn't matter. I'd just jettison these
+      nutrients except that I'm sure that some poor mark will...\""
+    Portrait: B_ShantyTown.png
+    planetid: 350
+    # South Pole of Fogwyrd (#350) in the Delbaeth system(107,183)
+    y: 1
+    x: 150
+  - item:
+    ID: 388
+    Type: Ruin
+    Name: Damaged Probe
+    Description: "\"...Alonso Borno, Bar-zhon Ministry of Internal Security
+      personal log. HQ has requested that their most accomplished diplomat and
+      top inspector in the galaxy bring these plant things into line. The only
+      problem is that every time I tell them why I'm right and they are wrong
+      they start shooting. The logical next step is to talk to others about
+      this conflict.  The Thrynn have been no help but possibly the Spemin or
+      the Nyssian might know something. Now if I could only find them. Borno
+      over and out!  THUNK!\""
+    Portrait: B_ShantyTown.png
+    planetid: 240
+    # Eocho, Etarlam 172,118 - 45S X 94W.--:
+    y: -93
+    x: 44
+  - item:
+    ID: 389
+    Type: Ruin
+    Name: Signal Beacon
+    Description: "Scrawled on the surface of this escape pod beacon are the
+      words: \"Borno, good try but you will have to do better than this. - X\""
+    Portrait: B_Research.png
+    planetid: 188
+    # Camall 140N X 51E in the Enu System 154,76.--:
+    y: 51
+    x: -140
+  - item:
+    ID: 390
+    Type: Artifact
+    Name: Ancient artifact with hidden tracking device
+    Value: 0
+    Size: 0.1
+    Portrait: T_AlienArtifact.png
+    planetid: 188
+    # Camall 140N X 51E in the Enu System 154,76.--:
+    y: 52
+    x: -141
+  - item:
+    ID: 391
+    Type: Ruin
+    Name: Ship Wreckage Black Box
+    Description: "Xenon to Filithra 5.... We are thieves, not murderers. Your
+      recent actions are not tolerable nor authorized. Ambushing friendly
+      aliens in order to salvage their genetic material may not be noticeable
+      in the chaos... ...Your ship will self-destruct in 5...4..."
+    Portrait: B_ListeningPost.png
+    planetid: 352
+    #  (58N X 98E) Bx home world (Anextiomarus/Boann - 115,184)
+    y: 98
+    x: -58
+  - item:
+    ID: 392
+    Type: Artifact
+    Name: Ship Wreckage Fragments
+    Value: 0
+    Size: 0.1
+    Portrait: T_IPBM.png
+    planetid: 352
+    #  (59N X 99E) Bx home world (Anextiomarus/Boann - 115,184)
+    y: 99
+    x: -59
+  - item:
+    ID: 393
+    Type: Ruin
+    Name: Spaceship Wreckage
+    Description: "Digital newspaper: \"We got him!  After a painstaking 6 month
+      stakeout I, Alonso Borno, detected Xenon's smuggler craft making its way
+      into Coalition space. After demanding his surrender, Xenon applied full
+      power to engines and unfortunately dodged directly into the path of the
+      warning volley of fire...\""
+    Portrait: B_ShantyTown.png
+    planetid: 465
+    #  Lusmore I 563< (97N X 114E) (227, 73)
+    y: 114
+    x: -97
+  - item:
+    ID: 394
+    Type: Artifact
+    Name: Whirling Disk
+    Value: 0
+    Size: 0.1
+    Portrait: Golden_Device.png
+    planetid: 98
+    #  Oende V (152S X 6E) in the Oende system 134, 30
+    y: 6
+    x: 152
+  - item:
+    ID: 395
+    Type: Ruin
+    Name: Data Transmitter
+    Description: "Hey Myrrdan Captain!  The rumors of my untimely demise are as
+      always a bit premature. I've got a few more hints for you.  An Elowan
+      once told me that ancient ruins found at precise landing coordinates on
+      one world are sometimes mirrored on other ancient worlds.  Also the
+      schizophrenic Spemin should give you insights into the thought processes
+      of whatever malignant entities behind this virus. They seem to be a mite
+      flaky at the moment. - X"
+    Portrait: B_Research.png
+    planetid: 301
+    # 74N X 39E on Dian Cecht 4 - 35,139
+    y: 39
+    x: -74
+  - item:
+    ID: 396
+    Type: Artifact
+    Name: Spemin message
+    Value: 0
+    Size: 0.1
+    Portrait: T_Plates.png
+  - item:
+    ID: 1000
+    Type: Ruin
+    Name: Generic Ruin
+    Description: &tachyon_signature "Science report: Captain, I am detecting a
+      faint tachyon signature within the trapped atmosphere of this ruin.
+      Please travel to 76S X 22W so I may take additional readings."
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: 20
+    x: -138
+  - item:
+    ID: 1001
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: -113
+    x: -16
+  - item:
+    ID: 1002
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: 54
+    x: -1
+  - item:
+    ID: 1003
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: -5
+    x: -144
+  - item:
+    ID: 1004
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: -130
+    x: -146
+  - item:
+    ID: 1005
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: 98
+    x: -134
+  - item:
+    ID: 1006
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: -14
+    x: 74
+  - item:
+    ID: 1007
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: -147
+    x: -90
+  - item:
+    ID: 1008
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: -2
+    x: -120
+  - item:
+    ID: 1009
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: -70
+    x: 124
+  - item:
+    ID: 1010
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: 100
+    x: 153
+  - item:
+    ID: 1011
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: 61
+    x: -7
+  - item:
+    ID: 1012
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: 2
+    x: 31
+  - item:
+    ID: 1013
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: 123
+    x: 51
+  - item:
+    ID: 1014
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: -100
+    x: 22
+  - item:
+    ID: 1015
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: -70
+    x: 35
+  - item:
+    ID: 1016
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: -73
+    x: -106
+  - item:
+    ID: 1017
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: -82
+    x: 120
+  - item:
+    ID: 1018
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: -11
+    x: 6
+  - item:
+    ID: 1019
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: 136
+    x: -128
+  - item:
+    ID: 1020
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: -137
+    x: 95
+  - item:
+    ID: 1021
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: -39
+    x: 151
+  - item:
+    ID: 1022
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: -35
+    x: -64
+  - item:
+    ID: 1023
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: 20
+    x: -103
+  - item:
+    ID: 1024
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: 34
+    x: 97
+  - item:
+    ID: 1025
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: -137
+    x: 106
+  - item:
+    ID: 1026
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: -98
+    x: -103
+  - item:
+    ID: 1027
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: -125
+    x: -61
+  - item:
+    ID: 1028
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: -81
+    x: -3
+  - item:
+    ID: 1029
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: -142
+    x: -52
+  - item:
+    ID: 1030
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: -61
+    x: -10
+  - item:
+    ID: 1031
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: 153
+    x: -69
+  - item:
+    ID: 1032
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: -139
+    x: 1
+  - item:
+    ID: 1033
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: 135
+    x: -144
+  - item:
+    ID: 1034
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: 21
+    x: 125
+  - item:
+    ID: 1035
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: -123
+    x: 140
+  - item:
+    ID: 1036
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: 11
+    x: 11
+  - item:
+    ID: 1037
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: 44
+    x: 121
+  - item:
+    ID: 1038
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: -83
+    x: -42
+  - item:
+    ID: 1039
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: -74
+    x: 153
+  - item:
+    ID: 1040
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: 11
+    x: -49
+  - item:
+    ID: 1041
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: -5
+    x: -101
+  - item:
+    ID: 1042
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: 33
+    x: 99
+  - item:
+    ID: 1043
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: -147
+    x: 72
+  - item:
+    ID: 1044
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: -2
+    x: -56
+  - item:
+    ID: 1045
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: 105
+    x: -50
+  - item:
+    ID: 1046
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: -148
+    x: 152
+  - item:
+    ID: 1047
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: -71
+    x: 118
+  - item:
+    ID: 1048
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: 100
+    x: -90
+  - item:
+    ID: 1049
+    Type: Ruin
+    Name: Generic Ruin
+    Description: *tachyon_signature
+    Portrait: B_Tomb.png
+    planetid: 144
+    y: -33
+    x: -31
+  - item:
+    ID: 1100
+    Type: Ruin
+    Name: Impact Crater
+    Description: &impact_crater "This explosive indentation appears to be from
+      a simple unguided anti-starship missile. Impact ballistics indicate that
+      the missile was deflected low in the atmosphere, missing whatever target
+      it was originally aimed at.  The impact angle suggests that the
+      deflection took place from somewhere over the south pole."
+    Portrait: B_Mine.png
+    planetid: 98
+    y: 20
+    x: -138
+  - item:
+    ID: 1101
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: -113
+    x: -16
+  - item:
+    ID: 1102
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: 54
+    x: -1
+  - item:
+    ID: 1103
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: -5
+    x: -144
+  - item:
+    ID: 1104
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: -130
+    x: -146
+  - item:
+    ID: 1105
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: 98
+    x: -134
+  - item:
+    ID: 1106
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: -14
+    x: 74
+  - item:
+    ID: 1107
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: -147
+    x: -90
+  - item:
+    ID: 1108
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: -2
+    x: -120
+  - item:
+    ID: 1109
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: -70
+    x: 124
+  - item:
+    ID: 1110
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: 100
+    x: 153
+  - item:
+    ID: 1111
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: 61
+    x: -7
+  - item:
+    ID: 1112
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: 2
+    x: 31
+  - item:
+    ID: 1113
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: 123
+    x: 51
+  - item:
+    ID: 1114
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: -100
+    x: 22
+  - item:
+    ID: 1115
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: -70
+    x: 35
+  - item:
+    ID: 1116
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: -73
+    x: -106
+  - item:
+    ID: 1117
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: -82
+    x: 120
+  - item:
+    ID: 1118
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: -11
+    x: 6
+  - item:
+    ID: 1119
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: 136
+    x: -128
+  - item:
+    ID: 1120
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: -137
+    x: 95
+  - item:
+    ID: 1121
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: -39
+    x: 151
+  - item:
+    ID: 1122
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: -35
+    x: -64
+  - item:
+    ID: 1123
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: 20
+    x: -103
+  - item:
+    ID: 1124
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: 34
+    x: 97
+  - item:
+    ID: 1125
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: -137
+    x: 106
+  - item:
+    ID: 1126
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: -98
+    x: -103
+  - item:
+    ID: 1127
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: -125
+    x: -61
+  - item:
+    ID: 1128
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: -81
+    x: -3
+  - item:
+    ID: 1129
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: -142
+    x: -52
+  - item:
+    ID: 1130
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: -61
+    x: -10
+  - item:
+    ID: 1131
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: 153
+    x: -69
+  - item:
+    ID: 1132
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: -139
+    x: 1
+  - item:
+    ID: 1133
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: 135
+    x: -144
+  - item:
+    ID: 1134
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: 21
+    x: 125
+  - item:
+    ID: 1135
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: -123
+    x: 140
+  - item:
+    ID: 1136
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: 11
+    x: 11
+  - item:
+    ID: 1137
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: 44
+    x: 121
+  - item:
+    ID: 1138
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: -83
+    x: -42
+  - item:
+    ID: 1139
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: -74
+    x: 153
+  - item:
+    ID: 1140
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: 11
+    x: -49
+  - item:
+    ID: 1141
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: -5
+    x: -101
+  - item:
+    ID: 1142
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: 33
+    x: 99
+  - item:
+    ID: 1143
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: -147
+    x: 72
+  - item:
+    ID: 1144
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: -2
+    x: -56
+  - item:
+    ID: 1145
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: 105
+    x: -50
+  - item:
+    ID: 1146
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: -148
+    x: 152
+  - item:
+    ID: 1147
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: -71
+    x: 118
+  - item:
+    ID: 1148
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: 100
+    x: -90
+  - item:
+    ID: 1149
+    Type: Ruin
+    Name: Impact Crater
+    Description: *impact_crater
+    Portrait: B_Mine.png
+    planetid: 98
+    y: -33
+    x: -31
+  - item:
+    ID: 1200
+    Type: Ruin
+    Name: Burning Rubble
+    Description: &burning_rubble "The bodies have been buried by the Bar-zhon
+      via transporter, but the number of bloodstains and burn marks on walls
+      and floors presents a grisly tale."
+    Portrait: B_ShantyTown.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: 20
+    x: -138
+  - item:
+    ID: 1201
+    Type: Ruin
+    Name: Melted Ruins
+    Description: &melted_ruins "Deep grooves dug into the ground through this
+      civilian area indicate heavy beam weapons fire from overhead."
+    Portrait: B_Mine.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: -113
+    x: -16
+  - item:
+    ID: 1202
+    Type: Ruin
+    Name: Razed Structures
+    Description: ... Colonial government office at 2N X 47W ...
+    Portrait: B_Factory.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: 54
+    x: -1
+  - item:
+    ID: 1203
+    Type: Ruin
+    Name: Burning Rubble
+    Description: *burning_rubble
+    Portrait: B_ShantyTown.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: -5
+    x: -144
+  - item:
+    ID: 1204
+    Type: Ruin
+    Name: Melted Ruins
+    Description: *melted_ruins
+    Portrait: B_Mine.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: -130
+    x: -146
+  - item:
+    ID: 1205
+    Type: Ruin
+    Name: Razed Structures
+    Description: ... Colonial government office at 2N X 47W ...
+    Portrait: B_Factory.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: 98
+    x: -134
+  - item:
+    ID: 1206
+    Type: Ruin
+    Name: Burning Rubble
+    Description: *burning_rubble
+    Portrait: B_ShantyTown.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: -14
+    x: 74
+  - item:
+    ID: 1207
+    Type: Ruin
+    Name: Melted Ruins
+    Description: *melted_ruins
+    Portrait: B_Mine.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: -147
+    x: -90
+  - item:
+    ID: 1208
+    Type: Ruin
+    Name: Razed Structures
+    Description: ... Colonial government office at 2N X 47W ...
+    Portrait: B_Factory.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: -2
+    x: -120
+  - item:
+    ID: 1209
+    Type: Ruin
+    Name: Burning Rubble
+    Description: *burning_rubble
+    Portrait: B_ShantyTown.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: -70
+    x: 124
+  - item:
+    ID: 1210
+    Type: Ruin
+    Name: Melted Ruins
+    Description: *melted_ruins
+    Portrait: B_Mine.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: 100
+    x: 153
+  - item:
+    ID: 1211
+    Type: Ruin
+    Name: Razed Structures
+    Description: ... Colonial government office at 2N X 47W ...
+    Portrait: B_Factory.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: 61
+    x: -7
+  - item:
+    ID: 1212
+    Type: Ruin
+    Name: Burning Rubble
+    Description: *burning_rubble
+    Portrait: B_ShantyTown.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: 2
+    x: 31
+  - item:
+    ID: 1213
+    Type: Ruin
+    Name: Melted Ruins
+    Description: *melted_ruins
+    Portrait: B_Mine.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: 123
+    x: 51
+  - item:
+    ID: 1214
+    Type: Ruin
+    Name: Razed Structures
+    Description: ... Colonial government office at 2N X 47W ...
+    Portrait: B_Factory.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: -100
+    x: 22
+  - item:
+    ID: 1215
+    Type: Ruin
+    Name: Burning Rubble
+    Description: *burning_rubble
+    Portrait: B_ShantyTown.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: -70
+    x: 35
+  - item:
+    ID: 1216
+    Type: Ruin
+    Name: Melted Ruins
+    Description: *melted_ruins
+    Portrait: B_Mine.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: -73
+    x: -106
+  - item:
+    ID: 1217
+    Type: Ruin
+    Name: Razed Structures
+    Description: ... Colonial government office at 2N X 47W ...
+    Portrait: B_Factory.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: -82
+    x: 120
+  - item:
+    ID: 1218
+    Type: Ruin
+    Name: Burning Rubble
+    Description: *burning_rubble
+    Portrait: B_ShantyTown.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: -11
+    x: 6
+  - item:
+    ID: 1219
+    Type: Ruin
+    Name: Melted Ruins
+    Description: *melted_ruins
+    Portrait: B_Mine.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: 136
+    x: -128
+  - item:
+    ID: 1220
+    Type: Ruin
+    Name: Razed Structures
+    Description: ... Colonial government office at 2N X 47W ...
+    Portrait: B_Factory.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: -137
+    x: 95
+  - item:
+    ID: 1221
+    Type: Ruin
+    Name: Burning Rubble
+    Description: *burning_rubble
+    Portrait: B_ShantyTown.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: -39
+    x: 151
+  - item:
+    ID: 1222
+    Type: Ruin
+    Name: Melted Ruins
+    Description: *melted_ruins
+    Portrait: B_Mine.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: -35
+    x: -64
+  - item:
+    ID: 1223
+    Type: Ruin
+    Name: Razed Structures
+    Description: ... Colonial government office at 2N X 47W ...
+    Portrait: B_Factory.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: 20
+    x: -103
+  - item:
+    ID: 1224
+    Type: Ruin
+    Name: Burning Rubble
+    Description: *burning_rubble
+    Portrait: B_ShantyTown.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: 34
+    x: 97
+  - item:
+    ID: 1225
+    Type: Ruin
+    Name: Melted Ruins
+    Description: *melted_ruins
+    Portrait: B_Mine.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: -137
+    x: 106
+  - item:
+    ID: 1226
+    Type: Ruin
+    Name: Razed Structures
+    Description: ... Colonial government office at 2N X 47W ...
+    Portrait: B_Factory.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: -98
+    x: -103
+  - item:
+    ID: 1227
+    Type: Ruin
+    Name: Burning Rubble
+    Description: *burning_rubble
+    Portrait: B_ShantyTown.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: -125
+    x: -61
+  - item:
+    ID: 1228
+    Type: Ruin
+    Name: Melted Ruins
+    Description: *melted_ruins
+    Portrait: B_Mine.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: -81
+    x: -3
+  - item:
+    ID: 1229
+    Type: Ruin
+    Name: Razed Structures
+    Description: ... Colonial government office at 2N X 47W ...
+    Portrait: B_Factory.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: -142
+    x: -52
+  - item:
+    ID: 1230
+    Type: Ruin
+    Name: Burning Rubble
+    Description: *burning_rubble
+    Portrait: B_ShantyTown.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: -61
+    x: -10
+  - item:
+    ID: 1231
+    Type: Ruin
+    Name: Melted Ruins
+    Description: *melted_ruins
+    Portrait: B_Mine.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: 153
+    x: -69
+  - item:
+    ID: 1232
+    Type: Ruin
+    Name: Razed Structures
+    Description: ... Colonial government office at 2N X 47W ...
+    Portrait: B_Factory.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: -139
+    x: 1
+  - item:
+    ID: 1233
+    Type: Ruin
+    Name: Burning Rubble
+    Description: *burning_rubble
+    Portrait: B_ShantyTown.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: 135
+    x: -144
+  - item:
+    ID: 1234
+    Type: Ruin
+    Name: Melted Ruins
+    Description: *melted_ruins
+    Portrait: B_Mine.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: 21
+    x: 125
+  - item:
+    ID: 1235
+    Type: Ruin
+    Name: Razed Structures
+    Description: ... Colonial government office at 2N X 47W ...
+    Portrait: B_Factory.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: -123
+    x: 140
+  - item:
+    ID: 1236
+    Type: Ruin
+    Name: Burning Rubble
+    Description: *burning_rubble
+    Portrait: B_ShantyTown.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: 11
+    x: 11
+  - item:
+    ID: 1237
+    Type: Ruin
+    Name: Melted Ruins
+    Description: *melted_ruins
+    Portrait: B_Mine.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: 44
+    x: 121
+  - item:
+    ID: 1238
+    Type: Ruin
+    Name: Razed Structures
+    Description: ... Colonial government office at 2N X 47W ...
+    Portrait: B_Factory.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: -83
+    x: -42
+  - item:
+    ID: 1239
+    Type: Ruin
+    Name: Burning Rubble
+    Description: *burning_rubble
+    Portrait: B_ShantyTown.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: -74
+    x: 153
+  - item:
+    ID: 1240
+    Type: Ruin
+    Name: Melted Ruins
+    Description: *melted_ruins
+    Portrait: B_Mine.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: 11
+    x: -49
+  - item:
+    ID: 1241
+    Type: Ruin
+    Name: Razed Structures
+    Description: ... Colonial government office at 2N X 47W ...
+    Portrait: B_Factory.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: -5
+    x: -101
+  - item:
+    ID: 1242
+    Type: Ruin
+    Name: Burning Rubble
+    Description: *burning_rubble
+    Portrait: B_ShantyTown.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: 33
+    x: 99
+  - item:
+    ID: 1243
+    Type: Ruin
+    Name: Melted Ruins
+    Description: *melted_ruins
+    Portrait: B_Mine.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: -147
+    x: 72
+  - item:
+    ID: 1244
+    Type: Ruin
+    Name: Razed Structures
+    Description: ... Colonial government office at 2N X 47W ...
+    Portrait: B_Factory.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: -2
+    x: -56
+  - item:
+    ID: 1245
+    Type: Ruin
+    Name: Burning Rubble
+    Description: *burning_rubble
+    Portrait: B_ShantyTown.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: 105
+    x: -50
+  - item:
+    ID: 1246
+    Type: Ruin
+    Name: Melted Ruins
+    Description: *melted_ruins
+    Portrait: B_Mine.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: -148
+    x: 152
+  - item:
+    ID: 1247
+    Type: Ruin
+    Name: Razed Structures
+    Description: ... Colonial government office at 2N X 47W ...
+    Portrait: B_Factory.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: -71
+    x: 118
+  - item:
+    ID: 1248
+    Type: Ruin
+    Name: Burning Rubble
+    Description: *burning_rubble
+    Portrait: B_ShantyTown.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: 100
+    x: -90
+  - item:
+    ID: 1249
+    Type: Ruin
+    Name: Melted Ruins
+    Description: *melted_ruins
+    Portrait: B_Mine.png
+    planetid: 101
+    # Quest 60: Ceridwen in the Ailil system (188, 88)
+    y: -33
+    x: -31

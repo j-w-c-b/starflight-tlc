@@ -6,7 +6,7 @@ loadrange = 100
 
 function PlayerTVInitialize( )
 	
-	L_LoadImage("data/planetsurface/Player_Rover.tga")
+	L_LoadImage("data/planetsurface/Player_Rover.png")
 
 	L_SetAngleOffset(-90)
 

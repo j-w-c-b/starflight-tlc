@@ -9,7 +9,7 @@ loadrange = 120
 function ruinInitialize( )
 	id = L_GetItemID()
 	L_Debug("  ruinInitialize: ItemID = " .. tostring(id) )
-	--L_LoadImage("data/planetsurface/B_Tomb.tga")
+	--L_LoadImage("data/planetsurface/B_Tomb.png")
 	L_SetDamage(1) --set size to 1
 	L_SetColHalfWidth(48)
 	L_SetColHalfHeight(48)

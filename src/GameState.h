@@ -11,37 +11,20 @@
 
 #include "debug.h" //prefs for debug modes, keys, etc.
 #include <allegro5/allegro.h>
+
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
 #include "DataMgr.h"
+#include "Loan.h"
+#include "Officer.h"
 #include "Point2D.h"
 #include "Stardate.h"
 
 class Items;
-class Archive;
 class Quest;
-
-enum Faction
-{
-    Myrrdan = 0,
-    Elowan,
-    Veloxi,
-    Spemin,
-    Thrynn,
-    BarZhon,
-    Nyssian,
-    Tafel,
-    Minex,
-    TheCoalition
-};
-
-// I hesitate to introduce a duplicate enum but Faction is incorrect
-//   * it does not have a NONE option
-//   * Pirate is missing
-//   * Myrrdan is not an alien race
-//   * Veloxi is not an alien race
 
 enum AlienRaces
 {
@@ -54,135 +37,24 @@ enum AlienRaces
     ALIEN_NYSSIAN,
     ALIEN_TAFEL,
     ALIEN_MINEX,
-    ALIEN_COALITION
+    ALIEN_COALITION,
+    NUM_ALIEN_RACES
 };
-#define NUM_ALIEN_RACES 10
 
-// ATTRIBUTES CLASS
-enum Skill
+enum ProfessionType
 {
-    SKILL_SCIENCE = 0,
-    SKILL_NAVIGATION,
-    SKILL_TACTICAL,
-    SKILL_ENGINEERING,
-    SKILL_COMMUNICATION,
-    SKILL_MEDICAL
-};
-
-class Attributes {
-  public:
-    Attributes();
-    virtual ~Attributes();
-
-    Attributes &operator=(const Attributes &rhs);
-
-    int &operator[](int i);
-
-    int durability;
-    int learnRate;
-
-    int science;
-    int navigation;
-    int tactics;
-    int engineering;
-    int communication;
-    int medical;
-
-    float vitality; // the health of the officer
-    float extra_variable;
-
-    // accessors
-    int getDurability() const;
-    int getLearnRate() const;
-    int getScience() const;
-    int getNavigation() const;
-    int getTactics() const;
-    int getEngineering() const;
-    int getCommunication() const;
-    int getMedical() const;
-    float getVitality() const;
-
-    void augVitality(float value);
-    void capVitality();
-
-    void Reset();
-    bool Serialize(Archive &ar);
+    PROFESSION_SCIENTIFIC = 1,
+    PROFESSION_FREELANCE = 2,
+    PROFESSION_MILITARY = 4
 };
 
 // OFFICER CLASS
 
-enum ProfessionType
-{
-    PROFESSION_NONE = 0,
-    PROFESSION_SCIENTIFIC = 1,
-    PROFESSION_FREELANCE = 2,
-    PROFESSION_MILITARY = 4,
-    PROFESSION_OTHER = 8
-};
-
-enum OfficerType
-{
-    OFFICER_NONE = 0,
-    OFFICER_CAPTAIN = 1,
-    OFFICER_SCIENCE = 2,
-    OFFICER_NAVIGATION = 3,
-    OFFICER_ENGINEER = 4,
-    OFFICER_COMMUNICATION = 5,
-    OFFICER_MEDICAL = 6,
-    OFFICER_TACTICAL = 7
-};
-
-class Officer {
-  public:
-    Officer();
-    explicit Officer(OfficerType officerType);
-    virtual ~Officer();
-
-    Officer &operator=(const Officer &rhs);
-
-    OfficerType GetOfficerType() const;
-    void SetOfficerType(OfficerType type);
-    void SetOfficerType(int type);
-    std::string GetTitle();
-    std::string GetTitle(OfficerType officerType);
-    std::string GetPreferredProfession();
-
-    void Reset();
-    bool Serialize(Archive &ar);
-
-    bool SkillUp(const std::string &skill, int amount = 1);
-    bool SkillUp(Skill skill, int amount = 1);
-    bool SkillCheck();
-    bool CanSkillCheck();
-    void FakeSkillCheck(); // this function is used to fake a skill check for
-                           // the purpose of CanSkillCheck().
-
-    bool
-    isBeingHealed() {
-        return isHealing;
-    }
-    void
-    Recovering(bool recovering) {
-        isHealing = recovering;
-    }
-
-    std::string getFirstName();
-    std::string getLastName();
-
-    std::string name;
-    Attributes attributes;
-
-  private:
-    Stardate lastSkillCheck;
-    bool isHealing;
-
-    OfficerType officerType;
-};
+constexpr int CREW_SIZE = 7;
 
 // SHIP CLASS
 #define STARTING_HULL_INTEGRITY 100
 
-// added class 6
 enum ClassType
 {
     NotInstalledType,
@@ -228,6 +100,8 @@ class Ship {
     virtual ~Ship();
     Ship &operator=(const Ship &rhs);
 
+    static constexpr std::string_view class_name = "Ship";
+
     // accessors
     std::string getName() const;
     int getCargoPodCount() const;
@@ -247,16 +121,14 @@ class Ship {
     int getLaserClass() const;
     int getLaserDamage();
     int getLaserFiringRate();
-    bool
-    getHasTV() const {
-        return hasTV;
-    }
+    bool getHasTV() const { return hasTV; }
     float getMaxArmorIntegrity();
     float getMaxShieldCapacity();
 
-    void damageRandomSystemOrCrew(int odds = 33,
-                                  int mindamage = 10,
-                                  int maxdamage = 30);
+    void damageRandomSystemOrCrew(
+        int odds = 33,
+        int mindamage = 10,
+        int maxdamage = 30);
 
     std::string getCargoPodCountString() const;
     std::string getEngineClassString() const;
@@ -266,26 +138,11 @@ class Ship {
     std::string getLaserClassString() const;
     bool HaveEngines() const;
 
-    int
-    getMaxEngineClass() {
-        return maxEngineClass;
-    }
-    int
-    getMaxArmorClass() {
-        return maxArmorClass;
-    }
-    int
-    getMaxShieldClass() {
-        return maxShieldClass;
-    }
-    int
-    getMaxLaserClass() {
-        return maxLaserClass;
-    }
-    int
-    getMaxMissileLauncherClass() {
-        return maxMissileLauncherClass;
-    }
+    int getMaxEngineClass() { return maxEngineClass; }
+    int getMaxArmorClass() { return maxArmorClass; }
+    int getMaxShieldClass() { return maxShieldClass; }
+    int getMaxLaserClass() { return maxLaserClass; }
+    int getMaxMissileLauncherClass() { return maxMissileLauncherClass; }
     float get_maximum_velocity() const;
     float get_fuel_usage(float distance) const;
 
@@ -322,14 +179,10 @@ class Ship {
     void setMaxLaserClass(int laserClass);
     void setMaxMissileLauncherClass(int missileLauncherClass);
 
-    void
-    setHasTV(bool initHasTV) {
-        hasTV = initHasTV;
-    }
+    void setHasTV(bool initHasTV) { hasTV = initHasTV; }
 
     // specials
     void Reset();
-    bool Serialize(Archive &ar);
 
     // fuel consumption
     float getFuel();
@@ -370,6 +223,8 @@ class Ship {
     float fuelPercentage; // 1.0 = full, 0.0 = empty, 0.5 = half tank
     void capFuel(); // tops off the fuel tank... basically this function just
                     // makes sure that the fuel is within the proper limits
+    friend InputArchive &operator>>(InputArchive &ar, Ship &ship);
+    friend OutputArchive &operator<<(OutputArchive &ar, const Ship &ship);
 };
 
 // GAMESTATE CLASS
@@ -386,22 +241,18 @@ struct FluxInfo {
 
     FluxInfo()
         : endpoint_1_visible(false), endpoint_2_visible(false),
-          path_visible(false){};
+          path_visible(false) {}
 };
 
 class PlayerInfo {
-  private:
-    bool m_scanner, m_previous_scanner_state, m_bHasHyperspacePermit,
-        m_bHasOverdueLoan;
-    bool m_is_lost;
-    Stardate m_date_lost;
-
   public:
     PlayerInfo() { Reset(); }
-    ~PlayerInfo(){};
+
+    static constexpr std::string_view class_name = "PlayerInfo";
+    friend InputArchive &operator>>(InputArchive &ar, PlayerInfo &info);
+    friend OutputArchive &operator<<(OutputArchive &ar, const PlayerInfo &info);
 
     void Reset();
-    bool Serialize(Archive &ar);
     PlayerInfo &operator=(const PlayerInfo &rhs);
 
     int currentStar;
@@ -415,27 +266,14 @@ class PlayerInfo {
     Point2D posCombat;
     double currentSpeed;
 
-    double
-    get_galactic_x() {
-        return posHyperspace.x;
-    }
-    double
-    get_galactic_y() {
-        return posHyperspace.y;
-    }
+    double get_galactic_x() { return posHyperspace.x; }
+    double get_galactic_y() { return posHyperspace.y; }
 
-    Point2D
-    get_galactic_pos() {
-        return posHyperspace;
-    }
+    Point2D get_galactic_pos() { return posHyperspace; }
 
-    void
-    set_galactic_pos(Point2D pos) {
-        posHyperspace = pos;
-    }
+    void set_galactic_pos(Point2D pos) { posHyperspace = pos; }
 
-    void
-    set_galactic_pos(double x, double y) {
+    void set_galactic_pos(double x, double y) {
         posHyperspace.x = x;
         posHyperspace.y = y;
     }
@@ -451,74 +289,41 @@ class PlayerInfo {
     std::string getAlienRaceName(AlienRaces race);
     std::string getAlienRaceName(int race);
     std::string getAlienRaceNamePlural(AlienRaces race);
-    AlienRaces
-    getGalacticRegion() {
-        return galacticRegion;
-    }
-    void
-    setGalacticRegion(AlienRaces race) {
-        galacticRegion = race;
-    }
+    AlienRaces getGalacticRegion() { return galacticRegion; }
+    void setGalacticRegion(AlienRaces race) { galacticRegion = race; }
 
     int fleetSize;
-    int
-    getAlienFleetSize() {
-        return fleetSize;
-    }
-    void
-    setAlienFleetSize(int value) {
-        fleetSize = value;
-    }
+    int getAlienFleetSize() { return fleetSize; }
+    void setAlienFleetSize(int value) { fleetSize = value; }
 
     /*
      * END ENCOUNTER RELATED DATA
      */
 
-    double
-    getCurrentSpeed() {
-        return currentSpeed;
-    }
-    void
-    setCurrentSpeed(double value) {
-        currentSpeed = value;
-    }
+    double getCurrentSpeed() { return currentSpeed; }
+    void setCurrentSpeed(double value) { currentSpeed = value; }
 
-    bool
-    hasHyperspacePermit() {
-        return m_bHasHyperspacePermit;
-    }
-    void
-    set_HyperspacePermit(bool status) {
-        m_bHasHyperspacePermit = status;
-    }
-    bool
-    hasOverdueLoan() {
-        return m_bHasOverdueLoan;
-    }
-    void
-    set_OverdueLoan(bool status) {
-        m_bHasOverdueLoan = status;
-    }
+    bool hasHyperspacePermit() { return m_bHasHyperspacePermit; }
+    void set_HyperspacePermit(bool status) { m_bHasHyperspacePermit = status; }
+    bool hasOverdueLoan() { return m_loan && m_loan->is_overdue(); }
+    bool pay_loan(int amount);
+    bool take_loan(int amount);
+    const std::optional<Loan> get_loan() { return m_loan; }
+    void update_loan();
 
-    bool
-    isLost() {
-        return m_is_lost;
-    }
-    void
-    isLost(bool is_lost) {
-        m_is_lost = is_lost;
-    }
+    bool isLost() { return m_is_lost; }
+    void isLost(bool is_lost) { m_is_lost = is_lost; }
 
     // alive property used for encounters
     bool alive;
-    bool
-    getAlive() {
-        return alive;
-    }
-    void
-    setAlive(bool value) {
-        alive = value;
-    }
+    bool getAlive() { return alive; }
+    void setAlive(bool value) { alive = value; }
+
+  private:
+    bool m_scanner, m_previous_scanner_state, m_bHasHyperspacePermit;
+    bool m_is_lost;
+    std::optional<Loan> m_loan;
+    Stardate m_date_lost;
 };
 
 struct QuestScript {
@@ -547,67 +352,67 @@ class GameState {
     };
 
     GameState();
-    virtual ~GameState();
+    ~GameState();
 
-    GameState &operator=(const GameState &rhs);
+    void operator=(const GameState &other);
+    static constexpr std::string_view class_name = "GameState";
+    friend InputArchive &operator>>(InputArchive &ar, GameState &game_state);
+    friend OutputArchive &
+    operator<<(OutputArchive &ar, const GameState &game_state);
 
     void Reset();
-    bool Serialize(Archive &ar);
 
     bool SaveGame(GameSaveSlot slot);
     static GameState *ReadGame(GameSaveSlot slot);
     static GameState *LoadGame(GameSaveSlot slot);
     static void DeleteGame(GameSaveSlot slot);
-    static void DumpStats(GameState *); // debug tool.
 
-    void AutoSave();
-    void AutoLoad();
+    bool AutoSave();
+    bool AutoLoad();
 
-    Officer *getOfficer(int officerType);
-    Officer *getOfficer(const std::string &officerName);
+    bool has_officer(OfficerType type) const {
+        auto officer = m_crew.find(type);
 
-    // return the officer who currently fill the given role
-    Officer *getCurrentSci();
-    Officer *getCurrentNav();
-    Officer *getCurrentTac();
-    Officer *getCurrentEng();
-    Officer *getCurrentCom();
-    Officer *getCurrentDoc();
+        return (
+            officer != m_crew.end() && officer->second->get_vitality() != 0);
+    }
 
     // calculate effective skill level taking into account vitality and captain
     // modifier
-    int CalcEffectiveSkill(Skill skill);
+    int CalcEffectiveSkill(Skill skill) const;
 
     // do a roll against given skill, using CalcEffectiveSkill to get the skill
     // value
     bool SkillCheck(Skill skill);
+    bool SkillUp(Skill skill, int amount = 1);
+    bool CanSkillCheck(Skill skill) const;
+    bool add_experience(Skill skill, int amount = 0);
 
     bool HaveFullCrew() const;
     bool PreparedToLaunch() const;
     Ship getShip() const;
-
-    std::vector<QuestScript *> planetsurfaceEvents;
-    Quest *RunningScriptsParentQuest;
 
     ProfessionType getProfession() const;
     int getCredits() const;
 
     // mutators
     void setCaptainSelected(bool initCaptainSelected);
-    void setProfession(const ProfessionType &initProfession);
-    void setProfession(const std::string &prof);
+    void setProfession(const ProfessionType initProfession);
     void setCredits(int initCredits);
     void augCredits(int amount);
     void setShip(const Ship &initShip);
 
-    OfficerType
-    getCurrentSelectedOfficer() {
-        return m_currentSelectedOfficer;
-    }
-    void
-    setCurrentSelectedOfficer(OfficerType value) {
+    OfficerType getCurrentSelectedOfficer() { return m_currentSelectedOfficer; }
+    void setCurrentSelectedOfficer(OfficerType value) {
         m_currentSelectedOfficer = value;
     }
+    const Officer *set_officer(OfficerType type, const Officer *officer);
+    void hire_officer(const Officer *officer);
+    void unassign_officer(const Officer *officer);
+    void fire_officer(const Officer *officer);
+    void create_captain(
+        const std::string &name,
+        const std::map<Skill, int> &attributes);
 
     int alienAttitudes[NUM_ALIEN_RACES]; // use enum AlienRaces for index
     std::map<ID, FluxInfo> flux_info;
@@ -615,90 +420,49 @@ class GameState {
     std::string playerPosture; // for use in Encounters
 
     double m_baseGameTimeSecs; // base starting value for timer
-    double
-    getBaseGameTimeSecs() {
-        return m_baseGameTimeSecs;
-    }
-    void
-    setBaseGameTimeSecs(double value) {
-        m_baseGameTimeSecs = value;
-    }
+    double getBaseGameTimeSecs() { return m_baseGameTimeSecs; }
+    void setBaseGameTimeSecs(double value) { m_baseGameTimeSecs = value; }
 
     double m_gameTimeSecs; //# seconds since the start of the game
-    double
-    getGameTimeSecs() const {
-        return m_gameTimeSecs;
-    }
-    void
-    setGameTimeSecs(double value) {
-        m_gameTimeSecs = value;
-    }
+    double getGameTimeSecs() const { return m_gameTimeSecs; }
+    void setGameTimeSecs(double value) { m_gameTimeSecs = value; }
 
     Stardate stardate; // the current Stardate
 
     bool m_captainSelected;      // is a captain selected for play?
     ProfessionType m_profession; // captain profession
     int m_credits;               // credits
-    Items &m_items;              // player inventory
-    PlayerInfo *player;          // Holds misc player data
+    Items m_items;               // player inventory
+    PlayerInfo player;           // Holds misc player data
     Ship m_ship;                 // ship data
     OfficerType
         m_currentSelectedOfficer; // currently selected officer in Control Panel
-    std::vector<Officer *> m_unemployedOfficers; // current unemployeed
-                                                 // officers;
-
-    Officer *officerCap;
-    Officer *officerSci;
-    Officer *officerNav;
-    Officer *officerTac;
-    Officer *officerEng;
-    Officer *officerCom;
-    Officer *officerDoc;
 
     // navigation status
     bool navigateStatus;
 
     // tactical shield up/down status
     bool shieldStatus;
-    bool
-    getShieldStatus() {
-        return shieldStatus;
-    }
-    void
-    setShieldStatus(bool value) {
-        shieldStatus = value;
-    }
+    bool getShieldStatus() { return shieldStatus; }
+    void setShieldStatus(bool value) { shieldStatus = value; }
 
     // tactical weapon arm status
     bool weaponStatus;
-    bool
-    getWeaponStatus() {
-        return weaponStatus;
-    }
-    void
-    setWeaponStatus(bool value) {
-        weaponStatus = value;
-    }
+    bool getWeaponStatus() { return weaponStatus; }
+    void setWeaponStatus(bool value) { weaponStatus = value; }
 
     // the plot stage represents the four stages of the game: INITIAL, VIRUS,
     // WAR, ANCIENTS as defined in the alien script files
     int plotStage;
-    int
-    getPlotStage() {
-        return plotStage;
-    }
-    void
-    setPlotStage(int value) {
+    int getPlotStage() { return plotStage; }
+    void setPlotStage(int value) {
         ALLEGRO_ASSERT(plotStage >= 1 && plotStage <= 4);
         plotStage = value;
     }
     bool dirty; // Does the game state need saving (for Captain's Lounge code)?
 
-    ProfessionType
-    getProfession() {
-        return m_profession;
-    }
-    std::string getProfessionString();
+    ProfessionType getProfession() { return m_profession; }
+    std::string getProfessionString() const;
 
     // Accessors & mutator imported from Encounter module to standardize access:
     AlienRaces getCurrentAlien();
@@ -709,67 +473,131 @@ class GameState {
     // the currently active module
     // Module names are found in ModeMgr.h
     std::string currentModule;
-    std::string
-    getCurrentModule() {
-        return currentModule;
-    }
-    std::string
-    getSavedModule() {
-        return currentModeWhenGameSaved;
-    }
-    void
-    setCurrentModule(const std::string &value) {
-        currentModule = value;
-    }
+    std::string getCurrentModule() const { return currentModule; }
+    std::string getSavedModule() const { return currentModeWhenGameSaved; }
+    void setCurrentModule(const std::string &value) { currentModule = value; }
+    std::string get_saved_module_name() const;
 
     // the currently active quest ID
-    int
-    getActiveQuest() {
-        return activeQuest;
-    }
-    int
-    getStoredValue() {
-        return storedValue;
-    }
-    void
-    setStoredValue(int v) {
-        storedValue = v;
-    }
-    void
-    setActiveQuest(int v) {
+    int getActiveQuest() { return activeQuest; }
+    int getStoredValue() { return storedValue; }
+    void setStoredValue(int v) { storedValue = v; }
+    void setActiveQuest(int v) {
         if (v != activeQuest) {
             activeQuest = v;
             storedValue = -1;
             questCompleted = false;
         }
     }
-    bool
-    getQuestCompleted() {
-        return questCompleted;
-    }
-    void
-    setQuestCompleted(bool value) {
-        questCompleted = value;
-    }
+    bool getQuestCompleted() { return questCompleted; }
+    void setQuestCompleted(bool value) { questCompleted = value; }
     bool firstTimeVisitor;
 
-    Point2D
-    getHyperspaceCoordinates() {
-        return Point2D(player->posHyperspace.x / 128.0,
-                       player->posHyperspace.y / 128.0);
+    Point2D getHyperspaceCoordinates() {
+        return Point2D(
+            player.posHyperspace.x / 128.0, player.posHyperspace.y / 128.0);
     }
-    Point2D
-    setHyperspaceCoordinates(const Point2D &pos) {
-        return player->posHyperspace = Point2D(pos.x * 128.0, pos.y * 128.0);
+    Point2D setHyperspaceCoordinates(const Point2D &pos) {
+        return player.posHyperspace = Point2D(pos.x * 128.0, pos.y * 128.0);
     }
 
-    Point2D
-    getSystemCoordinates() {
-        return Point2D(player->posSystem.x / 256.0,
-                       player->posSystem.y / 256.0);
+    Point2D getSystemCoordinates() {
+        return Point2D(player.posSystem.x / 256.0, player.posSystem.y / 256.0);
     }
+
+    GameSaveSlot get_current_game_save_slot() const {
+        return currentSaveGameSlot;
+    }
+
+    void update_unemployed_officers();
+
+    std::set<Officer *>::const_iterator unassigned_begin() const {
+        return m_unassigned_officers.begin();
+    }
+
+    std::set<Officer *>::const_iterator unassigned_end() const {
+        return m_unassigned_officers.end();
+    }
+
+    std::set<Officer *>::const_iterator unemployed_begin() const {
+        return m_unemployed_officers.begin();
+    }
+
+    std::set<Officer *>::const_iterator unemployed_end() const {
+        return m_unemployed_officers.end();
+    }
+
+    std::map<OfficerType, Officer *>::const_iterator crew_begin() const {
+        return m_crew.begin();
+    }
+
+    std::map<OfficerType, Officer *>::const_iterator crew_end() const {
+        return m_crew.end();
+    }
+
+    const Officer *get_officer(OfficerType type) const {
+        auto i = m_crew.find(type);
+        if (i != m_crew.end()) {
+            return i->second;
+        } else {
+            return nullptr;
+        }
+    }
+    const std::string get_officer_name(OfficerType type) const {
+        auto i = m_crew.find(type);
+        if (i != m_crew.end()) {
+            return i->second->get_name();
+        } else {
+            return "";
+        }
+    }
+
+    const Officer *get_effective_officer(OfficerType type) const {
+        auto i = m_crew.find(type);
+        if (i != m_crew.end() && i->second->get_vitality() > 0) {
+            return i->second;
+        } else {
+            return m_crew.find(OFFICER_CAPTAIN)->second;
+        }
+    }
+
+    void cease_healing() {
+        for (auto &i : m_crew) {
+            i.second->Recovering(false);
+        }
+    }
+
+    void cease_healing(OfficerType officer_type) {
+        ALLEGRO_ASSERT(officer_type != OFFICER_NONE);
+        m_crew[officer_type]->Recovering(false);
+    }
+
+    void set_healing(OfficerType officer_type, bool is_healing) {
+        m_crew[officer_type]->Recovering(is_healing);
+    }
+    void heal(OfficerType officer_type, float amount) {
+        m_crew[officer_type]->heal(amount);
+    }
+
+    std::string get_abbreviated_title(OfficerType type) {
+        return effective_officer(type)->get_abbreviated_title();
+    }
+
+    static const std::map<Skill, OfficerType> skill_map;
+    const std::map<Skill, int> &base_skills(ProfessionType type);
+    const std::map<Skill, int> &max_skills(ProfessionType type);
+    const std::map<Skill, int> &base_skills();
+    const std::map<Skill, int> &max_skills();
 
   private:
+    Officer *effective_officer(OfficerType type) const {
+        auto i = m_crew.find(type);
+        if (i != m_crew.end() && i->second->get_vitality() > 0) {
+            return i->second;
+        } else {
+            return m_crew.find(OFFICER_CAPTAIN)->second;
+        }
+    }
     int activeQuest;
     int storedValue; // stored value of quest requirement is a game state
                      // variable, just like others.
@@ -778,13 +606,12 @@ class GameState {
     static GameSaveSlot currentSaveGameSlot;
     std::string currentModeWhenGameSaved;
 
-    // The following are not used anywhere anymore. we preserve them only for
-    // savegame compatibility
-    int TotalCargoStacks;
-    int defaultShipCargoSize;
     static ALLEGRO_PATH *save_dir_path;
     static ALLEGRO_PATH *get_save_file_path(GameSaveSlot slot);
     static bool ensure_save_dir();
+    std::set<Officer *> m_unemployed_officers;
+    std::set<Officer *> m_unassigned_officers;
+    std::map<OfficerType, Officer *> m_crew;
 };
 
 #endif
