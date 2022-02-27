@@ -3,6 +3,7 @@
 #include "AudioSystem.h"
 #include "Game.h"
 #include "GameState.h"
+#include "MessageBoxWindow.h"
 #include "ModuleCaptainDetails.h"
 #include "captaincreation_resources.h"
 
@@ -289,10 +290,37 @@ ModuleCaptainDetails::ModuleCaptainDetails()
 }
 
 bool
+ModuleCaptainDetails::on_init() {
+    static bool help2 = true;
+
+    // display tutorial help messages for beginners
+    if ((!g_game->gameState->firstTimeVisitor
+         || g_game->gameState->getActiveQuest() > 1))
+        help2 = false;
+
+    if (help2) {
+        help2 = false;
+        string str = "Next, you need to enter a name for your "
+                     "captain, and then set "
+                     "your attribute points: 5 points to "
+                     "Durability or Learning "
+                     "Rate, and 25 points to all the rest. You "
+                     "must allocate all of "
+                     "the points before continuing.";
+        set_modal_child(make_shared<MessageBoxWindow>(
+            "", str, 10, 250, 400, 300, YELLOW, false));
+    }
+    return true;
+}
+
+bool
 ModuleCaptainDetails::on_event(ALLEGRO_EVENT *event) {
     EventType t = static_cast<EventType>(event->type);
 
     switch (t) {
+    case EVENT_CLOSE:
+        set_modal_child(nullptr);
+        return true;
     case EVENT_CAPTAINCREATION_POINT_ASSIGNMENT_CHANGED:
         if (m_physical_attributes->get_available_points() == 0
             && m_professional_attributes->get_available_points() == 0) {

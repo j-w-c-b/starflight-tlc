@@ -25,6 +25,7 @@ Date: Dec, 06
 #ifndef MODULE_H
 #define MODULE_H
 
+#include <memory>
 #include <tuple>
 #include <vector>
 

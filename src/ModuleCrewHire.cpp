@@ -88,6 +88,8 @@ ModuleCrewHire::on_init() {
     ALLEGRO_DEBUG("  Crew Hire Initialize\n");
     g_game->enable_pause_menu(true);
 
+    g_game->gameState->update_unemployed_officers();
+
     auto background = make_shared<Bitmap>(images[I_PERSONNEL_BACKGROUND]);
     add_child_module(background);
 
@@ -287,8 +289,6 @@ ModuleCrewHire::on_event(ALLEGRO_EVENT *event) {
                 if (!g_game->gameState->has_officer(pref)) {
                     // If no officer in the preferred slot, hire into that
                     // position
-                    g_game->gameState->set_officer(pref, officer);
-
                     for (auto &i : m_personnel_slot_buttons) {
                         if (i.second->get_officer_type() == pref) {
                             i.second->set_officer(officer);
@@ -536,6 +536,21 @@ ModuleCrewHire::on_event(ALLEGRO_EVENT *event) {
         m_officer_info->set_officer(officer);
         m_officer_info->set_active(true);
         m_personnel_fire->set_enabled(true);
+    } else if (m_unemployed_panel->get_active()) {
+        auto officer = m_unemployed_panel->get_selected();
+
+        if (officer) {
+            m_title->set_active(false);
+            m_slogan->set_active(false);
+            m_directions->set_active(false);
+            m_officer_info->set_active(true);
+            m_officer_info->set_officer(officer);
+        } else {
+            m_title->set_active(true);
+            m_slogan->set_active(true);
+            m_directions->set_active(true);
+            m_officer_info->set_active(false);
+        }
     } else {
         m_title->set_active(true);
         m_slogan->set_active(true);

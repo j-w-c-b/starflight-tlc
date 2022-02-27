@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
 
 include(implib_utils.cmake)
 
@@ -10,7 +10,7 @@ file(GLOB TOPLEVEL_DATA
 )
 
 foreach(dat ${TOPLEVEL_DATA})
-    cmake_path(RELATIVE_PATH dat BASE_DIRECTORY "${CMAKE_SOURCE_DIR}/data" OUTPUT_VARIABLE reldat)
+    file(RELATIVE_PATH reldat "${CMAKE_SOURCE_DIR}/data" "${dat}")
     set_source_files_properties(
         "${dat}" PROPERTIES MACOSX_PACKAGE_LOCATION "Resources/data/"
     )
@@ -63,7 +63,7 @@ function(create_resource_header)
         -E tar c "${CMAKE_CURRENT_BINARY_DIR}/${ARGV0}.dat" --format=zip -- ${${ARGV0}_DATA}
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     )
-    set(MODULE_RESOURCE_DATA ${MODULE_RESOURCE_DATA} "${ARGV0}.dat" PARENT_SCOPE)
+set(MODULE_RESOURCE_DATA ${MODULE_RESOURCE_DATA} "${CMAKE_CURRENT_BINARY_DIR}/${ARGV0}.dat" PARENT_SCOPE)
     set_source_files_properties(
         ${ARGV0}.dat PROPERTIES MACOSX_PACKAGE_LOCATION Resources/data/${ARGV0}.dat
     )
@@ -422,7 +422,16 @@ elseif (${CMAKE_SYSTEM_NAME} MATCHES Windows)
     set (CPACK_PACKAGE_INSTALL_DIRECTORY ${CMAKE_PROJECT})
 elseif (${CMAKE_SYSTEM_NAME} MATCHES Linux)
     install(TARGETS ${APP_NAME})
+    install(FILES ${TOPLEVEL_DATA} DESTINATION data)
     install(FILES ${MODULE_RESOURCE_DATA} DESTINATION data)
+    add_custom_command(
+        TARGET ${APP_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/data/
+        )
+    add_custom_command(
+        TARGET ${APP_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${TOPLEVEL_DATA} ${MODULE_RESOURCE_DATA} ${CMAKE_CURRENT_BINARY_DIR}/data/
+        )
 else()
     message(FATAL_ERROR "Unsupported OS")
 endif()

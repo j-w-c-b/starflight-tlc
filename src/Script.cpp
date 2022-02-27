@@ -42,6 +42,10 @@ Script::load(const string &scriptfile) {
     int ret;
 
     ALLEGRO_FILE *f = al_fopen(scriptfile.c_str(), "rb");
+    if (f == nullptr) {
+        ALLEGRO_DEBUG("Script open error: %s\n", scriptfile.c_str());
+        return false;
+    }
     int64_t size = al_fsize(f);
 
     char *data = new char[size + 1];

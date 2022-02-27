@@ -34,13 +34,13 @@ class ModuleCrewHire : public Module {
     virtual bool on_close() override;
 
   private:
-    enum slot_type
+    enum crew_slot_type
     {
         CREW,
         UNASSIGNED
     };
     struct selected_slot {
-        slot_type slot_type;
+        crew_slot_type slot_type;
         int slot;
     };
     static std::string c_directions;

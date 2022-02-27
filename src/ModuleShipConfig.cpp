@@ -127,6 +127,8 @@ bool
 ModuleShipConfig::on_init() {
     ALLEGRO_DEBUG("  EVENT_SHIP_CONFIG_SYSTEMS Initialize\n");
 
+    m_ship_name_label->set_text(
+        "Ship Name: MSS " + g_game->gameState->m_ship.getName());
     m_ship_name_entry->set_active(false);
 
     m_buttons_active = 0;
@@ -445,10 +447,13 @@ ModuleShipConfig::on_event(ALLEGRO_EVENT *event) {
 
     case EVENT_SHIP_CONFIG_SAVE_NAME:
         if (menuPath[2] == EVENT_SHIP_CONFIG_NAME) {
+            shipName = m_ship_name_entry->get_text();
             if (shipName != "") {
                 g_game->gameState->m_ship.setName(shipName);
                 m_ship_name_entry->set_active(false);
                 m_menu_path_label->set_active(true);
+                m_ship_name_label->set_text(shipName);
+                m_ship_name_label->set_text("Ship Name: MSS " + shipName);
 
                 menuPath.pop_back();
                 e.type = menuPath.back();

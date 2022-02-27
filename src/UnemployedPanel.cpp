@@ -143,6 +143,8 @@ UnemployedPanel::on_event(ALLEGRO_EVENT *event) {
                 m_hire_button->set_enabled(true);
                 m_selected_slot = slot_id;
             }
+            ALLEGRO_EVENT e = make_event(EVENT_CREWHIRE_UNEMPLOYED_SELECT);
+            g_game->broadcast_event(&e);
             return false;
         }
         [[fallthrough]];
@@ -150,3 +152,4 @@ UnemployedPanel::on_event(ALLEGRO_EVENT *event) {
         return true;
     }
 }
+// vi: ft=cpp

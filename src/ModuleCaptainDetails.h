@@ -115,6 +115,7 @@ class ModuleCaptainDetails : public Module {
         const Attributes &initial_attributes,
         const Attributes &max_attributes);
 
+    bool on_init() override;
     bool on_event(ALLEGRO_EVENT *event) override;
 
     std::string get_name() const;

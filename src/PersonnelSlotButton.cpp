@@ -39,8 +39,14 @@ PersonnelSlotButton::set_officer(const Officer *officer) {
     m_officer = officer;
 
     if (officer) {
+        if (m_officer_type != OFFICER_CAPTAIN) {
+            g_game->gameState->set_officer(m_officer_type, officer);
+        }
         m_name_label->set_text(m_officer->get_name());
     } else {
+        if (old_officer) {
+            g_game->gameState->unassign_officer(old_officer);
+        }
         m_name_label->set_text("");
     }
 

@@ -177,111 +177,113 @@ Game::message(const std::string &msg) {
 bool
 Game::add_resources() {
     int rc;
-    rc = PHYSFS_mount(auxiliary::DAT.c_str(), NULL, 1);
+    rc = PHYSFS_mount(Util::resource_path(auxiliary::DAT).c_str(), NULL, 1);
     if (rc == 0) {
         return false;
     }
-    rc = PHYSFS_mount(bank::DAT.c_str(), NULL, 1);
+    rc = PHYSFS_mount(Util::resource_path(bank::DAT).c_str(), NULL, 1);
     if (rc == 0) {
         return false;
     }
-    rc = PHYSFS_mount(cantina::DAT.c_str(), NULL, 1);
+    rc = PHYSFS_mount(Util::resource_path(cantina::DAT).c_str(), NULL, 1);
     if (rc == 0) {
         return false;
     }
-    rc = PHYSFS_mount(captaincreation::DAT.c_str(), NULL, 1);
+    rc = PHYSFS_mount(
+        Util::resource_path(captaincreation::DAT).c_str(), NULL, 1);
     if (rc == 0) {
         return false;
     }
-    rc = PHYSFS_mount(captainslounge::DAT.c_str(), NULL, 1);
+    rc =
+        PHYSFS_mount(Util::resource_path(captainslounge::DAT).c_str(), NULL, 1);
     if (rc == 0) {
         return false;
     }
-    rc = PHYSFS_mount(cargohold::DAT.c_str(), NULL, 1);
+    rc = PHYSFS_mount(Util::resource_path(cargohold::DAT).c_str(), NULL, 1);
     if (rc == 0) {
         return false;
     }
-    rc = PHYSFS_mount(controlpanel::DAT.c_str(), NULL, 1);
+    rc = PHYSFS_mount(Util::resource_path(controlpanel::DAT).c_str(), NULL, 1);
     if (rc == 0) {
         return false;
     }
-    rc = PHYSFS_mount(credits::DAT.c_str(), NULL, 1);
+    rc = PHYSFS_mount(Util::resource_path(credits::DAT).c_str(), NULL, 1);
     if (rc == 0) {
         return false;
     }
-    rc = PHYSFS_mount(crewhire::DAT.c_str(), NULL, 1);
+    rc = PHYSFS_mount(Util::resource_path(crewhire::DAT).c_str(), NULL, 1);
     if (rc == 0) {
         return false;
     }
-    rc = PHYSFS_mount(encounter::DAT.c_str(), NULL, 1);
+    rc = PHYSFS_mount(Util::resource_path(encounter::DAT).c_str(), NULL, 1);
     if (rc == 0) {
         return false;
     }
-    rc = PHYSFS_mount(engineer::DAT.c_str(), NULL, 1);
+    rc = PHYSFS_mount(Util::resource_path(engineer::DAT).c_str(), NULL, 1);
     if (rc == 0) {
         return false;
     }
-    rc = PHYSFS_mount(gui::DAT.c_str(), NULL, 1);
+    rc = PHYSFS_mount(Util::resource_path(gui::DAT).c_str(), NULL, 1);
     if (rc == 0) {
         return false;
     }
-    rc = PHYSFS_mount(medical::DAT.c_str(), NULL, 1);
+    rc = PHYSFS_mount(Util::resource_path(medical::DAT).c_str(), NULL, 1);
     if (rc == 0) {
         return false;
     }
-    rc = PHYSFS_mount(messagegui::DAT.c_str(), NULL, 1);
+    rc = PHYSFS_mount(Util::resource_path(messagegui::DAT).c_str(), NULL, 1);
     if (rc == 0) {
         return false;
     }
-    rc = PHYSFS_mount(pausemenu::DAT.c_str(), NULL, 1);
+    rc = PHYSFS_mount(Util::resource_path(pausemenu::DAT).c_str(), NULL, 1);
     if (rc == 0) {
         return false;
     }
-    rc = PHYSFS_mount(planetorbit::DAT.c_str(), NULL, 1);
+    rc = PHYSFS_mount(Util::resource_path(planetorbit::DAT).c_str(), NULL, 1);
     if (rc == 0) {
         return false;
     }
-    rc = PHYSFS_mount(planetsurface::DAT.c_str(), NULL, 1);
+    rc = PHYSFS_mount(Util::resource_path(planetsurface::DAT).c_str(), NULL, 1);
     if (rc == 0) {
         return false;
     }
-    rc = PHYSFS_mount(questviewer::DAT.c_str(), NULL, 1);
+    rc = PHYSFS_mount(Util::resource_path(questviewer::DAT).c_str(), NULL, 1);
     if (rc == 0) {
         return false;
     }
-    rc = PHYSFS_mount(settings::DAT.c_str(), NULL, 1);
+    rc = PHYSFS_mount(Util::resource_path(settings::DAT).c_str(), NULL, 1);
     if (rc == 0) {
         return false;
     }
-    rc = PHYSFS_mount(shipconfig::DAT.c_str(), NULL, 1);
+    rc = PHYSFS_mount(Util::resource_path(shipconfig::DAT).c_str(), NULL, 1);
     if (rc == 0) {
         return false;
     }
-    rc = PHYSFS_mount(spacetravel::DAT.c_str(), NULL, 1);
+    rc = PHYSFS_mount(Util::resource_path(spacetravel::DAT).c_str(), NULL, 1);
     if (rc == 0) {
         return false;
     }
-    rc = PHYSFS_mount(starmap::DAT.c_str(), NULL, 1);
+    rc = PHYSFS_mount(Util::resource_path(starmap::DAT).c_str(), NULL, 1);
     if (rc == 0) {
         return false;
     }
-    rc = PHYSFS_mount(starport::DAT.c_str(), NULL, 1);
+    rc = PHYSFS_mount(Util::resource_path(starport::DAT).c_str(), NULL, 1);
     if (rc == 0) {
         return false;
     }
-    rc = PHYSFS_mount(startup::DAT.c_str(), NULL, 1);
+    rc = PHYSFS_mount(Util::resource_path(startup::DAT).c_str(), NULL, 1);
     if (rc == 0) {
         return false;
     }
-    rc = PHYSFS_mount(titlescreen::DAT.c_str(), NULL, 1);
+    rc = PHYSFS_mount(Util::resource_path(titlescreen::DAT).c_str(), NULL, 1);
     if (rc == 0) {
         return false;
     }
-    rc = PHYSFS_mount(topgui::DAT.c_str(), NULL, 1);
+    rc = PHYSFS_mount(Util::resource_path(topgui::DAT).c_str(), NULL, 1);
     if (rc == 0) {
         return false;
     }
-    rc = PHYSFS_mount(tradedepot::DAT.c_str(), NULL, 1);
+    rc = PHYSFS_mount(Util::resource_path(tradedepot::DAT).c_str(), NULL, 1);
     if (rc == 0) {
         return false;
     }
@@ -349,8 +351,10 @@ void
 Game::fatalerror(const std::string &error) {
     ALLEGRO_DEBUG("%s\n", error.c_str());
     message(error);
-    g_game->modeMgr->CloseCurrentModule();
-    this->Stop();
+    if (g_game->modeMgr) {
+        g_game->modeMgr->CloseCurrentModule();
+    }
+    Stop();
 }
 
 void
@@ -723,11 +727,53 @@ Game::Run() {
         fatalerror("Error during game initialization\n");
         return;
     }
+    ALLEGRO_DEBUG("Enabling physfs");
+    if (!PHYSFS_init("StarflightTLC")) {
+        g_game->fatalerror("Error initializing physfs\n");
+        return;
+    }
+    ALLEGRO_DEBUG("Mounting data");
+    {
+        auto data_dir = Util::resource_path("data");
+        if (!PHYSFS_mount(data_dir.c_str(), "/data", 1)) {
+            g_game->fatalerror(string("Error mounting ") + data_dir + "\n");
+            return;
+        }
+
+        ALLEGRO_PATH *user_data_path =
+            al_get_standard_path(ALLEGRO_USER_DATA_PATH);
+        const char *user_data_name =
+            al_path_cstr(user_data_path, ALLEGRO_NATIVE_PATH_SEP);
+        if (!al_filename_exists(user_data_name)) {
+            if (!al_make_directory(user_data_name)) {
+                g_game->fatalerror(
+                    string("Error creating ") + user_data_name + "\n");
+                return;
+            }
+        }
+        if (!PHYSFS_mount(user_data_name, NULL, 1)) {
+            g_game->fatalerror(
+                string("Error mounting user path ") + user_data_name + "\n");
+            return;
+        }
+        if (!PHYSFS_setWriteDir(
+                al_path_cstr(user_data_path, ALLEGRO_NATIVE_PATH_SEP))) {
+            g_game->fatalerror(
+                string("Error allowing writes to user data path ")
+                + al_path_cstr(user_data_path, ALLEGRO_NATIVE_PATH_SEP) + "\n");
+            return;
+        }
+        al_destroy_path(user_data_path);
+        al_set_physfs_file_interface();
+    }
 
     // initialize scripting and load globals.lua
     ALLEGRO_DEBUG("Loading startup script...\n");
     globals = new Script();
-    globals->load("data/globals.lua");
+    if (!globals->load("data/globals.lua")) {
+        fatalerror("Error finding data/globals.lua");
+        return;
+    }
 
     ALLEGRO_DEBUG("Initializing game...\n");
     if (!InitGame()) {
@@ -999,28 +1045,6 @@ Game::InitGame() {
         g_game->fatalerror("Error initializing graphics\n");
         return false;
     }
-    ALLEGRO_DEBUG("Enabling physfs");
-    if (!PHYSFS_init("StarflightTLC")) {
-        g_game->fatalerror("Error initializing physfs\n");
-        return false;
-    }
-    ALLEGRO_DEBUG("Mounting data");
-    {
-        ALLEGRO_PATH *data_dir = al_get_standard_path(ALLEGRO_RESOURCES_PATH);
-        PHYSFS_mount(al_path_cstr(data_dir, ALLEGRO_NATIVE_PATH_SEP), NULL, 1);
-
-        al_append_path_component(data_dir, "data");
-        al_destroy_path(data_dir);
-
-        ALLEGRO_PATH *user_data_path =
-            al_get_standard_path(ALLEGRO_USER_DATA_PATH);
-        PHYSFS_mount(
-            al_path_cstr(user_data_path, ALLEGRO_NATIVE_PATH_SEP), NULL, 1);
-        PHYSFS_setWriteDir(
-            al_path_cstr(user_data_path, ALLEGRO_NATIVE_PATH_SEP));
-        al_destroy_path(user_data_path);
-        al_set_physfs_file_interface();
-    }
     if (!al_init_image_addon()) {
         g_game->fatalerror("Error initializing image_addon\n");
         return false;
@@ -1250,10 +1274,8 @@ Game::RunGame() {
         default:
             if (ALLEGRO_EVENT_TYPE_IS_USER(event.type)) {
                 modeMgr->event(&event);
-            } else {
-                cout << "Unexpected event source " << event.type << endl;
+                al_unref_user_event(&event.user);
             }
-            al_unref_user_event(&event.user);
         }
     } while (!(need_redraw && al_is_event_queue_empty(m_event_queue)));
 

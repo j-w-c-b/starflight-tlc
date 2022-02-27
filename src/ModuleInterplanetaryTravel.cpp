@@ -195,6 +195,9 @@ ModuleInterPlanetaryTravel::on_event(ALLEGRO_EVENT *event) {
     int evtype = event->type;
 
     switch (evtype) {
+    case EVENT_CLOSE:
+        set_modal_child(nullptr);
+        return true;
     case EVENT_SAVE_GAME: // save game
         g_game->gameState->AutoSave();
         g_game->printout(m_text, "<Game Saved>", WHITE, 5000);

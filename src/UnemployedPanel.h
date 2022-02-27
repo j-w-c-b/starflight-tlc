@@ -11,10 +11,16 @@
 class UnemployedPanel : public Module {
   public:
     UnemployedPanel();
-    virtual ~UnemployedPanel() {}
 
     int add(const Officer *officer);
     const Officer *hire();
+
+    const Officer *get_selected() {
+        if (m_selected_slot) {
+            return m_slots[*m_selected_slot]->get_officer();
+        }
+        return nullptr;
+    }
 
     virtual bool on_event(ALLEGRO_EVENT *event) override;
 

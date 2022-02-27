@@ -1893,6 +1893,9 @@ GameState::set_officer(OfficerType type, const Officer *officer) {
 
     if (old_officer_it != m_crew.end()) {
         old_officer = old_officer_it->second;
+        if (old_officer == officer) {
+            return nullptr;
+        }
         old_officer->set_officer_type(OFFICER_NONE);
         m_unassigned_officers.insert(old_officer);
     }
