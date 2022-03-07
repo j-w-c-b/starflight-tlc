@@ -1,0 +1,24 @@
+name: Linux build
+on: [workflow_dispatch]
+jobs:
+  build-snap:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v2
+
+      - name: Install Snapcraft
+        uses: samuelmeuli/action-snapcraft@v1
+
+      # You can now run Snapcraft shell commands
+      - name: Install CMake snap
+        run: sudo snap install cmake --classic
+
+      - name: Use Snapcraft
+        env:
+          SNAPCRAFT_BUILD_ENVIRONMENT: host
+        run: snapcraft
+      - uses: actions/upload-artifact@v3
+        with:
+          name: snap
+          path: "*.snap"

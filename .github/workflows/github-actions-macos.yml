@@ -1,0 +1,27 @@
+name: macos build
+on: [push]
+jobs:
+  macos:
+    runs-on: macos-10.15
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: install homebrew dependencies
+        run: brew install cmake pkg-config allegro yaml-cpp
+      - name: CMake
+        run: mkdir build; cd build; cmake -DBUILD_SHARED_LIBS=off ..
+      - name: make
+        run: cd build; make
+      - name: Package
+        run: cd build ; cpack -G "DragNDrop" ..
+      - uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: "build/*.dmg"
+      - uses: actions/upload-artifact@v3
+        name: upload build logs
+        if: always()
+        with:
+          name: build-logs
+          path: "**/*.log"
