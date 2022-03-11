@@ -4,6 +4,7 @@
 #include "Game.h"
 #include "Label.h"
 #include "ModeMgr.h"
+#include "ScrolledModule.h"
 #include "gui_resources.h"
 
 using namespace std;

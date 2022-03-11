@@ -5,10 +5,8 @@ jobs:
     runs-on: macos-10.15
     steps:
       - uses: actions/checkout@v2
-        with:
-          submodules: true
       - name: install homebrew dependencies
-        run: brew install cmake pkg-config allegro yaml-cpp
+        run: brew install cmake pkg-config allegro yaml-cpp lua5.4
       - name: CMake
         run: mkdir build; cd build; cmake -DBUILD_SHARED_LIBS=off ..
       - name: make

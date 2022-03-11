@@ -50,6 +50,7 @@ parts:
             - -DBUILD_SHARED_LIBS=off
             - -DCMAKE_BUILD_TYPE=Debug
             - -DCMAKE_INSTALL_PREFIX=/usr
+            - -DLUA_VERSION=5.3
         build-packages:
             - liballegro5-dev
             - liballegro-acodec5-dev
@@ -59,6 +60,7 @@ parts:
             - liballegro-ttf5-dev
             - liballegro-physfs5-dev
             - libyaml-cpp-dev
+            - liblua5.3-dev
             - pkg-config
         stage-packages:
             - liballegro-acodec5.2
@@ -69,6 +71,7 @@ parts:
             - liballegro-physfs5.2
             - liballegro5.2
             - libyaml-cpp0.6
+            - liblua5.3
         override-prime: |
             snapcraftctl prime
             sed -i 's|XDG_DATA_HOME="$SNAP_USER_DATA|XDG_DATA_HOME="$SNAP_USER_COMMON|' $SNAPCRAFT_PRIME/snap/command-chain/desktop-launch

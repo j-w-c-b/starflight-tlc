@@ -256,7 +256,6 @@ add_library(lib${APP_NAME} STATIC
     noiseutils.cpp
     noiseutils.h
     rand.c
-    lua.hpp
     ${MODULE_RESOURCE_HEADERS}
 )
 
@@ -278,7 +277,6 @@ target_include_directories(
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/>
     $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/libnoise/>
-    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/lua/include/>
 )
 
 target_include_directories(
@@ -287,12 +285,13 @@ target_include_directories(
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/>
     $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/libnoise/>
-    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/lua/include/>
 )
 
 if (${CMAKE_BUILD_TYPE} MATCHES Debug)
     SET(DEBUGMODE "-DDEBUGMODE")
 endif()
+
+SET(LUA_VERSION "5.4" CACHE STRING "Select lua version (default 5.4)")
 
 target_compile_options(${APP_NAME} PRIVATE ${DEBUGMODE} ${STL_TARGET_CXXFLAGS})
 target_compile_options(lib${APP_NAME} PRIVATE ${DEBUGMODE} ${STL_TARGET_CXXFLAGS})
@@ -311,7 +310,7 @@ target_link_libraries(
     allegro_primitives
     allegro_ttf
     physfs
-    lua
+    lua${LUA_VERSION}
     m
     noise
     yaml_cpp
@@ -325,7 +324,7 @@ add_dependencies(
 
 add_dependencies(
     lib${APP_NAME}
-    lua
+    lua${LUA_VERSION}
     noise
     allegro
     allegro_acodec
@@ -351,7 +350,7 @@ set_source_files_properties(
 # our build. For macos, we include them in the application bundle
 include(FindPkgConfig)
 
-set(allegro_pkgs
+set(dependencies
     allegro
     allegro_acodec
     allegro_audio
@@ -364,9 +363,10 @@ set(allegro_pkgs
     allegro_ttf
     physfs
     yaml_cpp
+    lua${LUA_VERSION}
 )
 
-foreach (pkg ${allegro_pkgs})
+foreach (pkg ${dependencies})
     string(TOUPPER ${pkg} pkg_prefix)
 
     if (${pkg} MATCHES "allegro.*")

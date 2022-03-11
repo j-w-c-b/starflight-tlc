@@ -2012,7 +2012,7 @@ ModulePlanetSurface::IsValidTile(int x, int y) {
 void
 ModulePlanetSurface::SetupLua() {
     /* initialize Lua */
-    LuaVM = lua_open();
+    LuaVM = luaL_newstate();
 
     /* load Lua base libraries */
     luaL_openlibs(LuaVM);

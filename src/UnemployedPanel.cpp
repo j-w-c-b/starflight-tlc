@@ -1,4 +1,5 @@
 #include "UnemployedPanel.h"
+#include "ScrolledModule.h"
 #include "crewhire_resources.h"
 
 using namespace std;

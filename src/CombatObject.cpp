@@ -199,3 +199,4 @@ CombatObject::ApplyThrust() {
         + this->calcAngleMoveY(this->getMoveAngle()) * this->getAcceleration());
     this->LimitVelocity();
 }
+// vi: ft=cpp

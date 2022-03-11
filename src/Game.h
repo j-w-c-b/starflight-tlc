@@ -26,9 +26,6 @@ class Game;
 #include "Constants.h"
 #include "GameState.h"
 #include "ModeMgr.h"
-#include "ModuleAuxiliaryDisplay.h"
-#include "ModuleMessageGUI.h"
-#include "ModulePlanetSurface.h"
 #include "QuestMgr.h"
 #include "RichTextLabel.h"
 #include "Sprite.h"
@@ -85,7 +82,7 @@ class Game {
     static DataMgr *dataMgr;
     static AudioSystem *audioSystem;
 
-    ModulePlanetSurface *PlanetSurfaceHolder;
+    class ModulePlanetSurface *PlanetSurfaceHolder;
 
     std::shared_ptr<ALLEGRO_FONT> font10;
     std::shared_ptr<ALLEGRO_FONT> font12;
@@ -248,8 +245,8 @@ class Game {
 
     std::vector<std::pair<int, int>> m_last_button_downs;
     VideoMode m_video_mode;
-    std::shared_ptr<ModuleMessageGUI> m_message_gui;
-    std::shared_ptr<ModuleAuxiliaryDisplay> m_auxiliary_display;
+    std::shared_ptr<class ModuleMessageGUI> m_message_gui;
+    std::shared_ptr<class ModuleAuxiliaryDisplay> m_auxiliary_display;
 };
 
 extern Game *g_game;

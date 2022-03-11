@@ -4,7 +4,9 @@
 #include "Game.h"
 #include "Util.h"
 
-using namespace std;
+using std::make_shared;
+using std::shared_ptr;
+using std::string;
 
 ALLEGRO_DEBUG_CHANNEL("AudioSystem")
 

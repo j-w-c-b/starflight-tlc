@@ -8,8 +8,6 @@ jobs:
         shell: msys2 {0}
     steps:
       - uses: actions/checkout@v2
-        with:
-          submodules: true
       - uses: msys2/setup-msys2@v2
         with:
           install: >-
@@ -30,6 +28,7 @@ jobs:
             mingw-w64-x86_64-physfs
             mingw-w64-x86_64-yaml-cpp
             mingw-w64-x86_64-nsis
+            mingw-w64-x86_64-lua
       - name: CMake
         env:
           PATH: /mingw64/bin:$PATH

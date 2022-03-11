@@ -6,5 +6,4 @@ cmake_policy(SET CMP0068 NEW)
 cmake_policy(SET CMP0077 NEW)
 
 add_subdirectory(libnoise)
-add_subdirectory(lua)
 add_subdirectory(src)

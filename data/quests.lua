@@ -38,8 +38,8 @@ function round(num, places)
 end
 
 function gen_random(max)
-    local temp = math.mod((42 * math.random() + 29573), 139968)
-	local ret = math.mod( ((100 * temp)/139968) * 1000000, max)
+    local temp = math.fmod((42 * math.random() + 29573), 139968)
+	local ret = math.fmod( ((100 * temp)/139968) * 1000000, max)
     return round(ret + 0.5)
 end
 
@@ -976,7 +976,7 @@ end
 function add_last_quest()
 	-- Add one final quest to the end of the quest table to keep it from crashing
 	
-	size = table.getn(quests)
+	size = #quests
 	quests[size+1] = {
 		name = "GAME OVER",
 		short = "Description (part 2)",
@@ -989,7 +989,7 @@ end
 
 
 function addQuest(n,s,l,d, req1, req2, req3, rew1, rew2, rew3)
-	num = table.getn(quests)+1
+	num = (#quests)+1
 	quests[num] = {
 		name = n,
 		short = s,
@@ -1040,7 +1040,7 @@ end -- getPlotStage()
 
 function getNextQuest()
 	-- Increment active_quest counter and then retrieve the new quest from the quests table
-	size = table.getn(quests)
+	size = #quests
 	if active_quest < size then
 		active_quest = active_quest + 1
 		getActiveQuest()

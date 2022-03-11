@@ -1,10 +1,9 @@
 #pragma once
-
-#include "DataMgr.h"
-#include "Sprite.h"
-#include "Timer.h"
-#include <allegro5/allegro.h>
 #include <string>
+
+#include <allegro5/allegro.h>
+
+#include "Sprite.h"
 
 const short BEHAVIOR_WANDER = 0;
 const short BEHAVIOR_FLEE = 1;
@@ -35,21 +34,21 @@ class CombatObject : public Sprite {
     std::string getName() const { return name; }
     double getDamage() const { return damage; }
     int getHealth() const { return health; }
-    double getMass() { return mass; }
-    double getMaxVelocity() { return maxVelocity; }
-    double getTurnRate() { return turnrate; }
-    double getAcceleration() { return accel; }
-    int getBehavior() { return behavior; }
-    int getLaserFiringRate() { return laserFiringRate; }
-    int getLaserFiringTimer() { return laserFiringTimer; }
-    int getLaserDamage() { return laserDamage; }
-    int getLaserModifier() { return laserModifier; }
-    int getMissileFiringRate() { return missileFiringRate; }
-    int getMissileFiringTimer() { return missileFiringTimer; }
-    int getMissileDamage() { return missileDamage; }
-    int getMissileModifier() { return missileModifier; }
-    int getShieldStrength() { return shieldStrength; }
-    int getArmorStrength() { return armorStrength; }
+    double getMass() const { return mass; }
+    double getMaxVelocity() const { return maxVelocity; }
+    double getTurnRate() const { return turnrate; }
+    double getAcceleration() const { return accel; }
+    int getBehavior() const { return behavior; }
+    int getLaserFiringRate() const { return laserFiringRate; }
+    int getLaserFiringTimer() const { return laserFiringTimer; }
+    int getLaserDamage() const { return laserDamage; }
+    int getLaserModifier() const { return laserModifier; }
+    int getMissileFiringRate() const { return missileFiringRate; }
+    int getMissileFiringTimer() const { return missileFiringTimer; }
+    int getMissileDamage() const { return missileDamage; }
+    int getMissileModifier() const { return missileModifier; }
+    int getShieldStrength() const { return shieldStrength; }
+    int getArmorStrength() const { return armorStrength; }
 
     // mutators
     void setID(int initID) { id = initID; }
@@ -102,3 +101,4 @@ class CombatObject : public Sprite {
     int shieldStrength;
     int armorStrength;
 };
+// vi: ft=cpp

@@ -88,8 +88,7 @@ ModuleEncounter::Print(
 
 ModuleEncounter::ModuleEncounter()
     : Module(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT), dropitems({}), shield(NULL),
-      spr_statusbar_shield(NULL), script(NULL), flag_thrusting(false),
-      flag_nav(false), flag_rotation(0) {}
+      script(NULL), flag_thrusting(false), flag_nav(false), flag_rotation(0) {}
 
 bool
 ModuleEncounter::on_key_down(ALLEGRO_KEYBOARD_EVENT *event) {
@@ -1734,7 +1733,7 @@ ModuleEncounter::ImpactPlayer(CombatObject *player, CombatObject *other) {
 void
 ModuleEncounter::pickupRandomDropItem() {
     // add random mineral to the ship's cargo
-    int rate, itemid, numitems;
+    int itemid, numitems;
     ostringstream os;
 
     // mineral IDs range from 30 to 54 (in case no random item drop is chosen)
@@ -1751,7 +1750,7 @@ ModuleEncounter::pickupRandomDropItem() {
     // use script drop item data
     for (int n = 0; n < 5; n++) {
         // get a random #
-        rate = Util::Random(1, 100);
+        int rate = Util::Random(1, 100);
         // is # within % drop rate?
         if (dropitems[n].rate <= rate) {
             // yes, set this itemid to scripted dropitem
@@ -1764,8 +1763,6 @@ ModuleEncounter::pickupRandomDropItem() {
         }
     }
     item = g_game->dataMgr->get_item(itemid);
-    if (item->IsArtifact())
-        numitems = 1;
 
     // special-casing for artifacts.
     if (item->IsArtifact()) {

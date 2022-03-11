@@ -72,8 +72,6 @@ class ModuleEncounter : public Module {
     std::string schematicName;
     std::string shipName;
 
-    Sprite *spr_statusbar_shield;
-
     Script *script;
 
     std::shared_ptr<DialogButtonPanel> m_dialog;
