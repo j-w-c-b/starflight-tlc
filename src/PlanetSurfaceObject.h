@@ -28,10 +28,10 @@ struct Animation {
 
 class PlanetSurfaceObject {
   public:
-    PlanetSurfaceObject();
-    PlanetSurfaceObject(lua_State *LuaVM, std::string ScriptName);
-
-    virtual ~PlanetSurfaceObject();
+    PlanetSurfaceObject(
+        lua_State *LuaVM,
+        std::string ScriptName,
+        const Item *item = nullptr);
 
     void Initialize();
 
@@ -62,16 +62,17 @@ class PlanetSurfaceObject {
     static int maxX, minX, maxY, minY;
 
     // accessors
-    int getID() const { return id; }
-    std::string getName() const { return name; }
-    double getValue() const { return value; }
-    double getSize() const { return size; }
-    double getDangerLvl() const { return danger; }
-    double getDamage() const { return damage; }
+    int getID() const { return m_item.id; }
+    std::string getName() const { return m_item.name; }
+    double getValue() const { return m_item.value; }
+    double getSize() const { return m_item.size; }
+    double getDangerLvl() const { return m_item.danger; }
+    double getDamage() const { return m_item.damage; }
     int getHealth() const { return health; }
     int getMaxHealth() const { return maxHealth; }
-    bool IsShipRepairMetal() const { return shipRepairMetal; }
-    bool IsBlackMarketItem() const { return blackMarketItem; }
+    bool IsShipRepairMetal() const { return m_item.shipRepairMetal; }
+    bool IsBlackMarketItem() const { return m_item.blackMarketItem; }
+    std::string get_description() { return m_item.description; }
     std::string GetScriptName() const { return scriptName; }
     bool IsScanned() const { return scanned; }
     int getStunCount() const { return stunCount; }
@@ -90,8 +91,6 @@ class PlanetSurfaceObject {
     int getColHalfWidth() const { return (int)(colHalfWidth * scale); }
     int getColHalfHeight() const { return (int)(colHalfHeight * scale); }
     double getScale() const { return scale; }
-    int getCurrFrame() const { return currFrame; }
-    int getTotalFrames() const { return totalFrames; }
     int getFrameWidth() const { return frameWidth; }
     int getFrameHeight() const { return frameHeight; }
     int getCounter1() const { return counter1; }
@@ -106,22 +105,22 @@ class PlanetSurfaceObject {
     int getMinimapSize() const { return minimapSize; }
 
     // mutators
-    void setID(int initID) { id = initID; }
-    void setItemType(ItemType initItemType) { itemType = initItemType; }
-    void setName(const std::string &initName) { name = initName; }
+    void setID(int initID) { m_item.id = initID; }
+    void setItemType(ItemType initItemType) { m_item.itemType = initItemType; }
+    void setName(const std::string &initName) { m_item.name = initName; }
     void setScriptName(const std::string &initName) { scriptName = initName; }
-    void setValue(double initValue) { value = initValue; }
-    void setSize(double initSize) { size = initSize; }
-    void setDangerLvl(double initDangerLvl) { danger = initDangerLvl; }
-    void setDamage(double initDamage) { damage = initDamage; }
+    void setValue(double initValue) { m_item.value = initValue; }
+    void setSize(double initSize) { m_item.size = initSize; }
+    void setDangerLvl(double initDangerLvl) { m_item.danger = initDangerLvl; }
+    void setDamage(double initDamage) { m_item.damage = initDamage; }
     void setHealth(int initHealth) { health = initHealth; }
     void setMaxHealth(int initHealth) { maxHealth = initHealth; }
-    void setItemAge(ItemAge initItemAge) { itemAge = initItemAge; }
+    void setItemAge(ItemAge initItemAge) { m_item.itemAge = initItemAge; }
     void setAsShipRepairMetal(bool initRepairMetal) {
-        shipRepairMetal = initRepairMetal;
+        m_item.shipRepairMetal = initRepairMetal;
     }
     void setAsBlackMarketItem(bool initBlackMarket) {
-        blackMarketItem = initBlackMarket;
+        m_item.blackMarketItem = initBlackMarket;
     }
     void setScanned(bool initScanned) { scanned = initScanned; }
     void setStunCount(int initStunCount) { stunCount = initStunCount; }
@@ -166,30 +165,18 @@ class PlanetSurfaceObject {
     void setMinimapColor(ALLEGRO_COLOR initColor) { minimapColor = initColor; }
     void setMinimapSize(int initSize) { minimapSize = initSize; }
 
-    std::string description;
-
   protected:
     std::string scriptName;
     lua_State *luaVM;
 
-    std::map<std::string, Animation *> regAnimations;
-    std::map<std::string, Animation *>::iterator animationsIt;
+    std::map<std::string, std::unique_ptr<Animation>> regAnimations;
 
-    Animation *defaultAnim;
+    std::unique_ptr<Animation> defaultAnim;
     Animation *activeAnim;
 
-    int id;
-    ItemType itemType; // the type of item
-    std::string name;
-    double value;
-    double size; // size (m^3)
-    double danger;
-    double damage;
+    Item m_item;
     int health;
     int maxHealth;
-    ItemAge itemAge;
-    bool shipRepairMetal; // is this a ship repair metal?
-    bool blackMarketItem; // is this a blackmarket item?
     bool selected;
     bool scanned;
     ALLEGRO_COLOR minimapColor; // Minimap dot color
@@ -237,7 +224,5 @@ class PlanetSurfaceObject {
     int threshold1;
     int threshold2;
     int threshold3;
-
-  private:
 };
 // vi: ft=cpp

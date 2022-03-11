@@ -114,7 +114,6 @@ QuestMgr::raiseEvent(int eventid, int param1, int param2) {
 
 void
 QuestMgr::VerifyRequirements(int reqCode, int reqType, int reqAmt) {
-    Item newitem;
     int id, amt;
     int starSystem;
     bool req = false;
@@ -124,7 +123,7 @@ QuestMgr::VerifyRequirements(int reqCode, int reqType, int reqAmt) {
     // 2 = item
     case 2:
         id = reqType;
-        g_game->gameState->m_items.Get_Item_By_ID(id, newitem, amt);
+        amt = g_game->gameState->m_items.get_count(id);
         req = (amt >= reqAmt);
         break;
 
@@ -186,7 +185,7 @@ QuestMgr::VerifyRequirements(int reqCode, int reqType, int reqAmt) {
 string
 QuestMgr::giveReward() {
     string reward = "Error: Reward is invalid";
-    Item *item;
+    const Item *item;
     int id, amt;
 
     switch (g_game->questMgr->questRewCode) {
@@ -206,7 +205,7 @@ QuestMgr::giveReward() {
     case 2:
         amt = g_game->questMgr->questRewAmt;
         id = g_game->questMgr->questRewType;
-        item = g_game->dataMgr->GetItemByID(id);
+        item = g_game->dataMgr->get_item(id);
 
         // check for available cargo space. artifacts take no space (not that we
         // should ever give artifact here).

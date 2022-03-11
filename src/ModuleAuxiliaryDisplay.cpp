@@ -163,8 +163,11 @@ ModuleAuxiliaryDisplay::init_nav() {
         g_game->gameState->getHyperspaceCoordinates());
 
     // set specific tiles in the scrolling tilemap with star data from DataMgr
-    for (int i = 0; i < g_game->dataMgr->GetNumStars(); i++) {
-        const Star *star = g_game->dataMgr->GetStar(i);
+    for (auto i = g_game->dataMgr->stars_begin(),
+              e = g_game->dataMgr->stars_end();
+         i != e;
+         ++i) {
+        auto star = *i;
         m_scroller->set_tile(star->x, star->y, star->spectralClass);
     }
 }

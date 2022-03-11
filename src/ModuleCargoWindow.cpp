@@ -155,7 +155,7 @@ ModuleCargoWindow::on_event(ALLEGRO_EVENT *event) {
             m_jettisonButton->set_active(false);
 
             int selected_item = m_player_items->get_selected();
-            const Item *item = g_game->dataMgr->GetItemByID(selected_item);
+            const Item *item = g_game->dataMgr->get_item(selected_item);
             int num_items = m_player_items->get_count(selected_item);
 
             m_player_items->clear_selected();

@@ -377,7 +377,7 @@ ModuleInterPlanetaryTravel::on_init() {
     }
 
     // create a tile map of this star system
-    loadStarSystem(g_game->gameState->player.currentStar);
+    loadStarSystem(star);
 
     // set player's location
     m_scroller->set_scroll_position(g_game->gameState->getSystemCoordinates());
@@ -885,14 +885,10 @@ ModuleInterPlanetaryTravel::updateMiniMap(ALLEGRO_BITMAP *target) {
 }
 
 int
-ModuleInterPlanetaryTravel::loadStarSystem(int id) {
+ModuleInterPlanetaryTravel::loadStarSystem(const Star *star) {
     int i;
 
-    ALLEGRO_DEBUG("  Loading star system %i.\n", id);
-    sfsrand(time(NULL));
-
-    // save current star id in global player object
-    g_game->gameState->player.currentStar = id;
+    ALLEGRO_DEBUG("  Loading star system %i.\n", star->id);
 
     // clear the temp array of planets (used to simplify searches)
     for (i = 0; i < 10; i++) {
@@ -912,19 +908,12 @@ ModuleInterPlanetaryTravel::loadStarSystem(int id) {
     // position star tile image at center
     m_scroller->set_tile(systemCenterTileX, systemCenterTileY, 1);
 
-    // read starid passed over by the interstellar module
-    star = g_game->dataMgr->GetStarByID(id);
-    if (!star) {
-        g_game->message("Interplanetary: Error loading star info");
-        return 0;
-    }
-
     // add planets to the solar system from the planet database
     if (star->GetNumPlanets() == 0)
         return 0;
 
     // seed random number generator with star id #
-    sfsrand(id);
+    sfsrand(star->id);
 
     // calculate position of each planet in orbit around the star
     float radius, angle;

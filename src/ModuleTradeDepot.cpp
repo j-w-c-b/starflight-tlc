@@ -700,7 +700,7 @@ ModuleTradeDepot::on_event(ALLEGRO_EVENT *event) {
 
         // determine item type of selected item so that we can show the correct
         // portrait
-        item = g_game->dataMgr->GetItemByID(m_player_items->get_selected());
+        item = g_game->dataMgr->get_item(m_player_items->get_selected());
         item_to_display = item->itemType;
         portrait_string = item->portrait;
         ret = false;
@@ -714,7 +714,7 @@ ModuleTradeDepot::on_event(ALLEGRO_EVENT *event) {
 
         // determine item type of selected item so that we can show the correct
         // portrait
-        item = g_game->dataMgr->GetItemByID(m_depot_items->get_selected());
+        item = g_game->dataMgr->get_item(m_depot_items->get_selected());
         item_to_display = item->itemType;
         portrait_string = item->portrait;
         ret = false;
@@ -732,7 +732,7 @@ ModuleTradeDepot::on_event(ALLEGRO_EVENT *event) {
 
         if ((selected_item = m_player_items->get_selected()) >= 0) {
             int num_items = m_player_items->get_count(selected_item);
-            item = g_game->dataMgr->GetItemByID(selected_item);
+            item = g_game->dataMgr->get_item(selected_item);
 
             m_promptItem = item;
             m_promptType = PT_SELL;
@@ -742,17 +742,15 @@ ModuleTradeDepot::on_event(ALLEGRO_EVENT *event) {
             set_modal_child(m_amount_chooser);
         } else if ((selected_item = m_depot_items->get_selected()) >= 0) {
             int num_items = m_depot_items->get_count(selected_item);
-            item = g_game->dataMgr->GetItemByID(selected_item);
+            item = g_game->dataMgr->get_item(selected_item);
 
             m_promptItem = item;
             m_promptType = PT_BUY;
             int available_credits =
                 g_game->gameState->getCredits() + m_sellTotal - m_buyTotal;
-            Item already_in_cart_item;
             int already_in_cart_amount = 0;
 
-            m_buyItems.Get_Item_By_ID(
-                item->id, already_in_cart_item, already_in_cart_amount);
+            already_in_cart_amount = m_buyItems.get_count(item->id);
             if (already_in_cart_amount) {
                 available_credits +=
                     static_cast<int>(item->value * already_in_cart_amount);
@@ -897,31 +895,25 @@ ModuleTradeDepot::DoBuySell(int qty) {
 
 void
 ModuleTradeDepot::DoFinalizeTransaction() {
-    Item item;
-    int numItems;
-
     // we sell first since it will bring both credits and cargo slots
-    for (int i = 0; i < m_sellItems.GetNumStacks(); i++) {
-        m_sellItems.GetStack(i, item, numItems);
-        g_game->gameState->m_credits += (int)(item.value * numItems);
-        g_game->gameState->m_items.RemoveItems(item.id, numItems);
-        m_depotItems.AddItems(item.id, numItems);
+    for (auto &[id, numItems] : m_sellItems) {
+        auto item = g_game->dataMgr->get_item(id);
+        g_game->gameState->m_credits += (int)(item->value * numItems);
+        g_game->gameState->m_items.RemoveItems(id, numItems);
+        m_depotItems.AddItems(item->id, numItems);
     }
     m_sellItems.Reset();
     m_player_items->scroll_to_top();
     UpdateLists();
 
     // verify credit balance & cargo space before buying
-    int numstacks = m_buyItems.GetNumStacks();
-    if (numstacks == 0)
-        return;
     int buyValue = 0, neededSpace = 0;
-
-    for (int i = 0; i < numstacks; i++) {
-        m_buyItems.GetStack(i, item, numItems);
-        buyValue += (int)(item.value * numItems);
-        if (!item.IsArtifact())
+    for (auto &[id, numItems] : m_buyItems) {
+        auto item = g_game->dataMgr->get_item(id);
+        buyValue += (int)(item->value * numItems);
+        if (!item->IsArtifact()) {
             neededSpace += numItems;
+        }
     }
 
     if (buyValue > g_game->gameState->m_credits) {
@@ -940,10 +932,10 @@ ModuleTradeDepot::DoFinalizeTransaction() {
     g_game->gameState->m_credits -= buyValue;
 
     // the transaction took place; clear the list
-    for (int i = 0; i < numstacks; i++) {
-        m_buyItems.GetStack(i, item, numItems);
-        m_depotItems.RemoveItems(item.id, numItems);
-        g_game->gameState->m_items.AddItems(item.id, numItems);
+    for (auto &[id, numItems] : m_buyItems) {
+        auto item = g_game->dataMgr->get_item(id);
+        m_depotItems.RemoveItems(item->id, numItems);
+        g_game->gameState->m_items.AddItems(item->id, numItems);
     }
     m_buyItems.Reset();
     m_depot_items->scroll_to_top();
@@ -1003,7 +995,7 @@ ModuleTradeDepot::UpdateLists() {
 
     for (auto &[id, count] : m_sellItems) {
         if (count > 0) {
-            const Item *item = g_game->dataMgr->GetItemByID(id);
+            const Item *item = g_game->dataMgr->get_item(id);
             sellValue += static_cast<int>(item->value * count);
         }
     }
@@ -1014,7 +1006,7 @@ ModuleTradeDepot::UpdateLists() {
 
     for (auto &[id, count] : m_buyItems) {
         if (count > 0) {
-            const Item *item = g_game->dataMgr->GetItemByID(id);
+            const Item *item = g_game->dataMgr->get_item(id);
             buyValue += static_cast<int>(item->value * count);
         }
     }

@@ -407,7 +407,7 @@ ModulePlanetOrbit::on_init() {
     flag_DoDock = false;
 
     // get current star data
-    Star *star =
+    auto star =
         g_game->dataMgr->GetStarByID(g_game->gameState->player.currentStar);
     if (star)
         starid = star->id;
@@ -653,8 +653,11 @@ ModulePlanetOrbit::on_update() {
         g_game->printout(temp, STEEL, 1000);
 
         // detect artifacts and ruins on surface
-        for (int n = 0; n < g_game->dataMgr->GetNumItems(); n++) {
-            Item *item = g_game->dataMgr->GetItem(n);
+        for (auto n = g_game->dataMgr->items_begin(),
+                  e = g_game->dataMgr->items_end();
+             n != e;
+             ++n) {
+            Item *item = *n;
 
             // is this item an artifact?
             if (item->itemType == IT_ARTIFACT

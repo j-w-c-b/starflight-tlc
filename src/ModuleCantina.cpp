@@ -286,10 +286,8 @@ ModuleCantina::on_update() {
     // note: this is dangerous since the quest script could change the quest
     // numbering if already at quest 25, then skip the hypercube check again...
     if (g_game->gameState->getActiveQuest() < 25) {
-        Item newitem;
         int amt;
-        g_game->gameState->m_items.Get_Item_By_ID(
-            2 /* Hypercube */, newitem, amt);
+        amt = g_game->gameState->m_items.get_count(2 /* Hypercube */);
 
         if (amt > 0) {
             g_game->questMgr->getQuestByID(25);
@@ -347,7 +345,7 @@ ModuleCantina::on_update() {
         {
             amt = static_cast<int>(g_game->questMgr->questRewAmt);
             int id = g_game->questMgr->questRewType;
-            Item *item = g_game->dataMgr->GetItemByID(id);
+            auto item = g_game->dataMgr->get_item(id);
 
             if (item) {
                 reward = item->name + " - " + Util::ToString(amt, 1, 2)

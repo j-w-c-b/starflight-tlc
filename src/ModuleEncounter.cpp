@@ -1741,8 +1741,8 @@ ModuleEncounter::pickupRandomDropItem() {
     // FIXME: should use itemType instead of hardcoded IDs
     itemid = Util::Random(30, 54);
     numitems = Util::Random(1, 4);
-    Item *item = g_game->dataMgr->GetItemByID(itemid);
-    if (item == NULL) {
+    auto item = g_game->dataMgr->get_item(itemid);
+    if (item == nullptr) {
         ALLEGRO_DEBUG(
             "*** Error: pickupRandomDropItem generated invalid item id\n");
         return;
@@ -1763,16 +1763,14 @@ ModuleEncounter::pickupRandomDropItem() {
             break;
         }
     }
-    item = g_game->dataMgr->GetItemByID(itemid);
+    item = g_game->dataMgr->get_item(itemid);
     if (item->IsArtifact())
         numitems = 1;
 
     // special-casing for artifacts.
     if (item->IsArtifact()) {
-        Item itemInHold;
         int numInHold;
-        g_game->gameState->m_items.Get_Item_By_ID(
-            itemid, itemInHold, numInHold);
+        numInHold = g_game->gameState->m_items.get_count(itemid);
 
         // if the artifact is already in hold
         if (numInHold > 0) {
@@ -1830,8 +1828,8 @@ ModuleEncounter::pickupAsteroidMineral() {
     // FIXME: should use itemType instead of hardcoded IDs
     itemid = Util::Random(30, 54);
     numitems = Util::Random(1, 4);
-    Item *item = g_game->dataMgr->GetItemByID(itemid);
-    if (item == NULL) {
+    auto item = g_game->dataMgr->get_item(itemid);
+    if (item == nullptr) {
         ALLEGRO_DEBUG(
             "*** Error: pickupAsteroidMineral generated invalid item id\n");
         return;
@@ -3292,9 +3290,11 @@ ModuleEncounter::sendGlobalsToScript() {
             ->get_skill(SKILL_COMMUNICATION));
 
     // set artifact numbers, other ship items (endurium, etc.)
-    for (int n = 0; n < g_game->dataMgr->GetNumItems(); n++) {
-
-        Item *pItem = g_game->dataMgr->GetItem(n);
+    for (auto n = g_game->dataMgr->items_begin(),
+              e = g_game->dataMgr->items_end();
+         n != e;
+         ++n) {
+        auto *pItem = *n;
         if (!pItem->IsArtifact() && !pItem->IsMineral())
             continue;
 
@@ -3308,8 +3308,7 @@ ModuleEncounter::sendGlobalsToScript() {
                             : luaName = "player_" + pItem->name;
 
         // get number of that item currently in hold
-        g_game->gameState->m_items.Get_Item_By_ID(
-            pItem->id, itemInHold, numInHold);
+        numInHold = g_game->gameState->m_items.get_count(pItem->id);
 
         script->setGlobalNumber(luaName, numInHold);
     }
@@ -3417,19 +3416,21 @@ ModuleEncounter::readGlobalsFromScript() {
     g_game->gameState->setShip(ship);
 
     // get artifact cargo updates, other ship items (endurium, etc.)
-    for (int n = 0; n < g_game->dataMgr->GetNumItems(); n++) {
+    for (auto n = g_game->dataMgr->items_begin(),
+              end = g_game->dataMgr->items_end();
+         n != end;
+         ++n) {
         std::string luaName;
         Item itemInHold;
         int numInHold, newcount;
 
-        Item *pItem = g_game->dataMgr->GetItem(n);
+        Item *pItem = *n;
         // item is neither an artifact nor a mineral; next!
         if (!pItem->IsArtifact() && !pItem->IsMineral())
             continue;
 
         // get number of that item currently in hold
-        g_game->gameState->m_items.Get_Item_By_ID(
-            pItem->id, itemInHold, numInHold);
+        numInHold = g_game->gameState->m_items.get_count(pItem->id);
 
         // artifact are known as "artifactN" in the scripts;  minerals are known
         // as "player_mineralName"

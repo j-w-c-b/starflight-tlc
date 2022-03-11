@@ -289,15 +289,14 @@ ModuleEngineer::use_mineral(Ship &ship) {
 
     } else {
         int neededMineral = ship.repairMinerals[repairing - 1];
-        Item mineral;
         int num_mineral;
 
-        gs->m_items.Get_Item_By_ID(neededMineral, mineral, num_mineral);
+        num_mineral = gs->m_items.get_count(neededMineral);
 
         if (num_mineral == 0) {
             // mineral not in the cargo hold, stop repair
             std::string mineralName =
-                g_game->dataMgr->GetItemByID(neededMineral)->name;
+                g_game->dataMgr->get_item(neededMineral)->name;
             g_game->printout(
                 OFFICER_ENGINEER,
                 "Repairing ceased due to lack of " + mineralName + ".",
@@ -307,10 +306,12 @@ ModuleEngineer::use_mineral(Ship &ship) {
 
         } else {
             // consume the mineral
-            std::string msg = "Using one cubic meter of " + mineral.name + ".";
+            std::string mineralName =
+                g_game->dataMgr->get_item(neededMineral)->name;
+            std::string msg = "Using one cubic meter of " + mineralName + ".";
             g_game->printout(OFFICER_ENGINEER, msg, GREEN, 1000);
 
-            gs->m_items.RemoveItems(mineral.id, 1);
+            gs->m_items.RemoveItems(neededMineral, 1);
             ALLEGRO_EVENT e = {
                 .type = static_cast<unsigned int>(EVENT_CARGO_UPDATE)};
             g_game->broadcast_event(&e);

@@ -540,9 +540,11 @@ ModuleStarmap::draw_stars() {
     stars.setFrameWidth(frame_size);
     stars.setFrameHeight(frame_size);
 
-    int num_stars = g_game->dataMgr->GetNumStars();
-    for (int i = 0; i < num_stars; i++) {
-        const Star *star = g_game->dataMgr->GetStar(i);
+    for (auto i = g_game->dataMgr->stars_begin(),
+              e = g_game->dataMgr->stars_end();
+         i != e;
+         ++i) {
+        auto star = *i;
         // draw star image on starmap
         stars.setCurrFrame(star->spectralClass);
         stars.setX(star->x * m_config.scale_x - frame_size / 2);

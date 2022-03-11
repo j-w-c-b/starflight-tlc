@@ -41,7 +41,7 @@ class ModuleInterstellarTravel : public Module {
     int movement_counter;
 
     int currentStar;
-    Star *starSystem;
+    const Star *starSystem;
     PlayerShipSprite *ship;
     bool flag_DoNormalSpace;
     bool flag_FoundFlux;

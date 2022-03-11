@@ -30,7 +30,7 @@ class ModuleInterPlanetaryTravel : public Module {
 
     ALLEGRO_BITMAP *miniMap;
 
-    int loadStarSystem(int id);
+    int loadStarSystem(const Star *star);
     void updateMiniMap(ALLEGRO_BITMAP *target);
     void checkShipPosition();
     bool checkSystemBoundary(int x, int y);

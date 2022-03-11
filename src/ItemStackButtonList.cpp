@@ -169,7 +169,7 @@ ItemStackButtonList::update_items() {
     int width = get_width();
     int button_h = 0;
     for (const auto &i : m_items) {
-        Item *item = g_game->dataMgr->GetItemByID(i.first);
+        auto item = g_game->dataMgr->get_item(i.first);
 
         auto bp = m_item_buttons.find(i.first);
         shared_ptr<ItemStackButton> b;
@@ -204,7 +204,7 @@ ItemStackButtonList::filter_items() {
     int rows = 0;
     for (auto &[id, button] : m_item_buttons) {
         int x = get_x();
-        const Item *i = g_game->dataMgr->GetItemByID(id);
+        const Item *i = g_game->dataMgr->get_item(id);
         int count = m_items.get_count(id);
         if (count > 0 && (m_filter == IT_INVALID || m_filter == i->itemType)) {
             button->move(x, get_y() + y);

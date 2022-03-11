@@ -21,8 +21,6 @@
 #include "Flux.h"
 #include "Script.h"
 
-#define MAX_FLUX 32
-
 class Officer;
 struct Point;
 
@@ -65,8 +63,8 @@ class Item {
 
     void Reset();
 
-    bool IsArtifact() { return itemType == IT_ARTIFACT; };
-    bool IsMineral() { return itemType == IT_MINERAL; };
+    bool IsArtifact() const { return itemType == IT_ARTIFACT; };
+    bool IsMineral() const { return itemType == IT_MINERAL; };
 
     ID id;                // the ID of this item
     ItemType itemType;    // the type of item
@@ -121,18 +119,6 @@ class Items {
      */
 
     /**
-     * returns the number of stacks, each stack contains a set of a single item
-     * type
-     */
-    int GetNumStacks();
-
-    /**
-     * returns a single stack of items - the item info and the number of that
-     * item in the stack
-     */
-    void GetStack(int idx, Item &item, int &numItemsInStack);
-
-    /**
      * add the specified quantity of the item ID to this object; the item(s)
      * will be added to the stack of that item type if already present.
      */
@@ -151,28 +137,18 @@ class Items {
      */
     void SetItemCount(ID id, int numItems);
 
-    /**
-     * scan the vector for the item with the given id value and set the item
-     * placeholder to the item matching that id
-     */
-    void Get_Item_By_ID(int id, Item &item, int &num_in_stack);
-
     int get_count(ID id) const;
 
-    std::vector<std::pair<ID, int>>::const_iterator begin() const {
-        return stacks.cbegin();
-    }
-    std::vector<std::pair<ID, int>>::const_iterator end() const {
-        return stacks.cend();
-    }
+    std::map<ID, int>::const_iterator begin() const { return stacks.begin(); }
+    std::map<ID, int>::const_iterator end() const { return stacks.end(); }
 
     friend InputArchive &operator>>(InputArchive &archive, Items &items);
     friend OutputArchive &
     operator<<(OutputArchive &archive, const Items &items);
 
   private:
-    std::vector<std::pair<ID, int>>
-        stacks; // holds the stacks (each stack is a set of one item type)
+    //!  holds the stacks (each stack is a set of one item type)
+    std::map<ID, int> stacks;
 };
 
 //! Spectral Classes
@@ -386,19 +362,21 @@ class DataMgr {
     // prepare it for access shouldn't need to call this.
     bool Initialize();
 
-    // used to access available items; memory is owned by this class; you should
-    // not delete any returned objects
-    int GetNumItems();
-    Item *GetItem(int idx);                 // by index [0..N)
-    Item *GetItemByID(ID id);               // by ID
-    Item *GetItem(const std::string &name); // by name
+    // used to access available items
+    const Item *get_item(ID id) const { return itemsByID.at(id); }
+
+    std::vector<Item *>::const_iterator items_begin() const {
+        return items.begin();
+    }
+    std::vector<Item *>::const_iterator items_end() const {
+        return items.end();
+    }
 
     // used to access the available stars; memory is owned by this class; you
     // should not delete any returned objects
-    int GetNumStars();
-    Star *GetStar(int idx);                              // by index [0...N)
-    Star *GetStarByID(ID id);                            // by ID
-    Star *GetStarByLocation(CoordValue x, CoordValue y); // by location
+    const Star *GetStarByID(ID id) const; // by ID
+    const Star *
+    GetStarByLocation(CoordValue x, CoordValue y) const; // by location
 
     std::vector<Star *>::const_iterator stars_begin() const {
         return stars.begin();

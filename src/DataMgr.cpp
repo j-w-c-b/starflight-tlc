@@ -708,65 +708,11 @@ DataMgr::~DataMgr() {
     flux.clear();
 }
 
-int
-DataMgr::GetNumItems() {
-    return (int)items.size();
-}
-
-Item *
-DataMgr::GetItem(int idx) {
-    Item *result = NULL;
-
-    if ((idx >= 0) && (idx < (int)items.size())) {
-        result = items[idx];
-    }
-
-    return result;
-}
-
-Item *
-DataMgr::GetItemByID(ID id) {
-    Item *result = NULL;
-
-    map<ID, Item *>::iterator i = itemsByID.find(id);
-    if (i != itemsByID.end()) {
-        result = i->second;
-    }
-
-    return result;
-}
-
-Item *
-DataMgr::GetItem(const string &name) {
-    Item *result = NULL;
-    for (vector<Item *>::iterator i = items.begin(); i != items.end(); ++i) {
-        if ((*i)->name == name)
-            result = *i;
-    }
-    return result;
-}
-
-int
-DataMgr::GetNumStars() {
-    return (int)stars.size();
-}
-
-Star *
-DataMgr::GetStar(int idx) {
+const Star *
+DataMgr::GetStarByID(ID id) const {
     Star *result = NULL;
 
-    if ((idx >= 0) && (idx < (int)stars.size())) {
-        result = stars[idx];
-    }
-
-    return result;
-}
-
-Star *
-DataMgr::GetStarByID(ID id) {
-    Star *result = NULL;
-
-    map<ID, Star *>::iterator i = starsByID.find(id);
+    auto i = starsByID.find(id);
     if (i != starsByID.end()) {
         result = i->second;
     }
@@ -774,12 +720,11 @@ DataMgr::GetStarByID(ID id) {
     return result;
 }
 
-Star *
-DataMgr::GetStarByLocation(CoordValue x, CoordValue y) {
+const Star *
+DataMgr::GetStarByLocation(CoordValue x, CoordValue y) const {
     Star *result = NULL;
 
-    map<pair<CoordValue, CoordValue>, Star *>::iterator i =
-        starsByLocation.find(make_pair(x, y));
+    auto i = starsByLocation.find(make_pair(x, y));
     if (i != starsByLocation.end()) {
         result = i->second;
     }
@@ -939,11 +884,7 @@ Items &
 Items::operator=(const Items &rhs) {
     Reset();
 
-    for (vector<pair<ID, int>>::const_iterator i = rhs.stacks.begin();
-         i != rhs.stacks.end();
-         ++i) {
-        stacks.push_back(*i);
-    }
+    stacks = rhs.stacks;
 
     return *this;
 }
@@ -987,7 +928,7 @@ operator>>(InputArchive &ar, Items &items) {
         ar >> id;
         int numItems;
         ar >> numItems;
-        items.stacks.push_back(make_pair(id, numItems));
+        items.stacks[id] = numItems;
     }
     return ar;
 }
@@ -1010,75 +951,21 @@ operator<<(OutputArchive &ar, const Items &items) {
     return ar;
 }
 
-int
-Items::GetNumStacks() {
-    return static_cast<int>(stacks.size());
-}
-
-void
-Items::GetStack(int idx, Item &item, int &numItemsInStack) {
-    item.Reset();
-    numItemsInStack = 0;
-
-    if (idx < 0)
-        return;
-    if (idx >= GetNumStacks())
-        return;
-
-    pair<ID, int> stack = stacks[idx];
-
-    Item *pItem = g_game->dataMgr->GetItemByID(stack.first);
-    if (pItem == NULL)
-        return;
-
-    item = *pItem;
-    numItemsInStack = stack.second;
-}
-
 void
 Items::AddItems(ID id, int numItemsToAdd) {
     if (numItemsToAdd <= 0)
         return;
 
-    Item *pItem = g_game->dataMgr->GetItemByID(id);
-    if (pItem == NULL)
-        return;
-
-    bool itemStackExisted = false;
-    for (vector<pair<ID, int>>::iterator i = stacks.begin(); i != stacks.end();
-         ++i) {
-        if (i->first == id) {
-            pair<ID, int> &existingStack = *i;
-            existingStack.second += numItemsToAdd;
-            itemStackExisted = true;
-            break;
-        }
-    }
-
-    if (itemStackExisted)
-        return;
-
-    stacks.push_back(make_pair(id, numItemsToAdd));
+    stacks[id] += numItemsToAdd;
 }
 
 void
 Items::RemoveItems(ID id, int numItemsToRemove) {
     if (numItemsToRemove <= 0)
         return;
-
-    Item *pItem = g_game->dataMgr->GetItemByID(id);
-    if (pItem == NULL)
-        return;
-
-    for (vector<pair<ID, int>>::iterator i = stacks.begin(); i != stacks.end();
-         ++i) {
-        if (i->first == id) {
-            pair<ID, int> &existingStack = *i;
-            existingStack.second -= numItemsToRemove;
-            if (existingStack.second <= 0)
-                stacks.erase(i);
-            break;
-        }
+    stacks[id] -= numItemsToRemove;
+    if (stacks[id] <= 0) {
+        stacks.erase(id);
     }
 }
 
@@ -1087,55 +974,19 @@ Items::SetItemCount(ID id, int numItems) {
     if (numItems < 0)
         return;
 
-    Item *pItem = g_game->dataMgr->GetItemByID(id);
-    if (pItem == NULL)
-        return;
-
-    bool itemStackExisted = false;
-    for (vector<pair<ID, int>>::iterator i = stacks.begin(); i != stacks.end();
-         ++i) {
-        if (i->first == id) {
-            pair<ID, int> &existingStack = *i;
-            existingStack.second = numItems;
-            itemStackExisted = true;
-            if (numItems == 0)
-                stacks.erase(i);
-            break;
-        }
+    if (numItems == 0) {
+        stacks.erase(id);
+    } else {
+        stacks[id] = numItems;
     }
-
-    if (itemStackExisted)
-        return;
-
-    stacks.push_back(make_pair(id, numItems));
-}
-
-void
-Items::Get_Item_By_ID(int id, Item &item, int &num_in_stack) {
-    item.Reset();
-    num_in_stack = 0;
-
-    Item *pItem = NULL;
-    for (vector<pair<ID, int>>::iterator i = stacks.begin(); i != stacks.end();
-         ++i) {
-        if (i->first == id) {
-            pItem = g_game->dataMgr->GetItemByID(i->first);
-            num_in_stack = i->second;
-            break;
-        }
-    }
-    if (pItem == NULL) {
-        return;
-    }
-    item = *pItem;
 }
 
 int
 Items::get_count(ID id) const {
-    for (auto &i : stacks) {
-        if (i.first == id) {
-            return i.second;
-        }
+    auto i = stacks.find(id);
+    if (i != stacks.end()) {
+        return i->second;
+    } else {
+        return 0;
     }
-    return 0;
 }

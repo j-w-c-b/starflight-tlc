@@ -16,56 +16,25 @@ int PlanetSurfaceObject::maxX, PlanetSurfaceObject::minX,
     PlanetSurfaceObject::maxY, PlanetSurfaceObject::minY = 0;
 std::map<std::string, ALLEGRO_BITMAP *> PlanetSurfaceObject::graphics;
 
-PlanetSurfaceObject::PlanetSurfaceObject()
-    : itemType(IT_INVALID), name(""), value(0.0), size(0.0), danger(0.0),
-      damage(0.0), health(0), itemAge(IA_INVALID), shipRepairMetal(false),
-      blackMarketItem(false), selected(false), scanned(false),
-      minimapColor(BRTORANGE), minimapSize(1), image(NULL), x(0.0f), y(0.0f),
-      stunCount(0), speed(0.0), velX(0.0), velY(0.0), faceAngle(0),
-      moveAngle(0), angleOffset(0), alive(1), state(0), objectType(0),
-      direction(0), width(0), height(0), colHalfWidth(0), colHalfHeight(0),
-      scale(1), delayX(0), delayY(0), countX(0), countY(0), currFrame(0),
-      totalFrames(1), animDir(1), frameCount(0), frameDelay(10), frameWidth(0),
-      frameHeight(0), animColumns(1), animStartX(0), animStartY(0), counter1(0),
-      counter2(0), counter3(0), threshold1(0), threshold2(0), threshold3(0) {
-    defaultAnim = new Animation(0, 1, 0);
-    activeAnim = defaultAnim;
-}
-
 PlanetSurfaceObject::PlanetSurfaceObject(
     lua_State *LuaVM,
-    std::string ScriptName)
-    : scriptName(ScriptName), luaVM(LuaVM), id(0), itemType(IT_INVALID),
-      name(""), value(0.0), size(0.0), danger(0.0), damage(0.0), health(0),
-      itemAge(IA_INVALID), shipRepairMetal(false), blackMarketItem(false),
-      selected(false), scanned(false), minimapColor(BRTORANGE), minimapSize(1),
-      image(NULL), x(0.0f), y(0.0f), stunCount(0), speed(0.0), velX(0.0),
-      velY(0.0), faceAngle(0), moveAngle(0), angleOffset(0), alive(1), state(0),
+    std::string ScriptName,
+    const Item *item)
+    : scriptName(ScriptName), luaVM(LuaVM), health(0), selected(false),
+      scanned(false), minimapColor(BRTORANGE), minimapSize(1), image(NULL),
+      x(0.0f), y(0.0f), stunCount(0), speed(0.0), velX(0.0), velY(0.0),
+      faceAngle(0), moveAngle(0), angleOffset(0), alive(1), state(0),
       objectType(0), direction(0), width(0), height(0), colHalfWidth(0),
       colHalfHeight(0), scale(1), delayX(0), delayY(0), countX(0), countY(0),
       currFrame(0), totalFrames(1), animDir(1), frameCount(0), frameDelay(10),
       frameWidth(0), frameHeight(0), animColumns(1), animStartX(0),
       animStartY(0), counter1(0), counter2(0), counter3(0), threshold1(0),
       threshold2(0), threshold3(0) {
-    defaultAnim = new Animation(0, 1, 0);
-    activeAnim = defaultAnim;
-}
-
-PlanetSurfaceObject::~PlanetSurfaceObject() {
-    // We only need to delete the defaultAnim, not the activeAnim
-    if (defaultAnim != NULL) {
-        delete defaultAnim;
-        defaultAnim = NULL;
+    if (item) {
+        m_item = *item;
     }
-
-    // the static graphics map will clean up all the graphics
-    for (animationsIt = regAnimations.begin();
-         animationsIt != regAnimations.end();
-         ++animationsIt) {
-        delete animationsIt->second;
-        animationsIt->second = NULL;
-    }
-    regAnimations.clear();
+    defaultAnim = make_unique<Animation>(0, 1, 0);
+    activeAnim = defaultAnim.get();
 }
 
 void
@@ -114,32 +83,30 @@ PlanetSurfaceObject::Initialize() {
 
 int
 PlanetSurfaceObject::load(const char *filename) {
-    std::map<std::string, ALLEGRO_BITMAP *>::iterator it =
-        graphics.find(filename);
+    auto it = graphics.find(filename);
 
     if (it == graphics.end()) {
-        this->image = al_load_bitmap(filename);
-        if (!this->image) {
+        image = al_load_bitmap(filename);
+        if (!image) {
             std::string msg = "Error loading sprite file ";
             msg += filename;
             g_game->message(msg);
             return 0;
         }
-        al_convert_mask_to_alpha(image, MASK_COLOR);
         graphics[filename] = image;
     } else {
         this->image = it->second;
     }
 
-    this->width = al_get_bitmap_width(image);
-    this->height = al_get_bitmap_height(image);
+    width = al_get_bitmap_width(image);
+    height = al_get_bitmap_height(image);
 
     // default frame size equals whole image size unless manually changed
-    this->frameWidth = this->width;
-    this->frameHeight = this->height;
+    frameWidth = width;
+    frameHeight = height;
 
-    this->colHalfWidth = this->width / 2;
-    this->colHalfHeight = this->height / 2;
+    colHalfWidth = width / 2;
+    colHalfHeight = height / 2;
 
     return 1;
 }
@@ -403,14 +370,15 @@ PlanetSurfaceObject::AddAnimation(
     int startFrame,
     int endFrame,
     int delay) {
-    regAnimations[name] = new Animation(startFrame, endFrame, delay);
+    regAnimations[name] = make_unique<Animation>(startFrame, endFrame, delay);
 }
 
 void
 PlanetSurfaceObject::SetActiveAnimation(std::string name) {
-    animationsIt = regAnimations.find(name);
-    if (animationsIt != regAnimations.end())
-        activeAnim = animationsIt->second;
+    auto it = regAnimations.find(name);
+    if (it != regAnimations.end()) {
+        activeAnim = it->second.get();
+    }
 }
 
 bool

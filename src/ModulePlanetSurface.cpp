@@ -628,10 +628,9 @@ ModulePlanetSurface::on_close() {
         scroller = nullptr;
     }
 
-    for (objectIt = surfaceObjects.begin(); objectIt != surfaceObjects.end();
-         ++objectIt) {
-        delete *objectIt;
-        *objectIt = nullptr;
+    for (auto i = surfaceObjects.begin(); i != surfaceObjects.end(); ++i) {
+        delete *i;
+        *i = nullptr;
     }
     surfaceObjects.clear();
 
@@ -830,7 +829,7 @@ ModulePlanetSurface::on_init() {
     SetupLua();
 
     // generate tile map
-    if (!fabTilemap()) {
+    if (!fabTilemap(star)) {
         return false;
     }
 
@@ -871,8 +870,11 @@ ModulePlanetSurface::on_init() {
     m_minimap = al_create_bitmap(asw, ash);
 
     // scan database for artifacts and ruins that belong on this planet
-    for (int n = 0; n < g_game->dataMgr->GetNumItems(); n++) {
-        Item *item = g_game->dataMgr->GetItem(n);
+    for (auto n = g_game->dataMgr->items_begin(),
+              e = g_game->dataMgr->items_end();
+         n != e;
+         ++n) {
+        Item *item = *n;
 
         // is this item an artifact?
         if (item->itemType == IT_ARTIFACT) {
@@ -927,33 +929,20 @@ ModulePlanetSurface::on_init() {
 
 void
 ModulePlanetSurface::CreatePSObyItemID(
-    std::string scriptName,
+    const std::string &scriptName,
     int itemid,
     int itemx,
     int itemy) {
     int x, y;
 
-    Item *item = nullptr;
+    const Item *item = nullptr;
     if (itemid == 0)
         return;
-    item = g_game->dataMgr->GetItemByID(itemid);
+    item = g_game->dataMgr->get_item(itemid);
     if (!item)
         return;
 
-    PlanetSurfaceObject *pso = new PlanetSurfaceObject(LuaVM, scriptName);
-
-    pso->setID(item->id);
-    pso->setItemType(item->itemType);
-    pso->setName(item->name);
-    pso->setValue(item->value);
-    pso->setSize(item->size);
-    pso->setSpeed(item->speed);
-    pso->setDangerLvl(item->danger);
-    pso->setDamage(item->damage);
-    pso->setItemAge(item->itemAge);
-    pso->setAsShipRepairMetal(item->shipRepairMetal);
-    pso->setAsBlackMarketItem(item->blackMarketItem);
-    pso->description = item->description;
+    PlanetSurfaceObject *pso = new PlanetSurfaceObject(LuaVM, scriptName, item);
 
     if (item->itemType == IT_ARTIFACT || item->itemType == IT_RUIN) {
         // graphics for artifact in data/tradedepot; for ruins in
@@ -998,21 +987,17 @@ ModulePlanetSurface::AddPlanetSurfaceObject(PlanetSurfaceObject *PSO) {
 void
 ModulePlanetSurface::RemovePlanetSurfaceObject(PlanetSurfaceObject *PSO) {
     if (PSO != nullptr) {
-        for (int i = 0; i < (int)surfaceObjects.size(); ++i) {
-            if (surfaceObjects[i] == PSO) {
-                surfaceObjects.erase(surfaceObjects.begin() + i);
-                break;
-            }
+        auto i = find(surfaceObjects.begin(), surfaceObjects.end(), PSO);
+        if (i != surfaceObjects.end()) {
+            surfaceObjects.erase(i);
         }
     }
 }
 
 bool
-ModulePlanetSurface::fabTilemap() {
+ModulePlanetSurface::fabTilemap(const Star *star) {
     // get current star data
     int starid = -1;
-    Star *star =
-        g_game->dataMgr->GetStarByID(g_game->gameState->player.currentStar);
     if (star) {
         starid = star->id;
     }
@@ -1062,8 +1047,6 @@ ModulePlanetSurface::fabTilemap() {
     // create tile scroller
     // these parameters CANNOT CHANGE despite being passed
     scroller = new AdvancedTileScroller(499, 499, 64, 64);
-
-    star = g_game->dataMgr->GetStarByID(g_game->gameState->player.currentStar);
 
     const Planet *planet =
         star->GetPlanetByID(g_game->gameState->player.currentPlanet);
@@ -1865,9 +1848,8 @@ ModulePlanetSurface::drawMinimap(ALLEGRO_BITMAP *target) {
 
     // draw lifeforms and minerals on minimap
     ALLEGRO_COLOR color;
-    int objtype;
     for (int i = 0; i < (int)surfaceObjects.size(); ++i) {
-        objtype = surfaceObjects[i]->getObjectType();
+        int objtype = surfaceObjects[i]->getObjectType();
         if (objtype == 0 || objtype == 1) // draw only minerals/lifeforms
         {
             switch (objtype) {
@@ -1921,18 +1903,18 @@ ModulePlanetSurface::CalcDistance(
 }
 
 void
-ModulePlanetSurface::PostMessage(std::string text) {
+ModulePlanetSurface::PostMessage(const std::string &text) {
     g_game->printout(text);
 }
 
 void
-ModulePlanetSurface::PostMessage(std::string text, ALLEGRO_COLOR color) {
+ModulePlanetSurface::PostMessage(const std::string &text, ALLEGRO_COLOR color) {
     g_game->printout(text, color);
 }
 
 void
 ModulePlanetSurface::PostMessage(
-    std::string text,
+    const std::string &text,
     ALLEGRO_COLOR color,
     int blanksBefore) {
     for (int i = 0; i < blanksBefore; ++i)
@@ -1942,7 +1924,7 @@ ModulePlanetSurface::PostMessage(
 
 void
 ModulePlanetSurface::PostMessage(
-    std::string text,
+    const std::string &text,
     ALLEGRO_COLOR color,
     int blanksBefore,
     int blanksAfter) {
@@ -1954,10 +1936,12 @@ ModulePlanetSurface::PostMessage(
 }
 
 void
-ModulePlanetSurface::LoadPortrait(std::string name, std::string filepath) {
-    portraitsIt = portraits.find(name);
+ModulePlanetSurface::LoadPortrait(
+    const std::string &name,
+    const std::string &filepath) {
+    auto it = portraits.find(name);
     // Only load a portrait once
-    if (portraitsIt == portraits.end()) {
+    if (it == portraits.end()) {
         ALLEGRO_BITMAP *portrait = al_load_bitmap(filepath.c_str());
 
         // Make sure the image load just fine
@@ -1968,7 +1952,7 @@ ModulePlanetSurface::LoadPortrait(std::string name, std::string filepath) {
 }
 
 void
-ModulePlanetSurface::ShowPortrait(std::string name) {
+ModulePlanetSurface::ShowPortrait(const std::string &name) {
     this->showPortrait = name;
     this->showPortraitCounter = 0;
 }
@@ -2264,7 +2248,7 @@ int
 L_LoadScript(lua_State *luaVM) {
     string lua_script = lua_tostring(luaVM, -1);
 
-    g_game->PlanetSurfaceHolder->lua_dofile(lua_script.c_str());
+    g_game->PlanetSurfaceHolder->lua_dofile(lua_script);
     lua_pop(luaVM, 1);
 
     return 0;
@@ -2630,12 +2614,8 @@ L_CheckInventoryFor(lua_State *luaVM) {
     lua_pop(luaVM, 1);
 
     bool result = false;
-    for (int i = 0; i < g_game->gameState->m_items.GetNumStacks(); ++i) {
-        Item item;
-        int amt;
-        g_game->gameState->m_items.GetStack(i, item, amt);
-
-        if (item.id == itemID && amt >= amount) {
+    for (auto &[id, numItems] : g_game->gameState->m_items) {
+        if (id == itemID && numItems >= amount) {
             result = true;
             break;
         }
@@ -3162,7 +3142,8 @@ L_GetMinimapSize(lua_State *luaVM) {
 int
 L_GetDescription(lua_State *luaVM) {
     if (g_game->PlanetSurfaceHolder->psObjectHolder != nullptr) {
-        string desc = g_game->PlanetSurfaceHolder->psObjectHolder->description;
+        string desc =
+            g_game->PlanetSurfaceHolder->psObjectHolder->get_description();
         lua_pushstring(luaVM, desc.c_str());
     }
 

@@ -327,16 +327,6 @@ class PlayerInfo {
     Stardate m_date_lost;
 };
 
-struct QuestScript {
-    std::string script;
-    Quest *parentQuest;
-
-    QuestScript() : script(), parentQuest(nullptr) {}
-
-    QuestScript(const std::string &script, Quest *parentQuest)
-        : script(script), parentQuest(parentQuest) {}
-};
-
 class GameState {
   public:
     enum GameSaveSlot

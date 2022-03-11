@@ -121,7 +121,6 @@ class ModulePlanetSurface : public Module {
     PlanetSurfaceObject *selectedPSO;
     std::string showPortrait;
     std::vector<PlanetSurfaceObject *> surfaceObjects;
-    std::vector<PlanetSurfaceObject *>::iterator objectIt;
 
     bool runPlanetLoadScripts;
     bool runPlanetPopulate;
@@ -139,41 +138,36 @@ class ModulePlanetSurface : public Module {
     void drawHPBar(PlanetSurfaceObject *PSO);
     void updateCargoFillPercent();
     double CalcDistance(PlanetSurfaceObject *PSO1, PlanetSurfaceObject *PSO2);
-    void PostMessage(std::string text);
-    void PostMessage(std::string text, ALLEGRO_COLOR color);
-    void PostMessage(std::string text, ALLEGRO_COLOR color, int blanksBefore);
+    void PostMessage(const std::string &text);
+    void PostMessage(const std::string &text, ALLEGRO_COLOR color);
+    void
+    PostMessage(const std::string &text, ALLEGRO_COLOR color, int blanksBefore);
     void PostMessage(
-        std::string text,
+        const std::string &text,
         ALLEGRO_COLOR color,
         int blanksBefore,
         int blanksAfter);
-    void LoadPortrait(std::string name, std::string filepath);
-    void ShowPortrait(std::string name);
+    void LoadPortrait(const std::string &name, const std::string &filepath);
+    void ShowPortrait(const std::string &name);
     void CheckForCollisions(PlanetSurfaceObject *PSO);
     void CheckTileCollision(PlanetSurfaceObject *PSO, int x, int y);
     bool IsValidTile(int x, int y);
 
     void CreatePSObyItemID(
-        std::string scriptName,
+        const std::string &scriptName,
         int itemid,
         int itemx = -1,
         int itemy = -1);
     void AddPlanetSurfaceObject(PlanetSurfaceObject *PSO);
     void RemovePlanetSurfaceObject(PlanetSurfaceObject *PSO);
 
-    bool fabTilemap();
+    bool fabTilemap(const Star *star);
     bool fabAsteroid();
     bool fabRocky();
     bool fabFrozen();
     bool fabOceanic(const Planet *planet);
     bool fabMolten();
     bool fabAcidic();
-    void fabPlanetSurfaceObjects(
-        std::string scriptName,
-        std::string scriptFile,
-        int filter,
-        int maxPerItemType,
-        int maxItemTypes);
     friend int L_AttackTV(lua_State *luaVM);
     friend int L_PlaySound(lua_State *luaVM);
     friend int L_PlayLoopingSound(lua_State *luaVM);
@@ -195,8 +189,6 @@ class ModulePlanetSurface : public Module {
     int lua_dofile(const std::string &script_filename);
 
     std::map<std::string, std::shared_ptr<ALLEGRO_BITMAP>> portraits;
-    std::map<std::string, std::shared_ptr<ALLEGRO_BITMAP>>::iterator
-        portraitsIt;
 
     std::shared_ptr<Button> m_cargo_button;
     std::shared_ptr<Bitmap> m_cargo_fill;

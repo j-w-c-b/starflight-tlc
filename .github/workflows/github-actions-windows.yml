@@ -51,4 +51,4 @@ jobs:
         if: always()
         with:
           name: build-logs
-          path: "**/*.log"
+          path: "build/*/*.log"

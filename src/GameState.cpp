@@ -178,13 +178,11 @@ Ship::getOccupiedSpace() {
     int numItems, occupiedSpace = 0;
 
     // loop over the inventory to get items count
-    int numstacks = g_game->gameState->m_items.GetNumStacks();
-    for (int i = 0; i < numstacks; i++) {
-        g_game->gameState->m_items.GetStack(i, item, numItems);
-
+    for (auto &[id, numItems] : g_game->gameState->m_items) {
         // artifacts do not take any space
-        if (!item.IsArtifact())
+        if (!item.IsArtifact()) {
             occupiedSpace += numItems;
+        }
     }
 
     return occupiedSpace;
@@ -507,11 +505,8 @@ Ship::capFuel() {
 int
 Ship::getEnduriumOnBoard() {
     // get amount of endurium in cargo
-    Item endurium;
     const int ITEM_ENDURIUM = 54;
-    int amount = 0;
-    g_game->gameState->m_items.Get_Item_By_ID(ITEM_ENDURIUM, endurium, amount);
-    return amount;
+    return g_game->gameState->m_items.get_count(ITEM_ENDURIUM);
 }
 
 void
@@ -1349,11 +1344,6 @@ GameState::Reset() {
     storedValue = -1;
     questCompleted = false;
     firstTimeVisitor = true;
-    for (int i = 0; i < MAX_FLUX; i++) {
-        flux_info[i].endpoint_1_visible = false;
-        flux_info[i].endpoint_2_visible = false;
-        flux_info[i].path_visible = false;
-    }
 }
 
 InputArchive &
@@ -1481,9 +1471,8 @@ operator>>(InputArchive &ar, GameState &game_state) {
         int max_flux;
         ar >> max_flux;
 
-        ALLEGRO_ASSERT(max_flux == MAX_FLUX);
         game_state.flux_info.clear();
-        for (int i = 0; i < MAX_FLUX; i++) {
+        for (int i = 0; i < max_flux; i++) {
             FluxInfo fi;
 
             ar >> fi.endpoint_1_visible;

@@ -625,8 +625,11 @@ ValidatePortraits() {
     // it
     //  proved itself to be much more work than expected. we need to handle the
     //  various data/planetsurface/Pop${planetType}Planet.lua for it to work.
-    for (int n = 0; n < g_game->dataMgr->GetNumItems(); n++) {
-        Item *item = g_game->dataMgr->GetItem(n);
+    for (auto i = g_game->dataMgr->items_begin(),
+              e = g_game->dataMgr->items_end();
+         i != e;
+         ++i) {
+        auto item = *i;
         std::string filepath;
 
         switch (item->itemType) {
