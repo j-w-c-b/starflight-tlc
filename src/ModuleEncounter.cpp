@@ -1669,8 +1669,7 @@ ModuleEncounter::replaceKeyWords(string input) {
     string key, value;
     string::size_type pos;
 
-    map<string, string>::iterator iter;
-    iter = dialogCensor.begin();
+    auto iter = dialogCensor.begin();
     while (iter != dialogCensor.end()) {
         key = iter->first;
         value = iter->second;

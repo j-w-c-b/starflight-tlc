@@ -44,6 +44,7 @@ class ModuleInterPlanetaryTravel : public Module {
         int tilenum;
         int planetid;
         int radius;
+        ALLEGRO_COLOR color;
     };
 
     planet_t planets[10];

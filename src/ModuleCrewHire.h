@@ -27,8 +27,6 @@
 
 class ModuleCrewHire : public Module {
   public:
-    ModuleCrewHire();
-    virtual ~ModuleCrewHire(){};
     virtual bool on_init() override;
     virtual bool on_event(ALLEGRO_EVENT *event) override;
     virtual bool on_close() override;

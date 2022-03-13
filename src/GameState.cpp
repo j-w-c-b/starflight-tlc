@@ -174,13 +174,13 @@ Ship::getTotalSpace() {
 
 int
 Ship::getOccupiedSpace() {
-    Item item;
-    int numItems, occupiedSpace = 0;
+    int occupiedSpace = 0;
 
     // loop over the inventory to get items count
     for (auto &[id, numItems] : g_game->gameState->m_items) {
         // artifacts do not take any space
-        if (!item.IsArtifact()) {
+        auto item = g_game->dataMgr->get_item(id);
+        if (!item->IsArtifact()) {
             occupiedSpace += numItems;
         }
     }
@@ -973,7 +973,7 @@ const map<Skill, OfficerType> GameState::skill_map = {
     {SKILL_COMMUNICATION, OFFICER_COMMUNICATION},
     {SKILL_MEDICAL, OFFICER_MEDICAL}};
 
-GameState::GameState() : m_items(*new Items) { Reset(); }
+GameState::GameState() : m_items() { Reset(); }
 
 ALLEGRO_PATH *
 GameState::get_save_file_path(GameSaveSlot slot) {
@@ -1020,12 +1020,15 @@ GameState::operator=(const GameState &other) {
     storedValue = other.storedValue;
     questCompleted = other.questCompleted;
     currentModeWhenGameSaved = other.currentModeWhenGameSaved;
+    m_unemployed_officers.clear();
     for (auto &i : other.m_unemployed_officers) {
         m_unemployed_officers.insert(new Officer(*i));
     }
+    m_unassigned_officers.clear();
     for (auto &i : other.m_unassigned_officers) {
         m_unassigned_officers.insert(new Officer(*i));
     }
+    m_crew.clear();
     for (auto &i : other.m_crew) {
         m_crew[i.first] = new Officer(*i.second);
     }
@@ -1039,7 +1042,6 @@ PlayerInfo::Reset() {
 
     currentStar = 2;
     currentPlanet = 450;
-    controlPanelMode = 0; // ?????  NOT SURE WHAT TO SET THIS TO
 
     posHyperspace.x = g_game->getGlobalNumber("PLAYER_HYPERSPACE_START_X");
     posHyperspace.y = g_game->getGlobalNumber("PLAYER_HYPERSPACE_START_Y");
@@ -1173,8 +1175,9 @@ PlayerInfo::getAlienRaceNamePlural(AlienRaces race) {
 InputArchive &
 operator>>(InputArchive &ar, PlayerInfo &info) {
     string class_name = string(PlayerInfo::class_name);
-    int schema = 1;
+    int schema = 2;
     // schema 1: remove hasOverdueLoan, replace with actual loan data
+    // schema 2: remove controlPanelMode
 
     string load_class_name;
     ar >> load_class_name;
@@ -1215,7 +1218,10 @@ operator>>(InputArchive &ar, PlayerInfo &info) {
 
     ar >> info.currentStar;
     ar >> info.currentPlanet;
-    ar >> info.controlPanelMode;
+    if (load_schema == 1) {
+        int controlPanelMode;
+        ar >> controlPanelMode;
+    }
 
     ar >> info.posHyperspace;
     ar >> info.posSystem;
@@ -1229,7 +1235,7 @@ operator>>(InputArchive &ar, PlayerInfo &info) {
 OutputArchive &
 operator<<(OutputArchive &ar, const PlayerInfo &info) {
     string class_name = string(PlayerInfo::class_name);
-    int schema = 1;
+    int schema = 2; // schema 2: remove controlPanelMode
 
     ar << class_name;
     ar << schema;
@@ -1246,7 +1252,6 @@ operator<<(OutputArchive &ar, const PlayerInfo &info) {
 
     ar << info.currentStar;
     ar << info.currentPlanet;
-    ar << info.controlPanelMode;
 
     ar << info.posHyperspace;
     ar << info.posSystem;
@@ -1268,7 +1273,6 @@ PlayerInfo::operator=(const PlayerInfo &rhs) {
 
     currentStar = rhs.currentStar;
     currentPlanet = rhs.currentPlanet;
-    controlPanelMode = rhs.controlPanelMode;
 
     posHyperspace = rhs.posHyperspace;
     posSystem = rhs.posSystem;
@@ -1547,11 +1551,11 @@ operator<<(OutputArchive &ar, const GameState &game_state) {
     ar << static_cast<int>(game_state.m_currentSelectedOfficer);
 
     ar << static_cast<int>(game_state.m_unemployed_officers.size());
-    for (auto &i : game_state.m_unemployed_officers) {
+    for (const auto &i : game_state.m_unemployed_officers) {
         ar << *i;
     }
     ar << static_cast<int>(game_state.m_unassigned_officers.size());
-    for (auto &i : game_state.m_unassigned_officers) {
+    for (const auto &i : game_state.m_unassigned_officers) {
         ar << *i;
     }
     ar << static_cast<int>(game_state.m_crew.size());
@@ -1567,7 +1571,7 @@ operator<<(OutputArchive &ar, const GameState &game_state) {
     ar << game_state.storedValue;
 
     ar << static_cast<int>(game_state.flux_info.size());
-    for (auto &i : game_state.flux_info) {
+    for (const auto &i : game_state.flux_info) {
         ar << i.first;
         ar << i.second.endpoint_1_visible;
         ar << i.second.endpoint_2_visible;

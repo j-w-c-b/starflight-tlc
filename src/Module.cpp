@@ -349,9 +349,9 @@ Module::clear_mouse_events() {
 
     mouse_move(&e);
 
-    for (auto &e : m_last_mouse_button_events) {
-        e.x = -1;
-        e.y = -1;
+    for (auto &evt : m_last_mouse_button_events) {
+        evt.x = -1;
+        evt.y = -1;
     }
 
     for (auto &m : m_modules) {

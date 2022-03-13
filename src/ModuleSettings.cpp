@@ -25,7 +25,9 @@
 using namespace std;
 using namespace settings;
 
+namespace settings {
 ALLEGRO_DEBUG_CHANNEL("ModuleSettings")
+};
 
 VideoModeSelector::VideoModeSelector(
     int x,

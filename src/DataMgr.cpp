@@ -333,8 +333,7 @@ Star::operator=(const Star &rhs) {
 }
 
 Star::~Star() {
-    for (vector<Planet *>::iterator i = planets.begin(); i != planets.end();
-         ++i) {
+    for (auto i = planets.begin(); i != planets.end(); ++i) {
         delete (*i);
     }
 }
@@ -745,7 +744,7 @@ Planet *
 DataMgr::GetPlanetByID(ID id) {
     Planet *result = NULL;
 
-    map<ID, Planet *>::iterator i = allPlanetsByID.find(id);
+    auto i = allPlanetsByID.find(id);
     if (i != allPlanetsByID.end()) {
         result = i->second;
     }

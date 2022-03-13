@@ -11,13 +11,12 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
-#include "lua.hpp"
+#include <lua.hpp>
 
 class Script {
   public:
-    Script(const std::string &dat_file = "");
+    Script();
     virtual ~Script();
 
     bool load(const std::string &scriptfile);
@@ -40,5 +39,4 @@ class Script {
 
   private:
     lua_State *luaState;
-    std::string m_dat_file;
 };

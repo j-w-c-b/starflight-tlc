@@ -67,6 +67,11 @@ using namespace planetsurface;
 namespace planetsurface {
 ALLEGRO_DEBUG_CHANNEL("ModulePlanetSurface")
 
+static constexpr int MAPW = 31936;
+static constexpr int MAPH = 31936;
+static constexpr int CENTERX = MAPW / 2;
+static constexpr int CENTERY = MAPH / 2;
+
 #define SCROLLEROFFSETX (SCREEN_WIDTH / 2 - activeVessel->getFrameWidth() / 2)
 #define SCROLLEROFFSETY                                                        \
     (SCREEN_HEIGHT / 2 - 128 - activeVessel->getFrameHeight() / 2)

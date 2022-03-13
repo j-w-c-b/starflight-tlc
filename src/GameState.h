@@ -258,7 +258,6 @@ class PlayerInfo {
 
     int currentStar;
     int currentPlanet;
-    int controlPanelMode;
 
     Point2D posHyperspace;
     Point2D posSystem;

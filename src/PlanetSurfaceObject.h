@@ -1,13 +1,15 @@
 #pragma once
 
-#include "DataMgr.h"
+#include <map>
+#include <memory>
+#include <string>
+
+#include <lua.hpp>
+
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_font.h>
-#include <map>
-#include <string>
-#include <vector>
 
-#include "lua.hpp"
+#include "DataMgr.h"
 
 class Sprite;
 class Event;
@@ -30,7 +32,7 @@ class PlanetSurfaceObject {
   public:
     PlanetSurfaceObject(
         lua_State *LuaVM,
-        std::string ScriptName,
+        const std::string &ScriptName,
         const Item *item = nullptr);
 
     void Initialize();

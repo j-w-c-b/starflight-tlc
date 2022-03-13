@@ -18,7 +18,7 @@ std::map<std::string, ALLEGRO_BITMAP *> PlanetSurfaceObject::graphics;
 
 PlanetSurfaceObject::PlanetSurfaceObject(
     lua_State *LuaVM,
-    std::string ScriptName,
+    const std::string &ScriptName,
     const Item *item)
     : scriptName(ScriptName), luaVM(LuaVM), health(0), selected(false),
       scanned(false), minimapColor(BRTORANGE), minimapSize(1), image(NULL),
@@ -466,9 +466,7 @@ PlanetSurfaceObject::PointInside(int px, int py) {
 
 void
 PlanetSurfaceObject::EmptyGraphics() {
-    std::map<std::string, ALLEGRO_BITMAP *>::iterator it;
-
-    for (it = graphics.begin(); it != graphics.end(); ++it) {
+    for (auto it = graphics.begin(); it != graphics.end(); ++it) {
         al_destroy_bitmap(it->second);
         it->second = NULL;
     }

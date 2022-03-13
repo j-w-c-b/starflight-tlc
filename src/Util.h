@@ -65,8 +65,8 @@ class Util {
     }
 
     template <typename T> static auto random_choice(T t) {
-        typename T::iterator start = t.begin();
-        typename T::iterator end = t.end();
+        auto start = t.begin();
+        auto end = t.end();
         auto dis = std::distance(start, end) - 1;
         std::advance(start, Random(0, dis));
 

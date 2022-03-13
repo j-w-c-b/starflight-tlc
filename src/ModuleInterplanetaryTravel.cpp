@@ -36,7 +36,7 @@ constexpr int PLANET_SCROLL_WIDTH = SCREEN_WIDTH;
 constexpr int PLANET_SCROLL_HEIGHT = SCREEN_HEIGHT;
 constexpr int PLANETTILESIZE = 256;
 constexpr int PLANETTILESACROSS = 100;
-constexpr int PLANETTILESDOWN = 100;
+constexpr int PLANETTILESDOWN = PLANETTILESACROSS;
 
 ALLEGRO_DEBUG_CHANNEL("ModuleInterPlanetaryTravel")
 }; // namespace
@@ -141,16 +141,18 @@ bool
 ModuleInterPlanetaryTravel::on_mouse_move(ALLEGRO_MOUSE_EVENT *event) {
     int x = event->x;
     int y = event->y;
+    float asw = g_game->getGlobalNumber("AUX_SCREEN_WIDTH");
+    float ash = g_game->getGlobalNumber("AUX_SCREEN_HEIGHT");
+    float mini_tile_scale_x = asw / PLANETTILESACROSS;
+    float mini_tile_scale_y = ash / PLANETTILESDOWN;
 
     for (int i = 0; i < star->GetNumPlanets(); i++) {
         int planet = planets[i].tilenum;
         if (planet > 0) {
-            // the various negative offsets after the parenthesized expressions
-            // are mere empirical tweaks, so don't expect too much of them
-            if (x > (asx + planets[i].tilex * 2.3) - 4 - planets[i].radius
-                && x < (asx + planets[i].tilex * 2.3) - 2 + planets[i].radius
-                && y > (asy + planets[i].tiley * 2.3) - 2 - planets[i].radius
-                && y < (asy + planets[i].tiley * 2.3) + planets[i].radius) {
+            float px = asx + (planets[i].tilex + 0.5) * mini_tile_scale_x;
+            float py = asy + (planets[i].tiley + 0.5) * mini_tile_scale_y;
+
+            if (x > (px - 4) && x < (px + 4) && y > (py - 4) && y < py + 4) {
                 m_planet_label->move(x + 10, y);
                 m_planet_label->set_text(
                     star->GetPlanetByID(planets[i].planetid)->name);
@@ -166,10 +168,10 @@ ModuleInterPlanetaryTravel::on_mouse_move(ALLEGRO_MOUSE_EVENT *event) {
     if (m_bOver_Planet == false) {
         int systemCenterTileX = PLANETTILESACROSS / 2;
         int systemCenterTileY = PLANETTILESDOWN / 2;
-        if (x > (asx + systemCenterTileX * 2.3) - 6
-            && x < (asx + systemCenterTileX * 2.3) + 6
-            && y > (asy + systemCenterTileY * 2.3) - 6
-            && y < (asy + systemCenterTileY * 2.3) + 6) {
+        float starx = (asx + (systemCenterTileX + 0.5) * mini_tile_scale_x);
+        float stary = (asy + (systemCenterTileY + 0.5) * mini_tile_scale_y);
+        if (x > (starx - 6) && x < (starx + 6) && y > (stary - 6)
+            && y < (stary + 6)) {
             m_planet_label->move(x + 10, y);
             m_planet_label->set_text(star->name);
             m_bOver_Planet = true;
@@ -768,120 +770,85 @@ ModuleInterPlanetaryTravel::updateMiniMap(ALLEGRO_BITMAP *target) {
     // get AUX_SCREEN gui values from globals
     asx = (int)g_game->getGlobalNumber("AUX_SCREEN_X");
     asy = (int)g_game->getGlobalNumber("AUX_SCREEN_Y");
-    static double asw = g_game->getGlobalNumber("AUX_SCREEN_WIDTH");
-    static double ash = g_game->getGlobalNumber("AUX_SCREEN_HEIGHT");
+    float asw = g_game->getGlobalNumber("AUX_SCREEN_WIDTH");
+    float ash = g_game->getGlobalNumber("AUX_SCREEN_HEIGHT");
+    int systemCenterTileX = PLANETTILESACROSS / 2;
+    int systemCenterTileY = PLANETTILESDOWN / 2;
+    float mini_tile_scale_x = asw / PLANETTILESACROSS;
+    float mini_tile_scale_y = ash / PLANETTILESDOWN;
+    float starx = (asx + (systemCenterTileX + 0.5) * mini_tile_scale_x);
+    float stary = (asy + (systemCenterTileY + 0.5) * mini_tile_scale_y);
     al_set_target_bitmap(target);
 
     // clear aux window
     al_draw_filled_rectangle(
         asx, asy, asx + asw, asy + ash, al_map_rgb(0, 0, 0));
 
-    // draw ellipses representing planetary orbits
-    int rx, ry, cx, cy;
-    for (int i = 0; i < star->GetNumPlanets(); i++) {
-        planet = star->GetPlanet(i);
-        if (planet) {
-            cx = asx + asw / 2;
-            cy = asy + ash / 2;
-            rx = (int)((2 + i) * 8.7);
-            ry = (int)((2 + i) * 8.7);
-            al_draw_ellipse(cx, cy, rx, ry, al_map_rgb(48, 48, 96), 2);
-        }
-    }
-
     // draw the star in aux window
-    int systemCenterTileX = PLANETTILESACROSS / 2;
-    int systemCenterTileY = PLANETTILESDOWN / 2;
+    {
+        ALLEGRO_COLOR color;
+        switch (star->spectralClass) {
+        case SC_A:
+            color = WHITE;
+            break;
+        case SC_B:
+            color = LTBLUE;
+            break;
+        case SC_F:
+            color = LTYELLOW;
+            break;
+        case SC_G:
+            color = YELLOW;
+            break;
+        case SC_K:
+            color = ORANGE;
+            break;
+        case SC_M:
+            color = RED;
+            break;
+        case SC_O:
+            color = BLUE;
+            break;
+        default:
+            color = ORANGE;
+            break;
+        }
 
-    ALLEGRO_COLOR color;
-    switch (star->spectralClass) {
-    case SC_A:
-        color = WHITE;
-        break;
-    case SC_B:
-        color = LTBLUE;
-        break;
-    case SC_F:
-        color = LTYELLOW;
-        break;
-    case SC_G:
-        color = YELLOW;
-        break;
-    case SC_K:
-        color = ORANGE;
-        break;
-    case SC_M:
-        color = RED;
-        break;
-    case SC_O:
-        color = BLUE;
-        break;
-    default:
-        color = ORANGE;
-        break;
+        al_draw_filled_circle(starx, stary, 6, color);
     }
 
-    float starx = (int)(asx + systemCenterTileX * 2.3);
-    float stary = (int)(asy + systemCenterTileY * 2.3);
-    al_draw_filled_circle(starx, stary, 6, color);
-
-    // draw planets in aux window
-    color = BLACK;
-    int planet = -1, px = 0, py = 0;
     for (int i = 0; i < star->GetNumPlanets(); i++) {
-        planet = planets[i].tilenum;
+        int planet = planets[i].tilenum;
         if (planet > 0) {
-            switch (planet) {
-            case 1:
-                color = al_map_rgb(255, 182, 0);
-                planets[i].radius = 6;
-                break; // sun
-            case 2:
-                color = al_map_rgb(100, 0, 100);
-                planets[i].radius = 4;
-                break; // gas giant
-            case 3:
-                color = al_map_rgb(160, 12, 8);
-                planets[i].radius = 3;
-                break; // molten
-            case 4:
-                color = al_map_rgb(200, 200, 255);
-                planets[i].radius = 3;
-                break; // ice
-            case 5:
-                color = al_map_rgb(30, 100, 240);
-                planets[i].radius = 3;
-                break; // oceanic
-            case 6:
-                color = al_map_rgb(134, 67, 30);
-                planets[i].radius = 2;
-                break; // rocky
-            case 7:
-                color = al_map_rgb(95, 93, 93);
-                planets[i].radius = 1;
-                break; // asteroid
-            case 8:
-                color = al_map_rgb(55, 147, 84);
-                planets[i].radius = 3;
-                break; // acidic
-            default:
-                color = al_map_rgb(90, 90, 90);
-                planets[i].radius = 1;
-                break; // none
-            }
-            px = (int)(asx + planets[i].tilex * 2.3);
-            py = (int)(asy + planets[i].tiley * 2.3);
-            al_draw_filled_circle(px, py, planets[i].radius, color);
+            // draw ellipses representing planetary orbits
+            // orbits 0-1 occupied by the sun
+            // orbit 13 reserved for padding the display
+            float rx =
+                (2 + i) * PLANETTILESACROSS / (2.0 * 13.0) * mini_tile_scale_x;
+            float ry =
+                (2 + i) * PLANETTILESDOWN / (2.0 * 13.0) * mini_tile_scale_y;
+            al_draw_ellipse(starx, stary, rx, ry, al_map_rgb(48, 48, 96), 2);
+
+            // draw planets in aux window
+            float px = asx + (planets[i].tilex + 0.5) * mini_tile_scale_x;
+            float py = asy + (planets[i].tiley + 0.5) * mini_tile_scale_y;
+            al_draw_filled_circle(px, py, planets[i].radius, planets[i].color);
         }
     }
 
     m_planet_label->set_active(m_bOver_Planet);
 
     // draw player's location on minimap
-    float fx = asx + g_game->gameState->player.posSystem.x / 256 * 2.3;
-    float fy = asy + g_game->gameState->player.posSystem.y / 256 * 2.3;
-    al_draw_rectangle(
-        (int)fx - 1, (int)fy - 1, (int)fx + 2, (int)fy + 2, LTBLUE, 1);
+    float fx = asx
+               + (g_game->gameState->player.posSystem.x / PLANETTILESIZE + 0.5)
+                     * mini_tile_scale_x;
+    float fy = asy
+               + (g_game->gameState->player.posSystem.y / PLANETTILESIZE + 0.5)
+                     * mini_tile_scale_y;
+    int shipsize = round(fmod(al_get_time(), 1.0) * 1.5 + 1);
+
+    al_draw_filled_rectangle(
+        fx - shipsize, fy - shipsize, fx + shipsize, fy + shipsize, GREEN);
 }
 
 int
@@ -916,22 +883,59 @@ ModuleInterPlanetaryTravel::loadStarSystem(const Star *star) {
     sfsrand(star->id);
 
     // calculate position of each planet in orbit around the star
-    float radius, angle;
-    int rx, ry;
     for (i = 0; i < star->GetNumPlanets(); i++) {
-
         planet = star->GetPlanet(i);
         if (planet) {
+            float radius, angle;
+            int rx, ry;
 
             planets[i].planetid = planet->id;
 
-            radius = (2 + i) * 4;
+            // orbits 0-1 occupied by the sun
+            // orbit 13 reserved for padding the display
+            // radius = orbit number multiplied by
+            //  total tiles / circumference of largest orbit
+            radius = (2.0 + i) * PLANETTILESACROSS / (2.0 * 13.0);
             angle = sfrand() % 360;
-            rx = (int)(cos(angle) * radius);
-            ry = (int)(sin(angle) * radius);
+            rx = (int)round((cos(angle) * radius));
+            ry = (int)round((sin(angle) * radius));
             planets[i].tilex = systemCenterTileX + rx;
             planets[i].tiley = systemCenterTileY + ry;
             planets[i].tilenum = planet->type;
+            switch (planet->type) {
+            case PT_GASGIANT:
+                planets[i].color = al_map_rgb(100, 0, 100);
+                planets[i].radius = 4;
+                break;
+            case PT_MOLTEN:
+                planets[i].color = al_map_rgb(160, 12, 8);
+                planets[i].radius = 3;
+                break;
+            case PT_FROZEN:
+                planets[i].color = al_map_rgb(200, 200, 255);
+                planets[i].radius = 3;
+                break;
+            case PT_OCEANIC:
+                planets[i].color = al_map_rgb(30, 100, 240);
+                planets[i].radius = 3;
+                break;
+            case PT_ROCKY:
+                planets[i].color = al_map_rgb(134, 67, 30);
+                planets[i].radius = 2;
+                break;
+            case PT_ASTEROID:
+                planets[i].color = al_map_rgb(95, 93, 93);
+                planets[i].radius = 1;
+                break;
+            case PT_ACIDIC:
+                planets[i].color = al_map_rgb(55, 147, 84);
+                planets[i].radius = 3;
+                break; // acidic
+            case PT_INVALID:
+                planets[i].color = al_map_rgb(90, 90, 90);
+                planets[i].radius = 1;
+                break;
+            }
 
             ALLEGRO_ASSERT(planets[i].tilenum > 0);
             ALLEGRO_ASSERT(planets[i].tilenum < 9);

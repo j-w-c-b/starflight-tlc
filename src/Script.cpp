@@ -27,8 +27,7 @@ custom_lua_atpanic(lua_State * /*lua*/) {
     return 0;
 }
 
-Script::Script(const string &dat_file)
-    : errorMessage(""), m_dat_file(dat_file) {
+Script::Script() : errorMessage("") {
     luaState = luaL_newstate();
     luaL_openlibs(luaState);
     lua_register(luaState, "L_LoadScript", Script::L_LoadScript);

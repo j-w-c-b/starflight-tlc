@@ -13,9 +13,10 @@
 #include <allegro5/allegro.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
-#include "lua.hpp"
+#include <lua.hpp>
 
 #include "AdvancedTileScroller.h"
 #include "Bitmap.h"
@@ -29,11 +30,6 @@
 #include "RichTextLabel.h"
 #include "ScrolledModule.h"
 #include "TileScroller.h"
-
-const int MAPW = 31936;
-const int MAPH = 31936;
-const int CENTERX = MAPW / 2;
-const int CENTERY = MAPH / 2;
 
 namespace planetsurface {
 enum VesselMode

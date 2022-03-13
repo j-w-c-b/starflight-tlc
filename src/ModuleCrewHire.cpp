@@ -24,50 +24,21 @@
 using namespace std;
 using namespace crewhire;
 
+namespace crewhire {
 ALLEGRO_DEBUG_CHANNEL("ModuleCrewHire")
-
-#define PERSONNEL_SCREEN 0
-#define UNEMPLOYED_SCREEN 1
-
-#define CREW_X 561
-#define CREW_Y 509
-#define CREW_HEIGHT 174
-#define CREW_WIDTH 465
-
-#define UNEMPLOYED_X 564
-#define UNEMPLOYED_Y 68
-#define UNEMPLOYED_HEIGHT 594
-#define UNEMPLOYED_WIDTH 460
-
-#define EXITBTN_X 16
-#define EXITBTN_Y 698
-
-#define HIREMOREBTN_X 217
-#define HIREMOREBTN_Y 698
-
-#define FIREBTN_X 815
-#define FIREBTN_Y 698
-
-#define UNASSIGNBTN_X 606
-#define UNASSIGNBTN_Y 698
-
-#define CATBTN_X 531
-#define CATBTN_Y 65
-#define CATSPACING 59
-
-#define UNASSIGNED_CREW_X 561
-#define UNASSIGNED_CREW_Y 478
-
-#define SKILLBAR_X 73
-#define SKILLBAR_Y 240
-
-#define SKILLICONS_X 25
-#define SKILLICONS_Y 220
-#define SKILLSPACING 50
-
-#define CREWPOSITION_X 580
-#define CREWPOSITION_Y 100
-#define CREWSPACING 59
+constexpr int EXITBTN_X = 16;
+constexpr int EXITBTN_Y = 698;
+constexpr int HIREMOREBTN_X = 217;
+constexpr int HIREMOREBTN_Y = 698;
+constexpr int FIREBTN_X = 815;
+constexpr int FIREBTN_Y = 698;
+constexpr int UNASSIGNBTN_X = 606;
+constexpr int UNASSIGNBTN_Y = 698;
+constexpr int CATBTN_X = 531;
+constexpr int CATBTN_Y = 65;
+constexpr int UNASSIGNED_CREW_X = 561;
+constexpr int UNASSIGNED_CREW_Y = 478;
+}; // namespace crewhire
 
 string ModuleCrewHire::c_directions =
     "Click on your crew members to the right to reassign or fire "
@@ -80,8 +51,6 @@ string ModuleCrewHire::c_hire_more_directions =
 
 string ModuleCrewHire::c_title = "Welcome to Crew Match";
 string ModuleCrewHire::c_statistics_title = "Statistics";
-
-ModuleCrewHire::ModuleCrewHire() : Module(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT) {}
 
 bool
 ModuleCrewHire::on_init() {

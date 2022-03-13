@@ -10,10 +10,13 @@
 
 #include <array>
 #include <map>
+#include <memory>
 #include <string>
 
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_font.h>
+
+#include <lua.hpp>
 
 #include "CombatObject.h"
 #include "DialogButtonPanel.h"
@@ -26,7 +29,6 @@
 #include "Sprite.h"
 #include "TileScroller.h"
 #include "Util.h"
-#include "lua.hpp"
 
 class ModuleEncounter : public Module {
   private:
