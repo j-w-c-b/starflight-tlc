@@ -79,6 +79,8 @@ class ModuleStarmap : public Module {
     virtual bool on_mouse_button_click(ALLEGRO_MOUSE_EVENT *event) override;
     virtual bool on_update() override;
 
+    void save_map(const std::string &filename);
+
   private:
     void draw_flux();
     void draw_stars();

@@ -552,3 +552,10 @@ ModuleStarmap::draw_stars() {
         stars.drawframe(m_starview.get());
     }
 }
+
+void
+ModuleStarmap::save_map(const std::string &filename) {
+    draw_flux();
+
+    al_save_bitmap(filename.c_str(), m_starview.get());
+}

@@ -694,7 +694,7 @@ ValidatePortraits() {
 }
 
 void
-Game::Run() {
+Game::Initialize() {
     ALLEGRO_DEBUG("Firing up Allegro...\n");
     if (!al_init()) {
         fatalerror("Error during game initialization\n");
@@ -802,6 +802,11 @@ Game::Run() {
     std::ostringstream s;
     s << p_title << " (V" << p_version << ")";
     al_set_window_title(m_display, s.str().c_str());
+}
+
+void
+Game::Run() {
+    Initialize();
 
     ALLEGRO_DEBUG("\nLaunching game loop...\n");
     while (m_keepRunning) {
