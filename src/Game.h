@@ -60,6 +60,7 @@ to_string(const VideoMode &v) {
 class Game {
   public:
     Game();
+    void Initialize();
     void Run();
     void shutdown();
     void fatalerror(const std::string &error);
